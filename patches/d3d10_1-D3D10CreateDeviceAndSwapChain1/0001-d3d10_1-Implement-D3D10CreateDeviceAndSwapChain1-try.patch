@@ -1,0 +1,216 @@
+From 4485b05174ffe3bce76aeacd2cf024902de830b2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 26 Oct 2015 09:17:01 +1100
+Subject: [PATCH] d3d10_1: Implement D3D10CreateDeviceAndSwapChain1 (try 3)
+
+Fixes https://bugs.winehq.org/show_bug.cgi?id=39278
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d10_1/d3d10_1.spec      |  2 +-
+ dlls/d3d10_1/d3d10_1_main.c    | 71 ++++++++++++++++++++++++++++++++++++++++++
+ dlls/d3d10_1/tests/Makefile.in |  2 +-
+ dlls/d3d10_1/tests/d3d10_1.c   | 69 ++++++++++++++++++++++++++++++++++++++++
+ include/d3d10_1.idl            |  3 ++
+ 5 files changed, 145 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/d3d10_1/d3d10_1.spec b/dlls/d3d10_1/d3d10_1.spec
+index b3d2da7..5582558 100644
+--- a/dlls/d3d10_1/d3d10_1.spec
++++ b/dlls/d3d10_1/d3d10_1.spec
+@@ -3,7 +3,7 @@
+ @ stub D3D10CompileShader
+ @ stub D3D10CreateBlob
+ @ stdcall D3D10CreateDevice1(ptr long ptr long long long ptr)
+-@ stub D3D10CreateDeviceAndSwapChain1
++@ stdcall D3D10CreateDeviceAndSwapChain1(ptr long ptr long long long ptr ptr ptr)
+ @ stdcall D3D10CreateEffectFromMemory(ptr long long ptr ptr ptr) d3d10.D3D10CreateEffectFromMemory
+ @ stub D3D10CreateEffectPoolFromMemory
+ @ stdcall D3D10CreateStateBlock(ptr ptr ptr) d3d10.D3D10CreateStateBlock
+diff --git a/dlls/d3d10_1/d3d10_1_main.c b/dlls/d3d10_1/d3d10_1_main.c
+index a619004..e51019c 100644
+--- a/dlls/d3d10_1/d3d10_1_main.c
++++ b/dlls/d3d10_1/d3d10_1_main.c
+@@ -168,3 +168,74 @@ HRESULT WINAPI D3D10CreateDevice1(IDXGIAdapter *adapter, D3D10_DRIVER_TYPE drive
+ 
+     return hr;
+ }
++
++HRESULT WINAPI D3D10CreateDeviceAndSwapChain1(IDXGIAdapter *adapter, D3D10_DRIVER_TYPE driver_type,
++        HMODULE swrast, UINT flags, D3D10_FEATURE_LEVEL1 hw_level, UINT sdk_version,
++        DXGI_SWAP_CHAIN_DESC *swapchain_desc, IDXGISwapChain **swapchain, ID3D10Device1 **device)
++{
++    IDXGIDevice *dxgi_device;
++    IDXGIFactory *factory;
++    HRESULT hr;
++
++    TRACE("adapter %p, driver_type %s, swrast %p, flags %#x, hw_level %s, sdk_version %d, "
++            "swapchain_desc %p, swapchain %p, device %p\n",
++            adapter, debug_d3d10_driver_type(driver_type), swrast, flags,
++            debug_d3d10_feature_level(hw_level), sdk_version, swapchain_desc, swapchain, device);
++
++    if(!device)
++        return E_INVALIDARG;
++
++    hr = D3D10CreateDevice1(adapter, driver_type, swrast, flags, hw_level, sdk_version, device);
++    if (FAILED(hr))
++    {
++        WARN("Failed to create a device, returning %#x\n", hr);
++        *device = NULL;
++        return hr;
++    }
++
++    TRACE("Created ID3D10Device1 %p\n", *device);
++
++    hr = ID3D10Device1_QueryInterface(*device, &IID_IDXGIDevice, (void **)&dxgi_device);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get a dxgi device from the d3d10 device, returning %#x\n", hr);
++        ID3D10Device1_Release(*device);
++        *device = NULL;
++        return hr;
++    }
++
++    hr = IDXGIDevice_GetAdapter(dxgi_device, &adapter);
++    IDXGIDevice_Release(dxgi_device);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get the device adapter, returning %#x\n", hr);
++        ID3D10Device1_Release(*device);
++        *device = NULL;
++        return hr;
++    }
++
++    hr = IDXGIAdapter_GetParent(adapter, &IID_IDXGIFactory, (void **)&factory);
++    IDXGIAdapter_Release(adapter);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get the adapter factory, returning %#x\n", hr);
++        ID3D10Device1_Release(*device);
++        *device = NULL;
++        return hr;
++    }
++
++    hr = IDXGIFactory_CreateSwapChain(factory, (IUnknown *)*device, swapchain_desc, swapchain);
++    IDXGIFactory_Release(factory);
++    if (FAILED(hr))
++    {
++        ID3D10Device1_Release(*device);
++        *device = NULL;
++
++        WARN("Failed to create a swapchain, returning %#x\n", hr);
++        return hr;
++    }
++
++    TRACE("Created IDXGISwapChain %p\n", *swapchain);
++
++    return S_OK;
++}
+diff --git a/dlls/d3d10_1/tests/Makefile.in b/dlls/d3d10_1/tests/Makefile.in
+index f6f17bd..256bb40 100644
+--- a/dlls/d3d10_1/tests/Makefile.in
++++ b/dlls/d3d10_1/tests/Makefile.in
+@@ -1,5 +1,5 @@
+ TESTDLL = d3d10_1.dll
+-IMPORTS = d3d10_1
++IMPORTS = d3d10_1 user32
+ 
+ C_SRCS = \
+ 	d3d10_1.c
+diff --git a/dlls/d3d10_1/tests/d3d10_1.c b/dlls/d3d10_1/tests/d3d10_1.c
+index fd865a3..e5316a6 100644
+--- a/dlls/d3d10_1/tests/d3d10_1.c
++++ b/dlls/d3d10_1/tests/d3d10_1.c
+@@ -446,9 +446,78 @@ static void test_create_blend_state(void)
+     ok(!refcount, "Device has %u references left.\n", refcount);
+ }
+ 
++static void test_create_device_swap_chain(void)
++{
++    HRESULT hr;
++    ID3D10Device1 *device;
++    IDXGISwapChain *swapchain;
++    DXGI_SWAP_CHAIN_DESC swapchain_desc;
++    HWND window;
++
++    window = CreateWindowA("d3d10_test_wc", "d3d10_test_swap", WS_OVERLAPPEDWINDOW,
++            0, 0, 640, 480, NULL, NULL, NULL, NULL);
++    ok(!!window, "Failed to create a window.\n");
++
++    memset(&swapchain_desc, 0, sizeof(swapchain_desc));
++    swapchain_desc.BufferCount = 1;
++    swapchain_desc.BufferDesc.Width = 640;
++    swapchain_desc.BufferDesc.Height = 480;
++    swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
++    swapchain_desc.BufferDesc.RefreshRate.Numerator = 60;
++    swapchain_desc.BufferDesc.RefreshRate.Denominator = 1;
++    swapchain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
++    swapchain_desc.SampleDesc.Count = 1;
++    swapchain_desc.SampleDesc.Quality = 0;
++    swapchain_desc.Windowed = TRUE;
++
++    hr = D3D10CreateDeviceAndSwapChain1(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
++                  D3D10_1_SDK_VERSION, &swapchain_desc, &swapchain, NULL);
++    ok(hr == E_INVALIDARG, "got %#x.\n", hr);
++
++    hr = D3D10CreateDeviceAndSwapChain1(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
++                  D3D10_1_SDK_VERSION, &swapchain_desc, NULL, &device);
++    if(FAILED(hr))
++        hr = D3D10CreateDeviceAndSwapChain1(NULL, D3D10_DRIVER_TYPE_REFERENCE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
++                  D3D10_1_SDK_VERSION, &swapchain_desc, NULL, &device);
++    todo_wine ok(hr == DXGI_ERROR_INVALID_CALL || broken(hr == E_NOINTERFACE || hr == E_OUTOFMEMORY), "got %#x.\n", hr);
++    if(hr == S_OK)
++        ID3D10Device1_Release(device);
++
++    /* swapchain_desc.OutputWindow  = NULL */
++    hr = D3D10CreateDeviceAndSwapChain1(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
++                  D3D10_1_SDK_VERSION, &swapchain_desc, &swapchain, &device);
++    todo_wine ok(hr == DXGI_ERROR_INVALID_CALL || broken(hr == E_NOINTERFACE || hr == E_OUTOFMEMORY), "got %#x.\n", hr);
++
++    swapchain_desc.OutputWindow = window;
++    hr = D3D10CreateDeviceAndSwapChain1(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
++                  D3D10_1_SDK_VERSION, &swapchain_desc, &swapchain, &device);
++    if(FAILED(hr))
++        hr = D3D10CreateDeviceAndSwapChain1(NULL, D3D10_DRIVER_TYPE_REFERENCE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
++                  D3D10_1_SDK_VERSION, &swapchain_desc, &swapchain, &device);
++    if(FAILED(hr))
++    {
++        skip("Failed to create device.\n");
++        return;
++    }
++
++    IDXGISwapChain_Release(swapchain);
++    ID3D10Device1_Release(device);
++
++    DestroyWindow(window);
++}
++
+ START_TEST(d3d10_1)
+ {
++    WNDCLASSA wc = {0};
++
++    wc.lpfnWndProc = DefWindowProcA;
++    wc.lpszClassName = "d3d10_test_wc";
++    RegisterClassA(&wc);
++
+     test_device_interfaces();
+     test_create_shader_resource_view();
+     test_create_blend_state();
++    test_create_device_swap_chain();
++
++    UnregisterClassA("d3d10_test_wc", GetModuleHandleA(NULL));
+ }
+diff --git a/include/d3d10_1.idl b/include/d3d10_1.idl
+index 4ee49c6..05d22b5 100644
+--- a/include/d3d10_1.idl
++++ b/include/d3d10_1.idl
+@@ -151,3 +151,6 @@ const UINT D3D10_1_SDK_VERSION = 0x20;
+ 
+ cpp_quote("HRESULT WINAPI D3D10CreateDevice1(IDXGIAdapter*,D3D10_DRIVER_TYPE,")
+ cpp_quote("    HMODULE,UINT,D3D10_FEATURE_LEVEL1,UINT,ID3D10Device1**);")
++cpp_quote("HRESULT WINAPI D3D10CreateDeviceAndSwapChain1(IDXGIAdapter *,")
++cpp_quote("    D3D10_DRIVER_TYPE, HMODULE, UINT, D3D10_FEATURE_LEVEL1,")
++cpp_quote("    UINT, DXGI_SWAP_CHAIN_DESC *, IDXGISwapChain **, ID3D10Device1 **);")
+-- 
+1.9.1
+

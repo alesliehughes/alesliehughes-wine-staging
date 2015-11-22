@@ -1,0 +1,79 @@
+From 11a38700a9a1559ba6b8d50b65c4c1b879994e75 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 19 Nov 2015 20:08:16 +1100
+Subject: [PATCH] d3d10core: Allow null blend_factor paramter in
+ OMSetBlendState
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d10core/tests/device.c | 20 ++++++++++++++++++++
+ dlls/d3d11/device.c           | 11 ++++++++---
+ 2 files changed, 28 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/d3d10core/tests/device.c b/dlls/d3d10core/tests/device.c
+index bec3763..4ff78e8 100644
+--- a/dlls/d3d10core/tests/device.c
++++ b/dlls/d3d10core/tests/device.c
+@@ -2224,6 +2224,7 @@ float4 main(float4 color : COLOR) : SV_TARGET
+     D3D10_BLEND_DESC blend_desc;
+     ID3D10Texture2D *ds_texture;
+     float blend_factor[4];
++    float blend_factor_out[4];
+     ID3D10Device *device;
+     BOOL predicate_value;
+     DXGI_FORMAT format;
+@@ -2584,6 +2585,25 @@ float4 main(float4 color : COLOR) : SV_TARGET
+     blend_factor[1] = 0.2f;
+     blend_factor[2] = 0.3f;
+     blend_factor[3] = 0.4f;
++
++    ID3D10Device_OMSetBlendState(device, blend_state, blend_factor, D3D10_DEFAULT_SAMPLE_MASK);
++    ID3D10Device_OMGetBlendState(device, &blend_state, blend_factor_out, &sample_mask);
++    ok(blend_factor_out[0] == 0.1f && blend_factor_out[1] == 0.2f
++            && blend_factor_out[2] == 0.3f && blend_factor_out[3] == 0.4f,
++            "Got unexpected blend factor {%.8e, %.8e, %.8e, %.8e}.\n",
++            blend_factor_out[0], blend_factor_out[1], blend_factor_out[2], blend_factor_out[3]);
++
++    ID3D10Device_OMSetBlendState(device, blend_state, NULL, D3D10_DEFAULT_SAMPLE_MASK);
++    ID3D10Device_OMGetBlendState(device, &blend_state, blend_factor_out, &sample_mask);
++    ok(blend_factor_out[0] == 1.0f && blend_factor_out[1] == 1.0f
++            && blend_factor_out[2] == 1.0f && blend_factor_out[3] == 1.0f,
++            "Got unexpected blend factor {%.8e, %.8e, %.8e, %.8e}.\n",
++            blend_factor_out[0], blend_factor_out[1], blend_factor_out[2], blend_factor_out[3]);
++
++    blend_factor[0] = 0.1f;
++    blend_factor[1] = 0.2f;
++    blend_factor[2] = 0.3f;
++    blend_factor[3] = 0.4f;
+     ID3D10Device_OMSetBlendState(device, blend_state, blend_factor, 0xff00ff00);
+     ID3D10Device_OMSetDepthStencilState(device, ds_state, 3);
+     ID3D10Device_OMSetRenderTargets(device, D3D10_SIMULTANEOUS_RENDER_TARGET_COUNT, rtv, dsv);
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index f9d7c9e..1a06c08 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -603,13 +603,18 @@ static void STDMETHODCALLTYPE d3d11_immediate_context_OMSetRenderTargetsAndUnord
+ }
+ 
+ static void STDMETHODCALLTYPE d3d11_immediate_context_OMSetBlendState(ID3D11DeviceContext *iface,
+-        ID3D11BlendState *blend_state, const FLOAT blend_factor[4], UINT sample_mask)
++        ID3D11BlendState *blend_state, const FLOAT arg_blend_factor[4], UINT sample_mask)
+ {
+     struct d3d_device *device = device_from_immediate_ID3D11DeviceContext(iface);
+     const D3D11_BLEND_DESC *desc;
++    const FLOAT blend_default[4] = {1.0f, 1.0f, 1.0f, 1.0f};
++    const FLOAT *blend_factor = blend_default;
+ 
+-    TRACE("iface %p, blend_state %p, blend_factor {%.8e %.8e %.8e %.8e}, sample_mask 0x%08x.\n",
+-            iface, blend_state, blend_factor[0], blend_factor[1], blend_factor[2], blend_factor[3], sample_mask);
++    TRACE("iface %p, blend_state %p, arg_blend_factor %p, sample_mask 0x%08x.\n",
++            iface, blend_state, arg_blend_factor, sample_mask);
++
++    if (arg_blend_factor)
++         blend_factor = arg_blend_factor;
+ 
+     if (blend_factor[0] != 1.0f || blend_factor[1] != 1.0f || blend_factor[2] != 1.0f || blend_factor[3] != 1.0f)
+         FIXME("Ignoring blend factor {%.8e %.8e %.8e %.8e}.\n",
+-- 
+2.6.2
+

@@ -1,0 +1,344 @@
+From bee2b1199b5407815e1c904dc39895a47d4a49a7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 29 Jun 2015 15:11:34 +1000
+Subject: [PATCH 2/5] dpnet: Implement IDirectPlay8Client EnumHosts
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/Makefile.in     |   2 +-
+ dlls/dpnet/client.c        | 235 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/dpnet_private.h |   3 +
+ dlls/dpnet/tests/client.c  |   5 +-
+ 4 files changed, 238 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/dpnet/Makefile.in b/dlls/dpnet/Makefile.in
+index 880b7bd..541e104 100644
+--- a/dlls/dpnet/Makefile.in
++++ b/dlls/dpnet/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = dpnet.dll
+ IMPORTLIB = dpnet
+-IMPORTS   = dxguid uuid ole32 advapi32
++IMPORTS   = dxguid uuid ole32 advapi32 ws2_32
+ 
+ C_SRCS = \
+ 	address.c \
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index bf2b8d2..32530a4 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -22,6 +22,7 @@
+ #include "config.h"
+ 
+ #include <stdarg.h>
++#include <errno.h>
+ 
+ #define COBJMACROS
+ #include "windef.h"
+@@ -29,10 +30,13 @@
+ #include "wingdi.h"
+ #include "winuser.h"
+ #include "objbase.h"
++#include "winsock2.h"
++
+ #include "wine/debug.h"
+ 
+ #include "dplay8.h"
+ #include "dpnet_private.h"
++#include "wine/dplaysp.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
+ 
+@@ -86,7 +90,16 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+ 
+     TRACE("(%p) ref=%u\n", This, ref);
+ 
+-    if (!ref) {
++    if (!ref)
++    {
++        if(This->enumhosts)
++        {
++           SetEvent(This->enumhosts);
++
++           WaitForSingleObject(This->hostthread, 1000);
++           CloseHandle(This->hostthread);
++        }
++
+         HeapFree(GetProcessHeap(), 0, This);
+     }
+     return ref;
+@@ -121,6 +134,172 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+   return DPN_OK; 
+ }
+ 
++struct EnumHostData
++{
++    DPN_SP_CAPS spcaps;
++    PFNDPNMESSAGEHANDLER msghandler;
++    GUID appGUID;
++    IDirectPlay8Address *host;
++    IDirectPlay8Address *device;
++    void *pUserEnumData;
++    DWORD dwUserEnumDataSize;
++    DWORD dwEnumCount;
++    DWORD dwRetryInterval;
++    DWORD dwTimeOut;
++    void *pvUserContext;
++
++    HANDLE event;
++};
++
++static DWORD WINAPI EnumNetworkHost(PVOID lpVoid)
++{
++    struct EnumHostData *enumdata = (struct EnumHostData*)lpVoid;
++    DWORD starttime = 0;
++    SOCKET sock;
++    WSADATA data;
++    int broad;
++    struct sockaddr_in addr;
++    HRESULT ret;
++    int iResult;
++    char SendBuf[1024];
++    int BufLen = 1024;
++    struct sockaddr_in from;
++    int fromlen = sizeof(from);
++
++    if (WSAStartup(MAKEWORD(2, 2), &data))
++        return 1;
++
++    TRACE("EnumNetworkHost thread started\n");
++
++    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++    if(sock == SOCKET_ERROR)
++    {
++        ERR("Cannot create socket\n");
++        goto cleanup;
++    }
++
++    memset(&addr, 0, sizeof(addr));
++    addr.sin_family = AF_INET;
++    addr.sin_addr.s_addr = htonl(INADDR_ANY);
++
++    broad = 1;
++    setsockopt(sock, SOL_SOCKET,  SO_BROADCAST, (char *) &broad, sizeof(broad));
++    broad = enumdata->spcaps.dwDefaultEnumTimeout;
++    setsockopt(sock, SOL_SOCKET,  SO_RCVTIMEO, (char *) &broad, sizeof(broad));
++
++    if(bind(sock, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
++    {
++       ERR("Failed to bind socket\n");
++       goto cleanup;
++    }
++
++    while(TRUE)
++    {
++        BufLen = 1024;
++        fromlen = sizeof(from);
++
++        if( (GetTickCount() - starttime) >= enumdata->spcaps.dwDefaultEnumRetryInterval)
++        {
++            struct EnumQuery query;
++            int err;
++
++            TRACE("Sending Request.\n");
++
++            query.header.Leadbyte = 0x00;
++            query.header.Command = PACKET_ENUM_QUERY;
++            query.header.EnumPayload = 12345;
++
++            query.QueryType = PACKET_QUERY_GUID;
++            query.ApplicationGUID = enumdata->appGUID;
++
++            from.sin_family = AF_INET;
++            from.sin_port = htons(DPNA_DPNSVR_PORT);
++            /* TODO - Loop each interface */
++            from.sin_addr.s_addr = inet_addr("255.255.255.255");
++            err = sendto(sock, (void *)&query, sizeof(query), 0,  (struct sockaddr *)&from, sizeof(struct sockaddr_in));
++            if(err == -1)
++                ERR("sendto failed(%d)\n", GetLastError());
++            else
++                TRACE("sent (%d)\n", err);
++
++            starttime = GetTickCount();
++        }
++
++        /* Query Enumeration Packets */
++        iResult = recvfrom(sock, SendBuf, BufLen, 0, (struct sockaddr *)&from, &fromlen);
++        if(iResult >= sizeof(struct EnumHeader))
++        {
++            struct EnumHeader *header = (struct EnumHeader *)SendBuf;
++            if(header->Leadbyte == 0)
++            {
++                /* Enum Query */
++                switch(header->Command)
++                {
++                    case PACKET_ENUM_QUERY:
++                    {
++                        TRACE("Ignoring EnumQuery Packet\n");
++                        break;
++                    }
++                    /* Enum Responce */
++                    case PACKET_ENUM_RESPONCE:
++                    {
++                        DPNMSG_ENUM_HOSTS_RESPONSE responce;
++                        DPN_APPLICATION_DESC desc;
++                        static WCHAR wine[] = {'w','i','n','e',0};
++
++                        memset(&responce, 0, sizeof(DPNMSG_ENUM_HOSTS_RESPONSE));
++                        memset(&desc, 0, sizeof(DPN_APPLICATION_DESC));
++
++                        desc.dwSize = 0;
++                        desc.dwCurrentPlayers = 1;
++
++                        responce.dwSize = sizeof(DPNMSG_ENUM_HOSTS_RESPONSE);
++
++                        responce.pAddressSender = enumdata->host;
++                        responce.pAddressDevice = enumdata->device;
++                        responce.pApplicationDescription = &desc;
++
++                        desc.guidInstance = enumdata->appGUID;
++                        desc.pwszSessionName = wine;
++
++                        ret = enumdata->msghandler(NULL, DPN_MSGID_ENUM_HOSTS_RESPONSE, &responce);
++                        if(ret != DPN_OK)
++                            break;
++
++                        TRACE("EnumResponce Packet\n");
++                        break;
++                    }
++                    default:
++                    {
++                        FIXME("Unsupported query command 0x%08x\n", header->Command);
++                    }
++                }
++            }
++            else
++            {
++                FIXME("Leadbyte other than 0 currently not supported.(%d)\n", iResult);
++            }
++        }
++
++        if(WaitForSingleObject(enumdata->event, 500) != WAIT_TIMEOUT)
++        {
++            TRACE("Event Signaled\n");
++            break;
++        }
++    }
++
++cleanup:
++    IDirectPlay8Address_Release(enumdata->host);
++    IDirectPlay8Address_Release(enumdata->device);
++    HeapFree(GetProcessHeap(), 0, enumdata);
++    closesocket(sock);
++    WSACleanup();
++
++    TRACE("EnumNetworkHost thread ended\n");
++
++    return 0;
++}
++
+ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
+         PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
+         IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
+@@ -128,9 +307,54 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+         const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
+         const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvUserContext, pAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    struct EnumHostData *enumdata;
++    HRESULT hr;
++
++    TRACE("(%p):(%p,%p,%x)\n", This, pvUserContext, pAsyncHandle, dwFlags);
++
++    enumdata = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(struct EnumHostData));
++    if(!enumdata)
++        return E_OUTOFMEMORY;
++
++    enumdata->spcaps = This->spcaps;
++    enumdata->msghandler = This->msghandler;
++
++    enumdata->appGUID = pApplicationDesc->guidApplication;
++    hr = IDirectPlay8Address_Duplicate(pAddrHost, &enumdata->host);
++    if(FAILED(hr))
++    {
++        ERR("Failed to duplicate Host address (0x%08x).\n", hr);
++
++        HeapFree(GetProcessHeap(), 0, enumdata);
++
++        return E_OUTOFMEMORY;
++    }
++    hr = IDirectPlay8Address_Duplicate(pDeviceInfo, &enumdata->device);
++    if(FAILED(hr))
++    {
++        ERR("Failed to duplicate Device address (0x%08x).\n", hr);
++
++        IDirectPlay8Address_Release(pAddrHost);
++        HeapFree(GetProcessHeap(), 0, enumdata);
++
++        return E_OUTOFMEMORY;
++    }
++    enumdata->pUserEnumData = pUserEnumData;
++    enumdata->dwUserEnumDataSize = dwUserEnumDataSize;
++    enumdata->dwEnumCount = dwEnumCount;
++    enumdata->dwRetryInterval = dwRetryInterval;
++    enumdata->dwTimeOut = dwTimeOut;
++    enumdata->pvUserContext = pvUserContext;
++
++    This->enumhosts = CreateEventA( NULL, TRUE, FALSE, NULL);
++    enumdata->event = This->enumhosts;
++
++    This->hostthread = CreateThread(NULL, 0, &EnumNetworkHost, enumdata, 0, 0);
++
++    *pAsyncHandle = (DPNHANDLE)This->enumhosts;
++
++    return DPNSUCCESS_PENDING;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
+@@ -138,6 +362,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+ {
+   IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+   FIXME("(%p):(%u,%x): Stub\n", This, hAsyncHandle, dwFlags);
++
++  SetEvent( (HANDLE)hAsyncHandle);
++
+   return DPN_OK; 
+ }
+ 
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index f9c4400..103aca0 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -57,6 +57,9 @@ struct IDirectPlay8ClientImpl
+     void *usercontext;
+ 
+     DPN_SP_CAPS spcaps;
++
++    HANDLE enumhosts;
++    HANDLE hostthread;
+ };
+ 
+ /* ------------------- */
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 253526a..ffb7f8a 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -172,9 +172,10 @@ static void test_enum_hosts(void)
+ 
+     /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
+-    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
+-    todo_wine ok(async, "No Handle returned\n");
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
++    ok(async, "No Handle returned\n");
+ 
++    Sleep(3000);
+     hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
+     ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
+ 
+-- 
+1.9.1
+

@@ -1,0 +1,141 @@
+From 52321d7388016f6b6b2f81774cbac0a91079cd1e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 19 Nov 2015 12:57:37 +1100
+Subject: [PATCH 4/9] d3dx10: Add D3DX10CreateFontA/W stubs
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=23382
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=27738
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx10_43/d3dx10_43_main.c | 22 +++++++++++++
+ include/d3dx10core.idl          | 70 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 92 insertions(+)
+
+diff --git a/dlls/d3dx10_43/d3dx10_43_main.c b/dlls/d3dx10_43/d3dx10_43_main.c
+index 0434862..e1242e4 100644
+--- a/dlls/d3dx10_43/d3dx10_43_main.c
++++ b/dlls/d3dx10_43/d3dx10_43_main.c
+@@ -123,3 +123,25 @@ HRESULT WINAPI D3DX10CreateSprite(ID3D10Device *device, UINT size, ID3DX10Sprite
+ 
+     return E_NOTIMPL;
+ }
++
++HRESULT WINAPI D3DX10CreateFontA(ID3D10Device *device, int height, UINT width, UINT weight, UINT mip_levels,
++        BOOL italic, UINT charset, UINT precision, UINT quality, UINT pitch, const char *facename, ID3DX10Font **font)
++{
++    FIXME("device %p, height %d, width %u, weight %u, mip_levels %u, italic %d, charset %u, precision %u, "
++            "quality %u, pitch %u, facename %s, font %p.\n",
++            device, height, width, weight, mip_levels, italic, charset, precision, quality, pitch,
++            debugstr_a(facename), font);
++
++    return E_NOTIMPL;
++}
++
++HRESULT WINAPI D3DX10CreateFontW(ID3D10Device *device, int height, UINT width, UINT weight, UINT mip_levels,
++        BOOL italic, UINT charset, UINT precision, UINT quality, UINT pitch, const WCHAR *facename, ID3DX10Font **font)
++{
++    FIXME("device %p, height %d, width %u, weight %u, mip_levels %u, italic %d, charset %u, precision %u, "
++            "quality %u, pitch %u, facename %s, font %p.\n",
++            device, height, width, weight, mip_levels, italic, charset, precision, quality, pitch,
++            debugstr_w(facename), font);
++
++    return E_NOTIMPL;
++}
+\ No newline at end of file
+diff --git a/include/d3dx10core.idl b/include/d3dx10core.idl
+index d4716ae..1eccb43 100644
+--- a/include/d3dx10core.idl
++++ b/include/d3dx10core.idl
+@@ -26,6 +26,7 @@ cpp_quote("#if 0")
+ typedef struct D3DXMATRIX D3DXMATRIX;
+ typedef struct D3DXVECTOR2 D3DXVECTOR2;
+ typedef struct D3DXCOLOR D3DXCOLOR;
++#define LF_FACESIZE         32
+ cpp_quote("#endif")
+ 
+ typedef struct _D3DX10_SPRITE
+@@ -38,6 +39,36 @@ typedef struct _D3DX10_SPRITE
+     UINT        TextureIndex;
+ } D3DX10_SPRITE;
+ 
++typedef struct _D3DX10_FONT_DESCA
++{
++    int Height;
++    UINT Width;
++    UINT Weight;
++    UINT MipLevels;
++    BOOL Italic;
++    BYTE CharSet;
++    BYTE OutputPrecision;
++    BYTE Quality;
++    BYTE PitchAndFamily;
++    CHAR FaceName[LF_FACESIZE];
++
++} D3DX10_FONT_DESCA, *LPD3DX10_FONT_DESCA;
++
++typedef struct _D3DX10_FONT_DESCW
++{
++    int Height;
++    UINT Width;
++    UINT Weight;
++    UINT MipLevels;
++    BOOL Italic;
++    BYTE CharSet;
++    BYTE OutputPrecision;
++    BYTE Quality;
++    BYTE PitchAndFamily;
++    WCHAR FaceName[LF_FACESIZE];
++
++} D3DX10_FONT_DESCW, *LPD3DX10_FONT_DESCW;
++
+ [
+     object,
+     local,
+@@ -113,3 +144,42 @@ interface ID3DX10Sprite : IUnknown
+ 
+     HRESULT GetDevice(ID3D10Device** ppDevice);
+ };
++
++[
++    object,
++    local,
++    pointer_default(unique),
++    uuid(d79dbb70-5f21-4d36-bbc2-ff525c213cdc)
++]
++interface ID3DX10Font : IUnknown
++{
++    HRESULT GetDevice([out] ID3D10Device** device);
++    HRESULT GetDescA([in] D3DX10_FONT_DESCA *pDesc);
++    HRESULT GetDescW([in] D3DX10_FONT_DESCW *pDesc);
++    BOOL GetTextMetricsA([in] TEXTMETRICA *text_metrics);
++    BOOL GetTextMetricsW([in] TEXTMETRICW *text_metrics);
++
++    HDC GetDC();
++    HRESULT GetGlyphData([in] UINT glyph, [out] ID3D10ShaderResourceView** texture,
++            [in] RECT *blackbox, [in] POINT *cellinc);
++
++    HRESULT PreloadCharacters([in] UINT First, [in] UINT Last);
++    HRESULT PreloadGlyphs([in] UINT First, [in] UINT Last);
++    HRESULT PreloadTextA([in] const char *string, [in] int Count);
++    HRESULT PreloadTextW([in] const WCHAR *string, [in] int Count);
++
++    INT DrawTextA([in] ID3DX10Sprite *sprite, [in] const char *string, [in] int count,
++            [in] RECT *rect, [in] UINT Format, [in] D3DXCOLOR Color);
++    INT DrawTextW([in] ID3DX10Sprite *sprite, [in] const WCHAR *string, [in] int count,
++            [in] RECT *rect, [in] UINT Format, [in] D3DXCOLOR Color);
++
++cpp_quote("#ifdef __cplusplus")
++cpp_quote("#ifdef UNICODE")
++cpp_quote("    HRESULT WINAPI_INLINE GetDesc(D3DX10_FONT_DESCW *desc) { return GetDescW(desc); }")
++cpp_quote("    HRESULT WINAPI_INLINE PreloadText(LPCWSTR string, int count) { return PreloadTextW(string, count); }")
++cpp_quote("#else")
++cpp_quote("    HRESULT WINAPI_INLINE GetDesc(D3DX10_FONT_DESCA *desc) { return GetDescA(desc); }")
++cpp_quote("    HRESULT WINAPI_INLINE PreloadText(LPCSTR string, int count) { return PreloadTextA(string, count); }")
++cpp_quote("#endif")
++cpp_quote("#endif")
++};
+\ No newline at end of file
+-- 
+1.9.1
+

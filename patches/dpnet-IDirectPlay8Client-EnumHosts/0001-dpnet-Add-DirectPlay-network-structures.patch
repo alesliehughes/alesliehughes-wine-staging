@@ -1,0 +1,78 @@
+From f7753352b34d09cb992b1ee8e033457a4f5b2201 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 26 May 2015 11:22:17 +1000
+Subject: [PATCH 1/5] dpnet: Add DirectPlay network structures
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/wine/dplaysp.h | 56 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
+
+diff --git a/include/wine/dplaysp.h b/include/wine/dplaysp.h
+index 1459232..5713886 100644
+--- a/include/wine/dplaysp.h
++++ b/include/wine/dplaysp.h
+@@ -370,4 +370,60 @@ typedef HRESULT (WINAPI *LPDPSP_SPINIT)(LPSPINITDATA);
+  */
+ extern DWORD gdwDPlaySPRefCount;
+ 
++/* Direct Play 8 Structures */
++#include <pshpack1.h>
++
++struct EnumHeader
++{
++    char Leadbyte;
++    char Command;
++    unsigned short EnumPayload;
++};
++
++struct EnumQuery
++{
++    struct EnumHeader header;
++    char   QueryType;
++    GUID   ApplicationGUID;
++};
++
++struct EnumQueryResponce
++{
++    struct EnumHeader header;
++    int    ReplyOffset;
++    int    ResponseSize;
++    int    ApplicationDescSize;
++    int    ApplicationDescFlags;
++    int    MaxPlayers;
++    int    CurrentPlayers;
++    int    SessionNameOffset;
++    int    SessionNameSize;
++    int    PasswordOffset;
++    int    PasswordSize;
++    int    ReservedDataOffset;
++    int    ReservedDataSize;
++    int    ApplicationReservedDataOffset;
++    int    ApplicationReservedDataSize;
++    GUID   ApplicationInstanceGUID;
++    GUID   ApplicationGUID;
++    /*
++    The following are optional and here for reference only.
++    WCHAR SessionName  (variable)
++    WCHAR Password     (variable)
++    WCHAR ReservedData (variable)
++    WCHAR ApplicationReservedData (variable)
++    WCHAR ApplicationData (variable)
++    */
++};
++
++#include "poppack.h"
++
++#define PACKET_ENUM_QUERY    0x02
++#define PACKET_ENUM_RESPONCE 0x03
++
++#define PACKET_QUERY_GUID     0x01
++#define PACKET_QUERY_NO_GUID  0x02
++
++#define APPLICATIONDESCSIZE         0x00000050
++
+ #endif
+-- 
+1.9.1
+

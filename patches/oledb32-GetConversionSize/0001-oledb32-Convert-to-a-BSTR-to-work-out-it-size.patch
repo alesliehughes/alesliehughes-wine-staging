@@ -1,0 +1,45 @@
+From 7d7c062d6b4c9fe3aa3a43ea8e5cc02e138f21ef Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 12 Nov 2015 11:16:59 +1100
+Subject: [PATCH 1/2] oledb32: Convert to a BSTR to work out it size
+
+This makes code for handling variants to DBTYPE_STR and DBTYPE_WSTR
+types consistent.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/convert.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index 72714d3..a87cf18 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -1372,10 +1372,22 @@ static HRESULT WINAPI convert_GetConversionSize(IDataConvert* iface,
+         switch (src_type)
+         {
+         case DBTYPE_VARIANT:
+-            if(V_VT((VARIANT*)src) == VT_BSTR)
+-                *dst_len = (SysStringLen(V_BSTR((VARIANT*)src))+1) * sizeof(WCHAR);
++        {
++            VARIANT v;
++
++            VariantInit(&v);
++            if ((hr = VariantChangeType(&v, (VARIANT*)src, 0, VT_BSTR)) == S_OK)
++            {
++                *dst_len = (SysStringLen(V_BSTR(&v))+1) * sizeof(WCHAR);
++                VariantClear(&v);
++            }
+             else
++            {
+                 WARN("DBTYPE_VARIANT(%d)->DBTYPE_WSTR unimplemented\n", V_VT((VARIANT*)src));
++
++                return hr;
++            }
++        }
+             break;
+         case DBTYPE_STR:
+             if(src_len)
+-- 
+1.9.1
+

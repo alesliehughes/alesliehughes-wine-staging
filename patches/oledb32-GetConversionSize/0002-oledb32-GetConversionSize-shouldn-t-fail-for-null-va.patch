@@ -1,0 +1,83 @@
+From 35609a3af26aa87f0301bbd681afa400291e7b33 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 12 Nov 2015 11:39:51 +1100
+Subject: [PATCH 2/2] oledb32: GetConversionSize shouldn't fail for null
+ variants.
+
+If we have a NULL variant which will be converted to a non-fixed
+sized type (DBTYPE_WSTR) then we just return S_OK.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/convert.c       |  3 +++
+ dlls/oledb32/tests/convert.c | 33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 36 insertions(+)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index a87cf18..2c05099 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -1344,6 +1344,9 @@ static HRESULT WINAPI convert_GetConversionSize(IDataConvert* iface,
+     if ((*dst_len = get_length(dst_type)))
+         return S_OK;
+ 
++    if(src_type == DBTYPE_VARIANT && V_VT((VARIANT*)src) == VT_NULL)
++        return S_OK;
++
+     switch (dst_type)
+     {
+     case DBTYPE_STR:
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index a785457..55539f9 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -2627,6 +2627,33 @@ static void test_getconversionsize(void)
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+     VariantClear(&var);
+ 
++    dst_len = 78;
++    V_VT(&var) = VT_NULL;
++    hr = IDataConvert_GetConversionSize(convert, DBTYPE_VARIANT, DBTYPE_WSTR, NULL, &dst_len, &var);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    dst_len = 0;
++    src_len = 20;
++    V_VT(&var) = VT_BSTR;
++    V_BSTR(&var) = SysAllocString(strW);
++    hr = IDataConvert_GetConversionSize(convert, DBTYPE_VARIANT, DBTYPE_STR, &src_len, &dst_len, &var);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(dst_len == 5, "%ld\n", dst_len);
++    VariantClear(&var);
++
++    dst_len = 0;
++    src_len = 20;
++    V_VT(&var) = VT_I4;
++    V_I4(&var) = 4;
++    hr = IDataConvert_GetConversionSize(convert, DBTYPE_VARIANT, DBTYPE_STR, &src_len, &dst_len, &var);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    VariantClear(&var);
++
++    dst_len = 78;
++    V_VT(&var) = VT_NULL;
++    hr = IDataConvert_GetConversionSize(convert, DBTYPE_VARIANT, DBTYPE_STR, NULL, &dst_len, &var);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
+     dst_len = 0;
+     src_len = 20;
+     V_VT(&var) = VT_BSTR;
+@@ -2655,6 +2682,12 @@ static void test_getconversionsize(void)
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+     ok(dst_len == 1802, "%ld\n", dst_len);
+     VariantClear(&var);
++
++    dst_len = 32;
++    V_VT(&var) = VT_NULL;
++    hr = IDataConvert_GetConversionSize(convert, DBTYPE_VARIANT, DBTYPE_I4, NULL, &dst_len, &var);
++    ok(dst_len == 4, "%ld\n", dst_len);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
+ }
+ 
+ static void test_converttobytes(void)
+-- 
+1.9.1
+

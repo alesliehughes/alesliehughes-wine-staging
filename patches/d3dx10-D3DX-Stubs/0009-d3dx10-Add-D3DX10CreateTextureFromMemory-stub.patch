@@ -1,0 +1,47 @@
+From 2b69ede7ed3009822e464202ee4325f32c010e47 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 20 Nov 2015 09:58:49 +1100
+Subject: [PATCH 9/9] d3dx10: Add D3DX10CreateTextureFromMemory stub
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=39502
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx10_43/d3dx10_43.spec   | 2 +-
+ dlls/d3dx10_43/d3dx10_43_main.c | 9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/d3dx10_43/d3dx10_43.spec b/dlls/d3dx10_43/d3dx10_43.spec
+index d959d3f..84fe1fe 100644
+--- a/dlls/d3dx10_43/d3dx10_43.spec
++++ b/dlls/d3dx10_43/d3dx10_43.spec
+@@ -44,7 +44,7 @@
+ @ stdcall D3DX10CreateSprite(ptr long ptr)
+ @ stub D3DX10CreateTextureFromFileA(ptr str ptr ptr ptr ptr)
+ @ stub D3DX10CreateTextureFromFileW(ptr wstr ptr ptr ptr ptr)
+-@ stub D3DX10CreateTextureFromMemory(ptr ptr long ptr ptr ptr ptr)
++@ stdcall D3DX10CreateTextureFromMemory(ptr ptr long ptr ptr ptr ptr)
+ @ stub D3DX10CreateTextureFromResourceA(ptr long str ptr ptr ptr ptr)
+ @ stub D3DX10CreateTextureFromResourceW(ptr long wstr ptr ptr ptr ptr)
+ @ stub D3DX10FilterTexture(ptr long long)
+diff --git a/dlls/d3dx10_43/d3dx10_43_main.c b/dlls/d3dx10_43/d3dx10_43_main.c
+index 8225091..77986ed 100644
+--- a/dlls/d3dx10_43/d3dx10_43_main.c
++++ b/dlls/d3dx10_43/d3dx10_43_main.c
+@@ -159,3 +159,12 @@ D3DX_CPU_OPTIMIZATION WINAPI D3DXCpuOptimizations(BOOL enable)
+ 
+     return D3DX_NOT_OPTIMIZED;
+ }
++
++HRESULT WINAPI D3DX10CreateTextureFromMemory(ID3D10Device *device, const void *src_data, SIZE_T src_data_size,
++        D3DX10_IMAGE_LOAD_INFO *loadinfo, ID3DX10ThreadPump *pump, ID3D10Resource **texture, HRESULT *hresult)
++{
++    FIXME("device %p, src_data %p, src_data_size %lu, loadinfo %p, pump %p, texture %p, hresult %p.\n",
++            device, src_data, src_data_size, loadinfo, pump, texture, hresult);
++
++    return E_NOTIMPL;
++}
+\ No newline at end of file
+-- 
+1.9.1
+

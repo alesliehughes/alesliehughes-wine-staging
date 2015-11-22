@@ -1,0 +1,120 @@
+From ed9beebf49ea313cfece433330c87ec3e6ffbfc4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 19 Nov 2015 14:39:36 +1100
+Subject: [PATCH 3/9] d3dx10: Add D3DX10CreateSprite stub
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=27737
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx10_43/d3dx10_43.spec   |  2 +-
+ dlls/d3dx10_43/d3dx10_43_main.c | 11 +++++++--
+ include/d3dx10core.idl          | 49 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/d3dx10_43/d3dx10_43.spec b/dlls/d3dx10_43/d3dx10_43.spec
+index 9edcf54..714e69f 100644
+--- a/dlls/d3dx10_43/d3dx10_43.spec
++++ b/dlls/d3dx10_43/d3dx10_43.spec
+@@ -41,7 +41,7 @@
+ @ stub D3DX10CreateShaderResourceViewFromResourceA(ptr long str ptr ptr ptr ptr)
+ @ stub D3DX10CreateShaderResourceViewFromResourceW(ptr long wstr ptr ptr ptr ptr)
+ @ stub D3DX10CreateSkinInfo(ptr)
+-@ stub D3DX10CreateSprite(ptr long ptr)
++@ stdcall D3DX10CreateSprite(ptr long ptr)
+ @ stub D3DX10CreateTextureFromFileA(ptr str ptr ptr ptr ptr)
+ @ stub D3DX10CreateTextureFromFileW(ptr wstr ptr ptr ptr ptr)
+ @ stub D3DX10CreateTextureFromMemory(ptr ptr long ptr ptr ptr ptr)
+diff --git a/dlls/d3dx10_43/d3dx10_43_main.c b/dlls/d3dx10_43/d3dx10_43_main.c
+index 6637af3..0434862 100644
+--- a/dlls/d3dx10_43/d3dx10_43_main.c
++++ b/dlls/d3dx10_43/d3dx10_43_main.c
+@@ -33,8 +33,8 @@
+ #include "winuser.h"
+ #include "objbase.h"
+ 
+-#include "d3d10.h"
+-#include "d3dx10core.h"
++#include "d3dx10.h"
++
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(d3dx);
+ 
+@@ -116,3 +116,10 @@ HRESULT WINAPI D3DX10CreateEffectPoolFromMemory(const void *data, SIZE_T datasiz
+ 
+     return E_NOTIMPL;
+ }
++
++HRESULT WINAPI D3DX10CreateSprite(ID3D10Device *device, UINT size, ID3DX10Sprite **sprite)
++{
++    FIXME("device %p, size %u, sprite %p.\n", device, size, sprite);
++
++    return E_NOTIMPL;
++}
+diff --git a/include/d3dx10core.idl b/include/d3dx10core.idl
+index f0d8ff6..d4716ae 100644
+--- a/include/d3dx10core.idl
++++ b/include/d3dx10core.idl
+@@ -20,6 +20,23 @@ import "oaidl.idl";
+ import "ocidl.idl";
+ import "dxgi.idl";
+ import "d3dcommon.idl";
++import "d3d10.idl";
++
++cpp_quote("#if 0")
++typedef struct D3DXMATRIX D3DXMATRIX;
++typedef struct D3DXVECTOR2 D3DXVECTOR2;
++typedef struct D3DXCOLOR D3DXCOLOR;
++cpp_quote("#endif")
++
++typedef struct _D3DX10_SPRITE
++{
++    D3DXMATRIX  matWorld;
++    D3DXVECTOR2 TexCoord;
++    D3DXVECTOR2 TexSize;
++    D3DXCOLOR   ColorModulate;
++    ID3D10ShaderResourceView *pTexture;
++    UINT        TextureIndex;
++} D3DX10_SPRITE;
+ 
+ [
+     object,
+@@ -64,3 +81,35 @@ interface ID3DX10ThreadPump : IUnknown
+     HRESULT PurgeAllItems();
+     HRESULT GetQueueStatus([in] UINT *queue, [in] UINT *processqueue, [in] UINT *devicequeue);
+ };
++
++cpp_quote("#ifdef __cplusplus")
++cpp_quote("extern \"C\" {")
++cpp_quote("#endif")
++cpp_quote("HRESULT WINAPI D3DX10CreateSprite(ID3D10Device *device, UINT size, ID3DX10Sprite **sprite);")
++cpp_quote("#ifdef __cplusplus")
++cpp_quote("}")
++cpp_quote("#endif")
++
++[
++    object,
++    local,
++    pointer_default(unique),
++    uuid(ba0b762d-8d28-43ec-b9dc-2f84443b0614)
++]
++interface ID3DX10Sprite : IUnknown
++{
++    HRESULT Begin(UINT flags);
++
++    HRESULT DrawSpritesBuffered(D3DX10_SPRITE *sprites, UINT sprites_cnt);
++    HRESULT Flush();
++
++    HRESULT DrawSpritesImmediate(D3DX10_SPRITE *sprites, UINT sprites_cnt, UINT sprite, UINT flags);
++    HRESULT End();
++
++    HRESULT GetViewTransform(D3DXMATRIX *view_transform);
++    HRESULT SetViewTransform(D3DXMATRIX *view_transform);
++    HRESULT GetProjectionTransform(D3DXMATRIX *projection_transform);
++    HRESULT SetProjectionTransform(D3DXMATRIX *projection_transform);
++
++    HRESULT GetDevice(ID3D10Device** ppDevice);
++};
+-- 
+1.9.1
+

@@ -1,0 +1,78 @@
+From f2cda4bde25c405dc34137e8cb5c7ce160c74eec Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 18 Nov 2015 10:59:59 +1100
+Subject: [PATCH 5/9] d3dx10: Add D3D10CreateEffectPoolFromMemory stub
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=39608
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d10/d3d10.spec     | 2 +-
+ dlls/d3d10/d3d10_main.c   | 9 +++++++++
+ dlls/d3d10_1/d3d10_1.spec | 2 +-
+ include/d3d10effect.h     | 3 ++-
+ 4 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/d3d10/d3d10.spec b/dlls/d3d10/d3d10.spec
+index 1e6eb36..db42511 100644
+--- a/dlls/d3d10/d3d10.spec
++++ b/dlls/d3d10/d3d10.spec
+@@ -4,7 +4,7 @@
+ @ stdcall D3D10CreateDevice(ptr long ptr long long ptr)
+ @ stdcall D3D10CreateDeviceAndSwapChain(ptr long ptr long long ptr ptr ptr)
+ @ stdcall D3D10CreateEffectFromMemory(ptr long long ptr ptr ptr)
+-@ stub D3D10CreateEffectPoolFromMemory
++@ stdcall D3D10CreateEffectPoolFromMemory(ptr long long ptr ptr)
+ @ stdcall D3D10CreateStateBlock(ptr ptr ptr)
+ @ stub D3D10DisassembleEffect
+ @ stdcall D3D10DisassembleShader(ptr long long ptr ptr)
+diff --git a/dlls/d3d10/d3d10_main.c b/dlls/d3d10/d3d10_main.c
+index 4600a70..8867470 100644
+--- a/dlls/d3d10/d3d10_main.c
++++ b/dlls/d3d10/d3d10_main.c
+@@ -252,6 +252,15 @@ HRESULT WINAPI D3D10CompileEffectFromMemory(void *data, SIZE_T data_size, const
+     return E_NOTIMPL;
+ }
+ 
++HRESULT WINAPI D3D10CreateEffectPoolFromMemory(void *data, SIZE_T data_size, UINT fx_flags,
++        ID3D10Device *device, ID3D10EffectPool **effectpool)
++{
++    FIXME("data %p, data_size %lu, fx_flags %#x, device %p, effectpool %p.\n",
++            data, data_size, fx_flags, device, effectpool);
++
++    return E_NOTIMPL;
++}
++
+ 
+ const char * WINAPI D3D10GetVertexShaderProfile(ID3D10Device *device)
+ {
+diff --git a/dlls/d3d10_1/d3d10_1.spec b/dlls/d3d10_1/d3d10_1.spec
+index b3d2da7..d4ff50b 100644
+--- a/dlls/d3d10_1/d3d10_1.spec
++++ b/dlls/d3d10_1/d3d10_1.spec
+@@ -5,7 +5,7 @@
+ @ stdcall D3D10CreateDevice1(ptr long ptr long long long ptr)
+ @ stub D3D10CreateDeviceAndSwapChain1
+ @ stdcall D3D10CreateEffectFromMemory(ptr long long ptr ptr ptr) d3d10.D3D10CreateEffectFromMemory
+-@ stub D3D10CreateEffectPoolFromMemory
++@ stdcall D3D10CreateEffectPoolFromMemory(ptr long long ptr ptr) d3d10.D3D10CreateEffectPoolFromMemory
+ @ stdcall D3D10CreateStateBlock(ptr ptr ptr) d3d10.D3D10CreateStateBlock
+ @ stub D3D10DisassembleEffect
+ @ stub D3D10DisassembleShader
+diff --git a/include/d3d10effect.h b/include/d3d10effect.h
+index 1494894..70ad70f 100644
+--- a/include/d3d10effect.h
++++ b/include/d3d10effect.h
+@@ -834,7 +834,8 @@ HRESULT WINAPI D3D10CreateEffectFromMemory(void *data, SIZE_T data_size, UINT fl
+         ID3D10Device *device, ID3D10EffectPool *effect_pool, ID3D10Effect **effect);
+ HRESULT WINAPI D3D10CreateStateBlock(ID3D10Device *device,
+         D3D10_STATE_BLOCK_MASK *mask, ID3D10StateBlock **stateblock);
+-
++HRESULT WINAPI D3D10CreateEffectPoolFromMemory(void *data, SIZE_T data_size, UINT fx_flags,
++        ID3D10Device *device, ID3D10EffectPool **effectpool);
+ HRESULT WINAPI D3D10StateBlockMaskDifference(D3D10_STATE_BLOCK_MASK *mask_x,
+         D3D10_STATE_BLOCK_MASK *mask_y, D3D10_STATE_BLOCK_MASK *result);
+ HRESULT WINAPI D3D10StateBlockMaskDisableAll(D3D10_STATE_BLOCK_MASK *mask);
+-- 
+1.9.1
+
