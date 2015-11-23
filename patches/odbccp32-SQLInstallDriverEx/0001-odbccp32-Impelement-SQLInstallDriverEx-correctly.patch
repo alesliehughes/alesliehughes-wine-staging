@@ -1,16 +1,16 @@
-From 6b5d438e020712a25ac3f912e7fafa7207ce157f Mon Sep 17 00:00:00 2001
+From b4180d8bcae04cea4d4ed9ee5bcba710eb3ed16a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Nov 2015 16:12:30 +1100
-Subject: [PATCH] odbccp32: Impelement SQLInstallDriverEx correctly
+Subject: [PATCH 1/2] odbccp32: Impelement SQLInstallDriverEx correctly
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 84 ++++++++++++++++++++++++++++++++++++++++------
- dlls/odbccp32/tests/misc.c | 51 ++++++++++++++++++++++++++++
- 2 files changed, 125 insertions(+), 10 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 89 ++++++++++++++++++++++++++++++++++++++++------
+ dlls/odbccp32/tests/misc.c | 54 ++++++++++++++++++++++++++++
+ 2 files changed, 133 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index bc643d4..48eff99 100644
+index bc643d4..13a2990 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -29,6 +29,7 @@
@@ -31,7 +31,7 @@ index bc643d4..48eff99 100644
  
  /* This config mode is known to be process-wide.
   * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
-@@ -631,24 +635,88 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
+@@ -631,24 +635,93 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
                 WORD fRequest, LPDWORD lpdwUsageCount)
  {
      UINT len;
@@ -67,6 +67,7 @@ index bc643d4..48eff99 100644
 +            WCHAR entry[1024];
 +            WCHAR value[MAX_PATH];
 +            const WCHAR *p;
++            DWORD usagecount = 1;
 +
 +            /* Skip name entry */
 +            p = lpszDriver;
@@ -81,7 +82,7 @@ index bc643d4..48eff99 100644
 +            {
 +                WCHAR *divider = strchrW(p,'=');
 +
-+                if(divider)
++                if (divider)
 +                {
 +                    /* Write pair values to the registry. */
 +                    lstrcpynW(entry, p, divider - p + 1);
@@ -110,6 +111,10 @@ index bc643d4..48eff99 100644
 +                }
 +            }
 +
++            /* Set Usage Count */
++            if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
++                ERR("Failed to write registry UsageCount key\n");
++
 +            RegCloseKey(hkeydriver);
 +        }
 +
@@ -126,7 +131,7 @@ index bc643d4..48eff99 100644
      if (lpszPathOut && cbPathOutMax > len)
      {
          lstrcpyW(lpszPathOut, path);
-@@ -661,7 +729,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
+@@ -661,7 +734,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
                 LPSTR lpszPathOut, WORD cbPathOutMax, WORD *pcbPathOut,
                 WORD fRequest, LPDWORD lpdwUsageCount)
  {
@@ -134,7 +139,7 @@ index bc643d4..48eff99 100644
      LPWSTR driver, pathin;
      WCHAR pathout[MAX_PATH];
      BOOL ret;
-@@ -672,9 +739,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
+@@ -672,9 +744,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
            debugstr_a(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
            fRequest, lpdwUsageCount);
  
@@ -145,10 +150,10 @@ index bc643d4..48eff99 100644
      pathin = SQLInstall_strdup(lpszPathIn);
  
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index b3c5404..48fc879 100644
+index 505ce1b..9ee3f24 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
-@@ -407,6 +407,55 @@ static void test_SQLGetPrivateProfileStringW(void)
+@@ -412,6 +412,59 @@ static void test_SQLGetPrivateProfileStringW(void)
      }
  }
  
@@ -166,7 +171,7 @@ index b3c5404..48fc879 100644
 +
 +    ret = SQLInstallDriverEx("WINE ODBC Driver\0Driver=sample.dll\0Setup=sample.dll\0\0", NULL, path, MAX_PATH, &size, ODBC_INSTALL_COMPLETE, NULL);
 +    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
-+    if(sql_ret && error_code == ODBC_ERROR_WRITING_SYSINFO_FAILED)
++    if (sql_ret && error_code == ODBC_ERROR_WRITING_SYSINFO_FAILED)
 +    {
 +         win_skip("not enough privileges\n");
 +         return;
@@ -183,9 +188,13 @@ index b3c5404..48fc879 100644
 +    {
 +        reg_ret = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\ODBC\\ODBCINST.INI\\WINE ODBC Driver", 0, KEY_READ, &hkey);
 +        ok(reg_ret == ERROR_SUCCESS, "RegOpenKeyExW failed\n");
-+        if(reg_ret == ERROR_SUCCESS)
++        if (reg_ret == ERROR_SUCCESS)
 +        {
-+            /* Key a Reg Value. */
++            DWORD type, size, usage_cnt = 0;
++            reg_ret = RegGetValueA(hkey, NULL, "UsageCount", RRF_RT_DWORD, &type, &usage_cnt, &size);
++            ok(reg_ret == ERROR_SUCCESS, "RegGetValueA failed\n");
++            ok(usage_cnt == 1, "UsageCount expected 1 got %u\n", usage_cnt);
++
 +            RegCloseKey(hkey);
 +        }
 +    }
@@ -204,11 +213,10 @@ index b3c5404..48fc879 100644
  START_TEST(misc)
  {
      test_SQLConfigMode();
-@@ -415,4 +464,6 @@ START_TEST(misc)
+@@ -420,4 +473,5 @@ START_TEST(misc)
      test_SQLWritePrivateProfileString();
      test_SQLGetPrivateProfileString();
      test_SQLGetPrivateProfileStringW();
-+
 +    test_SQLInstallDriverEx();
  }
 -- 

@@ -1,0 +1,126 @@
+From 25e1555e77098e0fcba9afa57162725d8643058a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 23 Nov 2015 14:50:31 +1100
+Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/odbccp32/odbccp32.c   | 59 +++++++++++++++++++++++++++++++++++++++-------
+ dlls/odbccp32/tests/misc.c |  4 ++--
+ 2 files changed, 53 insertions(+), 10 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index 13a2990..f398c51 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -42,6 +42,7 @@ static const WCHAR odbcW[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','
+ static const WCHAR odbcini[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\',0};
+ static const WCHAR driver[] = {'D','r','i','v','e','r',0};
+ static const WCHAR setup[] = {'S','e','t','u','p',0};
++static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
+ 
+ /* This config mode is known to be process-wide.
+  * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
+@@ -639,7 +640,6 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
+     HKEY hkey, hkeydriver;
+     DWORD ret;
+     static const WCHAR slash[] = {'\\', 0};
+-    static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
+     static const WCHAR installed[] = {'I','n','s','t','a','l','l','e','d',0};
+ 
+     clear_errors();
+@@ -1102,22 +1102,65 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
+     return FALSE;
+ }
+ 
+-BOOL WINAPI SQLRemoveDriverW(LPCWSTR lpszDriver, BOOL fRemoveDSN,
+-               LPDWORD lpdwUsageCount)
++BOOL WINAPI SQLRemoveDriverW(LPCWSTR lpszDriver, BOOL removeDSN, LPDWORD usage_count)
+ {
++    DWORD usage_cnt = 0;
++    HKEY hkey;
++
+     clear_errors();
+-    FIXME("%s %d %p\n", debugstr_w(lpszDriver), fRemoveDSN, lpdwUsageCount);
+-    if (lpdwUsageCount) *lpdwUsageCount = 1;
++    TRACE("%s %d %p\n", debugstr_w(lpszDriver), removeDSN, usage_count);
++
++    if (RegOpenKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
++    {
++        HKEY hkeydriver;
++
++        if (RegOpenKeyW(hkey, lpszDriver, &hkeydriver) == ERROR_SUCCESS)
++        {
++            if (usage_count)
++            {
++                if (RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, NULL, &usage_cnt, NULL) == ERROR_SUCCESS)
++                {
++                    usage_cnt--;
++                }
++            }
++
++            RegCloseKey(hkeydriver);
++        }
++
++        if(RegDeleteKeyW(hkey, lpszDriver) != ERROR_SUCCESS)
++            ERR("Failed to delete registry key: %s\n", debugstr_w(lpszDriver));
++
++        if (RegOpenKeyW(hkey, odbcdrivers, &hkeydriver) == ERROR_SUCCESS)
++        {
++            if(RegDeleteValueW(hkeydriver, lpszDriver) != ERROR_SUCCESS)
++                ERR("Failed to delete registry value: %s\n", debugstr_w(lpszDriver));
++
++            RegCloseKey(hkeydriver);
++        }
++
++    }
++
++    if (usage_count)
++        *usage_count = usage_cnt;
++
+     return TRUE;
+ }
+ 
+ BOOL WINAPI SQLRemoveDriver(LPCSTR lpszDriver, BOOL fRemoveDSN,
+                LPDWORD lpdwUsageCount)
+ {
++    WCHAR *driver;
++    BOOL ret;
++
+     clear_errors();
+-    FIXME("%s %d %p\n", debugstr_a(lpszDriver), fRemoveDSN, lpdwUsageCount);
+-    if (lpdwUsageCount) *lpdwUsageCount = 1;
+-    return TRUE;
++    TRACE("%s %d %p\n", debugstr_a(lpszDriver), fRemoveDSN, lpdwUsageCount);
++
++    driver = SQLInstall_strdup(lpszDriver);
++
++    ret =  SQLRemoveDriverW(driver, fRemoveDSN, lpdwUsageCount);
++
++    HeapFree(GetProcessHeap(), 0, driver);
++    return ret;
+ }
+ 
+ BOOL WINAPI SQLRemoveDriverManager(LPDWORD pdwUsageCount)
+diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
+index 9ee3f24..7d0f6e8 100644
+--- a/dlls/odbccp32/tests/misc.c
++++ b/dlls/odbccp32/tests/misc.c
+@@ -457,12 +457,12 @@ void test_SQLInstallDriverEx(void)
+     cnt = 100;
+     ret = SQLRemoveDriver("WINE ODBC Driver", FALSE, &cnt);
+     ok(ret, "SQLRemoveDriver failed\n");
+-    todo_wine ok(cnt == 0, "SQLRemoveDriver failed %d\n", cnt);
++    ok(cnt == 0, "SQLRemoveDriver failed %d\n", cnt);
+ 
+     cnt = 100;
+     ret = SQLRemoveDriver("WINE ODBC Driver Path", FALSE, &cnt);
+     ok(ret, "SQLRemoveDriver failed\n");
+-    todo_wine ok(cnt == 0, "SQLRemoveDriver failed %d\n", cnt);
++    ok(cnt == 0, "SQLRemoveDriver failed %d\n", cnt);
+ }
+ 
+ START_TEST(misc)
+-- 
+1.9.1
+
