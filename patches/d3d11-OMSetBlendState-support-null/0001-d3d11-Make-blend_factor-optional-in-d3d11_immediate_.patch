@@ -1,0 +1,52 @@
+From 8c7c63498b6e7418781e6379c7f4923e1571e9c2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 23 Nov 2015 08:40:14 +1100
+Subject: [PATCH 1/2] d3d11: Make blend_factor optional in
+ d3d11_immediate_context_OMSetBlendState().
+
+Thanks Jozef for your input.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d11/device.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index f9d7c9e..db7b5d2 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -603,13 +603,17 @@ static void STDMETHODCALLTYPE d3d11_immediate_context_OMSetRenderTargetsAndUnord
+ }
+ 
+ static void STDMETHODCALLTYPE d3d11_immediate_context_OMSetBlendState(ID3D11DeviceContext *iface,
+-        ID3D11BlendState *blend_state, const FLOAT blend_factor[4], UINT sample_mask)
++        ID3D11BlendState *blend_state, const FLOAT arg_blend_factor[4], UINT sample_mask)
+ {
+     struct d3d_device *device = device_from_immediate_ID3D11DeviceContext(iface);
++    static const FLOAT default_blend_factor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+     const D3D11_BLEND_DESC *desc;
++    const FLOAT *blend_factor;
+ 
+-    TRACE("iface %p, blend_state %p, blend_factor {%.8e %.8e %.8e %.8e}, sample_mask 0x%08x.\n",
+-            iface, blend_state, blend_factor[0], blend_factor[1], blend_factor[2], blend_factor[3], sample_mask);
++    TRACE("iface %p, blend_state %p, blend_factor %p, sample_mask 0x%08x.\n",
++            iface, blend_state, arg_blend_factor, sample_mask);
++
++    blend_factor = arg_blend_factor ? arg_blend_factor : default_blend_factor;
+ 
+     if (blend_factor[0] != 1.0f || blend_factor[1] != 1.0f || blend_factor[2] != 1.0f || blend_factor[3] != 1.0f)
+         FIXME("Ignoring blend factor {%.8e %.8e %.8e %.8e}.\n",
+@@ -3063,8 +3067,8 @@ static void STDMETHODCALLTYPE d3d10_device_OMSetBlendState(ID3D10Device1 *iface,
+     struct d3d_device *device = impl_from_ID3D10Device(iface);
+     struct d3d_blend_state *blend_state_object;
+ 
+-    TRACE("iface %p, blend_state %p, blend_factor {%.8e %.8e %.8e %.8e}, sample_mask 0x%08x.\n",
+-            iface, blend_state, blend_factor[0], blend_factor[1], blend_factor[2], blend_factor[3], sample_mask);
++    TRACE("iface %p, blend_state %p, blend_factor %p, sample_mask 0x%08x.\n",
++            iface, blend_state, blend_factor, sample_mask);
+ 
+     blend_state_object = unsafe_impl_from_ID3D10BlendState(blend_state);
+     d3d11_immediate_context_OMSetBlendState(&device->immediate_context.ID3D11DeviceContext_iface,
+-- 
+1.9.1
+
