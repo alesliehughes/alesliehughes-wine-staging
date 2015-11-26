@@ -1,0 +1,100 @@
+From 0dfb393b1fe9bdeab99d326311387c4797b3ec9e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 26 Nov 2015 15:49:51 +1100
+Subject: [PATCH] d3dx9_36: Implement ID3DXLine Draw
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx9_36/line.c       |  3 +++
+ dlls/d3dx9_36/tests/line.c | 54 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+)
+
+diff --git a/dlls/d3dx9_36/line.c b/dlls/d3dx9_36/line.c
+index 5de44f4..345c47d 100644
+--- a/dlls/d3dx9_36/line.c
++++ b/dlls/d3dx9_36/line.c
+@@ -150,6 +150,9 @@ static HRESULT WINAPI d3dx9_line_Draw(ID3DXLine *iface, const D3DXVECTOR2 *verte
+     FIXME("iface %p, vertex_list %p, vertex_list_count %u, color 0x%08x stub!\n",
+             iface, vertex_list, vertex_list_count, color);
+ 
++    if (!vertex_list || vertex_list_count < 2)
++        return D3DERR_INVALIDCALL;
++
+     return E_NOTIMPL;
+ }
+ 
+diff --git a/dlls/d3dx9_36/tests/line.c b/dlls/d3dx9_36/tests/line.c
+index ae8d07e..569abaf 100644
+--- a/dlls/d3dx9_36/tests/line.c
++++ b/dlls/d3dx9_36/tests/line.c
+@@ -115,6 +115,59 @@ static void test_create_line(IDirect3DDevice9* device)
+     ok(ref == 0, "Got %x references to line %p, expected 0\n", ref, line);
+ }
+ 
++static void test_draw_line(IDirect3DDevice9* device)
++{
++    HRESULT hr;
++    ID3DXLine *line = NULL;
++    ULONG ref;
++    D3DXVECTOR2 vertex_list[] = { {0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 03.0f}, {5.0f, 5.0f} };
++
++    hr = D3DXCreateLine(device, &line);
++    ok(hr == D3D_OK, "Got result %x, expected 0 (D3D_OK)\n", hr);
++
++    if (FAILED(hr))
++    {
++        return;
++    }
++
++    hr = IDirect3DDevice9_BeginScene(device);
++    ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = ID3DXLine_Begin(line);
++    ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = ID3DXLine_Draw(line, NULL, 1, 0xFF0000FF);
++    ok(hr == D3DERR_INVALIDCALL, "Got result %x, expected %x (D3DERR_INVALIDCALL)\n", hr, D3DERR_INVALIDCALL);
++
++    hr = ID3DXLine_Draw(line, vertex_list, 0, 0xFF0000FF);
++    ok(hr == D3DERR_INVALIDCALL, "Got result %x, expected %x (D3DERR_INVALIDCALL)\n", hr, D3DERR_INVALIDCALL);
++
++    hr = ID3DXLine_Draw(line, vertex_list, 1, 0xFF0000FF);
++    ok(hr == D3DERR_INVALIDCALL, "Got result %x, expected %x (D3DERR_INVALIDCALL)\n", hr, D3DERR_INVALIDCALL);
++
++    hr = ID3DXLine_Draw(line, vertex_list, 2, 0xFF0000FF);
++    todo_wine ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = ID3DXLine_Draw(line, vertex_list, 3, 0xFF0000FF);
++    todo_wine ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = ID3DXLine_Draw(line, vertex_list, 4, 0xFF0000FF);
++    todo_wine ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = ID3DXLine_Draw(line, vertex_list, 5, 0xFF0000FF);
++    todo_wine ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = ID3DXLine_End(line);
++    ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    hr = IDirect3DDevice9_EndScene(device);
++    ok(hr == D3D_OK, "Got result %x, expected %x (D3D_OK)\n", hr, D3D_OK);
++
++    ref = ID3DXLine_Release(line);
++    ok(ref == 0, "Got %x references to line %p, expected 0\n", ref, line);
++
++}
++
+ START_TEST(line)
+ {
+     HWND wnd;
+@@ -148,6 +201,7 @@ START_TEST(line)
+     }
+ 
+     test_create_line(device);
++    test_draw_line(device);
+ 
+     IDirect3DDevice9_Release(device);
+     IDirect3D9_Release(d3d);
+-- 
+1.9.1
+
