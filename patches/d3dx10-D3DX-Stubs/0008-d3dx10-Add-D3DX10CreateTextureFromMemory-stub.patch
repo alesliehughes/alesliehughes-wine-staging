@@ -1,7 +1,7 @@
-From 2b69ede7ed3009822e464202ee4325f32c010e47 Mon Sep 17 00:00:00 2001
+From d93b05a6f73505354310b972fdb2500bde01e13d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:58:49 +1100
-Subject: [PATCH 9/9] d3dx10: Add D3DX10CreateTextureFromMemory stub
+Subject: [PATCH 8/8] d3dx10: Add D3DX10CreateTextureFromMemory stub
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=39502
 

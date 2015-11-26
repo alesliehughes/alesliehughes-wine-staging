@@ -1,7 +1,7 @@
-From 7c1a17f887abe55f7b82c2d2ad1d92a8ae0089d6 Mon Sep 17 00:00:00 2001
+From 8fff2e68ced61d25eed4c5dd875f171b65c9f386 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Nov 2015 15:12:41 +1100
-Subject: [PATCH 6/9] d3dx10: Add D3DX10UnsetAllDeviceObjects stub
+Subject: [PATCH 5/8] d3dx10: Add D3DX10UnsetAllDeviceObjects stub
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=27035
 
@@ -44,7 +44,7 @@ index e1242e4..1611fdf 100644
 +    return E_NOTIMPL;
 +}
 diff --git a/include/d3dx10core.idl b/include/d3dx10core.idl
-index 1eccb43..f7444ad 100644
+index a03459b..1b66539 100644
 --- a/include/d3dx10core.idl
 +++ b/include/d3dx10core.idl
 @@ -117,6 +117,7 @@ cpp_quote("#ifdef __cplusplus")

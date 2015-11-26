@@ -1,7 +1,7 @@
-From 52321d7388016f6b6b2f81774cbac0a91079cd1e Mon Sep 17 00:00:00 2001
+From 8a5c583566a77d6284e8fa4e4cc659ff2db6c7f1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Nov 2015 12:57:37 +1100
-Subject: [PATCH 4/9] d3dx10: Add D3DX10CreateFontA/W stubs
+Subject: [PATCH 3/8] d3dx10: Add D3DX10CreateFontA/W stubs
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=23382
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=27738
@@ -44,7 +44,7 @@ index 0434862..e1242e4 100644
 +}
 \ No newline at end of file
 diff --git a/include/d3dx10core.idl b/include/d3dx10core.idl
-index d4716ae..1eccb43 100644
+index d4716ae..a03459b 100644
 --- a/include/d3dx10core.idl
 +++ b/include/d3dx10core.idl
 @@ -26,6 +26,7 @@ cpp_quote("#if 0")

@@ -1,7 +1,7 @@
-From ed9beebf49ea313cfece433330c87ec3e6ffbfc4 Mon Sep 17 00:00:00 2001
+From 08f925306e3121a62a942a7504efbfb60f4a970b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Nov 2015 14:39:36 +1100
-Subject: [PATCH 3/9] d3dx10: Add D3DX10CreateSprite stub
+Subject: [PATCH 2/8] d3dx10: Add D3DX10CreateSprite stub
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=27737
 

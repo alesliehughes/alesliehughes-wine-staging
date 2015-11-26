@@ -1,7 +1,7 @@
-From f2cda4bde25c405dc34137e8cb5c7ce160c74eec Mon Sep 17 00:00:00 2001
+From 11a5b3f211c2ef059615d106290bc670830a7710 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Nov 2015 10:59:59 +1100
-Subject: [PATCH 5/9] d3dx10: Add D3D10CreateEffectPoolFromMemory stub
+Subject: [PATCH 4/8] d3dx10: Add D3D10CreateEffectPoolFromMemory stub
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=39608
 
@@ -27,7 +27,7 @@ index 1e6eb36..db42511 100644
  @ stub D3D10DisassembleEffect
  @ stdcall D3D10DisassembleShader(ptr long long ptr ptr)
 diff --git a/dlls/d3d10/d3d10_main.c b/dlls/d3d10/d3d10_main.c
-index 4600a70..8867470 100644
+index 4600a70..2fa8fc9 100644
 --- a/dlls/d3d10/d3d10_main.c
 +++ b/dlls/d3d10/d3d10_main.c
 @@ -252,6 +252,15 @@ HRESULT WINAPI D3D10CompileEffectFromMemory(void *data, SIZE_T data_size, const
