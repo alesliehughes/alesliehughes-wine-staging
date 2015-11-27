@@ -1,7 +1,7 @@
-From c4e7c0f82429c53e2d17a159887073ef6a73e74b Mon Sep 17 00:00:00 2001
+From a3635af0c228f223d6b501e06ed9322fef94d85a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:38:17 +1100
-Subject: [PATCH 6/8] d3dx10: Add D3DXCpuOptimizations stub
+Subject: [PATCH 9/9] d3dx10: Add D3DXCpuOptimizations stub
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=39501
 
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 18 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/d3dx10_43/d3dx10_43.spec b/dlls/d3dx10_43/d3dx10_43.spec
-index ca80ac2..d959d3f 100644
+index 714e69f..9f225c1 100644
 --- a/dlls/d3dx10_43/d3dx10_43.spec
 +++ b/dlls/d3dx10_43/d3dx10_43.spec
 @@ -70,7 +70,7 @@
@@ -26,10 +26,10 @@ index ca80ac2..d959d3f 100644
  @ stdcall D3DXFloat16To32Array(ptr ptr long) d3dx9_36.D3DXFloat16To32Array
  @ stdcall D3DXFloat32To16Array(ptr ptr long) d3dx9_36.D3DXFloat32To16Array
 diff --git a/dlls/d3dx10_43/d3dx10_43_main.c b/dlls/d3dx10_43/d3dx10_43_main.c
-index 1611fdf..8225091 100644
+index be0045e..a2bd683 100644
 --- a/dlls/d3dx10_43/d3dx10_43_main.c
 +++ b/dlls/d3dx10_43/d3dx10_43_main.c
-@@ -152,3 +152,10 @@ HRESULT WINAPI D3DX10UnsetAllDeviceObjects(ID3D10Device *device)
+@@ -116,3 +116,10 @@ HRESULT WINAPI D3DX10CreateEffectPoolFromMemory(const void *data, SIZE_T datasiz
  
      return E_NOTIMPL;
  }
