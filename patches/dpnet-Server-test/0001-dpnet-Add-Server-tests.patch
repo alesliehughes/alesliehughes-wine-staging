@@ -1,0 +1,293 @@
+From 0cd521d5ba9ac5c8e9e2cb93dcb6cdd9446143d8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 1 Jun 2015 15:07:15 +1000
+Subject: [PATCH] dpnet: Add Server tests (try 2)
+
+Try 2.
+Use sizeof(variable name).
+Removed camel case.
+Changed destroy_dnt -> destroy_cnt.
+Fixed copy paste error in trace statements.
+Changed VOID -> void.
+Corrected interface leak.
+
+TODO:
+Worker Functions for Creating Client/Server?
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/tests/server.c | 202 ++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 179 insertions(+), 23 deletions(-)
+
+diff --git a/dlls/dpnet/tests/server.c b/dlls/dpnet/tests/server.c
+index 8279666..eee75b2 100644
+--- a/dlls/dpnet/tests/server.c
++++ b/dlls/dpnet/tests/server.c
+@@ -25,22 +25,83 @@
+ /* {CD0C3D4B-E15E-4CF2-9EA8-6E1D6548C5A5} */
+ static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x1d, 0x65, 0x48, 0xc5, 0xa5 } };
+ static WCHAR sessionname[] = {'w','i','n','e','g','a','m','e','s','s','e','r','v','e','r',0};
++static const WCHAR localhost[] = {'l','o','c','a','l','h','o','s','t',0};
+ 
+-static BOOL nCreatePlayer;
+-static BOOL nDestroyPlayer;
++static int create_cnt = 0;
++static int destroy_cnt = 0;
++static int indicate_cnt = 0;
++static IDirectPlay8Server *server = NULL;
++static IDirectPlay8Client* client = NULL;
++static HANDLE connect = NULL;
++static HANDLE hostenum = NULL;
++static HANDLE clientfinished = NULL;
++static DPN_APPLICATION_DESC hostdesc;
+ 
+-static HRESULT WINAPI DirectPlayMessageHandler(PVOID pvUserContext, DWORD dwMessageId, PVOID pMsgBuffer)
+-{
+-    trace("msgid: 0x%08x\n", dwMessageId);
++static IDirectPlay8Address *host_addr = NULL;
++static IDirectPlay8Address *device_ddr = NULL;
++static WCHAR session[255];
+ 
+-    switch(dwMessageId)
++static HRESULT WINAPI dp_msg_handler(void *context, DWORD messageid, void *msgbuffer)
++{
++    switch(messageid)
+     {
++        case DPN_MSGID_INDICATE_CONNECT:
++            trace("DPN_MSGID_INDICATE_CONNECT\n");
++            indicate_cnt++;
++            break;
+         case DPN_MSGID_CREATE_PLAYER:
+-            nCreatePlayer = TRUE;
++            trace("DPN_MSGID_CREATE_PLAYER\n");
++            create_cnt++;
+             break;
+         case DPN_MSGID_DESTROY_PLAYER:
+-            nDestroyPlayer = TRUE;
++            trace("DPN_MSGID_DESTROY_PLAYER\n");
++            destroy_cnt++;
++            break;
++        default:
++            trace("msgid: 0x%08x\n", messageid);
++    }
++
++    return S_OK;
++}
++
++static HRESULT WINAPI dp_client_msg_handler(void *context, DWORD messageid, void *buffer)
++{
++    HRESULT hr;
++
++    switch(messageid)
++    {
++        case DPN_MSGID_ENUM_HOSTS_RESPONSE:
++        {
++            DPNMSG_ENUM_HOSTS_RESPONSE *host_msg = (DPNMSG_ENUM_HOSTS_RESPONSE *)buffer;
++
++            trace("DPN_MSGID_ENUM_HOSTS_RESPONSE\n");
++
++            hr = IDirectPlay8Address_Duplicate(host_msg->pAddressSender, &host_addr);
++            ok(hr == S_OK, "Failed to Duplicate Host Address\n");
++
++            hr = IDirectPlay8Address_Duplicate(host_msg->pAddressDevice, &device_ddr);
++            ok(hr == S_OK, "Failed to Duplicate Device Address\n");
++
++            memset(&hostdesc, 0, sizeof(hostdesc));
++            memcpy(&hostdesc, host_msg->pApplicationDescription, sizeof(hostdesc) );
++
++            lstrcpyW(session, host_msg->pApplicationDescription->pwszSessionName);
++
++            trace("SessionName: %s\n", wine_dbgstr_w(session));
++            ok(!lstrcmpW(session, sessionname), "incorrect name %s\n", wine_dbgstr_w(session));
++
++            SetEvent(hostenum);
+             break;
++        }
++        case DPN_MSGID_ASYNC_OP_COMPLETE:
++            trace("DPN_MSGID_ASYNC_OP_COMPLETE\n");
++            break;
++        case DPN_MSGID_CONNECT_COMPLETE:
++            trace("DPN_MSGID_CONNECT_COMPLETE\n");
++            SetEvent(connect);
++            break;
++        default:
++            trace("DirectPlayClientMsHandler: 0x%08x\n", messageid);
+     }
+ 
+     return S_OK;
+@@ -49,11 +110,10 @@ static HRESULT WINAPI DirectPlayMessageHandler(PVOID pvUserContext, DWORD dwMess
+ static void create_server(void)
+ {
+     HRESULT hr;
+-    IDirectPlay8Server *server = NULL;
+ 
+-    hr = CoCreateInstance( &CLSID_DirectPlay8Server, NULL, CLSCTX_ALL, &IID_IDirectPlay8Server, (LPVOID*)&server);
++    hr = CoCreateInstance(&CLSID_DirectPlay8Server, NULL, CLSCTX_ALL, &IID_IDirectPlay8Server, (void**)&server);
+     ok(hr == S_OK, "Failed to create IDirectPlay8Server object\n");
+-    if( SUCCEEDED(hr)  )
++    if(SUCCEEDED(hr))
+     {
+         hr = IDirectPlay8Server_Close(server, 0);
+         todo_wine ok(hr == DPNERR_UNINITIALIZED, "got 0x%08x\n", hr);
+@@ -61,21 +121,25 @@ static void create_server(void)
+         hr = IDirectPlay8Server_Initialize(server, NULL, NULL, 0);
+         ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
+ 
+-        hr = IDirectPlay8Server_Initialize(server, NULL, DirectPlayMessageHandler, 0);
++        hr = IDirectPlay8Server_Initialize(server, NULL, dp_msg_handler, 0);
+         ok(hr == S_OK, "got 0x%08x\n", hr);
+         if(hr == S_OK)
+         {
+             IDirectPlay8Address *localaddr = NULL;
+             DPN_APPLICATION_DESC appdesc;
+ 
+-            hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL,  CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&localaddr);
++            hr = CoCreateInstance(&CLSID_DirectPlay8Address, NULL,  CLSCTX_ALL, &IID_IDirectPlay8Address, (void**)&localaddr);
+             ok(hr == S_OK, "Failed to create IDirectPlay8Address object\n");
+ 
+             hr = IDirectPlay8Address_SetSP(localaddr, &CLSID_DP8SP_TCPIP);
+             ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+-            memset( &appdesc, 0, sizeof(DPN_APPLICATION_DESC) );
+-            appdesc.dwSize  = sizeof( DPN_APPLICATION_DESC );
++            hr = IDirectPlay8Address_AddComponent(localaddr, DPNA_KEY_HOSTNAME, localhost, sizeof(localhost),
++                                                         DPNA_DATATYPE_STRING);
++            ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++            memset(&appdesc, 0, sizeof(appdesc));
++            appdesc.dwSize  = sizeof(appdesc);
+             appdesc.dwFlags = DPNSESSION_CLIENT_SERVER;
+             appdesc.guidApplication  = appguid;
+             appdesc.pwszSessionName  = sessionname;
+@@ -83,16 +147,104 @@ static void create_server(void)
+             hr = IDirectPlay8Server_Host(server, &appdesc, &localaddr, 1, NULL, NULL, NULL, 0);
+             todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+-            todo_wine ok(nCreatePlayer, "No DPN_MSGID_CREATE_PLAYER Message\n");
+-            ok(!nDestroyPlayer, "Received DPN_MSGID_DESTROY_PLAYER Message\n");
+-
+-            hr = IDirectPlay8Server_Close(server, 0);
+-            todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
+-
+-            todo_wine ok(nDestroyPlayer, "No DPN_MSGID_DESTROY_PLAYER Message\n");
++            todo_wine ok(create_cnt == 1, "No DPN_MSGID_CREATE_PLAYER Message\n");
++            ok(indicate_cnt == 0, "wrong indicate count (%d)\n", indicate_cnt);
+ 
+             IDirectPlay8Address_Release(localaddr);
+         }
++    }
++}
++
++static void create_client(void)
++{
++    HRESULT hr;
++    IDirectPlay8Address *host = NULL;
++    IDirectPlay8Address *device = NULL;
++    DPN_APPLICATION_DESC appdesc;
++    DWORD ret;
++    DPNHANDLE async = 0;
++
++    hr = CoCreateInstance(&CLSID_DirectPlay8Client, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Client, (void **)&client);
++    ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
++    if(hr != S_OK)
++        return;
++
++    memset(&appdesc, 0, sizeof(appdesc));
++    appdesc.dwSize  = sizeof(appdesc);
++    appdesc.guidApplication  = appguid;
++
++    connect  = CreateEventA(NULL, TRUE, FALSE, NULL);
++    hostenum = CreateEventA(NULL, TRUE, FALSE, NULL);
++
++    hr = IDirectPlay8Client_Initialize(client, NULL, dp_client_msg_handler, 0);
++    ok(hr == S_OK, "IDirectPlay8Client_Initialize failed with %x\n", hr);
++
++    hr = CoCreateInstance(&CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (void**)&host);
++    ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Address_SetSP(host, &CLSID_DP8SP_TCPIP);
++    ok(hr == S_OK, "IDirectPlay8Address_SetSP failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Address_AddComponent(host, DPNA_KEY_HOSTNAME, localhost, sizeof(localhost), DPNA_DATATYPE_STRING);
++    ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++    hr = CoCreateInstance(&CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (void**)&device);
++    ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Address_SetSP(device, &CLSID_DP8SP_TCPIP);
++    ok(hr == S_OK, "IDirectPlay8Address_SetSP failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, device, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
++    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
++    todo_wine ok(async, "No Handle returned\n");
++
++    ret = WaitForSingleObject(hostenum, 2000);
++    todo_wine ok(ret == WAIT_OBJECT_0, "Failed to get find host\n");
++    if(ret == WAIT_OBJECT_0)
++    {
++        DPNHANDLE handle = 0;
++
++        hr = IDirectPlay8Client_Connect(client, &hostdesc, host_addr, device_ddr, NULL, NULL, NULL, 0, NULL, &handle, 0 );
++        todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
++
++        ret = WaitForSingleObject(connect, 2000);
++        todo_wine ok(ret == WAIT_OBJECT_0, "Connect failed.\n");
++
++        todo_wine ok(create_cnt == 1, "Wrong create player count (%d)\n", create_cnt);
++        todo_wine ok(destroy_cnt == 0, "Wrong Destroy player count (%d)\n", destroy_cnt);
++        todo_wine ok(indicate_cnt == 1, "wrong indicate count (%d)\n", indicate_cnt);
++    }
++
++    CloseHandle(connect);
++    CloseHandle(hostenum);
++
++    SetEvent(clientfinished);
++
++    IDirectPlay8Address_Release(host);
++    IDirectPlay8Address_Release(device);
++}
++
++static void cleanup(void)
++{
++    HRESULT hr;
++
++    if(client)
++    {
++        IDirectPlay8Client_Close(client, 0);
++        IDirectPlay8Client_Release(client);
++    }
++
++    if(host_addr)
++        IDirectPlay8Address_Release(host_addr);
++    if(device_ddr)
++        IDirectPlay8Address_Release(device_ddr);
++
++    if(server)
++    {
++        hr = IDirectPlay8Server_Close(server, 0);
++        todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++
++        todo_wine ok(destroy_cnt == 2 || broken(destroy_cnt == 1), "Wrong Destroy player count (%d)\n", destroy_cnt);
+ 
+         IDirectPlay8Server_Release(server);
+     }
+@@ -103,11 +255,15 @@ START_TEST(server)
+     HRESULT hr;
+ 
+     hr = CoInitialize(0);
+-    ok( hr == S_OK, "failed to init com\n");
++    ok(hr == S_OK, "failed to init com\n");
+     if (hr != S_OK)
+         return;
+ 
+     create_server();
+ 
++    create_client();
++
++    cleanup();
++
+     CoUninitialize();
+ }
+-- 
+1.9.1
+
