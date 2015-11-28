@@ -1,0 +1,24 @@
+From 94e0a931396dd7df1d34b4fc047884fab3340fd4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 27 Nov 2015 11:34:53 +1100
+Subject: [PATCH 3/9] dxguid: Include d3dx10.h
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dxguid/dx10guid.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/dxguid/dx10guid.c b/dlls/dxguid/dx10guid.c
+index 1d07a4d..8a447c7 100644
+--- a/dlls/dxguid/dx10guid.c
++++ b/dlls/dxguid/dx10guid.c
+@@ -33,5 +33,6 @@
+ 
+ #include "d3d10_1.h"
+ #include "d3d11.h"
++#include "d3dx10.h"
+ #include "d3d10_1shader.h"
+ #include "d3d11shader.h"
+-- 
+1.9.1
+
