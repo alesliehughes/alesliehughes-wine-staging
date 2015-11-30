@@ -1,7 +1,7 @@
-From a3635af0c228f223d6b501e06ed9322fef94d85a Mon Sep 17 00:00:00 2001
+From 55787e63a4477c95e5d7f80d73f51a1c5454d7e9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:38:17 +1100
-Subject: [PATCH 9/9] d3dx10: Add D3DXCpuOptimizations stub
+Subject: [PATCH 09/10] d3dx10: Add D3DXCpuOptimizations stub
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=39501
 

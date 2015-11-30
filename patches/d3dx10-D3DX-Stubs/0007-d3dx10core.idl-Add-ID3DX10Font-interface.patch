@@ -1,7 +1,7 @@
-From 69418034cb54b90b5c2acb976d13541e9ae6daf6 Mon Sep 17 00:00:00 2001
+From 0cd63a83f00fe62d3164ffef91ad46f98db5633b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:35:13 +1100
-Subject: [PATCH 7/9] d3dx10core.idl: Add ID3DX10Font interface
+Subject: [PATCH 07/10] d3dx10core.idl: Add ID3DX10Font interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 70 insertions(+)
 
 diff --git a/include/d3dx10core.idl b/include/d3dx10core.idl
-index bcaff03..07e8a5d 100644
+index bcaff03..af2fc99 100644
 --- a/include/d3dx10core.idl
 +++ b/include/d3dx10core.idl
 @@ -26,6 +26,7 @@ cpp_quote("#if 0")
@@ -70,8 +70,8 @@ index bcaff03..07e8a5d 100644
 +interface ID3DX10Font : IUnknown
 +{
 +    HRESULT GetDevice([out] ID3D10Device** device);
-+    HRESULT GetDescA([in] D3DX10_FONT_DESCA *pDesc);
-+    HRESULT GetDescW([in] D3DX10_FONT_DESCW *pDesc);
++    HRESULT GetDescA([in] D3DX10_FONT_DESCA *desc);
++    HRESULT GetDescW([in] D3DX10_FONT_DESCW *desc);
 +    BOOL GetTextMetricsA([in] TEXTMETRICA *text_metrics);
 +    BOOL GetTextMetricsW([in] TEXTMETRICW *text_metrics);
 +
@@ -79,15 +79,15 @@ index bcaff03..07e8a5d 100644
 +    HRESULT GetGlyphData([in] UINT glyph, [out] ID3D10ShaderResourceView** texture,
 +            [in] RECT *blackbox, [in] POINT *cellinc);
 +
-+    HRESULT PreloadCharacters([in] UINT First, [in] UINT Last);
++    HRESULT PreloadCharacters([in] UINT first, [in] UINT last);
 +    HRESULT PreloadGlyphs([in] UINT First, [in] UINT Last);
-+    HRESULT PreloadTextA([in] const char *string, [in] int Count);
-+    HRESULT PreloadTextW([in] const WCHAR *string, [in] int Count);
++    HRESULT PreloadTextA([in] const char *string, [in] int count);
++    HRESULT PreloadTextW([in] const WCHAR *string, [in] int count);
 +
 +    int DrawTextA([in] ID3DX10Sprite *sprite, [in] const char *string, [in] int count,
-+            [in] RECT *rect, [in] UINT Format, [in] D3DXCOLOR Color);
++            [in] RECT *rect, [in] UINT format, [in] D3DXCOLOR color);
 +    int DrawTextW([in] ID3DX10Sprite *sprite, [in] const WCHAR *string, [in] int count,
-+            [in] RECT *rect, [in] UINT Format, [in] D3DXCOLOR Color);
++            [in] RECT *rect, [in] UINT format, [in] D3DXCOLOR color);
 +
 +cpp_quote("#ifdef __cplusplus")
 +cpp_quote("#ifdef UNICODE")

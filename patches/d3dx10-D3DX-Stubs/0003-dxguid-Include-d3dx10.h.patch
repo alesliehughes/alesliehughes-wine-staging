@@ -1,7 +1,7 @@
-From 94e0a931396dd7df1d34b4fc047884fab3340fd4 Mon Sep 17 00:00:00 2001
+From e55811eecfeb3c5e38d34227ad8146b8f15d7783 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 11:34:53 +1100
-Subject: [PATCH 3/9] dxguid: Include d3dx10.h
+Subject: [PATCH 03/10] dxguid: Include d3dx10.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

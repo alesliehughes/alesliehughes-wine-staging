@@ -1,7 +1,7 @@
-From 73cd8730d646a9e8b77f1688f4ea56d1dd5920d0 Mon Sep 17 00:00:00 2001
+From d04464ca49281b13638ee5560e0a90bd98488209 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 11:34:08 +1100
-Subject: [PATCH 2/9] d3dx10core.idl: Add ID3DX10Sprite interface
+Subject: [PATCH 02/10] d3dx10core.idl: Add ID3DX10Sprite interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

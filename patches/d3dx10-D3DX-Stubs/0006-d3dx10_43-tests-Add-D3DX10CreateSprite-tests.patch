@@ -1,15 +1,15 @@
-From 7e5c2837c68ef1d009a8fb3e0d92882e9fe09e9a Mon Sep 17 00:00:00 2001
+From 7e5dad041da9c12a85f249db85a2b64cab2e8458 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:21:33 +1100
-Subject: [PATCH 6/9] d3dx10_43/tests: Add D3DX10CreateSprite tests
+Subject: [PATCH 06/10] d3dx10_43/tests: Add D3DX10CreateSprite tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  configure.ac                     |   1 +
  dlls/d3dx10_43/Makefile.in       |   1 +
- dlls/d3dx10_43/tests/Makefile.in |   6 +++
+ dlls/d3dx10_43/tests/Makefile.in |   5 ++
  dlls/d3dx10_43/tests/core.c      | 106 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 114 insertions(+)
+ 4 files changed, 113 insertions(+)
  create mode 100644 dlls/d3dx10_43/tests/Makefile.in
  create mode 100644 dlls/d3dx10_43/tests/core.c
 
@@ -37,19 +37,18 @@ index a0c1955..32a675d 100644
  C_SRCS = \
 diff --git a/dlls/d3dx10_43/tests/Makefile.in b/dlls/d3dx10_43/tests/Makefile.in
 new file mode 100644
-index 0000000..c25593b
+index 0000000..0ac05a2
 --- /dev/null
 +++ b/dlls/d3dx10_43/tests/Makefile.in
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,5 @@
 +TESTDLL   = d3dx10_43.dll
 +IMPORTS   = d3d10 d3dx10 dxguid
 +
 +C_SRCS = \
 +	core.c
-+
 diff --git a/dlls/d3dx10_43/tests/core.c b/dlls/d3dx10_43/tests/core.c
 new file mode 100644
-index 0000000..cc51f41
+index 0000000..b3679f1
 --- /dev/null
 +++ b/dlls/d3dx10_43/tests/core.c
 @@ -0,0 +1,106 @@
@@ -151,7 +150,7 @@ index 0000000..cc51f41
 +
 +        ID3DX10Sprite_Release(sprite);
 +    }
-+   
++
 +    ID3D10Device_Release(device);
 +}
 +

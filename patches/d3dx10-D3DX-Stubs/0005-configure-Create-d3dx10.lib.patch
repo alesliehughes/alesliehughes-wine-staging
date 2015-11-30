@@ -1,7 +1,7 @@
-From e97565e484428d34e2cec7a781124af5781ecc38 Mon Sep 17 00:00:00 2001
+From 199fae10c01b2c3f67d609ebe8513b651e135346 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:17:34 +1100
-Subject: [PATCH 5/9] configure: Create d3dx10.lib
+Subject: [PATCH 05/10] configure: Create d3dx10.lib
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
