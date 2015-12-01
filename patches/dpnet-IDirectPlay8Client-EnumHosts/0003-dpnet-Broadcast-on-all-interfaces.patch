@@ -1,4 +1,4 @@
-From 5b44f26bb141737bfddf81091da53029e067d922 Mon Sep 17 00:00:00 2001
+From 2cba9a75f2e70024252fb32407a8dfd9d06d3dad Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 09:08:37 +1100
 Subject: [PATCH 3/5] dpnet: Broadcast on all interfaces
@@ -22,7 +22,7 @@ index 541e104..73ab6fa 100644
  C_SRCS = \
  	address.c \
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 32530a4..3cb88cf 100644
+index 50f969e..623343d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,7 @@
@@ -126,7 +126,7 @@ index 32530a4..3cb88cf 100644
  
              starttime = GetTickCount();
          }
-@@ -291,6 +336,7 @@ static DWORD WINAPI EnumNetworkHost(PVOID lpVoid)
+@@ -297,6 +342,7 @@ static DWORD WINAPI EnumNetworkHost(PVOID lpVoid)
  cleanup:
      IDirectPlay8Address_Release(enumdata->host);
      IDirectPlay8Address_Release(enumdata->device);
