@@ -1,7 +1,7 @@
-From b4180d8bcae04cea4d4ed9ee5bcba710eb3ed16a Mon Sep 17 00:00:00 2001
+From e6991b23241a18450a5d3adda8ae1d13147e6ed0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Nov 2015 16:12:30 +1100
-Subject: [PATCH 1/2] odbccp32: Impelement SQLInstallDriverEx correctly
+Subject: [PATCH 1/4] odbccp32: Impelement SQLInstallDriverEx correctly
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

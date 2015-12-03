@@ -1,7 +1,7 @@
-From 25e1555e77098e0fcba9afa57162725d8643058a Mon Sep 17 00:00:00 2001
+From 140de9c0f3c33588a882e4f3796e3a3e282f4363 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 23 Nov 2015 14:50:31 +1100
-Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
+Subject: [PATCH 2/4] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

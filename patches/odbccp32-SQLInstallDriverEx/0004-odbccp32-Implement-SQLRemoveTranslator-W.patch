@@ -1,0 +1,88 @@
+From 93c2a792349adc171ef146680d8d66eae0c355b0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 3 Dec 2015 12:38:29 +1100
+Subject: [PATCH 4/4] odbccp32: Implement SQLRemoveTranslator/W
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/odbccp32/odbccp32.c | 57 ++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 50 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index 8277ba4..56868ec 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -1258,20 +1258,63 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+     return FALSE;
+ }
+ 
+-BOOL WINAPI SQLRemoveTranslatorW(LPCWSTR lpszTranslator, LPDWORD lpdwUsageCount)
++BOOL WINAPI SQLRemoveTranslatorW(LPCWSTR lpszTranslator, LPDWORD usage_count)
+ {
++    DWORD usage_cnt = 0;
++    HKEY hkey;
++
+     clear_errors();
+-    FIXME("%s %p\n", debugstr_w(lpszTranslator), lpdwUsageCount);
+-    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
+-    return FALSE;
++    TRACE("%s %p\n", debugstr_w(lpszTranslator), usage_count);
++
++    if (RegOpenKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
++    {
++        HKEY hkeydriver;
++
++        if (RegOpenKeyW(hkey, lpszTranslator, &hkeydriver) == ERROR_SUCCESS)
++        {
++            if (usage_count)
++            {
++                if (RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, NULL, &usage_cnt, NULL) == ERROR_SUCCESS)
++                {
++                    usage_cnt--;
++                }
++            }
++
++            RegCloseKey(hkeydriver);
++        }
++
++        if(RegDeleteKeyW(hkey, lpszTranslator) != ERROR_SUCCESS)
++            ERR("Failed to delete registry key: %s\n", debugstr_w(lpszTranslator));
++
++        if (RegOpenKeyW(hkey, odbctranslators, &hkeydriver) == ERROR_SUCCESS)
++        {
++            if(RegDeleteValueW(hkeydriver, lpszTranslator) != ERROR_SUCCESS)
++                ERR("Failed to delete registry value: %s\n", debugstr_w(lpszTranslator));
++
++            RegCloseKey(hkeydriver);
++        }
++
++    }
++
++    if (usage_count)
++        *usage_count = usage_cnt;
++
++    return TRUE;
+ }
+ 
+ BOOL WINAPI SQLRemoveTranslator(LPCSTR lpszTranslator, LPDWORD lpdwUsageCount)
+ {
++    WCHAR *translator;
++    BOOL ret;
++
+     clear_errors();
+-    FIXME("%s %p\n", debugstr_a(lpszTranslator), lpdwUsageCount);
+-    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
+-    return FALSE;
++    TRACE("%s %p\n", debugstr_a(lpszTranslator), lpdwUsageCount);
++
++    translator = SQLInstall_strdup(lpszTranslator);
++    ret =  SQLRemoveTranslatorW(translator, lpdwUsageCount);
++
++    HeapFree(GetProcessHeap(), 0, translator);
++    return ret;
+ }
+ 
+ BOOL WINAPI SQLSetConfigMode(UWORD wConfigMode)
+-- 
+1.9.1
+

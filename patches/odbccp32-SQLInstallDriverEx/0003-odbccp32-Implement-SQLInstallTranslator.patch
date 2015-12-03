@@ -1,0 +1,130 @@
+From 371d44822e4b455d1cd24e26bae946990d2e93c4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 3 Dec 2015 12:32:41 +1100
+Subject: [PATCH 3/4] odbccp32: Implement SQLInstallTranslator
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/odbccp32/odbccp32.c | 83 ++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 77 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index f398c51..8277ba4 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -42,7 +42,12 @@ static const WCHAR odbcW[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','
+ static const WCHAR odbcini[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\',0};
+ static const WCHAR driver[] = {'D','r','i','v','e','r',0};
+ static const WCHAR setup[] = {'S','e','t','u','p',0};
++static const WCHAR translator[] = {'T','r','a','n','s','l','a','t','o','r',0};
++static const WCHAR installed[] = {'I','n','s','t','a','l','l','e','d',0};
+ static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
++static const WCHAR odbctranslators[] = {'O','D','B','C',' ','T','r','a','n','s','l','a','t','o','r','s',0};
++static const WCHAR slash[] = {'\\', 0};
++
+ 
+ /* This config mode is known to be process-wide.
+  * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
+@@ -639,8 +644,6 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
+     WCHAR path[MAX_PATH];
+     HKEY hkey, hkeydriver;
+     DWORD ret;
+-    static const WCHAR slash[] = {'\\', 0};
+-    static const WCHAR installed[] = {'I','n','s','t','a','l','l','e','d',0};
+ 
+     clear_errors();
+     TRACE("%s %s %p %d %p %d %p\n", debugstr_w(lpszDriver),
+@@ -946,18 +949,86 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
+                WORD fRequest, LPDWORD lpdwUsageCount)
+ {
+     UINT len;
+-    LPCWSTR p;
++    DWORD ret;
+     WCHAR path[MAX_PATH];
++    HKEY hkey, hkeydriver;
+ 
+     clear_errors();
+     TRACE("%s %s %p %d %p %d %p\n", debugstr_w(lpszTranslator),
+           debugstr_w(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
+           fRequest, lpdwUsageCount);
+ 
+-    for (p = lpszTranslator; *p; p += lstrlenW(p) + 1)
+-        TRACE("%s\n", debugstr_w(p));
++    if ((ret = RegCreateKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey)) == ERROR_SUCCESS)
++    {
++        if ((ret = RegCreateKeyW(hkey, odbctranslators, &hkeydriver)) == ERROR_SUCCESS)
++        {
++            if(RegSetValueExW(hkeydriver, lpszTranslator, 0, REG_SZ, (BYTE*)installed,
++                                    (lstrlenW(installed)+1)*sizeof(WCHAR)) != ERROR_SUCCESS)
++                ERR("Failed to write registry installed key\n");
++
++            RegCloseKey(hkeydriver);
++        }
+ 
+-    len = GetSystemDirectoryW(path, MAX_PATH);
++        if ((ret = RegCreateKeyW(hkey, lpszTranslator, &hkeydriver)) == ERROR_SUCCESS)
++        {
++            WCHAR entry[1024];
++            WCHAR value[MAX_PATH];
++            const WCHAR *p;
++            DWORD usagecount = 1;
++
++            /* Skip name entry */
++            p = lpszTranslator;
++            p += lstrlenW(p) + 1;
++
++            if(!lpszPathIn)
++                GetSystemDirectoryW(path, MAX_PATH);
++            else
++                lstrcpyW(path, lpszPathIn);
++
++            for (; *p; p += lstrlenW(p) + 1)
++            {
++                WCHAR *divider = strchrW(p,'=');
++
++                if (divider)
++                {
++                    /* Write pair values to the registry. */
++                    lstrcpynW(entry, p, divider - p + 1);
++
++                    divider++;
++                    TRACE("Writing pair %s,%s\n", debugstr_w(entry), debugstr_w(divider));
++
++                    /* Translator and Setup entries use the system path unless a path is specified. */
++                    if(lstrcmpiW(translator, entry) == 0 || lstrcmpiW(setup, entry) == 0)
++                    {
++                        lstrcpyW(value, path);
++                        lstrcatW(value, slash);
++                        lstrcatW(value, divider);
++                    }
++                    else
++                        lstrcpyW(value, divider);
++
++                    if(RegSetValueExW(hkeydriver, entry, 0, REG_SZ, (BYTE*)value,
++                                    (lstrlenW(value)+1)*sizeof(WCHAR)) != ERROR_SUCCESS)
++                        ERR("Failed to write registry data %s %s\n", debugstr_w(entry), debugstr_w(value));
++                }
++                else
++                {
++                    ERR("No pair found. %s\n", debugstr_w(p));
++                    break;
++                }
++            }
++
++            /* Set Usage Count */
++            if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
++                ERR("Failed to write registry UsageCount key\n");
++
++            RegCloseKey(hkeydriver);
++        }
++
++        RegCloseKey(hkey);
++    }
++
++    len = lstrlenW(path);
+ 
+     if (pcbPathOut)
+         *pcbPathOut = len;
+-- 
+1.9.1
+
