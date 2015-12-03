@@ -1,0 +1,137 @@
+From 572f19dc441bd5b1df885cc0be028c9cf115035b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 19 Feb 2014 15:11:16 +1100
+Subject: [PATCH 4/5] dpnet: Use registry lookup in EnumServiceProviders
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/peer.c | 79 +++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 65 insertions(+), 14 deletions(-)
+
+diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
+index 63219bd..a048f82 100644
+--- a/dlls/dpnet/peer.c
++++ b/dlls/dpnet/peer.c
+@@ -150,23 +150,50 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+         DPN_SERVICE_PROVIDER_INFO * const pSPInfoBuffer, DWORD * const pcbEnumData,
+         DWORD * const pcReturned, const DWORD dwFlags)
+ {
+-    static const WCHAR dp_providerW[] = {'D','i','r','e','c','t','P','l','a','y','8',' ','T','C','P','/','I','P',' ',
+-                                         'S','e','r','v','i','c','e',' ','P','r','o','v','i','d','e','r','\0'};
++    static const WCHAR serviceproviders[] = {'S','O','F','T','W','A','R','E','\\','M','i','c','r','o','s','o','f','t','\\',
++                                      'D','i','r','e','c','t','P','l','a','y','8','\\',
++                                      'S','e','r','v','i','c','e',' ','P','r','o','v','i','d','e','r','s',0};
++    static const WCHAR friendly[] = {'F','r','i','e','n','d','l','y',' ','N','a','m','e',0};
+     static const WCHAR dp_adapterW[] = {'L','o','c','a','l',' ','A','r','e','a',' ','C','o','n','n','e','c','t','i','o','n',
+-                                        ' ','-',' ','I','P','v','4','\0'};
+-
++                                        ' ','-',' ','I','P','v','4',0};
+     static const GUID adapter_guid = {0x4ce725f6, 0xd3c0, 0xdade, {0xba, 0x6f, 0x11, 0xf9, 0x65, 0xbc, 0x42, 0x99}};
+-    DWORD req_size;
+-
+-    TRACE("(%p)->(%p,%p,%p,%p,%p,%x): stub\n", iface, pguidServiceProvider, pguidApplication, pSPInfoBuffer,
++    DWORD req_size = 0;
++    LONG res;
++    HKEY key = NULL;
++    LONG nextKeyNameResult;
++    DWORD index = 0;
++    WCHAR provider[MAX_PATH];
++    DWORD size;
++
++    TRACE("(%p)->(%p,%p,%p,%p,%p,%x)\n", iface, pguidServiceProvider, pguidApplication, pSPInfoBuffer,
+                                                pcbEnumData, pcReturned, dwFlags);
+ 
+     if(!pcReturned || !pcbEnumData)
+         return E_POINTER;
+ 
++    *pcReturned = 0;
++
+     if(!pguidServiceProvider)
+     {
+-        req_size = sizeof(DPN_SERVICE_PROVIDER_INFO) + sizeof(dp_providerW);
++        res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, serviceproviders, 0, KEY_READ, &key);
++        if(res == ERROR_FILE_NOT_FOUND)
++            return DPNERR_DOESNOTEXIST;
++
++        nextKeyNameResult = RegEnumKeyW( key, index, provider, MAX_PATH);
++        while(nextKeyNameResult == ERROR_SUCCESS)
++        {
++            res = RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, NULL, &size);
++            if(res == ERROR_SUCCESS)
++            {
++                 req_size += sizeof(DPN_SERVICE_PROVIDER_INFO) + size;
++
++                 (*pcReturned)++;
++            }
++
++            index++;
++            nextKeyNameResult = RegEnumKeyW( key, index, provider, MAX_PATH );
++        }
++
+     }
+     else if(IsEqualGUID(pguidServiceProvider, &CLSID_DP8SP_TCPIP))
+     {
+@@ -175,30 +202,54 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+     else
+     {
+         FIXME("Application requested a provider we don't handle (yet)\n");
+-        *pcReturned = 0;
+         return DPNERR_DOESNOTEXIST;
+     }
+ 
+     if(*pcbEnumData < req_size)
+     {
++        RegCloseKey(key);
++
+         *pcbEnumData = req_size;
+         return DPNERR_BUFFERTOOSMALL;
+     }
+ 
+-    pSPInfoBuffer->pwszName = (LPWSTR)(pSPInfoBuffer + 1);
+-
+     if(!pguidServiceProvider)
+     {
+-        lstrcpyW(pSPInfoBuffer->pwszName, dp_providerW);
+-        pSPInfoBuffer->guid = CLSID_DP8SP_TCPIP;
++        int offset = 0;
++        int count = 0;
++        char *infoend = ((char *)pSPInfoBuffer + (sizeof(DPN_SERVICE_PROVIDER_INFO) * (*pcReturned)));
++
++        index = 0;
++        nextKeyNameResult = RegEnumKeyW( key, index, provider, MAX_PATH);
++        while(nextKeyNameResult == ERROR_SUCCESS)
++        {
++            res = RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, NULL, &size);
++            if(res == ERROR_SUCCESS)
++            {
++                pSPInfoBuffer[count].guid = CLSID_DP8SP_TCPIP;
++                pSPInfoBuffer[count].pwszName = (LPWSTR)(infoend + offset);
++
++                RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, pSPInfoBuffer[count].pwszName, &size);
++
++                offset += size;
++                count++;
++            }
++
++            index++;
++            nextKeyNameResult = RegEnumKeyW(key, index, provider, MAX_PATH);
++        }
++
+     }
+     else
+     {
++        pSPInfoBuffer->pwszName = (LPWSTR)(pSPInfoBuffer + 1);
+         lstrcpyW(pSPInfoBuffer->pwszName, dp_adapterW);
+         pSPInfoBuffer->guid = adapter_guid;
++        *pcReturned = 1;
+     }
+ 
+-    *pcReturned = 1;
++    RegCloseKey(key);
++
+     return DPN_OK;
+ }
+ 
+-- 
+1.9.1
+

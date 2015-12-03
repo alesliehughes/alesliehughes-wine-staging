@@ -1,4 +1,4 @@
-From 1c2462e76eab6d133b62ed59d2b0c9a76fba4da4 Mon Sep 17 00:00:00 2001
+From 7e0a50882d5b7a0335e087207cc5123d892ed77d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 29 Jun 2015 15:11:34 +1000
 Subject: [PATCH 2/5] dpnet: Implement IDirectPlay8Client EnumHosts
@@ -6,41 +6,43 @@ Subject: [PATCH 2/5] dpnet: Implement IDirectPlay8Client EnumHosts
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/Makefile.in     |   2 +-
- dlls/dpnet/client.c        | 242 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c        | 292 ++++++++++++++++++++++++++++++++++++++++++++-
  dlls/dpnet/dpnet_private.h |   3 +
  dlls/dpnet/tests/client.c  |   5 +-
- 4 files changed, 245 insertions(+), 7 deletions(-)
+ 4 files changed, 295 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/dpnet/Makefile.in b/dlls/dpnet/Makefile.in
-index 880b7bd..541e104 100644
+index 880b7bd..73ab6fa 100644
 --- a/dlls/dpnet/Makefile.in
 +++ b/dlls/dpnet/Makefile.in
 @@ -1,6 +1,6 @@
  MODULE    = dpnet.dll
  IMPORTLIB = dpnet
 -IMPORTS   = dxguid uuid ole32 advapi32
-+IMPORTS   = dxguid uuid ole32 advapi32 ws2_32
++IMPORTS   = dxguid uuid ole32 advapi32 ws2_32 iphlpapi
  
  C_SRCS = \
  	address.c \
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index bf2b8d2..50f969e 100644
+index bf2b8d2..fac2442 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -22,6 +22,7 @@
+@@ -22,6 +22,8 @@
  #include "config.h"
  
  #include <stdarg.h>
++#include <stdio.h>
 +#include <errno.h>
  
  #define COBJMACROS
  #include "windef.h"
-@@ -29,10 +30,13 @@
+@@ -29,10 +31,14 @@
  #include "wingdi.h"
  #include "winuser.h"
  #include "objbase.h"
 +#include "winsock2.h"
-+
++#include "ws2tcpip.h"
++#include "iphlpapi.h"
  #include "wine/debug.h"
  
  #include "dplay8.h"
@@ -49,7 +51,7 @@ index bf2b8d2..50f969e 100644
  
  WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
  
-@@ -86,7 +90,16 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+@@ -86,7 +92,16 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
  
      TRACE("(%p) ref=%u\n", This, ref);
  
@@ -67,7 +69,7 @@ index bf2b8d2..50f969e 100644
          HeapFree(GetProcessHeap(), 0, This);
      }
      return ref;
-@@ -121,6 +134,178 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -121,6 +136,235 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
    return DPN_OK; 
  }
  
@@ -76,7 +78,6 @@ index bf2b8d2..50f969e 100644
 +    DPN_SP_CAPS spcaps;
 +    PFNDPNMESSAGEHANDLER msghandler;
 +    GUID appGUID;
-+    IDirectPlay8Address *host;
 +    IDirectPlay8Address *device;
 +    void *pUserEnumData;
 +    DWORD dwUserEnumDataSize;
@@ -87,6 +88,15 @@ index bf2b8d2..50f969e 100644
 +
 +    HANDLE event;
 +};
++
++static const char *ntoa( DWORD ip )
++{
++    static char buffer[40];
++
++    ip = htonl(ip);
++    sprintf( buffer, "%u.%u.%u.%u", (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff );
++    return buffer;
++}
 +
 +static DWORD WINAPI EnumNetworkHost(PVOID lpVoid)
 +{
@@ -102,6 +112,10 @@ index bf2b8d2..50f969e 100644
 +    int BufLen = 1024;
 +    struct sockaddr_in from;
 +    int fromlen = sizeof(from);
++    MIB_IPADDRTABLE *ipTable = NULL;
++    ULONG tablelen = 0;
++    DWORD ipRet;
++    int i;
 +
 +    if (WSAStartup(MAKEWORD(2, 2), &data))
 +        return 1;
@@ -130,6 +144,24 @@ index bf2b8d2..50f969e 100644
 +       goto cleanup;
 +    }
 +
++    ipRet = GetIpAddrTable(ipTable, &tablelen, FALSE);
++    if(ipRet == ERROR_INSUFFICIENT_BUFFER)
++    {
++        ipTable = (MIB_IPADDRTABLE *) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tablelen);
++        if(!ipTable)
++        {
++            ERR("Failed to bind socket\n");
++            goto cleanup;
++        }
++
++        ipRet = GetIpAddrTable(ipTable, &tablelen, FALSE);
++        if(ipRet != NO_ERROR)
++        {
++            ERR("Failed to bind socket\n");
++            goto cleanup;
++        }
++    }
++
 +    while(TRUE)
 +    {
 +        BufLen = 1024;
@@ -151,22 +183,35 @@ index bf2b8d2..50f969e 100644
 +
 +            from.sin_family = AF_INET;
 +            from.sin_port = htons(DPNA_DPNSVR_PORT);
-+            /* TODO - Loop each interface */
-+            from.sin_addr.s_addr = inet_addr("255.255.255.255");
-+            err = sendto(sock, (void *)&query, sizeof(query), 0,  (struct sockaddr *)&from, sizeof(struct sockaddr_in));
-+            if(err == -1)
-+                ERR("sendto failed(%d)\n", GetLastError());
-+            else
-+                TRACE("sent (%d)\n", err);
++
++            for(i=0; i < ipTable->dwNumEntries; i++)
++            {
++                const MIB_IPADDRROW *row = &ipTable->table[i];
++                DWORD ipAddr  = row->dwAddr;
++                DWORD netmask = row->dwMask;
++                DWORD baddr   = ipAddr & netmask;
++                if (row->dwBCastAddr)
++                    baddr |= ~netmask;
++
++                TRACE("Addr: %s\n", ntoa(baddr));
++
++                from.sin_addr.s_addr = baddr;
++                err = sendto(sock, (void *)&query, sizeof(query), 0,  (struct sockaddr *)&from, sizeof(struct sockaddr_in));
++                if(err == -1)
++                    ERR("sendto failed(%d)\n", GetLastError());
++                else
++                    TRACE("sent (%d)\n", err);
++            }
 +
 +            starttime = GetTickCount();
 +        }
 +
 +        /* Query Enumeration Packets */
 +        iResult = recvfrom(sock, SendBuf, BufLen, 0, (struct sockaddr *)&from, &fromlen);
-+        if(iResult >= sizeof(struct EnumHeader))
++        if(iResult >= (int)sizeof(struct EnumHeader))
 +        {
 +            struct EnumHeader *header = (struct EnumHeader *)SendBuf;
++
 +            if(header->Leadbyte == 0)
 +            {
 +                /* Enum Query */
@@ -183,19 +228,31 @@ index bf2b8d2..50f969e 100644
 +                        DPNMSG_ENUM_HOSTS_RESPONSE responce;
 +                        DPN_APPLICATION_DESC desc;
 +                        struct EnumQueryResponce *data = (struct EnumQueryResponce *)header;
-+
-+                        TRACE("SessionNameOffset: %d\n", data->SessionNameOffset);
-+                        TRACE("SessionNameSize  : %d\n", data->SessionNameSize);
-+                        TRACE("SessionName      : %s\n", debugstr_w( (WCHAR*)(((char*)data)+data->SessionNameOffset+sizeof(struct EnumHeader))) );
-+                        TRACE("CurrentPlayers   : %d\n", data->CurrentPlayers);
-+                        TRACE("MaxPlayers       : %d\n", data->MaxPlayers);
++                        IDirectPlay8Address *sender = NULL;
++                        char ip[INET6_ADDRSTRLEN] = {0};
++                        int port;
 +
 +                        memset(&responce, 0, sizeof(DPNMSG_ENUM_HOSTS_RESPONSE));
 +                        memset(&desc, 0, sizeof(DPN_APPLICATION_DESC));
 +
 +                        responce.dwSize = sizeof(DPNMSG_ENUM_HOSTS_RESPONSE);
 +
-+                        responce.pAddressSender = enumdata->host;
++                        /*
++                         *  We need to create an Address Object with the details Port and IP address.
++                         *  Applications are required to AddRef this object if they want to keep a reference.
++                         */
++                        ret = DPNET_CreateDirectPlay8Address(NULL, NULL, &IID_IDirectPlay8Address, (void**)&sender);
++                        if(FAILED(ret))
++                            break;
++
++                        inet_ntop(from.sin_family, &from.sin_addr, ip, sizeof(ip));
++                        port = ntohs(from.sin_port);
++                        TRACE("Server IP address %s:%d\n", ip, port);
++
++                        IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip), DPNA_DATATYPE_STRING_ANSI);
++                        IDirectPlay8Address_AddComponent(sender, DPNA_KEY_PORT, &port, sizeof(DWORD), DPNA_DATATYPE_DWORD);
++
++                        responce.pAddressSender = sender;
 +                        responce.pAddressDevice = enumdata->device;
 +                        responce.pApplicationDescription = &desc;
 +
@@ -206,6 +263,8 @@ index bf2b8d2..50f969e 100644
 +                        desc.pwszSessionName  = (WCHAR*)(((char*)data)+data->SessionNameOffset+sizeof(struct EnumHeader));
 +
 +                        ret = enumdata->msghandler(NULL, DPN_MSGID_ENUM_HOSTS_RESPONSE, &responce);
++
++                        IDirectPlay8Address_Release(sender);
 +                        if(ret != DPN_OK)
 +                            break;
 +
@@ -232,8 +291,8 @@ index bf2b8d2..50f969e 100644
 +    }
 +
 +cleanup:
-+    IDirectPlay8Address_Release(enumdata->host);
 +    IDirectPlay8Address_Release(enumdata->device);
++    HeapFree(GetProcessHeap(), 0, ipTable);
 +    HeapFree(GetProcessHeap(), 0, enumdata);
 +    closesocket(sock);
 +    WSACleanup();
@@ -246,7 +305,7 @@ index bf2b8d2..50f969e 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -128,9 +313,55 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -128,9 +372,46 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
          const DWORD dwFlags)
  {
@@ -268,15 +327,6 @@ index bf2b8d2..50f969e 100644
 +    enumdata->msghandler = This->msghandler;
 +
 +    enumdata->appGUID = pApplicationDesc->guidApplication;
-+    hr = IDirectPlay8Address_Duplicate(pAddrHost, &enumdata->host);
-+    if(FAILED(hr))
-+    {
-+        ERR("Failed to duplicate Host address (0x%08x).\n", hr);
-+
-+        HeapFree(GetProcessHeap(), 0, enumdata);
-+
-+        return E_OUTOFMEMORY;
-+    }
 +    hr = IDirectPlay8Address_Duplicate(pDeviceInfo, &enumdata->device);
 +    if(FAILED(hr))
 +    {
@@ -305,7 +355,7 @@ index bf2b8d2..50f969e 100644
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
-@@ -138,6 +369,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -138,6 +419,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  {
    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
    FIXME("(%p):(%u,%x): Stub\n", This, hAsyncHandle, dwFlags);

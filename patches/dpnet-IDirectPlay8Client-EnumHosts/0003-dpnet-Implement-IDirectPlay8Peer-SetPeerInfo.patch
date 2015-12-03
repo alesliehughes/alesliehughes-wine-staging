@@ -1,7 +1,7 @@
-From 5de287e0ae0ab2493525577b6cff7c039df40bae Mon Sep 17 00:00:00 2001
+From 16076890d7e5ab8ad0f32a9242080de4d94e4a3b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
-Subject: [PATCH 4/5] dpnet: Implement IDirectPlay8Peer SetPeerInfo
+Subject: [PATCH 3/5] dpnet: Implement IDirectPlay8Peer SetPeerInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

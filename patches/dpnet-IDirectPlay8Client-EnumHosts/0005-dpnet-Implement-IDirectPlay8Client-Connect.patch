@@ -1,18 +1,18 @@
-From 7391b40e7c1fd95777622463cf78348e7eb2f232 Mon Sep 17 00:00:00 2001
+From bd748e426218deceeb7b48bd5cca041fe794e56e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 1 Dec 2015 13:02:05 +1100
 Subject: [PATCH 5/5] dpnet: Implement IDirectPlay8Client Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c | 36 ++++++++++++++++++++++++++++--------
- 1 file changed, 28 insertions(+), 8 deletions(-)
+ dlls/dpnet/client.c | 45 +++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 37 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 623343d..19c0a6e 100644
+index fac2442..0c8123d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -422,15 +422,35 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -426,15 +426,44 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
@@ -41,6 +41,15 @@ index 623343d..19c0a6e 100644
 +    // Create thread for data?
 +    // Pass through to Application.
 +    /*
++       PNMSG_CONNECT_COMPLETE complete;
++       complete.dwSize = sizeof(complete);
++       complete.hAsyncOp = NULL;
++       complete.pvUserContext = NULL;
++       complete.hResultCode = DPN_OK;
++       complete.pvApplicationReplyData = NULL;
++       complete.dwApplicationReplyDataSize = 0;
++complete.dpnidLocal = 0x000000ff; // DPNID
++
 +     PDPNMSG_CONNECT_COMPLETE pConnectCompleteMsg;
 +            pConnectCompleteMsg = (PDPNMSG_CONNECT_COMPLETE)pMsgBuffer;
 +
