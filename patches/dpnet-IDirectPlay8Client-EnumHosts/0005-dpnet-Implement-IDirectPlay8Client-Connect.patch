@@ -1,4 +1,4 @@
-From bd748e426218deceeb7b48bd5cca041fe794e56e Mon Sep 17 00:00:00 2001
+From 70ea2c8452b4b1246e702383b95702557901d21f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 1 Dec 2015 13:02:05 +1100
 Subject: [PATCH 5/5] dpnet: Implement IDirectPlay8Client Connect
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 37 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index fac2442..0c8123d 100644
+index 1f9f261..31f14b8 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -426,15 +426,44 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -380,15 +380,44 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,

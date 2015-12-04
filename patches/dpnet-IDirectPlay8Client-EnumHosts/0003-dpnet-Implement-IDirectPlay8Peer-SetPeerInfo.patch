@@ -1,16 +1,16 @@
-From 16076890d7e5ab8ad0f32a9242080de4d94e4a3b Mon Sep 17 00:00:00 2001
+From 17f5c908b156b577a85a0ffe74305627ca8fc459 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
 Subject: [PATCH 3/5] dpnet: Implement IDirectPlay8Peer SetPeerInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/peer.c       | 56 ++++++++++++++++++++++++++++++++++++++++++++++---
- dlls/dpnet/tests/peer.c | 41 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 94 insertions(+), 3 deletions(-)
+ dlls/dpnet/peer.c       | 61 ++++++++++++++++++++++++++++++++++++++++++++++---
+ dlls/dpnet/tests/peer.c | 41 +++++++++++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index a07a59a..63219bd 100644
+index a07a59a..a755a5e 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -33,6 +33,8 @@
@@ -72,7 +72,7 @@ index a07a59a..63219bd 100644
  
      return RefCount;
  }
-@@ -310,9 +339,27 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SetPeerInfo(IDirectPlay8Peer *iface,
+@@ -310,9 +339,32 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SetPeerInfo(IDirectPlay8Peer *iface,
          const DPN_PLAYER_INFO * const pdpnPlayerInfo, void * const pvAsyncContext,
          DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -82,19 +82,24 @@ index a07a59a..63219bd 100644
 -    return DPNERR_GENERIC;
 +    TRACE("(%p)->(%p,%p,%p,%x)\n", This, pdpnPlayerInfo, pvAsyncContext, phAsyncHandle, dwFlags);
 +
-+    if(pdpnPlayerInfo->dwInfoFlags & DPNINFO_NAME)
++    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_NAME)
 +    {
 +        heap_free(This->peername);
 +
 +        This->peername = heap_strdupW(pdpnPlayerInfo->pwszName);
++        if (!This->peername)
++            return DPNERR_OUTOFMEMORY;
 +    }
 +
-+    if(pdpnPlayerInfo->dwInfoFlags & DPNINFO_DATA)
++    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_DATA)
 +    {
 +        heap_free(This->data);
 +
 +        This->datasize = pdpnPlayerInfo->dwDataSize;
 +        This->data = heap_alloc(pdpnPlayerInfo->dwDataSize);
++        if (!This->data)
++            return DPNERR_OUTOFMEMORY;
++
 +        memcpy(This->data, pdpnPlayerInfo->pvData, pdpnPlayerInfo->dwDataSize);
 +    }
 +
@@ -102,7 +107,7 @@ index a07a59a..63219bd 100644
  }
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_GetPeerInfo(IDirectPlay8Peer *iface, const DPNID dpnid,
-@@ -533,6 +580,9 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
+@@ -533,6 +585,9 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
      Client->usercontext = NULL;
      Client->msghandler = NULL;
      Client->flags = 0;
