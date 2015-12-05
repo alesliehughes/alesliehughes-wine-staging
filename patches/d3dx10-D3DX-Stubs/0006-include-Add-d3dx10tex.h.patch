@@ -1,15 +1,28 @@
-From fd18a11bdb71e4a45f8549fd7271303776695ca1 Mon Sep 17 00:00:00 2001
+From e574457872ffa66af1c4bc75db043b32bed98fcb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:58:08 +1100
-Subject: [PATCH 08/10] include: Add d3dx10tex.h
+Subject: [PATCH 06/10] include: Add d3dx10tex.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
+ include/Makefile.in |  1 +
  include/d3dx10.h    |  1 +
  include/d3dx10tex.h | 95 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 96 insertions(+)
+ 3 files changed, 97 insertions(+)
  create mode 100644 include/d3dx10tex.h
 
+diff --git a/include/Makefile.in b/include/Makefile.in
+index ac5e9ea..442e5e7 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -249,6 +249,7 @@ HEADER_SRCS = \
+ 	d3dx10async.h \
+ 	d3dx10math.h \
+ 	d3dx10math.inl \
++	d3dx10tex.h \
+ 	d3dx9.h \
+ 	d3dx9anim.h \
+ 	d3dx9core.h \
 diff --git a/include/d3dx10.h b/include/d3dx10.h
 index b3825b3..fb48723 100644
 --- a/include/d3dx10.h
@@ -123,5 +136,5 @@ index 0000000..e61288c3
 +
 +#endif
 -- 
-1.9.1
+2.6.2
 

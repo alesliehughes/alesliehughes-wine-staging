@@ -1,4 +1,4 @@
-From 7a010d1137736a5a11c64e18826c6a5d619fa67b Mon Sep 17 00:00:00 2001
+From 7bd5c4d50e5803532435873b304b6e0a0ecaf890 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 30 Nov 2015 16:11:54 +1100
 Subject: [PATCH 10/10] d3dx10: Implement D3DX10CreateFontA/W
@@ -332,5 +332,5 @@ index 0000000..873b8e3
 +        facename, font);
 +}
 -- 
-1.9.1
+2.6.2
 
