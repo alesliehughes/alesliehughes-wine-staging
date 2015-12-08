@@ -1,7 +1,7 @@
-From 0f71e415ffca25c0f6c7fab92d85af778760435d Mon Sep 17 00:00:00 2001
+From 51bf8245b54ddda4a2a99e02bb01a6c756afa260 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:21:33 +1100
-Subject: [PATCH 08/10] d3dx10_43/tests: Add D3DX10CreateSprite tests
+Subject: [PATCH 7/9] d3dx10_43/tests: Add D3DX10CreateSprite tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -162,5 +162,5 @@ index 0000000..b3679f1
 +}
 \ No newline at end of file
 -- 
-2.6.2
+1.9.1
 

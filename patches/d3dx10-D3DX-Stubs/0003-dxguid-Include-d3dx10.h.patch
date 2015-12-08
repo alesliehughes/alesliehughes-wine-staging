@@ -1,7 +1,7 @@
-From 56c060ee6564b11dc834667b8332e299ebe76999 Mon Sep 17 00:00:00 2001
+From bfe266375f5f78838b4c499daf0fd00c5281616b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 11:34:53 +1100
-Subject: [PATCH 04/10] dxguid: Include d3dx10.h
+Subject: [PATCH 3/9] dxguid: Include d3dx10.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -20,5 +20,5 @@ index 1d07a4d..8a447c7 100644
  #include "d3d10_1shader.h"
  #include "d3d11shader.h"
 -- 
-2.6.2
+1.9.1
 

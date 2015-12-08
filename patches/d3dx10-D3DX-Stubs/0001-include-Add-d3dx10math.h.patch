@@ -1,7 +1,7 @@
-From ec42070d7568c518d9d0f5998861fdc8457c42d5 Mon Sep 17 00:00:00 2001
+From 61a855339e1634c52f3c0eefb502d8e98c92b75d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Nov 2015 11:56:21 +1100
-Subject: [PATCH 02/10] include: Add d3dx10math.h
+Subject: [PATCH 1/9] include: Add d3dx10math.h
 
 The d3dx10math.h guard has the define as d3dx9math.h. This is
 to prevent double-inclusion
@@ -1856,5 +1856,5 @@ index 0000000..71cfe41
 +
 +#endif
 -- 
-2.6.2
+1.9.1
 

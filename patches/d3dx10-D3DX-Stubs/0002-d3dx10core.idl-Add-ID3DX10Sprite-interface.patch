@@ -1,7 +1,7 @@
-From 1ee077bcd6da2b2811affd096892601d9f925edf Mon Sep 17 00:00:00 2001
+From e9f6d7e0e0b348f8b43359607a476cd03389b5cc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 11:34:08 +1100
-Subject: [PATCH 03/10] d3dx10core.idl: Add ID3DX10Sprite interface
+Subject: [PATCH 2/9] d3dx10core.idl: Add ID3DX10Sprite interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -77,5 +77,5 @@ index f0d8ff6..bcaff03 100644
 +cpp_quote("#define MAKE_D3DHRESULT( code )                 MAKE_HRESULT( 1, _FACD3D, code )")
 +cpp_quote("#define D3DERR_INVALIDCALL                      MAKE_D3DHRESULT(2156)")
 -- 
-2.6.2
+1.9.1
 

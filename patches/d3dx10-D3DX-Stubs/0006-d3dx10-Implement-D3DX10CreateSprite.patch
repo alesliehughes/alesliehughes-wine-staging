@@ -1,7 +1,7 @@
-From b9eda816bfd38e71bef9f57cef04741e6479d26b Mon Sep 17 00:00:00 2001
+From c3548abf05cda812fb66b2babb29a8c3c4f65c6a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 11:35:36 +1100
-Subject: [PATCH 07/10] d3dx10: Implement D3DX10CreateSprite
+Subject: [PATCH 6/9] d3dx10: Implement D3DX10CreateSprite
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=27737
 
@@ -283,5 +283,5 @@ index 0000000..d87bc23
 +    return S_OK;
 +}
 -- 
-2.6.2
+1.9.1
 

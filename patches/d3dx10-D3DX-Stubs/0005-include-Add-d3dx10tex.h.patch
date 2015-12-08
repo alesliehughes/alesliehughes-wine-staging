@@ -1,7 +1,7 @@
-From e574457872ffa66af1c4bc75db043b32bed98fcb Mon Sep 17 00:00:00 2001
+From 144caf5db7cb0486603ae5dfc9b70093470e25d3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:58:08 +1100
-Subject: [PATCH 06/10] include: Add d3dx10tex.h
+Subject: [PATCH 5/9] include: Add d3dx10tex.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -136,5 +136,5 @@ index 0000000..e61288c3
 +
 +#endif
 -- 
-2.6.2
+1.9.1
 
