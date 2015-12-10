@@ -1,7 +1,7 @@
-From 51bf8245b54ddda4a2a99e02bb01a6c756afa260 Mon Sep 17 00:00:00 2001
+From 57b961e800733f6f89465f00d5ce4bd092ea17cb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:21:33 +1100
-Subject: [PATCH 7/9] d3dx10_43/tests: Add D3DX10CreateSprite tests
+Subject: [PATCH 6/8] d3dx10_43/tests: Add D3DX10CreateSprite tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

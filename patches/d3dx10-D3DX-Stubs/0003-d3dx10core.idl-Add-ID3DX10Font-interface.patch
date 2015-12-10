@@ -1,7 +1,7 @@
-From 8c8a33cbd29c64258e366fdb46e858cc856bad70 Mon Sep 17 00:00:00 2001
+From 4ebb2431fca6b7f3dfdd32956866ea02fdb1604d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:35:13 +1100
-Subject: [PATCH 4/9] d3dx10core.idl: Add ID3DX10Font interface
+Subject: [PATCH 3/8] d3dx10core.idl: Add ID3DX10Font interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

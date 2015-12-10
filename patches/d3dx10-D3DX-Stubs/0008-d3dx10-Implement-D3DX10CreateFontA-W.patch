@@ -1,7 +1,7 @@
-From 94893296ca03983bee6c3e9ee211706cc56790d5 Mon Sep 17 00:00:00 2001
+From 92d55518d4c70665db352ed71f4137c8d952b180 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 30 Nov 2015 16:11:54 +1100
-Subject: [PATCH 9/9] d3dx10: Implement D3DX10CreateFontA/W
+Subject: [PATCH 8/8] d3dx10: Implement D3DX10CreateFontA/W
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=23382
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=27738
