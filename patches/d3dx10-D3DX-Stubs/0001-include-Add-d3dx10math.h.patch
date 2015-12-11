@@ -1,4 +1,4 @@
-From b2572a123e328a329826d579de11e47102a849ab Mon Sep 17 00:00:00 2001
+From 706bd4fe59a8509677c9c8d8d32bdca842d0dd82 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Nov 2015 11:56:21 +1100
 Subject: [PATCH 1/8] include: Add d3dx10math.h

@@ -1,4 +1,4 @@
-From 92d55518d4c70665db352ed71f4137c8d952b180 Mon Sep 17 00:00:00 2001
+From 43eb8472a06214642f7b1a19957852552f5b4fb1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 30 Nov 2015 16:11:54 +1100
 Subject: [PATCH 8/8] d3dx10: Implement D3DX10CreateFontA/W
@@ -45,7 +45,7 @@ index 9f225c1..ef40eb1 100644
  @ stub D3DX10CreateShaderResourceViewFromFileW(ptr wstr ptr ptr ptr ptr)
 diff --git a/dlls/d3dx10_43/font.c b/dlls/d3dx10_43/font.c
 new file mode 100644
-index 0000000..873b8e3
+index 0000000..40c933a
 --- /dev/null
 +++ b/dlls/d3dx10_43/font.c
 @@ -0,0 +1,282 @@
@@ -208,7 +208,7 @@ index 0000000..873b8e3
 +static HRESULT WINAPI dx10_font_GetGlyphData(ID3DX10Font *iface, UINT glyph, ID3D10ShaderResourceView **texture,
 +    RECT *blackbox, POINT *cellinc)
 +{
-+    FIXME("iface %p, glyph %u, texture %p, blackbox %p,  cellinc %p.\n", iface, glyph, texture, blackbox, cellinc);
++    FIXME("iface %p, glyph %u, texture %p, blackbox %p, cellinc %p.\n", iface, glyph, texture, blackbox, cellinc);
 +
 +    return E_NOTIMPL;
 +}

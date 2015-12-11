@@ -1,4 +1,4 @@
-From 57b961e800733f6f89465f00d5ce4bd092ea17cb Mon Sep 17 00:00:00 2001
+From 861e1e953c22a3b188fc005f08f0f7849c0d240e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 14:21:33 +1100
 Subject: [PATCH 6/8] d3dx10_43/tests: Add D3DX10CreateSprite tests
@@ -50,7 +50,7 @@ index 0000000..0ac05a2
 +	core.c
 diff --git a/dlls/d3dx10_43/tests/core.c b/dlls/d3dx10_43/tests/core.c
 new file mode 100644
-index 0000000..b3679f1
+index 0000000..d4e7405
 --- /dev/null
 +++ b/dlls/d3dx10_43/tests/core.c
 @@ -0,0 +1,106 @@
@@ -128,10 +128,10 @@ index 0000000..b3679f1
 +    }
 +
 +    hr = D3DX10CreateSprite(device, 0, NULL);
-+    ok (hr == D3DERR_INVALIDCALL, "returned %#x, expected %#x\n", hr, D3DERR_INVALIDCALL);
++    ok (hr == D3DERR_INVALIDCALL, "Got unexpected hr %#x.\n", hr);
 +
 +    hr = D3DX10CreateSprite(device, 0, &sprite);
-+    ok(hr == S_OK, "returned %#x, expected %#x\n", hr, S_OK);
++    ok(hr == S_OK, "Got unexpected hr %#x.\n", hr);
 +    if (hr == S_OK)
 +    {
 +        ID3D10Device *devicetmp;
@@ -139,15 +139,15 @@ index 0000000..b3679f1
 +        D3DXMatrixIdentity(&identity);
 +
 +        hr = ID3DX10Sprite_GetDevice(sprite, &devicetmp);
-+        ok(hr == S_OK, "returned %#x, expected %#x\n", hr, S_OK);
++        ok(hr == S_OK, "Got unexpected hr %#x.\n", hr);
 +        ok(devicetmp == device, "Invalid device returned\n");
 +
 +        hr = ID3DX10Sprite_GetProjectionTransform(sprite, &mat);
-+        todo_wine ok(hr == S_OK, "returned %#x, expected %#x\n", hr, S_OK);
++        todo_wine ok(hr == S_OK, "Got unexpected hr %#x.\n", hr);
 +        todo_wine check_mat(mat, identity);
 +
 +        hr = ID3DX10Sprite_GetViewTransform(sprite, &mat);
-+        todo_wine ok(hr == S_OK, "returned %#x, expected %#x\n", hr, S_OK);
++        todo_wine ok(hr == S_OK, "Got unexpected hr %#x.\n", hr);
 +        todo_wine check_mat(mat, identity);
 +
 +        ID3DX10Sprite_Release(sprite);

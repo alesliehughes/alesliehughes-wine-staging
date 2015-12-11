@@ -1,4 +1,4 @@
-From bdb97d788c21c39f15bf4b1b32793a7e33685fc3 Mon Sep 17 00:00:00 2001
+From 7dfd286d8df766d9ba34daa6724cf11384de3161 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:58:08 +1100
 Subject: [PATCH 4/8] include: Add d3dx10tex.h

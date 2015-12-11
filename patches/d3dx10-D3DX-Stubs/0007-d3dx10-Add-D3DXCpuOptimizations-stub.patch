@@ -1,4 +1,4 @@
-From 2fa84f98f642ce8e352799ee30e4830e12f6f63b Mon Sep 17 00:00:00 2001
+From 0dfee1b758a868b007f0774f1f972f446bfe6ca3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 09:38:17 +1100
 Subject: [PATCH 7/8] d3dx10: Add D3DXCpuOptimizations stub
