@@ -1,4 +1,4 @@
-From 1f0f034fa691e6de5588f8ae9775243dbca83020 Mon Sep 17 00:00:00 2001
+From ad95eaae1f35418628035ca857d519ca9650cd81 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 29 Jun 2015 15:11:34 +1000
 Subject: [PATCH 2/5] dpnet: Implement IDirectPlay8Client EnumHosts
@@ -24,7 +24,7 @@ index 880b7bd..541e104 100644
  C_SRCS = \
  	address.c \
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index bf2b8d2..1f9f261 100644
+index bf2b8d2..dcbb411 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,8 @@
@@ -76,14 +76,14 @@ index bf2b8d2..1f9f261 100644
 +{
 +    DPN_SP_CAPS spcaps;
 +    PFNDPNMESSAGEHANDLER msghandler;
-+    GUID appGUID;
++    GUID app_guid;
 +    IDirectPlay8Address *device;
-+    void *pUserEnumData;
-+    DWORD dwUserEnumDataSize;
-+    DWORD dwEnumCount;
-+    DWORD dwRetryInterval;
-+    DWORD dwTimeOut;
-+    void *pvUserContext;
++    void *user_enum_data;
++    DWORD user_enum_data_size;
++    DWORD enum_count;
++    DWORD retry_interval;
++    DWORD timeout;
++    void *user_context;
 +
 +    HANDLE event;
 +};
@@ -147,7 +147,7 @@ index bf2b8d2..1f9f261 100644
 +            query.header.EnumPayload = 12345;
 +
 +            query.QueryType = PACKET_QUERY_GUID;
-+            query.ApplicationGUID = enumdata->appGUID;
++            query.ApplicationGUID = enumdata->app_guid;
 +
 +            from.sin_family = AF_INET;
 +            from.sin_port = htons(DPNA_DPNSVR_PORT);
@@ -280,7 +280,7 @@ index bf2b8d2..1f9f261 100644
 +    enumdata->spcaps = This->spcaps;
 +    enumdata->msghandler = This->msghandler;
 +
-+    enumdata->appGUID = pApplicationDesc->guidApplication;
++    enumdata->app_guid = pApplicationDesc->guidApplication;
 +    hr = IDirectPlay8Address_Duplicate(pDeviceInfo, &enumdata->device);
 +    if(FAILED(hr))
 +    {
@@ -291,12 +291,12 @@ index bf2b8d2..1f9f261 100644
 +
 +        return E_OUTOFMEMORY;
 +    }
-+    enumdata->pUserEnumData = pUserEnumData;
-+    enumdata->dwUserEnumDataSize = dwUserEnumDataSize;
-+    enumdata->dwEnumCount = dwEnumCount;
-+    enumdata->dwRetryInterval = dwRetryInterval;
-+    enumdata->dwTimeOut = dwTimeOut;
-+    enumdata->pvUserContext = pvUserContext;
++    enumdata->user_enum_data = pUserEnumData;
++    enumdata->user_enum_data_size = dwUserEnumDataSize;
++    enumdata->enum_count = dwEnumCount;
++    enumdata->retry_interval = dwRetryInterval;
++    enumdata->timeout = dwTimeOut;
++    enumdata->user_context = pvUserContext;
 +
 +    This->enumhosts = CreateEventA( NULL, TRUE, FALSE, NULL);
 +    enumdata->event = This->enumhosts;

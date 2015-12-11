@@ -1,4 +1,4 @@
-From 17f5c908b156b577a85a0ffe74305627ca8fc459 Mon Sep 17 00:00:00 2001
+From e121c77b8f1adaef7f54af369218d3c62f919810 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
 Subject: [PATCH 3/5] dpnet: Implement IDirectPlay8Peer SetPeerInfo
@@ -28,7 +28,7 @@ index a07a59a..a755a5e 100644
  
 +    WCHAR *peername;
 +    void  *data;
-+    int   datasize;
++    DWORD   datasize;
 +
      DPN_SP_CAPS spcaps;
  } IDirectPlay8PeerImpl;
