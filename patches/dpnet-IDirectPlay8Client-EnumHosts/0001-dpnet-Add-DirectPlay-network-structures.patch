@@ -1,4 +1,4 @@
-From 60676071d10b75b4af844290cd2894bae6be1064 Mon Sep 17 00:00:00 2001
+From 2c781c78d27c02eb9c383b31cdb870ed57ba0eb9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2015 11:22:17 +1000
 Subject: [PATCH 1/5] dpnet: Add DirectPlay network structures
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 56 insertions(+)
 
 diff --git a/include/wine/dplaysp.h b/include/wine/dplaysp.h
-index 1459232..8e6bbbb 100644
+index 1459232..5447a2a 100644
 --- a/include/wine/dplaysp.h
 +++ b/include/wine/dplaysp.h
 @@ -370,4 +370,60 @@ typedef HRESULT (WINAPI *LPDPSP_SPINIT)(LPSPINITDATA);

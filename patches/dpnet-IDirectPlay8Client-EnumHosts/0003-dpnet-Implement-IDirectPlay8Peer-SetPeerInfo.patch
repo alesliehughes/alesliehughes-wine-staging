@@ -1,4 +1,4 @@
-From e121c77b8f1adaef7f54af369218d3c62f919810 Mon Sep 17 00:00:00 2001
+From f78d841c44a8a7d7024fd862eb4eacddb927ee9f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
 Subject: [PATCH 3/5] dpnet: Implement IDirectPlay8Peer SetPeerInfo
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 99 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index a07a59a..a755a5e 100644
+index a07a59a..cab95df 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -33,6 +33,8 @@
@@ -28,7 +28,7 @@ index a07a59a..a755a5e 100644
  
 +    WCHAR *peername;
 +    void  *data;
-+    DWORD   datasize;
++    DWORD datasize;
 +
      DPN_SP_CAPS spcaps;
  } IDirectPlay8PeerImpl;
