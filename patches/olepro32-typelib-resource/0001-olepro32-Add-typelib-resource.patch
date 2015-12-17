@@ -1,4 +1,4 @@
-From ed60ba444fb594d321faa5bf9fe630aac09e9588 Mon Sep 17 00:00:00 2001
+From 3c9207f3f33662bcbe0efaafb31d667bc85f0c80 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 16 Dec 2015 12:34:59 +1100
 Subject: [PATCH] olepro32: Add typelib resource
@@ -8,8 +8,8 @@ Fixes: https://bugs.winehq.org/show_bug.cgi?id=14617
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/olepro32/Makefile.in |   2 +
- dlls/olepro32/olepro.idl  | 382 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 384 insertions(+)
+ dlls/olepro32/olepro.idl  | 358 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 360 insertions(+)
  create mode 100644 dlls/olepro32/olepro.idl
 
 diff --git a/dlls/olepro32/Makefile.in b/dlls/olepro32/Makefile.in
@@ -25,10 +25,10 @@ index a6163d1..032fdbd 100644
  RC_SRCS = version.rc
 diff --git a/dlls/olepro32/olepro.idl b/dlls/olepro32/olepro.idl
 new file mode 100644
-index 0000000..5f82582
+index 0000000..a34822d
 --- /dev/null
 +++ b/dlls/olepro32/olepro.idl
-@@ -0,0 +1,382 @@
+@@ -0,0 +1,358 @@
 +/*
 + * Copyright (C) 2015 Alistair Leslie-Hughes
 + *
@@ -150,27 +150,6 @@ index 0000000..5f82582
 +                       [out] EXCEPINFO *pexcepinfo,
 +                       [out] unsigned int *puArgErr);
 +
-+    }
-+
-+    [
-+        odl,
-+        uuid(00020404-0000-0000-C000-000000000046),
-+        hidden
-+    ]
-+    interface IEnumVARIANT : IUnknown
-+    {
-+        HRESULT Next(
-+                     [in] unsigned long celt,
-+                     [in] VARIANT *rgvar,
-+                     [out] unsigned long *pceltFetched);
-+
-+        HRESULT Skip(
-+                     [in] unsigned long celt);
-+
-+        HRESULT Reset();
-+
-+        HRESULT Clone(
-+                      [out] IEnumVARIANT **ppenum);
 +    }
 +
 +    typedef [uuid(66504301-BE0F-101A-8BBB-00AA00300CAB), public]
@@ -321,9 +300,6 @@ index 0000000..5f82582
 +    ]
 +    coclass StdFont {
 +        [default] dispinterface Font;
-+        /* FIXME: We can't reference dispinterface FontEvents here because we need it to
-+           appear at the end of the typelib. */
-+/*      [default, source] dispinterface FontEvents;*/
 +        interface IFont;
 +    };
 +
@@ -412,5 +388,5 @@ index 0000000..5f82582
 +    };
 +};
 -- 
-2.6.2
+1.9.1
 
