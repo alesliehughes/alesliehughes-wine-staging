@@ -1,28 +1,13 @@
-From 8ce6e928dac3aae70f58d32bb57bd84b44d88ce8 Mon Sep 17 00:00:00 2001
+From a44816c806da276b41df40185d8cab70d4a69c91 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 14:26:15 +1100
-Subject: [PATCH 3/3] msado15: Register typelib
+Subject: [PATCH 3/6] msado15: Register typelib
 
 ---
- dlls/msado15/Makefile.in         |  7 ++++---
  dlls/msado15/msado15_typelib.idl | 22 ++++++++++++++++++++++
- 2 files changed, 26 insertions(+), 3 deletions(-)
+ 1 file changed, 22 insertions(+)
  create mode 100644 dlls/msado15/msado15_typelib.idl
 
-diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
-index cae927b..5381686 100644
---- a/dlls/msado15/Makefile.in
-+++ b/dlls/msado15/Makefile.in
-@@ -1,5 +1,6 @@
--MODULE    = msado15.dll
-+MODULE  = msado15.dll
- 
- 
--C_SRCS = \
--	msado15.c
-+C_SRCS = msado15.c
-+
-+IDL_SRCS = msado15_typelib.idl
 diff --git a/dlls/msado15/msado15_typelib.idl b/dlls/msado15/msado15_typelib.idl
 new file mode 100644
 index 0000000..51e03c2

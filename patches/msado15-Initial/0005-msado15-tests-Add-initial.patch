@@ -1,0 +1,117 @@
+From 532ea220f835ceeddd5088a7cb6f2b023c330cc6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Dec 2015 14:01:02 +1100
+Subject: [PATCH 5/6] msado15/tests: Add initial
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure.ac                    |  3 +-
+ dlls/msado15/tests/Makefile.in  |  4 +++
+ dlls/msado15/tests/connection.c | 69 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 75 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/msado15/tests/Makefile.in
+ create mode 100644 dlls/msado15/tests/connection.c
+
+diff --git a/configure.ac b/configure.ac
+index 6018b3b..9b4477e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2993,7 +2993,8 @@ WINE_CONFIG_DLL(msacm.dll16,enable_win16)
+ WINE_CONFIG_DLL(msacm32.drv)
+ WINE_CONFIG_DLL(msacm32,,[implib,po])
+ WINE_CONFIG_TEST(dlls/msacm32/tests)
+-WINE_CONFIG_DLL(msado15)
++WINE_CONFIG_DLL(msado15,,[clean])
++WINE_CONFIG_TEST(dlls/msado15/tests)
+ WINE_CONFIG_DLL(msadp32.acm)
+ WINE_CONFIG_DLL(msasn1,,[implib])
+ WINE_CONFIG_DLL(mscat32)
+diff --git a/dlls/msado15/tests/Makefile.in b/dlls/msado15/tests/Makefile.in
+new file mode 100644
+index 0000000..33d4b68
+--- /dev/null
++++ b/dlls/msado15/tests/Makefile.in
+@@ -0,0 +1,4 @@
++TESTDLL   = msado15.dll
++IMPORTS   = ole32 user32
++
++C_SRCS = connection.c
+diff --git a/dlls/msado15/tests/connection.c b/dlls/msado15/tests/connection.c
+new file mode 100644
+index 0000000..9f63e8a
+--- /dev/null
++++ b/dlls/msado15/tests/connection.c
+@@ -0,0 +1,69 @@
++/*
++ * msado test
++ *
++ * Copyright 2015 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++
++#define COBJMACROS
++
++#include <stdio.h>
++#include <assert.h>
++
++#include "initguid.h"
++#include "windows.h"
++#include "ole2.h"
++#include "msado15.h"
++#include "ocidl.h"
++#include "dispex.h"
++
++#include "wine/test.h"
++
++void test_connection_interface(void)
++{
++    HRESULT hr;
++    _Connection *connection;
++    IRunnableObject *runtime;
++    ISupportErrorInfo *errorinfo;
++
++    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER,
++            &IID__Connection, (void**)&connection);
++    if(FAILED(hr))
++    {
++        skip("Failed to create Connection instance\n");
++        return;
++    }
++
++    hr = _Connection_QueryInterface(connection, &IID_IRunnableObject, (void**)&runtime);
++    ok(hr == E_NOINTERFACE, "Unexpected IRunnableObject interface\n");
++
++    hr = _Connection_QueryInterface(connection, &IID_ISupportErrorInfo, (void**)&errorinfo);
++    todo_wine ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
++    if(hr == S_OK)
++        ISupportErrorInfo_Release(errorinfo);
++
++    _Connection_Release(connection);
++}
++
++START_TEST(connection)
++{
++    CoInitialize(NULL);
++
++    test_connection_interface();
++
++    CoUninitialize();
++}
+\ No newline at end of file
+-- 
+1.9.1
+

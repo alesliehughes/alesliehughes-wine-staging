@@ -1,0 +1,78 @@
+From 49286fd057b62964536e61aab3a5d4fa9884f5b7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Dec 2015 14:41:44 +1100
+Subject: [PATCH 6/6] msado15: Implement _Connection.get_state
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msado15/connection.c       |  9 +++++++--
+ dlls/msado15/tests/connection.c | 11 +++++++++++
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 0bf506f..d68aab5 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -48,6 +48,8 @@ typedef struct
+ {
+     _Connection _Connection_iface;
+ 
++    ObjectStateEnum state;
++
+     LONG ref;
+ } connection;
+ 
+@@ -363,9 +365,11 @@ static HRESULT WINAPI connection_put_Provider(_Connection *iface, BSTR provider)
+ static HRESULT WINAPI connection_get_State(_Connection *iface, LONG *state)
+ {
+     connection *This = impl_from_Connection(iface);
+-    FIXME("(%p)->(%p)\n", This, state);
++    TRACE("(%p)->(%p)\n", This, state);
+ 
+-    return E_NOTIMPL;
++    *state = This->state;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI connection_OpenSchema(_Connection *iface, SchemaEnum schema, VARIANT restrictions,
+@@ -441,6 +445,7 @@ HRESULT Connecton_create(void **out)
+ 
+     This->_Connection_iface.lpVtbl = &connection_vtbl;
+     This->ref = 1;
++    This->state = adStateClosed;
+ 
+     *out = &This->_Connection_iface;
+ 
+diff --git a/dlls/msado15/tests/connection.c b/dlls/msado15/tests/connection.c
+index 9f63e8a..35f4797 100644
+--- a/dlls/msado15/tests/connection.c
++++ b/dlls/msado15/tests/connection.c
+@@ -39,6 +39,7 @@ void test_connection_interface(void)
+     _Connection *connection;
+     IRunnableObject *runtime;
+     ISupportErrorInfo *errorinfo;
++    LONG state;
+ 
+     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER,
+             &IID__Connection, (void**)&connection);
+@@ -56,6 +57,16 @@ void test_connection_interface(void)
+     if(hr == S_OK)
+         ISupportErrorInfo_Release(errorinfo);
+ 
++if(0)   /* Crashes on windows */
++{
++    hr = _Connection_get_State(connection, NULL);
++    ok(hr == E_INVALIDARG, "Unexpected hr 0x%08x\n", hr);
++}
++
++    hr = _Connection_get_State(connection, &state);
++    ok(hr == S_OK, "Failed to get state, hr 0x%08x\n", hr);
++    ok(state == adStateClosed, "Unexpected state value 0x%08x\n", state);
++
+     _Connection_Release(connection);
+ }
+ 
+-- 
+1.9.1
+

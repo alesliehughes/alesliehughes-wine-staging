@@ -1,7 +1,7 @@
-From eb1c216243bb5122d1e1bfb09c23c57325e4f69b Mon Sep 17 00:00:00 2001
+From 8ab0924a05d127f06d17991715cc6730e0132684 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 12:07:51 +1100
-Subject: [PATCH 2/3] include: Add msado15.idl
+Subject: [PATCH 2/6] include: Add msado15.idl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,20 +11,20 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 include/msado15.idl
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index ea0e3fd..3f11395 100644
+index ea0e3fd..f7e73ca 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -92,6 +92,7 @@ IDL_SRCS = \
+@@ -90,6 +90,7 @@ IDL_SRCS = \
+ 	mmc.idl \
+ 	mmdeviceapi.idl \
  	mmstream.idl \
++	msado15.idl \
  	mscoree.idl \
  	msctf.idl \
-+	msado15.idl \
  	msdadc.idl \
- 	msdasc.idl \
- 	mshtmhst.idl \
 diff --git a/include/msado15.idl b/include/msado15.idl
 new file mode 100644
-index 0000000..961cf33
+index 0000000..ed70228
 --- /dev/null
 +++ b/include/msado15.idl
 @@ -0,0 +1,2040 @@
@@ -941,11 +941,11 @@ index 0000000..961cf33
 +interface _Collection : IDispatch
 +{
 +    [id(0x60020000), propget]
-+    HRESULT _stdcall Count([out, retval] long *cnt);
++    HRESULT Count([out, retval] long *cnt);
 +    [id(DISPID_NEWENUM), restricted]
-+    HRESULT _stdcall _NewEnum([out, retval] IUnknown **object);
++    HRESULT _NewEnum([out, retval] IUnknown **object);
 +    [id(0x60020002)]
-+    HRESULT _stdcall Refresh();
++    HRESULT Refresh();
 +};
 +
 +[
@@ -958,9 +958,9 @@ index 0000000..961cf33
 +interface _DynaCollection : _Collection
 +{
 +    [id(0x60030000)]
-+    HRESULT _stdcall Append([in] IDispatch *object);
++    HRESULT Append([in] IDispatch *object);
 +    [id(0x60030001)]
-+    HRESULT _stdcall Delete([in] VARIANT index);
++    HRESULT Delete([in] VARIANT index);
 +};
 +
 +[
@@ -973,7 +973,7 @@ index 0000000..961cf33
 +interface _ADO : IDispatch
 +{
 +    [id(0x000001f4), propget]
-+    HRESULT _stdcall Properties([out, retval] Properties **props);
++    HRESULT Properties([out, retval] Properties **props);
 +};
 +
 +[
@@ -986,7 +986,7 @@ index 0000000..961cf33
 +interface Properties : _Collection
 +{
 +    [id(00000000), propget]
-+    HRESULT _stdcall Item([in] VARIANT index, [out, retval] Property **property);
++    HRESULT Item([in] VARIANT index, [out, retval] Property **property);
 +};
 +
 +[
@@ -998,17 +998,17 @@ index 0000000..961cf33
 +]
 +interface Property : IDispatch {
 +    [id(00000000), propget]
-+    HRESULT _stdcall Value([out, retval] VARIANT *value);
++    HRESULT Value([out, retval] VARIANT *value);
 +    [id(00000000), propput]
-+    HRESULT _stdcall Value([in] VARIANT value);
++    HRESULT Value([in] VARIANT value);
 +    [id(0x60020002), propget]
-+    HRESULT _stdcall Name([out, retval] BSTR *name);
++    HRESULT Name([out, retval] BSTR *name);
 +    [id(0x60020003), propget]
-+    HRESULT _stdcall Type([out, retval] DataTypeEnum *type);
++    HRESULT Type([out, retval] DataTypeEnum *type);
 +    [id(0x60020004), propget]
-+    HRESULT _stdcall Attributes([out, retval] long *attributes);
++    HRESULT Attributes([out, retval] long *attributes);
 +    [id(0x60020004), propput]
-+    HRESULT _stdcall Attributes([in] long attributes);
++    HRESULT Attributes([in] long attributes);
 +};
 +
 +[
@@ -1020,19 +1020,19 @@ index 0000000..961cf33
 +]
 +interface Error : IDispatch {
 +    [id(0x60020000), propget]
-+    HRESULT _stdcall Number([out, retval] long *num);
++    HRESULT Number([out, retval] long *num);
 +    [id(0x60020001), propget]
-+    HRESULT _stdcall Source([out, retval] BSTR *source);
++    HRESULT Source([out, retval] BSTR *source);
 +    [id(00000000), propget]
-+    HRESULT _stdcall Description([out, retval] BSTR *desc);
++    HRESULT Description([out, retval] BSTR *desc);
 +    [id(0x60020003), propget]
-+    HRESULT _stdcall HelpFile([out, retval] BSTR *help);
++    HRESULT HelpFile([out, retval] BSTR *help);
 +    [id(0x60020004), propget]
-+    HRESULT _stdcall HelpContext([out, retval] long *helpcontext);
++    HRESULT HelpContext([out, retval] long *helpcontext);
 +    [id(0x60020005), propget]
-+    HRESULT _stdcall SQLState([out, retval] BSTR *state);
++    HRESULT SQLState([out, retval] BSTR *state);
 +    [id(0x60020006), propget]
-+    HRESULT _stdcall NativeError([out, retval] long *error);
++    HRESULT NativeError([out, retval] long *error);
 +};
 +
 +[
@@ -1045,9 +1045,9 @@ index 0000000..961cf33
 +interface Errors : _Collection
 +{
 +    [id(00000000), propget]
-+    HRESULT _stdcall Item([in] VARIANT index, [out, retval] Error **error);
++    HRESULT Item([in] VARIANT index, [out, retval] Error **error);
 +    [id(0x60030001)]
-+    HRESULT _stdcall Clear();
++    HRESULT Clear();
 +};
 +
 +[
@@ -1060,42 +1060,42 @@ index 0000000..961cf33
 +interface Command15 : _ADO
 +{
 +    [id(0x60030000), propget]
-+    HRESULT _stdcall ActiveConnection([out, retval] _Connection **connection);
++    HRESULT ActiveConnection([out, retval] _Connection **connection);
 +    [id(0x60030000), propputref]
-+    HRESULT _stdcall ActiveConnection([in] _Connection *connection);
++    HRESULT ActiveConnection([in] _Connection *connection);
 +    [id(0x60030000), propput]
-+    HRESULT _stdcall ActiveConnection([in] VARIANT connection);
++    HRESULT ActiveConnection([in] VARIANT connection);
 +    [id(0x60030003), propget]
-+    HRESULT _stdcall CommandText([out, retval] BSTR *text);
++    HRESULT CommandText([out, retval] BSTR *text);
 +    [id(0x60030003), propput]
-+    HRESULT _stdcall CommandText([in] BSTR text);
++    HRESULT CommandText([in] BSTR text);
 +    [id(0x60030005), propget]
-+    HRESULT _stdcall CommandTimeout([out, retval] long *timeout);
++    HRESULT CommandTimeout([out, retval] long *timeout);
 +    [id(0x60030005), propput]
-+    HRESULT _stdcall CommandTimeout([in] long timeout);
++    HRESULT CommandTimeout([in] long timeout);
 +    [id(0x60030007), propget]
-+    HRESULT _stdcall Prepared([out, retval] VARIANT_BOOL *prepared);
++    HRESULT Prepared([out, retval] VARIANT_BOOL *prepared);
 +    [id(0x60030007), propput]
-+    HRESULT _stdcall Prepared([in] VARIANT_BOOL prepared);
++    HRESULT Prepared([in] VARIANT_BOOL prepared);
 +    [id(0x60030009)]
-+    HRESULT _stdcall Execute([out, optional] VARIANT *recordsaffected, [in, optional] VARIANT *parameters,
++    HRESULT Execute([out, optional] VARIANT *recordsaffected, [in, optional] VARIANT *parameters,
 +                    [in, defaultvalue(-1)] long options, [out, retval] _Recordset **recordset);
 +    [id(0x6003000a)]
-+    HRESULT _stdcall CreateParameter(
++    HRESULT CreateParameter(
 +                    [in,  defaultvalue("")] BSTR name, [in, defaultvalue(adEmpty)] DataTypeEnum type,
 +                    [in, defaultvalue(adParamInput)] ParameterDirectionEnum direction,
 +                    [in, defaultvalue(0)] ADO_LONGPTR size, [in, optional] VARIANT value,
 +                    [out, retval] _Parameter **parameter);
 +    [id(00000000), propget]
-+    HRESULT _stdcall Parameters([out, retval] Parameters **parameters);
++    HRESULT Parameters([out, retval] Parameters **parameters);
 +    [id(0x6003000c), propput]
-+    HRESULT _stdcall CommandType([in] CommandTypeEnum cmdtype);
++    HRESULT CommandType([in] CommandTypeEnum cmdtype);
 +    [id(0x6003000c), propget]
-+    HRESULT _stdcall CommandType([out, retval] CommandTypeEnum *cmdtype);
++    HRESULT CommandType([out, retval] CommandTypeEnum *cmdtype);
 +    [id(0x6003000e), propget]
-+    HRESULT _stdcall Name([out, retval] BSTR *Name);
++    HRESULT Name([out, retval] BSTR *Name);
 +    [id(0x6003000e), propput]
-+    HRESULT _stdcall Name([in] BSTR Name);
++    HRESULT Name([in] BSTR Name);
 +};
 +
 +[
@@ -1108,9 +1108,9 @@ index 0000000..961cf33
 +interface Command25 : Command15
 +{
 +    [id(0x60030010), propget]
-+    HRESULT _stdcall State([out, retval] long *state);
++    HRESULT State([out, retval] long *state);
 +    [id(0x60030011)]
-+    HRESULT _stdcall Cancel();
++    HRESULT Cancel();
 +};
 +
 +[
@@ -1123,17 +1123,17 @@ index 0000000..961cf33
 +interface _Command : Command25
 +{
 +    [id(0x60030012), propputref]
-+    HRESULT _stdcall CommandStream([in] IUnknown *stream);
++    HRESULT CommandStream([in] IUnknown *stream);
 +    [id(0x60030012), propget]
-+    HRESULT _stdcall CommandStream([out, retval] VARIANT *stream);
++    HRESULT CommandStream([out, retval] VARIANT *stream);
 +    [id(0x60030013), propput]
-+    HRESULT _stdcall Dialect([in] BSTR dialect);
++    HRESULT Dialect([in] BSTR dialect);
 +    [id(0x60030013), propget]
-+    HRESULT _stdcall Dialect([out, retval] BSTR  *dialect);
++    HRESULT Dialect([out, retval] BSTR  *dialect);
 +    [id(0x60030014), propput]
-+    HRESULT _stdcall NamedParameters([in] VARIANT_BOOL namedparameters);
++    HRESULT NamedParameters([in] VARIANT_BOOL namedparameters);
 +    [id(0x60030014), propget]
-+    HRESULT _stdcall NamedParameters([out, retval] VARIANT_BOOL *namedparameters);
++    HRESULT NamedParameters([out, retval] VARIANT_BOOL *namedparameters);
 +};
 +
 +[
@@ -1144,63 +1144,63 @@ index 0000000..961cf33
 +]
 +interface Connection15 : _ADO {
 +    [id(00000000), propget]
-+    HRESULT _stdcall ConnectionString([out, retval] BSTR *connectionstring);
++    HRESULT ConnectionString([out, retval] BSTR *connectionstring);
 +    [id(00000000), propput]
-+    HRESULT _stdcall ConnectionString([in] BSTR connectionstring);
++    HRESULT ConnectionString([in] BSTR connectionstring);
 +    [id(0x00000002), propget]
-+    HRESULT _stdcall CommandTimeout([out, retval] long *timeout);
++    HRESULT CommandTimeout([out, retval] long *timeout);
 +    [id(0x00000002), propput]
-+    HRESULT _stdcall CommandTimeout([in] long timeout);
++    HRESULT CommandTimeout([in] long timeout);
 +    [id(0x00000003), propget]
-+    HRESULT _stdcall ConnectionTimeout([out, retval] long *timeout);
++    HRESULT ConnectionTimeout([out, retval] long *timeout);
 +    [id(0x00000003), propput]
-+    HRESULT _stdcall ConnectionTimeout([in] long timeout);
++    HRESULT ConnectionTimeout([in] long timeout);
 +    [id(0x00000004), propget]
-+    HRESULT _stdcall Version([out, retval] BSTR *version);
++    HRESULT Version([out, retval] BSTR *version);
 +    [id(0x00000005)]
-+    HRESULT _stdcall Close();
++    HRESULT Close();
 +    [id(0x00000006)]
-+    HRESULT _stdcall Execute([in] BSTR commandtext, [out, optional] VARIANT *recordsaffected,
++    HRESULT Execute([in] BSTR commandtext, [out, optional] VARIANT *recordsaffected,
 +                    [in, defaultvalue(-1)] long options, [out, retval] _Recordset **recordset);
 +    [id(0x00000007)]
-+    HRESULT _stdcall BeginTrans([out, retval] long *transactionlevel);
++    HRESULT BeginTrans([out, retval] long *transactionlevel);
 +    [id(0x00000008)]
-+    HRESULT _stdcall CommitTrans();
++    HRESULT CommitTrans();
 +    [id(0x00000009)]
-+    HRESULT _stdcall RollbackTrans();
++    HRESULT RollbackTrans();
 +    [id(0x0000000a)]
-+    HRESULT _stdcall Open([in, defaultvalue("")] BSTR connectionstring,[in, defaultvalue("")] BSTR userid,
++    HRESULT Open([in, defaultvalue("")] BSTR connectionstring,[in, defaultvalue("")] BSTR userid,
 +                    [in, defaultvalue("")] BSTR password, [in, defaultvalue(-1)] long options);
 +    [id(0x0000000b), propget]
-+    HRESULT _stdcall Errors([out, retval] Errors **errors);
++    HRESULT Errors([out, retval] Errors **errors);
 +    [id(0x0000000c), propget]
-+    HRESULT _stdcall DefaultDatabase([out, retval] BSTR *defaultdb);
++    HRESULT DefaultDatabase([out, retval] BSTR *defaultdb);
 +    [id(0x0000000c), propput]
-+    HRESULT _stdcall DefaultDatabase([in] BSTR defaultdb);
++    HRESULT DefaultDatabase([in] BSTR defaultdb);
 +    [id(0x0000000d), propget]
-+    HRESULT _stdcall IsolationLevel([out, retval] IsolationLevelEnum *level);
++    HRESULT IsolationLevel([out, retval] IsolationLevelEnum *level);
 +    [id(0x0000000d), propput]
-+    HRESULT _stdcall IsolationLevel([in] IsolationLevelEnum level);
++    HRESULT IsolationLevel([in] IsolationLevelEnum level);
 +    [id(0x0000000e), propget]
-+    HRESULT _stdcall Attributes([out, retval] long *attributes);
++    HRESULT Attributes([out, retval] long *attributes);
 +    [id(0x0000000e), propput]
-+    HRESULT _stdcall Attributes([in] long attributes);
++    HRESULT Attributes([in] long attributes);
 +    [id(0x0000000f), propget]
-+    HRESULT _stdcall CursorLocation([out, retval] CursorLocationEnum *cursorloc);
++    HRESULT CursorLocation([out, retval] CursorLocationEnum *cursorloc);
 +    [id(0x0000000f), propput]
-+    HRESULT _stdcall CursorLocation([in] CursorLocationEnum cursorloc);
++    HRESULT CursorLocation([in] CursorLocationEnum cursorloc);
 +    [id(0x00000010), propget]
-+    HRESULT _stdcall Mode([out, retval] ConnectModeEnum *mode);
++    HRESULT Mode([out, retval] ConnectModeEnum *mode);
 +    [id(0x00000010), propput]
-+    HRESULT _stdcall Mode([in] ConnectModeEnum mode);
++    HRESULT Mode([in] ConnectModeEnum mode);
 +    [id(0x00000011), propget]
-+    HRESULT _stdcall Provider([out, retval] BSTR *provider);
++    HRESULT Provider([out, retval] BSTR *provider);
 +    [id(0x00000011), propput]
-+    HRESULT _stdcall Provider([in] BSTR provider);
++    HRESULT Provider([in] BSTR provider);
 +    [id(0x00000012), propget]
-+    HRESULT _stdcall State([out, retval] long *statee);
++    HRESULT State([out, retval] long *statee);
 +    [id(0x00000013)]
-+    HRESULT _stdcall OpenSchema([in] SchemaEnum schema, [in, optional] VARIANT restrictions,
++    HRESULT OpenSchema([in] SchemaEnum schema, [in, optional] VARIANT restrictions,
 +                    [in, optional] VARIANT schemaid, [out, retval] _Recordset **recordset);
 +};
 +
@@ -1213,7 +1213,7 @@ index 0000000..961cf33
 +interface _Connection : Connection15
 +{
 +    [id(0x00000015)]
-+    HRESULT _stdcall Cancel();
++    HRESULT Cancel();
 +};
 +
 +
@@ -1228,143 +1228,143 @@ index 0000000..961cf33
 +interface Recordset15 : _ADO
 +{
 +    [id(0x000003e8), propget]
-+    HRESULT _stdcall AbsolutePosition([out, retval] PositionEnum_Param *position);
++    HRESULT AbsolutePosition([out, retval] PositionEnum_Param *position);
 +    [id(0x000003e8), propput]
-+    HRESULT _stdcall AbsolutePosition([in] PositionEnum_Param position);
++    HRESULT AbsolutePosition([in] PositionEnum_Param position);
 +    [id(0x000003e9), propputref]
-+    HRESULT _stdcall ActiveConnection([in] IDispatch *connection);
++    HRESULT ActiveConnection([in] IDispatch *connection);
 +    [id(0x000003e9), propput]
-+    HRESULT _stdcall ActiveConnection([in] VARIANT connection);
++    HRESULT ActiveConnection([in] VARIANT connection);
 +    [id(0x000003e9), propget]
-+    HRESULT _stdcall ActiveConnection([out, retval] VARIANT *connection);
++    HRESULT ActiveConnection([out, retval] VARIANT *connection);
 +    [id(0x000003ea), propget]
-+    HRESULT _stdcall BOF([out, retval] VARIANT_BOOL *bof);
++    HRESULT BOF([out, retval] VARIANT_BOOL *bof);
 +    [id(0x000003eb), propget]
-+    HRESULT _stdcall Bookmark([out, retval] VARIANT *bookmark);
++    HRESULT Bookmark([out, retval] VARIANT *bookmark);
 +    [id(0x000003eb), propput]
-+    HRESULT _stdcall Bookmark([in] VARIANT bookmark);
++    HRESULT Bookmark([in] VARIANT bookmark);
 +    [id(0x000003ec), propget]
-+    HRESULT _stdcall CacheSize([out, retval] long *cache);
++    HRESULT CacheSize([out, retval] long *cache);
 +    [id(0x000003ec), propput]
-+    HRESULT _stdcall CacheSize([in] long cache);
++    HRESULT CacheSize([in] long cache);
 +    [id(0x000003ed), propget]
-+    HRESULT _stdcall CursorType([out, retval] CursorTypeEnum *cursortype);
++    HRESULT CursorType([out, retval] CursorTypeEnum *cursortype);
 +    [id(0x000003ed), propput]
-+    HRESULT _stdcall CursorType([in] CursorTypeEnum cursortype);
++    HRESULT CursorType([in] CursorTypeEnum cursortype);
 +    [id(0x000003ee), propget]
-+    HRESULT _stdcall EOF([out, retval] VARIANT_BOOL *eof);
++    HRESULT EOF([out, retval] VARIANT_BOOL *eof);
 +    [id(00000000), propget]
-+    HRESULT _stdcall Fields([out, retval] Fields **fields);
++    HRESULT Fields([out, retval] Fields **fields);
 +    [id(0x000003f0), propget]
-+    HRESULT _stdcall LockType([out, retval] LockTypeEnum *locktype);
++    HRESULT LockType([out, retval] LockTypeEnum *locktype);
 +    [id(0x000003f0), propput]
-+    HRESULT _stdcall LockType([in] LockTypeEnum locktype);
++    HRESULT LockType([in] LockTypeEnum locktype);
 +    [id(0x000003f1), propget]
-+    HRESULT _stdcall MaxRecords([out, retval] ADO_LONGPTR* maxrecords);
++    HRESULT MaxRecords([out, retval] ADO_LONGPTR* maxrecords);
 +    [id(0x000003f1), propput]
-+    HRESULT _stdcall MaxRecords([in] ADO_LONGPTR maxrecords);
++    HRESULT MaxRecords([in] ADO_LONGPTR maxrecords);
 +    [id(0x000003f2), propget]
-+    HRESULT _stdcall RecordCount([out, retval] ADO_LONGPTR *recordcnt);
++    HRESULT RecordCount([out, retval] ADO_LONGPTR *recordcnt);
 +    [id(0x000003f3), propputref]
-+    HRESULT _stdcall Source([in] IDispatch *source);
++    HRESULT Source([in] IDispatch *source);
 +    [id(0x000003f3), propput]
-+    HRESULT _stdcall Source([in] BSTR source);
++    HRESULT Source([in] BSTR source);
 +    [id(0x000003f3), propget]
-+    HRESULT _stdcall Source([out, retval] VARIANT *source);
++    HRESULT Source([out, retval] VARIANT *source);
 +    [id(0x000003f4)]
-+    HRESULT _stdcall AddNew([in, optional] VARIANT fieldlist, [in, optional] VARIANT values);
++    HRESULT AddNew([in, optional] VARIANT fieldlist, [in, optional] VARIANT values);
 +    [id(0x000003f5)]
-+    HRESULT _stdcall CancelUpdate();
++    HRESULT CancelUpdate();
 +    [id(0x000003f6)]
-+    HRESULT _stdcall Close();
++    HRESULT Close();
 +    [id(0x000003f7)]
-+    HRESULT _stdcall Delete([in, defaultvalue(adAffectCurrent)] AffectEnum affectrecords);
++    HRESULT Delete([in, defaultvalue(adAffectCurrent)] AffectEnum affectrecords);
 +    [id(0x000003f8)]
-+    HRESULT _stdcall GetRows([in, defaultvalue(-1)] long rows, [in, optional] VARIANT start,
++    HRESULT GetRows([in, defaultvalue(-1)] long rows, [in, optional] VARIANT start,
 +                    [in, optional] VARIANT fields, [out, retval] VARIANT *var);
 +    [id(0x000003f9)]
-+    HRESULT _stdcall Move(
++    HRESULT Move(
 +                    [in] ADO_LONGPTR NumRecords,
 +                    [in, optional] VARIANT Start);
 +    [id(0x000003fa)]
-+    HRESULT _stdcall MoveNext();
++    HRESULT MoveNext();
 +    [id(0x000003fb)]
-+    HRESULT _stdcall MovePrevious();
++    HRESULT MovePrevious();
 +    [id(0x000003fc)]
-+    HRESULT _stdcall MoveFirst();
++    HRESULT MoveFirst();
 +    [id(0x000003fd)]
-+    HRESULT _stdcall MoveLast();
++    HRESULT MoveLast();
 +    [id(0x000003fe)]
-+    HRESULT _stdcall Open(
++    HRESULT Open(
 +                    [in, optional] VARIANT Source,
 +                    [in, optional] VARIANT ActiveConnection,
 +                    [in, defaultvalue(adOpenUnspecified)] CursorTypeEnum CursorType,
 +                    [in, defaultvalue(adLockUnspecified)] LockTypeEnum LockType,
 +                    [in, defaultvalue(-1)] long Options);
 +    [id(0x000003ff)]
-+    HRESULT _stdcall Requery([in, defaultvalue(-1)] long Options);
++    HRESULT Requery([in, defaultvalue(-1)] long Options);
 +    [id(0x60030022), hidden]
-+    HRESULT _stdcall _xResync([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
++    HRESULT _xResync([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
 +    [id(0x00000401)]
-+    HRESULT _stdcall Update(
++    HRESULT Update(
 +                    [in, optional] VARIANT Fields,
 +                    [in, optional] VARIANT Values);
 +    [id(0x00000417), propget]
-+    HRESULT _stdcall AbsolutePage([out, retval] PositionEnum_Param* pl);
++    HRESULT AbsolutePage([out, retval] PositionEnum_Param* pl);
 +    [id(0x00000417), propput]
-+    HRESULT _stdcall AbsolutePage([in] PositionEnum_Param pl);
++    HRESULT AbsolutePage([in] PositionEnum_Param pl);
 +    [id(0x00000402), propget]
-+    HRESULT _stdcall EditMode([out, retval] EditModeEnum* pl);
++    HRESULT EditMode([out, retval] EditModeEnum* pl);
 +    [id(0x00000406), propget]
-+    HRESULT _stdcall Filter([out, retval] VARIANT* Criteria);
++    HRESULT Filter([out, retval] VARIANT* Criteria);
 +    [id(0x00000406), propput]
-+    HRESULT _stdcall Filter([in] VARIANT Criteria);
++    HRESULT Filter([in] VARIANT Criteria);
 +    [id(0x0000041a), propget]
-+    HRESULT _stdcall PageCount([out, retval] ADO_LONGPTR* pl);
++    HRESULT PageCount([out, retval] ADO_LONGPTR* pl);
 +    [id(0x00000418), propget]
-+    HRESULT _stdcall PageSize([out, retval] long* pl);
++    HRESULT PageSize([out, retval] long* pl);
 +    [id(0x00000418), propput]
-+    HRESULT _stdcall PageSize([in] long pl);
++    HRESULT PageSize([in] long pl);
 +    [id(0x00000407), propget]
-+    HRESULT _stdcall Sort([out, retval] BSTR* Criteria);
++    HRESULT Sort([out, retval] BSTR* Criteria);
 +    [id(0x00000407), propput]
-+    HRESULT _stdcall Sort([in] BSTR Criteria);
++    HRESULT Sort([in] BSTR Criteria);
 +    [id(0x00000405), propget]
-+    HRESULT _stdcall Status([out, retval] long* pl);
++    HRESULT Status([out, retval] long* pl);
 +    [id(0x0000041e), propget]
-+    HRESULT _stdcall State([out, retval] long* plObjState);
++    HRESULT State([out, retval] long* plObjState);
 +    [id(0x60030030), hidden]
-+    HRESULT _stdcall _xClone([out, retval] _Recordset** ppvObject);
++    HRESULT _xClone([out, retval] _Recordset** ppvObject);
 +    [id(0x0000040b)]
-+    HRESULT _stdcall UpdateBatch([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
++    HRESULT UpdateBatch([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
 +    [id(0x00000419)]
-+    HRESULT _stdcall CancelBatch([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
++    HRESULT CancelBatch([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
 +    [id(0x0000041b), propget]
-+    HRESULT _stdcall CursorLocation([out, retval] CursorLocationEnum* plCursorLoc);
++    HRESULT CursorLocation([out, retval] CursorLocationEnum* plCursorLoc);
 +    [id(0x0000041b), propput]
-+    HRESULT _stdcall CursorLocation([in] CursorLocationEnum plCursorLoc);
++    HRESULT CursorLocation([in] CursorLocationEnum plCursorLoc);
 +    [id(0x0000041c)]
-+    HRESULT _stdcall NextRecordset(
++    HRESULT NextRecordset(
 +                    [out, optional] VARIANT* RecordsAffected,
 +                    [out, retval] _Recordset** ppiRs);
 +    [id(0x0000040c)]
-+    HRESULT _stdcall Supports(
++    HRESULT Supports(
 +                    [in] CursorOptionEnum CursorOptions,
 +                    [out, retval] VARIANT_BOOL* pb);
 +    [id(0xfffffff8), propget, hidden]
-+    HRESULT _stdcall Collect(
++    HRESULT Collect(
 +                    [in] VARIANT Index,
 +                    [out, retval] VARIANT* pvar);
 +    [id(0xfffffff8), propput, hidden]
-+    HRESULT _stdcall Collect(
++    HRESULT Collect(
 +                    [in] VARIANT Index,
 +                    [in] VARIANT pvar);
 +    [id(0x0000041d), propget]
-+    HRESULT _stdcall MarshalOptions([out, retval] MarshalOptionsEnum* peMarshal);
++    HRESULT MarshalOptions([out, retval] MarshalOptionsEnum* peMarshal);
 +    [id(0x0000041d), propput]
-+    HRESULT _stdcall MarshalOptions([in] MarshalOptionsEnum peMarshal);
++    HRESULT MarshalOptions([in] MarshalOptionsEnum peMarshal);
 +    [id(0x00000422)]
-+    HRESULT _stdcall Find(
++    HRESULT Find(
 +                    [in] BSTR criteria,
 +                        [in, defaultvalue(0)] ADO_LONGPTR skiprecords,
 +                        [in, defaultvalue(adSearchForward)] SearchDirectionEnum direction,
@@ -1381,33 +1381,33 @@ index 0000000..961cf33
 +interface Recordset20 : Recordset15
 +{
 +    [id(0x0000041f)]
-+    HRESULT _stdcall Cancel();
++    HRESULT Cancel();
 +    [id(0x00000420), propget]
-+    HRESULT _stdcall DataSource([out, retval] IUnknown **datasource);
++    HRESULT DataSource([out, retval] IUnknown **datasource);
 +    [id(0x00000420), propputref]
-+    HRESULT _stdcall DataSource([in] IUnknown *datasource);
++    HRESULT DataSource([in] IUnknown *datasource);
 +    [hidden]
-+    HRESULT _stdcall _xSave([in, optional] BSTR filename, [in, defaultvalue(adPersistADTG)] PersistFormatEnum format);
++    HRESULT _xSave([in, optional] BSTR filename, [in, defaultvalue(adPersistADTG)] PersistFormatEnum format);
 +    [id(0x00000425), propget]
-+    HRESULT _stdcall ActiveCommand([out, retval] IDispatch **cmd);
++    HRESULT ActiveCommand([out, retval] IDispatch **cmd);
 +    [id(0x00000427), propput]
-+    HRESULT _stdcall StayInSync([in] VARIANT_BOOL insync);
++    HRESULT StayInSync([in] VARIANT_BOOL insync);
 +    [id(0x00000427), propget]
-+    HRESULT _stdcall StayInSync([out, retval] VARIANT_BOOL *insync);
++    HRESULT StayInSync([out, retval] VARIANT_BOOL *insync);
 +    [id(0x00000426)]
-+    HRESULT _stdcall GetString( [in, defaultvalue(adClipString)] StringFormatEnum stringformat,
++    HRESULT GetString( [in, defaultvalue(adClipString)] StringFormatEnum stringformat,
 +                    [in, defaultvalue(-1)] long row_cnt, [in, optional] BSTR columndelimeter,
 +                    [in, optional] BSTR rowdelimeter, [in, optional] BSTR nullexpr, [out, retval] BSTR *string);
 +    [id(0x00000428), propget]
-+    HRESULT _stdcall DataMember([out, retval] BSTR *datamember);
++    HRESULT DataMember([out, retval] BSTR *datamember);
 +    [id(0x00000428), propput]
-+    HRESULT _stdcall DataMember([in] BSTR datamember);
++    HRESULT DataMember([in] BSTR datamember);
 +    [id(0x00000429)]
-+    HRESULT _stdcall CompareBookmarks([in] VARIANT bookmark1, [in] VARIANT bookmark2, [out, retval] CompareEnum *compare);
++    HRESULT CompareBookmarks([in] VARIANT bookmark1, [in] VARIANT bookmark2, [out, retval] CompareEnum *compare);
 +    [id(0x0000040a)]
-+    HRESULT _stdcall Clone([in, defaultvalue(adLockUnspecified)] LockTypeEnum locktype, [out, retval] _Recordset **recordset);
++    HRESULT Clone([in, defaultvalue(adLockUnspecified)] LockTypeEnum locktype, [out, retval] _Recordset **recordset);
 +    [id(0x00000400)]
-+    HRESULT _stdcall Resync([in, defaultvalue(adAffectAll)] AffectEnum affectrecords,
++    HRESULT Resync([in, defaultvalue(adAffectAll)] AffectEnum affectrecords,
 +                    [in, defaultvalue(adResyncAllValues)] ResyncEnum resync);
 +};
 +
@@ -1422,11 +1422,11 @@ index 0000000..961cf33
 +interface Recordset21 : Recordset20
 +{
 +    [id(0x0000042a)]
-+    HRESULT _stdcall Seek([in] VARIANT keysvalues, [in, defaultvalue(adSeekFirstEQ)] SeekEnum option);
++    HRESULT Seek([in] VARIANT keysvalues, [in, defaultvalue(adSeekFirstEQ)] SeekEnum option);
 +    [id(0x0000042b), propput]
-+    HRESULT _stdcall Index([in] BSTR index);
++    HRESULT Index([in] BSTR index);
 +    [id(0x0000042b), propget]
-+    HRESULT _stdcall Index([out, retval] BSTR *index);
++    HRESULT Index([out, retval] BSTR *index);
 +};
 +
 +[
@@ -1452,7 +1452,7 @@ index 0000000..961cf33
 +interface Fields15 : _Collection
 +{
 +    [id(00000000), propget]
-+    HRESULT _stdcall Item([in] VARIANT index, [out, retval] Field **object);
++    HRESULT Item([in] VARIANT index, [out, retval] Field **object);
 +};
 +
 +[
@@ -1465,10 +1465,10 @@ index 0000000..961cf33
 +interface Fields20 : Fields15
 +{
 +    [id(0x60030001)]
-+    HRESULT _stdcall _Append([in] BSTR name,[in] DataTypeEnum type, [in, defaultvalue(0)] ADO_LONGPTR size,
++    HRESULT _Append([in] BSTR name,[in] DataTypeEnum type, [in, defaultvalue(0)] ADO_LONGPTR size,
 +                    [in, defaultvalue(adFldUnspecified)] FieldAttributeEnum attrib);
 +    [id(0x60030002)]
-+    HRESULT _stdcall Delete([in] VARIANT Index);
++    HRESULT Delete([in] VARIANT Index);
 +};
 +
 +[
@@ -1481,14 +1481,14 @@ index 0000000..961cf33
 +interface Fields : Fields20
 +{
 +    [id(0x60040001)]
-+    HRESULT _stdcall Append([in] BSTR Name, [in] DataTypeEnum type, [in, defaultvalue(0)] ADO_LONGPTR definedsize,
++    HRESULT Append([in] BSTR Name, [in] DataTypeEnum type, [in, defaultvalue(0)] ADO_LONGPTR definedsize,
 +                    [in, defaultvalue(adFldUnspecified)] FieldAttributeEnum attrib, [in, optional] VARIANT value);
 +    [id(0x60040002)]
-+    HRESULT _stdcall Update();
++    HRESULT Update();
 +    [id(0x60040003)]
-+    HRESULT _stdcall Resync([in, defaultvalue(adResyncAllValues)] ResyncEnum resync);
++    HRESULT Resync([in, defaultvalue(adResyncAllValues)] ResyncEnum resync);
 +    [id(0x60040004)]
-+    HRESULT _stdcall CancelUpdate();
++    HRESULT CancelUpdate();
 +};
 +
 +[
@@ -1501,31 +1501,31 @@ index 0000000..961cf33
 +interface Field15 : _ADO
 +{
 +    [id(0x00000455), propget]
-+    HRESULT _stdcall ActualSize([out, retval] ADO_LONGPTR *size);
++    HRESULT ActualSize([out, retval] ADO_LONGPTR *size);
 +    [id(0x0000040c), propget]
-+    HRESULT _stdcall Attributes([out, retval] long *size);
++    HRESULT Attributes([out, retval] long *size);
 +    [id(0x0000044f), propget]
-+    HRESULT _stdcall DefinedSize([out, retval] ADO_LONGPTR *size);
++    HRESULT DefinedSize([out, retval] ADO_LONGPTR *size);
 +    [id(0x0000044c), propget]
-+    HRESULT _stdcall Name([out, retval] BSTR *name);
++    HRESULT Name([out, retval] BSTR *name);
 +    [id(0x0000044e), propget]
-+    HRESULT _stdcall Type([out, retval] DataTypeEnum *datatype);
++    HRESULT Type([out, retval] DataTypeEnum *datatype);
 +    [id(00000000), propget]
-+    HRESULT _stdcall Value([out, retval] VARIANT *value);
++    HRESULT Value([out, retval] VARIANT *value);
 +    [id(00000000), propput]
-+    HRESULT _stdcall Value([in] VARIANT value);
++    HRESULT Value([in] VARIANT value);
 +    [id(0x60030007), propget]
-+    HRESULT _stdcall Precision([out, retval] unsigned char* precision);
++    HRESULT Precision([out, retval] unsigned char* precision);
 +    [id(0x60030008), propget]
-+    HRESULT _stdcall NumericScale([out, retval] unsigned char* numericscale);
++    HRESULT NumericScale([out, retval] unsigned char* numericscale);
 +    [id(0x00000453)]
-+    HRESULT _stdcall AppendChunk([in] VARIANT data);
++    HRESULT AppendChunk([in] VARIANT data);
 +    [id(0x00000454)]
-+    HRESULT _stdcall GetChunk( [in] long Length, [out, retval] VARIANT *data);
++    HRESULT GetChunk( [in] long Length, [out, retval] VARIANT *data);
 +    [id(0x00000450), propget]
-+    HRESULT _stdcall OriginalValue([out, retval] VARIANT *value);
++    HRESULT OriginalValue([out, retval] VARIANT *value);
 +    [id(0x00000451), propget]
-+    HRESULT _stdcall UnderlyingValue([out, retval] VARIANT *data);
++    HRESULT UnderlyingValue([out, retval] VARIANT *data);
 +};
 +
 +[
@@ -1539,45 +1539,45 @@ index 0000000..961cf33
 +interface Field20 : _ADO
 +{
 +    [id(0x00000455), propget]
-+    HRESULT _stdcall ActualSize([out, retval] ADO_LONGPTR *size);
++    HRESULT ActualSize([out, retval] ADO_LONGPTR *size);
 +    [id(0x0000040c), propget]
-+    HRESULT _stdcall Attributes([out, retval] long *attributes);
++    HRESULT Attributes([out, retval] long *attributes);
 +    [id(0x0000044f), propget]
-+    HRESULT _stdcall DefinedSize([out, retval] ADO_LONGPTR *size);
++    HRESULT DefinedSize([out, retval] ADO_LONGPTR *size);
 +    [id(0x0000044c), propget]
-+    HRESULT _stdcall Name([out, retval] BSTR *name);
++    HRESULT Name([out, retval] BSTR *name);
 +    [id(0x0000044e), propget]
-+    HRESULT _stdcall Type([out, retval] DataTypeEnum *datatype);
++    HRESULT Type([out, retval] DataTypeEnum *datatype);
 +    [id(00000000), propget]
-+    HRESULT _stdcall Value([out, retval] VARIANT *value);
++    HRESULT Value([out, retval] VARIANT *value);
 +    [id(00000000), propput]
-+    HRESULT _stdcall Value([in] VARIANT value);
++    HRESULT Value([in] VARIANT value);
 +    [id(0x60030007), propget]
-+    HRESULT _stdcall Precision([out, retval] unsigned char *precision);
++    HRESULT Precision([out, retval] unsigned char *precision);
 +    [id(0x60030008), propget]
-+    HRESULT _stdcall NumericScale([out, retval] unsigned char *numericscale);
++    HRESULT NumericScale([out, retval] unsigned char *numericscale);
 +    [id(0x00000453)]
-+    HRESULT _stdcall AppendChunk([in] VARIANT data);
++    HRESULT AppendChunk([in] VARIANT data);
 +    [id(0x00000454)]
-+    HRESULT _stdcall GetChunk([in] long Length, [out, retval] VARIANT *data);
++    HRESULT GetChunk([in] long Length, [out, retval] VARIANT *data);
 +    [id(0x00000450), propget]
-+    HRESULT _stdcall OriginalValue([out, retval] VARIANT *value);
++    HRESULT OriginalValue([out, retval] VARIANT *value);
 +    [id(0x00000451), propget]
-+    HRESULT _stdcall UnderlyingValue([out, retval] VARIANT *value);
++    HRESULT UnderlyingValue([out, retval] VARIANT *value);
 +    [id(0x6003000d), propget]
-+    HRESULT _stdcall DataFormat([out, retval] IUnknown **dataformat);
++    HRESULT DataFormat([out, retval] IUnknown **dataformat);
 +    [id(0x6003000d), propputref]
-+    HRESULT _stdcall DataFormat([in] IUnknown * dataformat);
++    HRESULT DataFormat([in] IUnknown * dataformat);
 +    [id(0x60030007), propput]
-+    HRESULT _stdcall Precision([in] unsigned char precision);
++    HRESULT Precision([in] unsigned char precision);
 +    [id(0x60030008), propput]
-+    HRESULT _stdcall NumericScale([in] unsigned char numericscale);
++    HRESULT NumericScale([in] unsigned char numericscale);
 +    [id(0x0000044e), propput]
-+    HRESULT _stdcall Type([in] DataTypeEnum datatype);
++    HRESULT Type([in] DataTypeEnum datatype);
 +    [id(0x0000044f), propput]
-+    HRESULT _stdcall DefinedSize([in] ADO_LONGPTR size);
++    HRESULT DefinedSize([in] ADO_LONGPTR size);
 +    [id(0x0000040c), propput]
-+    HRESULT _stdcall Attributes([in] long cnt);
++    HRESULT Attributes([in] long cnt);
 +};
 +
 +[
@@ -1590,7 +1590,7 @@ index 0000000..961cf33
 +interface Field : Field20
 +{
 +    [ id(0x0000045c),propget]
-+    HRESULT _stdcall Status([out, retval] long *status);
++    HRESULT Status([out, retval] long *status);
 +};
 +
 +[
@@ -1603,39 +1603,39 @@ index 0000000..961cf33
 +interface _Parameter : _ADO
 +{
 +    [id(0x60030000), propget]
-+    HRESULT _stdcall Name([out, retval] BSTR *name);
++    HRESULT Name([out, retval] BSTR *name);
 +    [id(0x60030000), propput]
-+    HRESULT _stdcall Name([in] BSTR name);
++    HRESULT Name([in] BSTR name);
 +    [id(00000000), propget]
-+    HRESULT _stdcall Value([out, retval] VARIANT *value);
++    HRESULT Value([out, retval] VARIANT *value);
 +    [id(00000000), propput]
-+    HRESULT _stdcall Value([in] VARIANT value);
++    HRESULT Value([in] VARIANT value);
 +    [id(0x60030004), propget]
-+    HRESULT _stdcall Type([out, retval] DataTypeEnum *datatype);
++    HRESULT Type([out, retval] DataTypeEnum *datatype);
 +    [id(0x60030004), propput]
-+    HRESULT _stdcall Type([in] DataTypeEnum datatype);
++    HRESULT Type([in] DataTypeEnum datatype);
 +    [id(0x60030006), propput]
-+    HRESULT _stdcall Direction([in] ParameterDirectionEnum direction);
++    HRESULT Direction([in] ParameterDirectionEnum direction);
 +    [id(0x60030006), propget]
-+    HRESULT _stdcall Direction([out, retval] ParameterDirectionEnum *direction);
++    HRESULT Direction([out, retval] ParameterDirectionEnum *direction);
 +    [id(0x60030008), propput]
-+    HRESULT _stdcall Precision([in] unsigned char precision);
++    HRESULT Precision([in] unsigned char precision);
 +    [id(0x60030008), propget]
-+    HRESULT _stdcall Precision([out, retval] unsigned char *precision);
++    HRESULT Precision([out, retval] unsigned char *precision);
 +    [id(0x6003000a), propput]
-+    HRESULT _stdcall NumericScale([in] unsigned char scale);
++    HRESULT NumericScale([in] unsigned char scale);
 +    [id(0x6003000a), propget]
-+    HRESULT _stdcall NumericScale([out, retval] unsigned char *scale);
++    HRESULT NumericScale([out, retval] unsigned char *scale);
 +    [id(0x6003000c), propput]
-+    HRESULT _stdcall Size([in] ADO_LONGPTR size);
++    HRESULT Size([in] ADO_LONGPTR size);
 +    [id(0x6003000c), propget]
-+    HRESULT _stdcall Size([out, retval] ADO_LONGPTR *size);
++    HRESULT Size([out, retval] ADO_LONGPTR *size);
 +    [id(0x6003000e)]
-+    HRESULT _stdcall AppendChunk([in] VARIANT chunk);
++    HRESULT AppendChunk([in] VARIANT chunk);
 +    [id(0x6003000f), propget]
-+    HRESULT _stdcall Attributes([out, retval] long *attributes);
++    HRESULT Attributes([out, retval] long *attributes);
 +    [id(0x6003000f), propput]
-+    HRESULT _stdcall Attributes([in] long attributes);
++    HRESULT Attributes([in] long attributes);
 +};
 +
 +[
@@ -1648,7 +1648,7 @@ index 0000000..961cf33
 +interface Parameters : _DynaCollection
 +{
 +    [id(00000000), propget]
-+    HRESULT _stdcall Item([in] VARIANT index, [out, retval] _Parameter **parameter);
++    HRESULT Item([in] VARIANT index, [out, retval] _Parameter **parameter);
 +};
 +
 +[
@@ -1661,53 +1661,53 @@ index 0000000..961cf33
 +interface _Record : _ADO
 +{
 +    [id(1), propget]
-+    HRESULT _stdcall ActiveConnection([out, retval] VARIANT *var);
++    HRESULT ActiveConnection([out, retval] VARIANT *var);
 +    [id(1), propput]
-+    HRESULT _stdcall ActiveConnection([in] BSTR connection);
++    HRESULT ActiveConnection([in] BSTR connection);
 +    [id(1), propputref]
 +    HRESULT ActiveConnection([in] _Connection *connection);
 +    [id(2), propget]
-+    HRESULT _stdcall State([out, retval] ObjectStateEnum *state);
++    HRESULT State([out, retval] ObjectStateEnum *state);
 +    [id(3), propget]
-+    HRESULT _stdcall Source([out, retval] VARIANT *source);
++    HRESULT Source([out, retval] VARIANT *source);
 +    [id(3), propput]
-+    HRESULT _stdcall Source([in] BSTR source);
++    HRESULT Source([in] BSTR source);
 +    [id(3), propputref]
-+    HRESULT _stdcall Source([in] IDispatch *Source);
++    HRESULT Source([in] IDispatch *Source);
 +    [id(4), propget]
-+    HRESULT _stdcall Mode([out, retval] ConnectModeEnum *mode);
++    HRESULT Mode([out, retval] ConnectModeEnum *mode);
 +    [id(4), propput]
-+    HRESULT _stdcall Mode([in] ConnectModeEnum mode);
++    HRESULT Mode([in] ConnectModeEnum mode);
 +    [id(5), propget]
-+    HRESULT _stdcall ParentURL([out, retval] BSTR *parent_url);
++    HRESULT ParentURL([out, retval] BSTR *parent_url);
 +    [id(6)]
-+    HRESULT _stdcall MoveRecord([in, defaultvalue("")] BSTR source,[in, defaultvalue("")] BSTR destination,
++    HRESULT MoveRecord([in, defaultvalue("")] BSTR source,[in, defaultvalue("")] BSTR destination,
 +                    [in, optional] BSTR username, [in, optional] BSTR password,
 +                    [in, defaultvalue(adMoveUnspecified)] MoveRecordOptionsEnum options,
 +                    [in, optional] VARIANT_BOOL async, [out, retval] BSTR *new_url);
 +    [id(7)]
-+    HRESULT _stdcall CopyRecord([in, defaultvalue("")] BSTR source, [in, defaultvalue("")] BSTR destination,
++    HRESULT CopyRecord([in, defaultvalue("")] BSTR source, [in, defaultvalue("")] BSTR destination,
 +                    [in, optional] BSTR username, [in, optional] BSTR password,
 +                    [in, defaultvalue(adCopyUnspecified)] CopyRecordOptionsEnum options,
 +                    [in, optional] VARIANT_BOOL async, [out, retval] BSTR *new_url);
 +    [id(8)]
-+    HRESULT _stdcall DeleteRecord([in] BSTR source, [in, optional] VARIANT_BOOL async);
++    HRESULT DeleteRecord([in] BSTR source, [in, optional] VARIANT_BOOL async);
 +    [id(9)]
-+    HRESULT _stdcall Open([in, optional] VARIANT source, [in, optional] VARIANT activeconnection,
++    HRESULT Open([in, optional] VARIANT source, [in, optional] VARIANT activeconnection,
 +                    [in, optional] ConnectModeEnum mode,
 +                    [in, defaultvalue(adFailIfNotExists)] RecordCreateOptionsEnum createoptions,
 +                    [in, defaultvalue(adOpenRecordUnspecified)] RecordOpenOptionsEnum options,
 +                    [in, optional] BSTR username, [in, optional] BSTR password);
 +    [id(10)]
-+    HRESULT _stdcall Close();
++    HRESULT Close();
 +    [id(0), propget]
-+    HRESULT _stdcall Fields([out, retval] Fields **fields);
++    HRESULT Fields([out, retval] Fields **fields);
 +    [id(11), propget]
-+    HRESULT _stdcall RecordType([out, retval] RecordTypeEnum *type);
++    HRESULT RecordType([out, retval] RecordTypeEnum *type);
 +    [id(12)]
-+    HRESULT _stdcall GetChildren([out, retval] _Recordset **recordset);
++    HRESULT GetChildren([out, retval] _Recordset **recordset);
 +    [id(13)]
-+    HRESULT _stdcall Cancel();
++    HRESULT Cancel();
 +};
 +
 +[
@@ -1720,59 +1720,59 @@ index 0000000..961cf33
 +interface _Stream : IDispatch
 +{
 +    [id(1), propget]
-+    HRESULT _stdcall Size([out, retval] ADO_LONGPTR *size);
++    HRESULT Size([out, retval] ADO_LONGPTR *size);
 +    [id(2), propget]
-+    HRESULT _stdcall EOS([out, retval] VARIANT_BOOL *eos);
++    HRESULT EOS([out, retval] VARIANT_BOOL *eos);
 +    [id(3), propget]
-+    HRESULT _stdcall Position([out, retval] ADO_LONGPTR *pos);
++    HRESULT Position([out, retval] ADO_LONGPTR *pos);
 +    [id(3), propput]
-+    HRESULT _stdcall Position([in] ADO_LONGPTR position);
++    HRESULT Position([in] ADO_LONGPTR position);
 +    [id(4), propget]
-+    HRESULT _stdcall Type([out, retval] StreamTypeEnum *type);
++    HRESULT Type([out, retval] StreamTypeEnum *type);
 +    [id(4), propput]
-+    HRESULT _stdcall Type([in] StreamTypeEnum type);
++    HRESULT Type([in] StreamTypeEnum type);
 +    [id(5), propget]
-+    HRESULT _stdcall LineSeparator([out, retval] LineSeparatorEnum *lineseparator);
++    HRESULT LineSeparator([out, retval] LineSeparatorEnum *lineseparator);
 +    [id(5), propput]
-+    HRESULT _stdcall LineSeparator([in] LineSeparatorEnum lineseparator);
++    HRESULT LineSeparator([in] LineSeparatorEnum lineseparator);
 +    [id(6), propget]
-+    HRESULT _stdcall State([out, retval] ObjectStateEnum *state);
++    HRESULT State([out, retval] ObjectStateEnum *state);
 +    [id(7), propget]
-+    HRESULT _stdcall Mode([out, retval] ConnectModeEnum *mode);
++    HRESULT Mode([out, retval] ConnectModeEnum *mode);
 +    [id(7), propput]
-+    HRESULT _stdcall Mode([in] ConnectModeEnum mode);
++    HRESULT Mode([in] ConnectModeEnum mode);
 +    [id(8), propget]
 +    HRESULT Charset([out, retval] BSTR *charset );
 +    [id(8), propput]
 +    HRESULT Charset([in] BSTR charset );
 +    [id(9)]
-+    HRESULT _stdcall Read([in, defaultvalue(adReadAll)] long numbytes, [out, retval] VARIANT *val);
++    HRESULT Read([in, defaultvalue(adReadAll)] long numbytes, [out, retval] VARIANT *val);
 +    [id(10)]
-+    HRESULT _stdcall Open([in, optional] VARIANT source, [in, defaultvalue(adModeUnknown)] ConnectModeEnum mode,
++    HRESULT Open([in, optional] VARIANT source, [in, defaultvalue(adModeUnknown)] ConnectModeEnum mode,
 +                    [in, defaultvalue(adOpenStreamUnspecified)] StreamOpenOptionsEnum options,
 +                    [in, optional] BSTR username, [in, optional] BSTR password);
 +    [id(11)]
-+    HRESULT _stdcall Close(void);
++    HRESULT Close(void);
 +    [id(12)]
-+    HRESULT _stdcall SkipLine(void);
++    HRESULT SkipLine(void);
 +    [id(13)]
-+    HRESULT _stdcall Write([in] VARIANT Buffer);
++    HRESULT Write([in] VARIANT Buffer);
 +    [id(14)]
-+    HRESULT _stdcall SetEOS(void);
++    HRESULT SetEOS(void);
 +    [id(15)]
-+    HRESULT _stdcall CopyTo( [in] _Stream *stream, [in, defaultvalue(-1)] ADO_LONGPTR charnumber);
++    HRESULT CopyTo( [in] _Stream *stream, [in, defaultvalue(-1)] ADO_LONGPTR charnumber);
 +    [id(16)]
-+    HRESULT _stdcall Flush(void);
++    HRESULT Flush(void);
 +    [id(17)]
-+    HRESULT _stdcall SaveToFile([in] BSTR filename, [in, defaultvalue(adSaveCreateNotExist)] SaveOptionsEnum options);
++    HRESULT SaveToFile([in] BSTR filename, [in, defaultvalue(adSaveCreateNotExist)] SaveOptionsEnum options);
 +    [id(18)]
-+    HRESULT _stdcall LoadFromFile( [in] BSTR filename);
++    HRESULT LoadFromFile( [in] BSTR filename);
 +    [id(19)]
-+    HRESULT _stdcall ReadText([in, defaultvalue(adReadAll)] long numchars, [out, retval] BSTR *bstr);
++    HRESULT ReadText([in, defaultvalue(adReadAll)] long numchars, [out, retval] BSTR *bstr);
 +    [id(20)]
-+    HRESULT _stdcall WriteText([in] BSTR data, [in, defaultvalue(adWriteChar)] StreamWriteEnum options);
++    HRESULT WriteText([in] BSTR data, [in, defaultvalue(adWriteChar)] StreamWriteEnum options);
 +    [id(21)]
-+    HRESULT _stdcall Cancel(void);
++    HRESULT Cancel(void);
 +};
 +
 +[
@@ -1782,8 +1782,8 @@ index 0000000..961cf33
 +]
 +interface ADODebugging : IUnknown
 +{
-+    HRESULT _stdcall IsGlobalDebugMode(VARIANT_BOOL *debugging);
-+    HRESULT _stdcall SetGlobalDebugMode(IUnknown *debugger, VARIANT_BOOL debugging);
++    HRESULT IsGlobalDebugMode(VARIANT_BOOL *debugging);
++    HRESULT SetGlobalDebugMode(IUnknown *debugger, VARIANT_BOOL debugging);
 +};
 +
 +[
@@ -1793,22 +1793,22 @@ index 0000000..961cf33
 +]
 +interface ConnectionEventsVt : IUnknown
 +{
-+    HRESULT _stdcall InfoMessage([in] Error *error, [in, out] EventStatusEnum *status, [in] _Connection *connection);
-+    HRESULT _stdcall BeginTransComplete([in] long TransactionLevel, [in] Error *error,
++    HRESULT InfoMessage([in] Error *error, [in, out] EventStatusEnum *status, [in] _Connection *connection);
++    HRESULT BeginTransComplete([in] long TransactionLevel, [in] Error *error,
 +                    [in, out] EventStatusEnum *status, [in] _Connection *connection);
-+    HRESULT _stdcall CommitTransComplete([in] Error *error, [in, out] EventStatusEnum *status, [in] _Connection *connection);
-+    HRESULT _stdcall RollbackTransComplete( [in] Error *error, [in, out] EventStatusEnum *status,
++    HRESULT CommitTransComplete([in] Error *error, [in, out] EventStatusEnum *status, [in] _Connection *connection);
++    HRESULT RollbackTransComplete( [in] Error *error, [in, out] EventStatusEnum *status,
 +                    [in] _Connection *connection);
-+    HRESULT _stdcall WillExecute( [in, out] BSTR  *source, [in, out] CursorTypeEnum *cursortype,
++    HRESULT WillExecute( [in, out] BSTR  *source, [in, out] CursorTypeEnum *cursortype,
 +                    [in, out] LockTypeEnum *locktype, [in, out] long *options, [in, out] EventStatusEnum *status,
 +                    [in] _Command *command, [in] _Recordset *recordset, [in] _Connection *connection);
-+    HRESULT _stdcall ExecuteComplete([in] long recordsaffected, [in] Error *error, [in, out] EventStatusEnum *status,
++    HRESULT ExecuteComplete([in] long recordsaffected, [in] Error *error, [in, out] EventStatusEnum *status,
 +                    [in] _Command *command, [in] _Recordset *recordset, [in] _Connection *connection);
-+    HRESULT _stdcall WillConnect([in, out] BSTR *connectionstring, [in, out] BSTR *userid,
++    HRESULT WillConnect([in, out] BSTR *connectionstring, [in, out] BSTR *userid,
 +                    [in, out] BSTR *password, [in, out] long *options, [in, out] EventStatusEnum *status,
 +                    [in] _Connection *connection);
-+    HRESULT _stdcall ConnectComplete([in] Error *error, [in, out] EventStatusEnum *status, [in] _Connection *connection);
-+    HRESULT _stdcall Disconnect([in, out] EventStatusEnum *status, [in] _Connection *connection);
++    HRESULT ConnectComplete([in] Error *error, [in, out] EventStatusEnum *status, [in] _Connection *connection);
++    HRESULT Disconnect([in, out] EventStatusEnum *status, [in] _Connection *connection);
 +};
 +
 +[
@@ -1818,27 +1818,27 @@ index 0000000..961cf33
 +]
 +interface RecordsetEventsVt : IUnknown
 +{
-+    HRESULT _stdcall WillChangeField([in] long field_cnt,[in] VARIANT Fields, [in, out] EventStatusEnum *status,
++    HRESULT WillChangeField([in] long field_cnt,[in] VARIANT Fields, [in, out] EventStatusEnum *status,
 +                    [in] _Recordset *recordset);
-+    HRESULT _stdcall FieldChangeComplete( [in] long field_cnt, [in] VARIANT fields,[in] Error *error,
++    HRESULT FieldChangeComplete( [in] long field_cnt, [in] VARIANT fields,[in] Error *error,
 +                    [in, out] EventStatusEnum *status, [in] _Recordset *recordset);
-+    HRESULT _stdcall WillChangeRecord([in] EventReasonEnum reason, [in] long record_cnt,
++    HRESULT WillChangeRecord([in] EventReasonEnum reason, [in] long record_cnt,
 +                    [in, out] EventStatusEnum *status, [in] _Recordset *recordset);
-+    HRESULT _stdcall RecordChangeComplete([in] EventReasonEnum reason, [in] long record_cnt,
++    HRESULT RecordChangeComplete([in] EventReasonEnum reason, [in] long record_cnt,
 +                    [in] Error *error, [in, out] EventStatusEnum *status, [in] _Recordset *recordset);
-+    HRESULT _stdcall WillChangeRecordset([in] EventReasonEnum reason, [in, out] EventStatusEnum *status,
++    HRESULT WillChangeRecordset([in] EventReasonEnum reason, [in, out] EventStatusEnum *status,
 +                    [in] _Recordset *recordset);
-+    HRESULT _stdcall RecordsetChangeComplete( [in] EventReasonEnum reason, [in] Error *error,
++    HRESULT RecordsetChangeComplete( [in] EventReasonEnum reason, [in] Error *error,
 +                    [in, out] EventStatusEnum *status, [in] _Recordset *recordset);
-+    HRESULT _stdcall WillMove([in] EventReasonEnum reason,[in, out] EventStatusEnum *status,
++    HRESULT WillMove([in] EventReasonEnum reason,[in, out] EventStatusEnum *status,
 +                    [in] _Recordset *recordset);
-+    HRESULT _stdcall MoveComplete([in] EventReasonEnum reason, [in] Error *error, [in, out] EventStatusEnum *status,
++    HRESULT MoveComplete([in] EventReasonEnum reason, [in] Error *error, [in, out] EventStatusEnum *status,
 +                    [in] _Recordset *recordset);
-+    HRESULT _stdcall EndOfRecordset([in, out] VARIANT_BOOL *moredata, [in, out] EventStatusEnum *status,
++    HRESULT EndOfRecordset([in, out] VARIANT_BOOL *moredata, [in, out] EventStatusEnum *status,
 +                    [in] _Recordset *recordset);
-+    HRESULT _stdcall FetchProgress([in] long progress, [in] long maxprogress, [in, out] EventStatusEnum *status,
++    HRESULT FetchProgress([in] long progress, [in] long maxprogress, [in, out] EventStatusEnum *status,
 +                    [in] _Recordset *recordset);
-+    HRESULT _stdcall FetchComplete([in] Error *error, [in, out] EventStatusEnum *status, [in] _Recordset *recordset);
++    HRESULT FetchComplete([in] Error *error, [in, out] EventStatusEnum *status, [in] _Recordset *recordset);
 +};
 +
 +[
@@ -1921,12 +1921,12 @@ index 0000000..961cf33
 +interface ADOConnectionConstruction15 : IUnknown
 +{
 +    [propget]
-+    HRESULT _stdcall DSO([out, retval] IUnknown **dso);
++    HRESULT DSO([out, retval] IUnknown **dso);
 +
 +    [propget]
-+    HRESULT _stdcall Session([out, retval] IUnknown **session);
++    HRESULT Session([out, retval] IUnknown **session);
 +
-+    HRESULT _stdcall WrapDSOandSession([in] IUnknown *dso, [in] IUnknown *session);
++    HRESULT WrapDSOandSession([in] IUnknown *dso, [in] IUnknown *session);
 +};
 +
 +[
@@ -1946,17 +1946,17 @@ index 0000000..961cf33
 +interface ADORecordsetConstruction : IDispatch
 +{
 +    [propget]
-+    HRESULT _stdcall Rowset([out, retval] IUnknown **rowset);
++    HRESULT Rowset([out, retval] IUnknown **rowset);
 +    [propput]
-+    HRESULT _stdcall Rowset([in] IUnknown *rowset);
++    HRESULT Rowset([in] IUnknown *rowset);
 +    [propget]
-+    HRESULT _stdcall Chapter([out, retval] ADO_LONGPTR *chapter);
++    HRESULT Chapter([out, retval] ADO_LONGPTR *chapter);
 +    [propput]
-+    HRESULT _stdcall Chapter([in] ADO_LONGPTR chapter);
++    HRESULT Chapter([in] ADO_LONGPTR chapter);
 +    [propget]
-+    HRESULT _stdcall RowPosition([out, retval] IUnknown* *rowpos);
++    HRESULT RowPosition([out, retval] IUnknown* *rowpos);
 +    [propput]
-+    HRESULT _stdcall RowPosition([in] IUnknown *rowpos);
++    HRESULT RowPosition([in] IUnknown *rowpos);
 +};
 +
 +[
@@ -1967,10 +1967,10 @@ index 0000000..961cf33
 +interface ADOCommandConstruction : IUnknown
 +{
 +    [propget]
-+    HRESULT _stdcall OLEDBCommand([out, retval] IUnknown **command);
++    HRESULT OLEDBCommand([out, retval] IUnknown **command);
 +
 +    [propput]
-+    HRESULT _stdcall OLEDBCommand([in] IUnknown *command);
++    HRESULT OLEDBCommand([in] IUnknown *command);
 +};
 +
 +[
@@ -1981,13 +1981,13 @@ index 0000000..961cf33
 +interface ADORecordConstruction : IDispatch
 +{
 +    [propget]
-+    HRESULT _stdcall Row([out, retval] IUnknown **row);
++    HRESULT Row([out, retval] IUnknown **row);
 +
 +    [propput]
-+    HRESULT _stdcall Row([in] IUnknown *row);
++    HRESULT Row([in] IUnknown *row);
 +
 +    [propput]
-+    HRESULT _stdcall ParentRow([in] IUnknown *row);
++    HRESULT ParentRow([in] IUnknown *row);
 +};
 +
 +[
@@ -1998,10 +1998,10 @@ index 0000000..961cf33
 +interface ADOStreamConstruction : IDispatch
 +{
 +    [propget]
-+    HRESULT _stdcall Stream([out, retval] IUnknown **stream);
++    HRESULT Stream([out, retval] IUnknown **stream);
 +
 +    [propput]
-+    HRESULT _stdcall Stream([in] IUnknown *stream);
++    HRESULT Stream([in] IUnknown *stream);
 +};
 +
 +[
