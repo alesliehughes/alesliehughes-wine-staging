@@ -1,7 +1,7 @@
-From 8ab0924a05d127f06d17991715cc6730e0132684 Mon Sep 17 00:00:00 2001
+From 4899312b6218ef6eea0e314d53f93ab9a3317699 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 12:07:51 +1100
-Subject: [PATCH 2/6] include: Add msado15.idl
+Subject: [PATCH 2/7] include: Add msado15.idl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

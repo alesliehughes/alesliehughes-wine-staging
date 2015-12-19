@@ -1,7 +1,7 @@
-From 532ea220f835ceeddd5088a7cb6f2b023c330cc6 Mon Sep 17 00:00:00 2001
+From 8d42f7a80cc6e7024555ffe4f9be2691c7860850 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Dec 2015 14:01:02 +1100
-Subject: [PATCH 5/6] msado15/tests: Add initial
+Subject: [PATCH 5/7] msado15/tests: Add initial
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

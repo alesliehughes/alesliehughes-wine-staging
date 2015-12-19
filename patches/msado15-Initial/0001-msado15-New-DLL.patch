@@ -1,7 +1,7 @@
-From ce075c9141488fa59d07d9ebe5b23fcde11dac3a Mon Sep 17 00:00:00 2001
+From cff2ffe0b6613c3d5684055e427b892b9da9fb90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 10:39:50 +1100
-Subject: [PATCH 1/6] msado15: New DLL
+Subject: [PATCH 1/7] msado15: New DLL
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

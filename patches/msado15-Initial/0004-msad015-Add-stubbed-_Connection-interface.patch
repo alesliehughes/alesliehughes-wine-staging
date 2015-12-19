@@ -1,7 +1,7 @@
-From 0c989399eaac868c7131af382d2ed10064e37f63 Mon Sep 17 00:00:00 2001
+From 13e8ebc677cd13e8c53162a0d54cadd67a6e713a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Dec 2015 11:09:39 +1100
-Subject: [PATCH 4/6] msad015: Add stubbed _Connection interface
+Subject: [PATCH 4/7] msad015: Add stubbed _Connection interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
