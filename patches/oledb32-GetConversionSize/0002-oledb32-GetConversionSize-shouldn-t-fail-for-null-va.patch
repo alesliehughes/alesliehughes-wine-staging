@@ -1,8 +1,8 @@
-From 35609a3af26aa87f0301bbd681afa400291e7b33 Mon Sep 17 00:00:00 2001
+From 10b13b9288ecc9f2f6ad6744a2af77dbbf7dc164 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 12 Nov 2015 11:39:51 +1100
 Subject: [PATCH 2/2] oledb32: GetConversionSize shouldn't fail for null
- variants.
+ variants. (try 2)
 
 If we have a NULL variant which will be converted to a non-fixed
 sized type (DBTYPE_WSTR) then we just return S_OK.
@@ -14,7 +14,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 36 insertions(+)
 
 diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
-index a87cf18..2c05099 100644
+index 891b31c..0a1518d 100644
 --- a/dlls/oledb32/convert.c
 +++ b/dlls/oledb32/convert.c
 @@ -1344,6 +1344,9 @@ static HRESULT WINAPI convert_GetConversionSize(IDataConvert* iface,
@@ -28,7 +28,7 @@ index a87cf18..2c05099 100644
      {
      case DBTYPE_STR:
 diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
-index a785457..55539f9 100644
+index a785457..ac2f6be 100644
 --- a/dlls/oledb32/tests/convert.c
 +++ b/dlls/oledb32/tests/convert.c
 @@ -2627,6 +2627,33 @@ static void test_getconversionsize(void)
@@ -57,7 +57,7 @@ index a785457..55539f9 100644
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
 +    VariantClear(&var);
 +
-+    dst_len = 78;
++    /* On Windows dst_len will get a value of 110 but we aren't testing this parameter. */
 +    V_VT(&var) = VT_NULL;
 +    hr = IDataConvert_GetConversionSize(convert, DBTYPE_VARIANT, DBTYPE_STR, NULL, &dst_len, &var);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
@@ -79,5 +79,5 @@ index a785457..55539f9 100644
  
  static void test_converttobytes(void)
 -- 
-1.9.1
+2.6.4
 
