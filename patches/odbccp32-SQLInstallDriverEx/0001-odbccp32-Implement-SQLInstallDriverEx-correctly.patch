@@ -1,16 +1,16 @@
-From e6991b23241a18450a5d3adda8ae1d13147e6ed0 Mon Sep 17 00:00:00 2001
+From 384558a1fdec8449ee5a5ca1d395766628b54eae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Nov 2015 16:12:30 +1100
-Subject: [PATCH 1/4] odbccp32: Impelement SQLInstallDriverEx correctly
+Subject: [PATCH 1/4] odbccp32: Implement SQLInstallDriverEx correctly
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 89 ++++++++++++++++++++++++++++++++++++++++------
- dlls/odbccp32/tests/misc.c | 54 ++++++++++++++++++++++++++++
- 2 files changed, 133 insertions(+), 10 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 95 +++++++++++++++++++++++++++++++++++++++++-----
+ dlls/odbccp32/tests/misc.c | 54 ++++++++++++++++++++++++++
+ 2 files changed, 140 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index bc643d4..13a2990 100644
+index bc643d4..3b654fb 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -29,6 +29,7 @@
@@ -21,48 +21,39 @@ index bc643d4..13a2990 100644
  #include "wine/debug.h"
  
  #include "odbcinst.h"
-@@ -38,6 +39,9 @@ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
+@@ -38,6 +39,8 @@ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
  /* Registry key names */
  static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\','O','D','B','C',' ','D','r','i','v','e','r','s',0};
  static const WCHAR odbcW[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C',0};
 +static const WCHAR odbcini[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\',0};
-+static const WCHAR driver[] = {'D','r','i','v','e','r',0};
-+static const WCHAR setup[] = {'S','e','t','u','p',0};
++static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
  
  /* This config mode is known to be process-wide.
   * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
-@@ -631,24 +635,93 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
-                WORD fRequest, LPDWORD lpdwUsageCount)
- {
-     UINT len;
--    LPCWSTR p;
-     WCHAR path[MAX_PATH];
-+    HKEY hkey, hkeydriver;
-+    DWORD ret;
-+    static const WCHAR slash[] = {'\\', 0};
-+    static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
+@@ -626,12 +629,90 @@ BOOL WINAPI SQLInstallDriver(LPCSTR lpszInfFile, LPCSTR lpszDriver,
+                               pcbPathOut, ODBC_INSTALL_COMPLETE, &usage);
+ }
+ 
++static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, const  WCHAR *path_in, WCHAR *path)
++{
 +    static const WCHAR installed[] = {'I','n','s','t','a','l','l','e','d',0};
- 
-     clear_errors();
-     TRACE("%s %s %p %d %p %d %p\n", debugstr_w(lpszDriver),
-           debugstr_w(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
-           fRequest, lpdwUsageCount);
- 
--    for (p = lpszDriver; *p; p += lstrlenW(p) + 1)
--        TRACE("%s\n", debugstr_w(p));
-+    if ((ret = RegCreateKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey)) == ERROR_SUCCESS)
++    static const WCHAR slash[] = {'\\', 0};
++    static const WCHAR driverW[] = {'D','r','i','v','e','r',0};
++    static const WCHAR setupW[] = {'S','e','t','u','p',0};
++    HKEY hkey, hkeydriver;
++
++    if (RegCreateKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
 +    {
-+        if ((ret = RegCreateKeyW(hkey, odbcdrivers, &hkeydriver)) == ERROR_SUCCESS)
++        if (RegCreateKeyW(hkey, regkey, &hkeydriver) == ERROR_SUCCESS)
 +        {
-+            if(RegSetValueExW(hkeydriver, lpszDriver, 0, REG_SZ, (BYTE*)installed,
++            if(RegSetValueExW(hkeydriver, driver, 0, REG_SZ, (BYTE*)installed,
 +                                    (lstrlenW(installed)+1)*sizeof(WCHAR)) != ERROR_SUCCESS)
 +                ERR("Failed to write registry installed key\n");
- 
--    len = GetSystemDirectoryW(path, MAX_PATH);
++
 +            RegCloseKey(hkeydriver);
 +        }
 +
-+        if ((ret = RegCreateKeyW(hkey, lpszDriver, &hkeydriver)) == ERROR_SUCCESS)
++        if (RegCreateKeyW(hkey, driver, &hkeydriver) == ERROR_SUCCESS)
 +        {
 +            WCHAR entry[1024];
 +            WCHAR value[MAX_PATH];
@@ -70,13 +61,13 @@ index bc643d4..13a2990 100644
 +            DWORD usagecount = 1;
 +
 +            /* Skip name entry */
-+            p = lpszDriver;
++            p = driver;
 +            p += lstrlenW(p) + 1;
 +
-+            if(!lpszPathIn)
++            if(!path_in)
 +                GetSystemDirectoryW(path, MAX_PATH);
 +            else
-+                lstrcpyW(path, lpszPathIn);
++                lstrcpyW(path, path_in);
 +
 +            for (; *p; p += lstrlenW(p) + 1)
 +            {
@@ -91,7 +82,7 @@ index bc643d4..13a2990 100644
 +                    TRACE("Writing pair %s,%s\n", debugstr_w(entry), debugstr_w(divider));
 +
 +                    /* Driver and Setup entries use the system path unless a path is specified. */
-+                    if(lstrcmpiW(driver, entry) == 0 || lstrcmpiW(setup, entry) == 0)
++                    if(lstrcmpiW(driverW, entry) == 0 || lstrcmpiW(setupW, entry) == 0)
 +                    {
 +                        lstrcpyW(value, path);
 +                        lstrcatW(value, slash);
@@ -120,18 +111,38 @@ index bc643d4..13a2990 100644
 +
 +        RegCloseKey(hkey);
 +    }
++}
 +
+ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
+                LPWSTR lpszPathOut, WORD cbPathOutMax, WORD *pcbPathOut,
+                WORD fRequest, LPDWORD lpdwUsageCount)
+ {
+     UINT len;
+-    LPCWSTR p;
+     WCHAR path[MAX_PATH];
+ 
+     clear_errors();
+@@ -639,15 +720,15 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
+           debugstr_w(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
+           fRequest, lpdwUsageCount);
+ 
+-    for (p = lpszDriver; *p; p += lstrlenW(p) + 1)
+-        TRACE("%s\n", debugstr_w(p));
++    write_registry_values(odbcdrivers, lpszDriver, lpszPathIn, path);
+ 
+-    len = GetSystemDirectoryW(path, MAX_PATH);
 +    len = lstrlenW(path);
  
      if (pcbPathOut)
          *pcbPathOut = len;
  
 -    len = GetSystemDirectoryW(path, MAX_PATH);
--
++    if(lpdwUsageCount)
++        *lpdwUsageCount = 1;
+ 
      if (lpszPathOut && cbPathOutMax > len)
      {
-         lstrcpyW(lpszPathOut, path);
-@@ -661,7 +734,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
+@@ -661,7 +742,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
                 LPSTR lpszPathOut, WORD cbPathOutMax, WORD *pcbPathOut,
                 WORD fRequest, LPDWORD lpdwUsageCount)
  {
@@ -139,7 +150,7 @@ index bc643d4..13a2990 100644
      LPWSTR driver, pathin;
      WCHAR pathout[MAX_PATH];
      BOOL ret;
-@@ -672,9 +744,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
+@@ -672,9 +752,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
            debugstr_a(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
            fRequest, lpdwUsageCount);
  

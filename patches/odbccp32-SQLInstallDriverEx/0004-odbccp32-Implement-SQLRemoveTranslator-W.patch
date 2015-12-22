@@ -1,4 +1,4 @@
-From 93c2a792349adc171ef146680d8d66eae0c355b0 Mon Sep 17 00:00:00 2001
+From b030b105631ce55d12690c7c8b55b5911d4e2208 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
 Subject: [PATCH 4/4] odbccp32: Implement SQLRemoveTranslator/W
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 50 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 8277ba4..56868ec 100644
+index 1befb08..d0e93bf 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1258,20 +1258,63 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+@@ -1199,20 +1199,63 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
      return FALSE;
  }
  

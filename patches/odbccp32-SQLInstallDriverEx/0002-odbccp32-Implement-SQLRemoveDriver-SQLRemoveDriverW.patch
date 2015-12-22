@@ -1,35 +1,19 @@
-From 140de9c0f3c33588a882e4f3796e3a3e282f4363 Mon Sep 17 00:00:00 2001
+From 50489e954bace86a1577f3eeb9add66f588a315f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Mon, 23 Nov 2015 14:50:31 +1100
+Date: Tue, 22 Dec 2015 09:59:09 +1100
 Subject: [PATCH 2/4] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 59 +++++++++++++++++++++++++++++++++++++++-------
+ dlls/odbccp32/odbccp32.c   | 57 ++++++++++++++++++++++++++++++++++++++++------
  dlls/odbccp32/tests/misc.c |  4 ++--
- 2 files changed, 53 insertions(+), 10 deletions(-)
+ 2 files changed, 52 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 13a2990..f398c51 100644
+index 3b654fb..f1fd64a 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -42,6 +42,7 @@ static const WCHAR odbcW[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','
- static const WCHAR odbcini[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\',0};
- static const WCHAR driver[] = {'D','r','i','v','e','r',0};
- static const WCHAR setup[] = {'S','e','t','u','p',0};
-+static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
- 
- /* This config mode is known to be process-wide.
-  * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
-@@ -639,7 +640,6 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
-     HKEY hkey, hkeydriver;
-     DWORD ret;
-     static const WCHAR slash[] = {'\\', 0};
--    static const WCHAR odbcdrivers[] = {'O','D','B','C',' ','D','r','i','v','e','r','s',0};
-     static const WCHAR installed[] = {'I','n','s','t','a','l','l','e','d',0};
- 
-     clear_errors();
-@@ -1102,22 +1102,65 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
+@@ -1110,22 +1110,65 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
      return FALSE;
  }
  
