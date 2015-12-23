@@ -1,0 +1,200 @@
+From 24cc64534c75e09a425b9823b9020f1664c0e502 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 30 Oct 2015 12:08:19 +1100
+Subject: [PATCH] vbscript: Call OnScriptError when errors occur
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/vbscript/compile.c   |   2 +-
+ dlls/vbscript/global.c    | 122 ++++++++++++++++++++++++++++++++++++++++++++++
+ dlls/vbscript/tests/run.c |   8 ++-
+ dlls/vbscript/vbscript.h  |   1 +
+ 4 files changed, 131 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/vbscript/compile.c b/dlls/vbscript/compile.c
+index c8189d6..609a798 100644
+--- a/dlls/vbscript/compile.c
++++ b/dlls/vbscript/compile.c
+@@ -1817,7 +1817,7 @@ HRESULT compile_script(script_ctx_t *script, const WCHAR *src, const WCHAR *deli
+ 
+     hres = parse_script(&ctx.parser, src, delimiter);
+     if(FAILED(hres))
+-        return hres;
++        return raise_scripting_error(script->site, hres);
+ 
+     code = ctx.code = alloc_vbscode(&ctx, src);
+     if(!ctx.code)
+diff --git a/dlls/vbscript/global.c b/dlls/vbscript/global.c
+index 129d6ce..ec1226a 100644
+--- a/dlls/vbscript/global.c
++++ b/dlls/vbscript/global.c
+@@ -23,6 +23,8 @@
+ #include "vbscript_defs.h"
+ 
+ #include "mshtmhst.h"
++#include "oledb.h"
++#include "activscp.h"
+ #include "objsafe.h"
+ 
+ #include "wine/debug.h"
+@@ -2267,6 +2269,126 @@ static const builtin_prop_t global_props[] = {
+     {DISPID_GLOBAL_VBMSGBOXRTLREADING,     NULL, BP_GET, VT_I4, MB_RTLREADING}
+ };
+ 
++typedef struct ScriptingError
++{
++    IActiveScriptError IActiveScriptError_iface;
++    LONG ref;
++
++    HRESULT error;
++} ScriptingError;
++
++static inline ScriptingError *impl_from_IActiveScriptError(IActiveScriptError *iface)
++{
++    return CONTAINING_RECORD(iface, ScriptingError, IActiveScriptError_iface);
++}
++
++static HRESULT WINAPI scripterror_QueryInterface(IActiveScriptError *iface, REFIID riid, void **ppv)
++{
++    ScriptingError *This = impl_from_IActiveScriptError( iface );
++    TRACE("%p %s %p\n", This, debugstr_guid(riid), ppv);
++
++    if ( IsEqualGUID( riid, &IID_IActiveScriptError ) ||
++         IsEqualGUID( riid, &IID_IUnknown ) )
++    {
++        *ppv = iface;
++    }
++    else
++    {
++        FIXME("Unsupported interface %s\n", debugstr_guid(riid));
++        return E_NOINTERFACE;
++    }
++
++    IActiveScriptError_AddRef( iface );
++
++    return S_OK;
++}
++
++static ULONG WINAPI scripterror_AddRef(IActiveScriptError *iface)
++{
++    ScriptingError *This = impl_from_IActiveScriptError( iface );
++
++    return InterlockedIncrement( &This->ref );
++}
++
++static ULONG WINAPI scripterror_Release(IActiveScriptError *iface)
++{
++    ScriptingError *This = impl_from_IActiveScriptError( iface );
++    ULONG ref;
++
++    ref = InterlockedDecrement( &This->ref );
++    if(!ref)
++    {
++        HeapFree(GetProcessHeap(), 0, This);
++    }
++
++    return ref;
++}
++
++static HRESULT WINAPI scripterror_GetExceptionInfo(IActiveScriptError *iface, EXCEPINFO *info)
++{
++    ScriptingError *This = impl_from_IActiveScriptError( iface );
++    FIXME("%p %p\n", This, info);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI scripterror_GetSourcePosition(IActiveScriptError *iface, DWORD *source,
++        ULONG *line_num, LONG *char_pos)
++{
++    ScriptingError *This = impl_from_IActiveScriptError( iface );
++    FIXME("stub %p %p %p %p\n", This, source, line_num, char_pos);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI scripterror_GetSourceLineText(IActiveScriptError *iface, BSTR *src_line)
++{
++    ScriptingError *This = impl_from_IActiveScriptError( iface );
++    FIXME("stub %p %p\n", This, src_line);
++    return E_NOTIMPL;
++}
++
++static const struct IActiveScriptErrorVtbl ScriptErrorVtbl =
++{
++    scripterror_QueryInterface,
++    scripterror_AddRef,
++    scripterror_Release,
++    scripterror_GetExceptionInfo,
++    scripterror_GetSourcePosition,
++    scripterror_GetSourceLineText
++};
++
++static HRESULT IActiveScriptError_Create(void** result, HRESULT error)
++{
++    ScriptingError *script;
++
++    script = HeapAlloc( GetProcessHeap(), 0, sizeof(*script) );
++    if ( !script )
++        return E_OUTOFMEMORY;
++
++    script->IActiveScriptError_iface.lpVtbl = &ScriptErrorVtbl;
++    script->ref = 1;
++    script->error = error;
++
++    *result = script;
++
++    return S_OK;
++}
++
++HRESULT raise_scripting_error(IActiveScriptSite *site, HRESULT error)
++{
++    IActiveScriptError *scripterror;
++    HRESULT hr = map_hres(error);
++
++    if(IActiveScriptError_Create( (void**)&scripterror, error) == S_OK)
++    {
++        if(IActiveScriptSite_OnScriptError(site, scripterror) == S_OK)
++            hr = SCRIPT_E_REPORTED;
++
++        IActiveScriptError_Release(scripterror);
++    }
++
++    return hr;
++}
++
+ static HRESULT Err_Description(vbdisp_t *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
+ {
+     FIXME("\n");
+diff --git a/dlls/vbscript/tests/run.c b/dlls/vbscript/tests/run.c
+index d8c5467..799475e 100644
+--- a/dlls/vbscript/tests/run.c
++++ b/dlls/vbscript/tests/run.c
+@@ -2198,7 +2198,13 @@ static void run_tests(void)
+     SET_EXPECT(OnScriptError);
+     hres = parse_script_ar("<!--");
+     ok(FAILED(hres), "script didn't fail\n");
+-    todo_wine CHECK_CALLED(OnScriptError);
++    CHECK_CALLED(OnScriptError);
++
++    onerror_hres = S_OK;
++    SET_EXPECT(OnScriptError);
++    hres = parse_script_ar("<!--");
++    ok(hres == SCRIPT_E_REPORTED, "hres = %08x\n", hres);
++    CHECK_CALLED(OnScriptError);
+ 
+     SET_EXPECT(global_success_d);
+     SET_EXPECT(global_success_i);
+diff --git a/dlls/vbscript/vbscript.h b/dlls/vbscript/vbscript.h
+index cd122d3..c11dafe 100644
+--- a/dlls/vbscript/vbscript.h
++++ b/dlls/vbscript/vbscript.h
+@@ -153,6 +153,7 @@ HRESULT get_disp_value(script_ctx_t*,IDispatch*,VARIANT*) DECLSPEC_HIDDEN;
+ void collect_objects(script_ctx_t*) DECLSPEC_HIDDEN;
+ HRESULT create_procedure_disp(script_ctx_t*,vbscode_t*,IDispatch**) DECLSPEC_HIDDEN;
+ HRESULT create_script_disp(script_ctx_t*,ScriptDisp**) DECLSPEC_HIDDEN;
++HRESULT raise_scripting_error(IActiveScriptSite *site, HRESULT error) DECLSPEC_HIDDEN;
+ 
+ HRESULT to_int(VARIANT*,int*) DECLSPEC_HIDDEN;
+ 
+-- 
+1.9.1
+
