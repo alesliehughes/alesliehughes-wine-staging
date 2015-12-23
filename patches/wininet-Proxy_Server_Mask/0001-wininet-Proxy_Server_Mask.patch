@@ -1,0 +1,27 @@
+From 7eaaa67da8e35276f9459252e9b96769084e2387 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 13 Aug 2015 09:27:18 +1000
+Subject: [PATCH] wininet: Security Mask when using a proxy server
+
+---
+ dlls/wininet/netconnection.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/dlls/wininet/netconnection.c b/dlls/wininet/netconnection.c
+index 7305860..723705a 100644
+--- a/dlls/wininet/netconnection.c
++++ b/dlls/wininet/netconnection.c
+@@ -200,7 +200,10 @@ static DWORD netconn_verify_cert(netconn_t *conn, PCCERT_CONTEXT cert, HCERTSTOR
+             conn->server->cert_chain = NULL;
+         }
+         if(conn->mask_errors)
++        {
+             conn->server->security_flags |= conn->security_flags & _SECURITY_ERROR_FLAGS_MASK;
++            err = ERROR_SUCCESS;
++        }
+         return err;
+     }
+ 
+-- 
+1.9.1
+
