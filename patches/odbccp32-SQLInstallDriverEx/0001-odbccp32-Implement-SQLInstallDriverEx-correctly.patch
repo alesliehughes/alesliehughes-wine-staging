@@ -1,16 +1,16 @@
-From 384558a1fdec8449ee5a5ca1d395766628b54eae Mon Sep 17 00:00:00 2001
+From 2d3adc3d72f066a36fba5de871ce348269b0fe4c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Nov 2015 16:12:30 +1100
-Subject: [PATCH 1/4] odbccp32: Implement SQLInstallDriverEx correctly
+Subject: [PATCH 1/2] odbccp32: Implement SQLInstallDriverEx correctly
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 95 +++++++++++++++++++++++++++++++++++++++++-----
- dlls/odbccp32/tests/misc.c | 54 ++++++++++++++++++++++++++
+ dlls/odbccp32/odbccp32.c   | 90 +++++++++++++++++++++++++++++++++++++++++-----
+ dlls/odbccp32/tests/misc.c | 59 ++++++++++++++++++++++++++++++
  2 files changed, 140 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index bc643d4..3b654fb 100644
+index bc643d4..3d150a1 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -29,6 +29,7 @@
@@ -30,7 +30,7 @@ index bc643d4..3b654fb 100644
  
  /* This config mode is known to be process-wide.
   * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
-@@ -626,12 +629,90 @@ BOOL WINAPI SQLInstallDriver(LPCSTR lpszInfFile, LPCSTR lpszDriver,
+@@ -626,12 +629,85 @@ BOOL WINAPI SQLInstallDriver(LPCSTR lpszInfFile, LPCSTR lpszDriver,
                                pcbPathOut, ODBC_INSTALL_COMPLETE, &usage);
  }
  
@@ -58,7 +58,6 @@ index bc643d4..3b654fb 100644
 +            WCHAR entry[1024];
 +            WCHAR value[MAX_PATH];
 +            const WCHAR *p;
-+            DWORD usagecount = 1;
 +
 +            /* Skip name entry */
 +            p = driver;
@@ -102,10 +101,6 @@ index bc643d4..3b654fb 100644
 +                }
 +            }
 +
-+            /* Set Usage Count */
-+            if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
-+                ERR("Failed to write registry UsageCount key\n");
-+
 +            RegCloseKey(hkeydriver);
 +        }
 +
@@ -122,7 +117,7 @@ index bc643d4..3b654fb 100644
      WCHAR path[MAX_PATH];
  
      clear_errors();
-@@ -639,15 +720,15 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
+@@ -639,15 +715,15 @@ BOOL WINAPI SQLInstallDriverExW(LPCWSTR lpszDriver, LPCWSTR lpszPathIn,
            debugstr_w(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
            fRequest, lpdwUsageCount);
  
@@ -142,7 +137,7 @@ index bc643d4..3b654fb 100644
  
      if (lpszPathOut && cbPathOutMax > len)
      {
-@@ -661,7 +742,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
+@@ -661,7 +737,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
                 LPSTR lpszPathOut, WORD cbPathOutMax, WORD *pcbPathOut,
                 WORD fRequest, LPDWORD lpdwUsageCount)
  {
@@ -150,7 +145,7 @@ index bc643d4..3b654fb 100644
      LPWSTR driver, pathin;
      WCHAR pathout[MAX_PATH];
      BOOL ret;
-@@ -672,9 +752,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
+@@ -672,9 +747,6 @@ BOOL WINAPI SQLInstallDriverEx(LPCSTR lpszDriver, LPCSTR lpszPathIn,
            debugstr_a(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
            fRequest, lpdwUsageCount);
  
@@ -161,10 +156,10 @@ index bc643d4..3b654fb 100644
      pathin = SQLInstall_strdup(lpszPathIn);
  
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index 505ce1b..9ee3f24 100644
+index 505ce1b..3ae1fd3 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
-@@ -412,6 +412,59 @@ static void test_SQLGetPrivateProfileStringW(void)
+@@ -412,6 +412,64 @@ static void test_SQLGetPrivateProfileStringW(void)
      }
  }
  
@@ -201,10 +196,15 @@ index 505ce1b..9ee3f24 100644
 +        ok(reg_ret == ERROR_SUCCESS, "RegOpenKeyExW failed\n");
 +        if (reg_ret == ERROR_SUCCESS)
 +        {
-+            DWORD type, size, usage_cnt = 0;
-+            reg_ret = RegGetValueA(hkey, NULL, "UsageCount", RRF_RT_DWORD, &type, &usage_cnt, &size);
++            DWORD type, size = MAX_PATH;
++            char driverpath[MAX_PATH];
++
++            strcpy(driverpath, syspath);
++            strcat(driverpath, "\\sample.dll");
++
++            reg_ret = RegGetValueA(hkey, NULL, "Driver", RRF_RT_REG_SZ, &type, &path, &size);
 +            ok(reg_ret == ERROR_SUCCESS, "RegGetValueA failed\n");
-+            ok(usage_cnt == 1, "UsageCount expected 1 got %u\n", usage_cnt);
++            ok(!strcmp(path, driverpath), "invalid path %s\n", path);
 +
 +            RegCloseKey(hkey);
 +        }
@@ -224,7 +224,7 @@ index 505ce1b..9ee3f24 100644
  START_TEST(misc)
  {
      test_SQLConfigMode();
-@@ -420,4 +473,5 @@ START_TEST(misc)
+@@ -420,4 +478,5 @@ START_TEST(misc)
      test_SQLWritePrivateProfileString();
      test_SQLGetPrivateProfileString();
      test_SQLGetPrivateProfileStringW();
