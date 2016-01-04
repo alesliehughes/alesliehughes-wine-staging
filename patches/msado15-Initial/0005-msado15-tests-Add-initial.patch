@@ -1,7 +1,7 @@
-From 8d42f7a80cc6e7024555ffe4f9be2691c7860850 Mon Sep 17 00:00:00 2001
+From ef5392aad9f7d778538b0fcd44bcc074ae7145a1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Dec 2015 14:01:02 +1100
-Subject: [PATCH 5/7] msado15/tests: Add initial
+Subject: [PATCH 5/9] msado15/tests: Add initial
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -13,10 +13,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/msado15/tests/connection.c
 
 diff --git a/configure.ac b/configure.ac
-index 6018b3b..9b4477e 100644
+index 5f12926..4cd8b2d 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2993,7 +2993,8 @@ WINE_CONFIG_DLL(msacm.dll16,enable_win16)
+@@ -2997,7 +2997,8 @@ WINE_CONFIG_DLL(msacm.dll16,enable_win16)
  WINE_CONFIG_DLL(msacm32.drv)
  WINE_CONFIG_DLL(msacm32,,[implib,po])
  WINE_CONFIG_TEST(dlls/msacm32/tests)
