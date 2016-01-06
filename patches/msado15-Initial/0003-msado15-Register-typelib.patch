@@ -1,7 +1,7 @@
-From f7f172eb7083df2ea785e20972d9b4898f67aced Mon Sep 17 00:00:00 2001
+From a33b3ee6be87056cd9835c512cffe77e47b137f3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 14:26:15 +1100
-Subject: [PATCH 3/7] msado15: Register typelib
+Subject: [PATCH 3/9] msado15: Register typelib
 
 ---
  dlls/msado15/msado15_typelib.idl | 22 ++++++++++++++++++++++

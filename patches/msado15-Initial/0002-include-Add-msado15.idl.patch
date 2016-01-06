@@ -1,17 +1,17 @@
-From 4899312b6218ef6eea0e314d53f93ab9a3317699 Mon Sep 17 00:00:00 2001
+From 9a5c7063566bd7ef26c90dd94f292aeb5c4cd39b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 12:07:51 +1100
-Subject: [PATCH 2/7] include: Add msado15.idl
+Subject: [PATCH 2/9] include: Add msado15.idl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  include/Makefile.in |    1 +
- include/msado15.idl | 2040 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 2041 insertions(+)
+ include/msado15.idl | 2024 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 2025 insertions(+)
  create mode 100644 include/msado15.idl
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index ea0e3fd..f7e73ca 100644
+index 129ff6d..fe66557 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -90,6 +90,7 @@ IDL_SRCS = \
@@ -24,10 +24,10 @@ index ea0e3fd..f7e73ca 100644
  	msdadc.idl \
 diff --git a/include/msado15.idl b/include/msado15.idl
 new file mode 100644
-index 0000000..ed70228
+index 0000000..0eb6c97
 --- /dev/null
 +++ b/include/msado15.idl
-@@ -0,0 +1,2040 @@
+@@ -0,0 +1,2024 @@
 +/*
 + * Copyright 2015 Alistair Leslie-Hughes
 + *
@@ -1283,9 +1283,7 @@ index 0000000..ed70228
 +    HRESULT GetRows([in, defaultvalue(-1)] long rows, [in, optional] VARIANT start,
 +                    [in, optional] VARIANT fields, [out, retval] VARIANT *var);
 +    [id(0x000003f9)]
-+    HRESULT Move(
-+                    [in] ADO_LONGPTR NumRecords,
-+                    [in, optional] VARIANT Start);
++    HRESULT Move([in] ADO_LONGPTR numrecords, [in, optional] VARIANT start);
 +    [id(0x000003fa)]
 +    HRESULT MoveNext();
 +    [id(0x000003fb)]
@@ -1295,78 +1293,64 @@ index 0000000..ed70228
 +    [id(0x000003fd)]
 +    HRESULT MoveLast();
 +    [id(0x000003fe)]
-+    HRESULT Open(
-+                    [in, optional] VARIANT Source,
-+                    [in, optional] VARIANT ActiveConnection,
-+                    [in, defaultvalue(adOpenUnspecified)] CursorTypeEnum CursorType,
-+                    [in, defaultvalue(adLockUnspecified)] LockTypeEnum LockType,
-+                    [in, defaultvalue(-1)] long Options);
++    HRESULT Open([in, optional] VARIANT source, [in, optional] VARIANT activeconnection,
++                    [in, defaultvalue(adOpenUnspecified)] CursorTypeEnum cursortype,
++                    [in, defaultvalue(adLockUnspecified)] LockTypeEnum locktype,
++                    [in, defaultvalue(-1)] long options);
 +    [id(0x000003ff)]
-+    HRESULT Requery([in, defaultvalue(-1)] long Options);
++    HRESULT Requery([in, defaultvalue(-1)] long options);
 +    [id(0x60030022), hidden]
-+    HRESULT _xResync([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
++    HRESULT _xResync([in, defaultvalue(adAffectAll)] AffectEnum affectrecords);
 +    [id(0x00000401)]
-+    HRESULT Update(
-+                    [in, optional] VARIANT Fields,
-+                    [in, optional] VARIANT Values);
++    HRESULT Update([in, optional] VARIANT fields, [in, optional] VARIANT values);
 +    [id(0x00000417), propget]
-+    HRESULT AbsolutePage([out, retval] PositionEnum_Param* pl);
++    HRESULT AbsolutePage([out, retval] PositionEnum_Param *pos);
 +    [id(0x00000417), propput]
-+    HRESULT AbsolutePage([in] PositionEnum_Param pl);
++    HRESULT AbsolutePage([in] PositionEnum_Param pos);
 +    [id(0x00000402), propget]
-+    HRESULT EditMode([out, retval] EditModeEnum* pl);
++    HRESULT EditMode([out, retval] EditModeEnum *pos);
 +    [id(0x00000406), propget]
-+    HRESULT Filter([out, retval] VARIANT* Criteria);
++    HRESULT Filter([out, retval] VARIANT* criteria);
 +    [id(0x00000406), propput]
 +    HRESULT Filter([in] VARIANT Criteria);
 +    [id(0x0000041a), propget]
-+    HRESULT PageCount([out, retval] ADO_LONGPTR* pl);
++    HRESULT PageCount([out, retval] ADO_LONGPTR *cnt);
 +    [id(0x00000418), propget]
-+    HRESULT PageSize([out, retval] long* pl);
++    HRESULT PageSize([out, retval] long *size);
 +    [id(0x00000418), propput]
 +    HRESULT PageSize([in] long pl);
 +    [id(0x00000407), propget]
-+    HRESULT Sort([out, retval] BSTR* Criteria);
++    HRESULT Sort([out, retval] BSTR *criteria);
 +    [id(0x00000407), propput]
-+    HRESULT Sort([in] BSTR Criteria);
++    HRESULT Sort([in] BSTR criteria);
 +    [id(0x00000405), propget]
-+    HRESULT Status([out, retval] long* pl);
++    HRESULT Status([out, retval] long *status);
 +    [id(0x0000041e), propget]
-+    HRESULT State([out, retval] long* plObjState);
++    HRESULT State([out, retval] long *state);
 +    [id(0x60030030), hidden]
-+    HRESULT _xClone([out, retval] _Recordset** ppvObject);
++    HRESULT _xClone([out, retval] _Recordset **clone);
 +    [id(0x0000040b)]
-+    HRESULT UpdateBatch([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
++    HRESULT UpdateBatch([in, defaultvalue(adAffectAll)] AffectEnum affectrecords);
 +    [id(0x00000419)]
-+    HRESULT CancelBatch([in, defaultvalue(adAffectAll)] AffectEnum AffectRecords);
++    HRESULT CancelBatch([in, defaultvalue(adAffectAll)] AffectEnum affectrecords);
 +    [id(0x0000041b), propget]
-+    HRESULT CursorLocation([out, retval] CursorLocationEnum* plCursorLoc);
++    HRESULT CursorLocation([out, retval] CursorLocationEnum *location);
 +    [id(0x0000041b), propput]
-+    HRESULT CursorLocation([in] CursorLocationEnum plCursorLoc);
++    HRESULT CursorLocation([in] CursorLocationEnum location);
 +    [id(0x0000041c)]
-+    HRESULT NextRecordset(
-+                    [out, optional] VARIANT* RecordsAffected,
-+                    [out, retval] _Recordset** ppiRs);
++    HRESULT NextRecordset([out, optional] VARIANT *recordsaffected, [out, retval] _Recordset **out);
 +    [id(0x0000040c)]
-+    HRESULT Supports(
-+                    [in] CursorOptionEnum CursorOptions,
-+                    [out, retval] VARIANT_BOOL* pb);
++    HRESULT Supports([in] CursorOptionEnum cursoroptions, [out, retval] VARIANT_BOOL *out);
 +    [id(0xfffffff8), propget, hidden]
-+    HRESULT Collect(
-+                    [in] VARIANT Index,
-+                    [out, retval] VARIANT* pvar);
++    HRESULT Collect([in] VARIANT index, [out, retval] VARIANT *var);
 +    [id(0xfffffff8), propput, hidden]
-+    HRESULT Collect(
-+                    [in] VARIANT Index,
-+                    [in] VARIANT pvar);
++    HRESULT Collect([in] VARIANT index, [in] VARIANT var);
 +    [id(0x0000041d), propget]
-+    HRESULT MarshalOptions([out, retval] MarshalOptionsEnum* peMarshal);
++    HRESULT MarshalOptions([out, retval] MarshalOptionsEnum *marshal);
 +    [id(0x0000041d), propput]
-+    HRESULT MarshalOptions([in] MarshalOptionsEnum peMarshal);
++    HRESULT MarshalOptions([in] MarshalOptionsEnum marshal);
 +    [id(0x00000422)]
-+    HRESULT Find(
-+                    [in] BSTR criteria,
-+                        [in, defaultvalue(0)] ADO_LONGPTR skiprecords,
++    HRESULT Find([in] BSTR criteria, [in, defaultvalue(0)] ADO_LONGPTR skiprecords,
 +                        [in, defaultvalue(adSearchForward)] SearchDirectionEnum direction,
 +                        [in, optional] VARIANT start);
 +    };
