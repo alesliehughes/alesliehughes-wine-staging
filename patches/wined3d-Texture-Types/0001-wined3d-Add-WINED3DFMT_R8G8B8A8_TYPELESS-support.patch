@@ -1,0 +1,29 @@
+From 0124266db895e0fe8ad753ad4c89a1174401caea Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 27 Nov 2015 09:35:03 +1100
+Subject: [PATCH 1/4] wined3d: Add WINED3DFMT_R8G8B8A8_TYPELESS support
+
+---
+ dlls/wined3d/utils.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
+index 4406067..fc5f09a 100644
+--- a/dlls/wined3d/utils.c
++++ b/dlls/wined3d/utils.c
+@@ -1065,6 +1065,12 @@ static const struct wined3d_format_texture_info format_texture_info[] =
+             | WINED3DFMT_FLAG_RENDERTARGET |  WINED3DFMT_FLAG_SRGB_READ | WINED3DFMT_FLAG_SRGB_WRITE
+             | WINED3DFMT_FLAG_VTF,
+             WINED3D_GL_EXT_NONE,        NULL},
++    {WINED3DFMT_R8G8B8A8_TYPELESS,      GL_RGBA8,                         GL_SRGB8_ALPHA8_EXT,                    0,
++            GL_RGBA,                    GL_UNSIGNED_INT_8_8_8_8_REV,      0,
++            WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING
++            | WINED3DFMT_FLAG_RENDERTARGET | WINED3DFMT_FLAG_SRGB_READ | WINED3DFMT_FLAG_SRGB_WRITE
++            | WINED3DFMT_FLAG_VTF,
++            WINED3D_GL_EXT_NONE,        NULL},
+     {WINED3DFMT_R8G8B8X8_UNORM,         GL_RGB8,                          GL_RGB8,                                0,
+             GL_RGBA,                    GL_UNSIGNED_INT_8_8_8_8_REV,      0,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING,
+-- 
+1.9.1
+

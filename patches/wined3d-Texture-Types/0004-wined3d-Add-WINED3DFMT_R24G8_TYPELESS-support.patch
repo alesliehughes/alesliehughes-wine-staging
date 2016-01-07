@@ -1,0 +1,35 @@
+From b76290dc4eeb2d4b35610b4af1deb25ecc1156e3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Jan 2016 14:39:01 +1100
+Subject: [PATCH 4/4] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
+
+---
+ dlls/wined3d/utils.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
+index 84db7ff..773a34b 100644
+--- a/dlls/wined3d/utils.c
++++ b/dlls/wined3d/utils.c
+@@ -149,6 +149,7 @@ static const struct wined3d_format_channels formats[] =
+     {WINED3DFMT_R16_TYPELESS,              16,  0,  0,  0,   0,  0,  0,  0,    2,   0,     0},
+     {WINED3DFMT_R16G16_TYPELESS,           16, 16,  0,  0,   0, 16,  0,  0,    4,   0,     0},
+     {WINED3DFMT_R16G16B16A16_TYPELESS,     16, 16, 16, 16,   0, 16, 32, 48,    8,   0,     0},
++    {WINED3DFMT_R24G8_TYPELESS,            24,  8,  0,  0,   0, 24,  0,  0,    4,   0,     0},
+     {WINED3DFMT_R32_TYPELESS,              32,  0,  0,  0,   0,  0,  0,  0,    4,   0,     0},
+     {WINED3DFMT_R32G32_TYPELESS,           32, 32,  0,  0,   0, 32,  0,  0,    8,   0,     0},
+     {WINED3DFMT_R32G32B32_TYPELESS,        32, 32, 32,  0,   0, 32, 64,  0,   12,   0,     0},
+@@ -1277,6 +1278,10 @@ static const struct wined3d_format_texture_info format_texture_info[] =
+             GL_DEPTH_STENCIL,           GL_FLOAT_32_UNSIGNED_INT_24_8_REV, 8,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_DEPTH | WINED3DFMT_FLAG_STENCIL | WINED3DFMT_FLAG_SHADOW,
+             ARB_DEPTH_BUFFER_FLOAT,     convert_s8_uint_d24_float},
++    {WINED3DFMT_R24G8_TYPELESS,         GL_DEPTH32F_STENCIL8,             GL_DEPTH32F_STENCIL8,                   0,
++            GL_DEPTH_STENCIL,           GL_FLOAT_32_UNSIGNED_INT_24_8_REV, 8,
++            WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_DEPTH | WINED3DFMT_FLAG_STENCIL | WINED3DFMT_FLAG_SHADOW,
++            ARB_DEPTH_BUFFER_FLOAT,     convert_s8_uint_d24_float},
+     /* Vendor-specific formats */
+     {WINED3DFMT_ATI1N,                  GL_COMPRESSED_RED_RGTC1,          GL_COMPRESSED_RED_RGTC1,                0,
+             GL_RED,                     GL_UNSIGNED_BYTE,                 0,
+-- 
+1.9.1
+

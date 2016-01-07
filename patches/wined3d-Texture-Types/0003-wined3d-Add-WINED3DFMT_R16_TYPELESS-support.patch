@@ -1,0 +1,28 @@
+From fe9f3011450d9e1f6a0012322b7bc66ef27fca12 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Jan 2016 14:34:44 +1100
+Subject: [PATCH 3/4] wined3d: Add WINED3DFMT_R16_TYPELESS support
+
+---
+ dlls/wined3d/utils.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
+index 0c47216..84db7ff 100644
+--- a/dlls/wined3d/utils.c
++++ b/dlls/wined3d/utils.c
+@@ -1260,6 +1260,11 @@ static const struct wined3d_format_texture_info format_texture_info[] =
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING
+             | WINED3DFMT_FLAG_DEPTH | WINED3DFMT_FLAG_SHADOW,
+             ARB_DEPTH_TEXTURE,          NULL},
++    {WINED3DFMT_R16_TYPELESS,           GL_DEPTH_COMPONENT24_ARB,         GL_DEPTH_COMPONENT24_ARB,               0,
++            GL_DEPTH_COMPONENT,         GL_UNSIGNED_SHORT,                0,
++            WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING
++            | WINED3DFMT_FLAG_DEPTH | WINED3DFMT_FLAG_SHADOW,
++            ARB_DEPTH_TEXTURE, NULL},
+     {WINED3DFMT_L16_UNORM,              GL_LUMINANCE16,                   GL_LUMINANCE16,                         0,
+             GL_LUMINANCE,               GL_UNSIGNED_SHORT,                0,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING,
+-- 
+1.9.1
+
