@@ -1,7 +1,7 @@
 From ffd0658398b0f4a37a70b3d19b8863d447fed559 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 14:39:01 +1100
-Subject: [PATCH 4/5] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
+Subject: [PATCH 4/6] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
 
 ---
  dlls/wined3d/utils.c | 5 +++++

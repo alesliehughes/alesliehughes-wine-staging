@@ -1,0 +1,45 @@
+From 6284d406aae580de0cc25d42c5dbe3c809993964 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Jan 2016 20:15:34 +1100
+Subject: [PATCH 6/6] wined3d: Support Custom Data OP Code
+
+---
+ dlls/wined3d/shader_sm4.c      | 2 ++
+ dlls/wined3d/wined3d_private.h | 1 +
+ 2 files changed, 3 insertions(+)
+
+diff --git a/dlls/wined3d/shader_sm4.c b/dlls/wined3d/shader_sm4.c
+index e4d6336..539e7f1 100644
+--- a/dlls/wined3d/shader_sm4.c
++++ b/dlls/wined3d/shader_sm4.c
+@@ -108,6 +108,7 @@ enum wined3d_sm4_opcode
+     WINED3D_SM4_OP_MAD                  = 0x32,
+     WINED3D_SM4_OP_MIN                  = 0x33,
+     WINED3D_SM4_OP_MAX                  = 0x34,
++    WINED3D_SM4_OP_CUSTOMDATA           = 0x35,
+     WINED3D_SM4_OP_MOV                  = 0x36,
+     WINED3D_SM4_OP_MOVC                 = 0x37,
+     WINED3D_SM4_OP_MUL                  = 0x38,
+@@ -277,6 +278,7 @@ static const struct wined3d_sm4_opcode_info opcode_table[] =
+     {WINED3D_SM4_OP_MAD,                    WINED3DSIH_MAD,                 "F",    "FFF"},
+     {WINED3D_SM4_OP_MIN,                    WINED3DSIH_MIN,                 "F",    "FF"},
+     {WINED3D_SM4_OP_MAX,                    WINED3DSIH_MAX,                 "F",    "FF"},
++    {WINED3D_SM4_OP_CUSTOMDATA,             WINED3DSIH_CUSTOMDATA,          "",     ""},
+     {WINED3D_SM4_OP_MOV,                    WINED3DSIH_MOV,                 "F",    "F"},
+     {WINED3D_SM4_OP_MOVC,                   WINED3DSIH_MOVC,                "F",    "UFF"},
+     {WINED3D_SM4_OP_MUL,                    WINED3DSIH_MUL,                 "F",    "FF"},
+diff --git a/dlls/wined3d/wined3d_private.h b/dlls/wined3d/wined3d_private.h
+index 1fc0774..1b71713 100644
+--- a/dlls/wined3d/wined3d_private.h
++++ b/dlls/wined3d/wined3d_private.h
+@@ -553,6 +553,7 @@ enum WINED3D_SHADER_INSTRUCTION_HANDLER
+     WINED3DSIH_MAD,
+     WINED3DSIH_MAX,
+     WINED3DSIH_MIN,
++    WINED3DSIH_CUSTOMDATA,
+     WINED3DSIH_MOV,
+     WINED3DSIH_MOVA,
+     WINED3DSIH_MOVC,
+-- 
+2.6.4
+
