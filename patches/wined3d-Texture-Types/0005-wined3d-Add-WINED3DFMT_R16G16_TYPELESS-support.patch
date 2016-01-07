@@ -1,0 +1,29 @@
+From 97921f5c1023a985a67a4422be564212aafb24ac Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Jan 2016 18:37:22 +1100
+Subject: [PATCH 5/5] wined3d: Add WINED3DFMT_R16G16_TYPELESS support
+
+---
+ dlls/wined3d/utils.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
+index 191c5c2..05d4e14 100644
+--- a/dlls/wined3d/utils.c
++++ b/dlls/wined3d/utils.c
+@@ -985,10 +985,10 @@ static const struct wined3d_format_texture_info format_texture_info[] =
+             GL_RGB,                     GL_HALF_FLOAT_ARB,                6,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_RENDERTARGET | WINED3DFMT_FLAG_VTF,
+             ARB_TEXTURE_FLOAT,          convert_r16g16},
+-    {WINED3DFMT_R16G16_FLOAT,           GL_RG16F,                         GL_RG16F,                               0,
++    {WINED3DFMT_R16G16_TYPELESS,        GL_RG16F,                         GL_RG16F,                               0,
+             GL_RG,                      GL_HALF_FLOAT_ARB,                0,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_RENDERTARGET | WINED3DFMT_FLAG_VTF,
+-            ARB_TEXTURE_RG,             NULL},
++            ARB_TEXTURE_RG,             convert_r16g16},
+     {WINED3DFMT_R16G16B16A16_FLOAT,     GL_RGBA16F_ARB,                   GL_RGBA16F_ARB,                         0,
+             GL_RGBA,                    GL_HALF_FLOAT_ARB,                0,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_RENDERTARGET
+-- 
+2.6.4
+

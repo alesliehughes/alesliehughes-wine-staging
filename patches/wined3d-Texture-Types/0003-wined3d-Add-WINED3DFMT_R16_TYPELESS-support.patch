@@ -1,14 +1,14 @@
-From fe9f3011450d9e1f6a0012322b7bc66ef27fca12 Mon Sep 17 00:00:00 2001
+From 6506888be122e7b25ef67facd067b51462b33808 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 14:34:44 +1100
-Subject: [PATCH 3/4] wined3d: Add WINED3DFMT_R16_TYPELESS support
+Subject: [PATCH 3/5] wined3d: Add WINED3DFMT_R16_TYPELESS support
 
 ---
  dlls/wined3d/utils.c | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
-index 0c47216..84db7ff 100644
+index 8aa5a84..2b4d371 100644
 --- a/dlls/wined3d/utils.c
 +++ b/dlls/wined3d/utils.c
 @@ -1260,6 +1260,11 @@ static const struct wined3d_format_texture_info format_texture_info[] =
@@ -24,5 +24,5 @@ index 0c47216..84db7ff 100644
              GL_LUMINANCE,               GL_UNSIGNED_SHORT,                0,
              WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING,
 -- 
-1.9.1
+2.6.4
 
