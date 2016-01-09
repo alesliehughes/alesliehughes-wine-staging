@@ -1,0 +1,31 @@
+From 1673ff08dc87dfbd1b1347eb94f0c57403e5fc48 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 9 Jan 2016 21:30:07 +1100
+Subject: [PATCH] comctl32: Update Thumb Rect when position changes
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/comctl32/trackbar.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/comctl32/trackbar.c b/dlls/comctl32/trackbar.c
+index 6d092a3..211f23c 100644
+--- a/dlls/comctl32/trackbar.c
++++ b/dlls/comctl32/trackbar.c
+@@ -1229,9 +1229,11 @@ TRACKBAR_SetPos (TRACKBAR_INFO *infoPtr, BOOL fPosition, LONG lPosition)
+ 
+     if (infoPtr->lPos > infoPtr->lRangeMax)
+ 	infoPtr->lPos = infoPtr->lRangeMax;
+-    infoPtr->flags |= TB_THUMBPOSCHANGED;
+ 
+-    if (fPosition && oldPos != lPosition) TRACKBAR_InvalidateThumbMove(infoPtr, oldPos, lPosition);
++    if (fPosition && oldPos != lPosition) {
++        TRACKBAR_UpdateThumb(infoPtr);
++        TRACKBAR_InvalidateThumbMove(infoPtr, oldPos, lPosition);
++    }
+ 
+     return 0;
+ }
+-- 
+2.6.4
+
