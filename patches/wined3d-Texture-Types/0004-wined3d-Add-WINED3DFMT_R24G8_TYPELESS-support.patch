@@ -1,17 +1,18 @@
-From ffd0658398b0f4a37a70b3d19b8863d447fed559 Mon Sep 17 00:00:00 2001
+From b75142f57a821a67abeb481e87b98afc431e041d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 14:39:01 +1100
-Subject: [PATCH 4/6] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
+Subject: [PATCH 4/8] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/wined3d/utils.c | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
-index 2b4d371..191c5c2 100644
+index d4cbebc..196df9e 100644
 --- a/dlls/wined3d/utils.c
 +++ b/dlls/wined3d/utils.c
-@@ -149,6 +149,7 @@ static const struct wined3d_format_channels formats[] =
+@@ -153,6 +153,7 @@ static const struct wined3d_format_channels formats[] =
      {WINED3DFMT_R16_TYPELESS,              16,  0,  0,  0,   0,  0,  0,  0,    2,   0,     0},
      {WINED3DFMT_R16G16_TYPELESS,           16, 16,  0,  0,   0, 16,  0,  0,    4,   0,     0},
      {WINED3DFMT_R16G16B16A16_TYPELESS,     16, 16, 16, 16,   0, 16, 32, 48,    8,   0,     0},
@@ -19,7 +20,7 @@ index 2b4d371..191c5c2 100644
      {WINED3DFMT_R32_TYPELESS,              32,  0,  0,  0,   0,  0,  0,  0,    4,   0,     0},
      {WINED3DFMT_R32G32_TYPELESS,           32, 32,  0,  0,   0, 32,  0,  0,    8,   0,     0},
      {WINED3DFMT_R32G32B32_TYPELESS,        32, 32, 32,  0,   0, 32, 64,  0,   12,   0,     0},
-@@ -1277,6 +1278,10 @@ static const struct wined3d_format_texture_info format_texture_info[] =
+@@ -1303,6 +1304,10 @@ static const struct wined3d_format_texture_info format_texture_info[] =
              GL_DEPTH_STENCIL,           GL_FLOAT_32_UNSIGNED_INT_24_8_REV, 8,
              WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_DEPTH | WINED3DFMT_FLAG_STENCIL | WINED3DFMT_FLAG_SHADOW,
              ARB_DEPTH_BUFFER_FLOAT,     convert_s8_uint_d24_float},
