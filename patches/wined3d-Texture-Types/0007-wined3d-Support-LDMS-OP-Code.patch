@@ -1,7 +1,7 @@
-From b9766091100cc78be9843c5a36e4480a7a0d3267 Mon Sep 17 00:00:00 2001
+From 4aabd18eff28bfbf52ff0b0c0dede25fd0f00ca1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 13 Jan 2016 14:01:54 +1100
-Subject: [PATCH 7/8] wined3d: Support LDMS OP Code
+Subject: [PATCH 7/9] wined3d: Support LDMS OP Code
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 3 insertions(+)
 
 diff --git a/dlls/wined3d/shader_sm4.c b/dlls/wined3d/shader_sm4.c
-index bdd0b68..0ce2368 100644
+index 8026db0..7ea8351 100644
 --- a/dlls/wined3d/shader_sm4.c
 +++ b/dlls/wined3d/shader_sm4.c
-@@ -109,6 +109,7 @@ enum wined3d_sm4_opcode
+@@ -112,6 +112,7 @@ enum wined3d_sm4_opcode
      WINED3D_SM4_OP_ISHL                 = 0x29,
      WINED3D_SM4_OP_ITOF                 = 0x2b,
      WINED3D_SM4_OP_LD                   = 0x2d,
@@ -21,7 +21,7 @@ index bdd0b68..0ce2368 100644
      WINED3D_SM4_OP_LOG                  = 0x2f,
      WINED3D_SM4_OP_LOOP                 = 0x30,
      WINED3D_SM4_OP_LT                   = 0x31,
-@@ -286,6 +287,7 @@ static const struct wined3d_sm4_opcode_info opcode_table[] =
+@@ -290,6 +291,7 @@ static const struct wined3d_sm4_opcode_info opcode_table[] =
      {WINED3D_SM4_OP_ISHL,                   WINED3DSIH_ISHL,                "I",    "II"},
      {WINED3D_SM4_OP_ITOF,                   WINED3DSIH_ITOF,                "F",    "I"},
      {WINED3D_SM4_OP_LD,                     WINED3DSIH_LD,                  "U",    "IR"},
@@ -30,10 +30,10 @@ index bdd0b68..0ce2368 100644
      {WINED3D_SM4_OP_LOOP,                   WINED3DSIH_LOOP,                "",     ""},
      {WINED3D_SM4_OP_LT,                     WINED3DSIH_LT,                  "U",    "FF"},
 diff --git a/dlls/wined3d/wined3d_private.h b/dlls/wined3d/wined3d_private.h
-index ded3e5a..6fce4b3 100644
+index 905b59f..debe1fc 100644
 --- a/dlls/wined3d/wined3d_private.h
 +++ b/dlls/wined3d/wined3d_private.h
-@@ -512,6 +512,7 @@ enum WINED3D_SHADER_INSTRUCTION_HANDLER
+@@ -514,6 +514,7 @@ enum WINED3D_SHADER_INSTRUCTION_HANDLER
      WINED3DSIH_ITOF,
      WINED3DSIH_LABEL,
      WINED3DSIH_LD,
@@ -42,5 +42,5 @@ index ded3e5a..6fce4b3 100644
      WINED3DSIH_LOG,
      WINED3DSIH_LOGP,
 -- 
-2.6.4
+2.7.0.rc3
 

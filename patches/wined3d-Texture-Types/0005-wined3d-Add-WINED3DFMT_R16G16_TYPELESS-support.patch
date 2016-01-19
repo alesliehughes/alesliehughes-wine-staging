@@ -1,7 +1,7 @@
-From f2e1e652a744c3e99001f06f1cf19d44b9e25bdb Mon Sep 17 00:00:00 2001
+From 6dedc14c5f84cbb46a2b875a645fc2ac0a97b4e2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 18:37:22 +1100
-Subject: [PATCH 5/8] wined3d: Add WINED3DFMT_R16G16_TYPELESS support
+Subject: [PATCH 5/9] wined3d: Add WINED3DFMT_R16G16_TYPELESS support
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -26,5 +26,5 @@ index 196df9e..9cac9c9 100644
              GL_RGBA,                    GL_HALF_FLOAT_ARB,                0,
              WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_RENDERTARGET
 -- 
-2.6.4
+2.7.0.rc3
 

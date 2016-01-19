@@ -1,7 +1,7 @@
-From ab6230ae2ef9642f8b05f5500b37e7d6e1c4c342 Mon Sep 17 00:00:00 2001
+From 5d7375569767a832ba60e402babe9e3ef72e61ef Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 27 Nov 2015 09:35:03 +1100
-Subject: [PATCH 1/8] wined3d: Add WINED3DFMT_R8G8B8A8_TYPELESS support
+Subject: [PATCH 1/9] wined3d: Add WINED3DFMT_R8G8B8A8_TYPELESS support
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -26,5 +26,5 @@ index f06affd..ec061c4 100644
              GL_RGBA,                    GL_UNSIGNED_INT_8_8_8_8_REV,      0,
              WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING,
 -- 
-2.6.4
+2.7.0.rc3
 

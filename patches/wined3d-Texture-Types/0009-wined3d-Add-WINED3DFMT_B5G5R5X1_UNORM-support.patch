@@ -1,0 +1,48 @@
+From 6293cb08a7433468f59ba0c7b6feb6a38d53dd70 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 19 Jan 2016 19:28:58 +1100
+Subject: [PATCH 9/9] wined3d: Add WINED3DFMT_B5G5R5X1_UNORM support
+
+From https://bugs.winehq.org/show_bug.cgi?id=39998
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/wined3d/surface.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/dlls/wined3d/surface.c b/dlls/wined3d/surface.c
+index db33791..1dec3ce 100644
+--- a/dlls/wined3d/surface.c
++++ b/dlls/wined3d/surface.c
+@@ -2183,6 +2183,20 @@ static void convert_r5g6b5_x8r8g8b8(const BYTE *src, BYTE *dst,
+     }
+ }
+ 
++static void convert_x1r5g5b5_a1r5g5b5(const BYTE *src, BYTE *dst,
++        DWORD src_pitch, DWORD dst_pitch, unsigned int w, unsigned int h)
++{
++    unsigned int x, y;
++
++    for (y = 0; y < h; ++y)
++    {
++        const WORD *src_line = (const WORD *)(src + y * src_pitch);
++        DWORD *dst_line = (DWORD *)(dst + y * dst_pitch);
++        for (x = 0; x < w; ++x)
++            dst_line[x] = 0x8000 | src_line[x];
++    }
++}
++
+ /* We use this for both B8G8R8A8 -> B8G8R8X8 and B8G8R8X8 -> B8G8R8A8, since
+  * in both cases we're just setting the X / Alpha channel to 0xff. */
+ static void convert_a8r8g8b8_x8r8g8b8(const BYTE *src, BYTE *dst,
+@@ -2302,6 +2316,7 @@ static const struct d3dfmt_converter_desc converters[] =
+ {
+     {WINED3DFMT_R32_FLOAT,      WINED3DFMT_R16_FLOAT,       convert_r32_float_r16_float},
+     {WINED3DFMT_B5G6R5_UNORM,   WINED3DFMT_B8G8R8X8_UNORM,  convert_r5g6b5_x8r8g8b8},
++    {WINED3DFMT_B5G5R5X1_UNORM, WINED3DFMT_B5G5R5A1_UNORM,  convert_x1r5g5b5_a1r5g5b5},
+     {WINED3DFMT_B8G8R8A8_UNORM, WINED3DFMT_B8G8R8X8_UNORM,  convert_a8r8g8b8_x8r8g8b8},
+     {WINED3DFMT_B8G8R8X8_UNORM, WINED3DFMT_B8G8R8A8_UNORM,  convert_a8r8g8b8_x8r8g8b8},
+     {WINED3DFMT_YUY2,           WINED3DFMT_B8G8R8X8_UNORM,  convert_yuy2_x8r8g8b8},
+-- 
+2.7.0.rc3
+

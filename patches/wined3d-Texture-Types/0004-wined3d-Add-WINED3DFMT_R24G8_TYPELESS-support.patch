@@ -1,7 +1,7 @@
-From b75142f57a821a67abeb481e87b98afc431e041d Mon Sep 17 00:00:00 2001
+From 6f6b05aff7eb76d24da07cf8bca19baf1cdf1fd4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 14:39:01 +1100
-Subject: [PATCH 4/8] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
+Subject: [PATCH 4/9] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -32,5 +32,5 @@ index d4cbebc..196df9e 100644
      {WINED3DFMT_ATI1N,                  GL_COMPRESSED_RED_RGTC1,          GL_COMPRESSED_RED_RGTC1,                0,
              GL_RED,                     GL_UNSIGNED_BYTE,                 0,
 -- 
-2.6.4
+2.7.0.rc3
 
