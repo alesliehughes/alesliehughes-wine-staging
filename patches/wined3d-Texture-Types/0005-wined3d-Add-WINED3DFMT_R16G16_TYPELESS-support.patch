@@ -1,7 +1,7 @@
-From 6dedc14c5f84cbb46a2b875a645fc2ac0a97b4e2 Mon Sep 17 00:00:00 2001
+From 1874309eebb3b753e4e8a130389246c4a51de92d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 18:37:22 +1100
-Subject: [PATCH 5/9] wined3d: Add WINED3DFMT_R16G16_TYPELESS support
+Subject: [PATCH 5/6] wined3d: Add WINED3DFMT_R16G16_TYPELESS support
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

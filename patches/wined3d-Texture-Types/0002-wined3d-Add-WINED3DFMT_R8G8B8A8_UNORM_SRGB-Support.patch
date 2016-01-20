@@ -1,7 +1,7 @@
-From 9844daa70308e8322a6fd82ccd04ca4a50e76a1b Mon Sep 17 00:00:00 2001
+From a8e7b84750580dcf5a95ab5dd73408bd0b04a6f9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 14:23:50 +1100
-Subject: [PATCH 2/9] wined3d: Add WINED3DFMT_R8G8B8A8_UNORM_SRGB Support
+Subject: [PATCH 2/6] wined3d: Add WINED3DFMT_R8G8B8A8_UNORM_SRGB Support
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
