@@ -1,0 +1,56 @@
+From 2252b3e8c451658aa976888a431a6ae5d5be733b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 19 Jan 2016 11:47:48 +1100
+Subject: [PATCH] msi: Refreh controls after spawned dialog is closed
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msi/dialog.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msi/dialog.c b/dlls/msi/dialog.c
+index 64cbbbc..245bfdc 100644
+--- a/dlls/msi/dialog.c
++++ b/dlls/msi/dialog.c
+@@ -556,6 +556,17 @@ static void msi_dialog_update_controls( msi_dialog *dialog, LPCWSTR property )
+     }
+ }
+ 
++static void msi_dialog_update_all_controls( msi_dialog *dialog )
++{
++    msi_control *control;
++
++    LIST_FOR_EACH_ENTRY( control, &dialog->controls, msi_control, entry )
++    {
++        if ( control->property && control->update )
++            control->update( dialog, control );
++    }
++}
++
+ static void msi_dialog_set_property( MSIPACKAGE *package, LPCWSTR property, LPCWSTR value )
+ {
+     UINT r = msi_set_property( package->db, property, value, -1 );
+@@ -2229,6 +2240,7 @@ static UINT msi_dialog_pathedit_control( msi_dialog *dialog, MSIRECORD *rec )
+     control->attributes = MSI_RecordGetInteger( rec, 8 );
+     prop = MSI_RecordGetString( rec, 9 );
+     control->property = msi_dialog_dup_property( dialog, prop, FALSE );
++    control->update = msi_dialog_update_pathedit;
+ 
+     info->dialog = dialog;
+     info->control = control;
+@@ -4388,7 +4400,11 @@ static UINT event_spawn_dialog( msi_dialog *dialog, const WCHAR *argument )
+ {
+     /* don't destroy a modeless dialogs that might be our parent */
+     event_do_dialog( dialog->package, argument, dialog, FALSE );
+-    if (dialog->package->CurrentInstallState != ERROR_SUCCESS) msi_dialog_end_dialog( dialog );
++    if (dialog->package->CurrentInstallState != ERROR_SUCCESS)
++        msi_dialog_end_dialog( dialog );
++    else
++        msi_dialog_update_all_controls(dialog);
++
+     return ERROR_SUCCESS;
+ }
+ 
+-- 
+2.5.0
+
