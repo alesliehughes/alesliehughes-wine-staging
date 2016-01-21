@@ -1,7 +1,7 @@
-From 381d653ba4df1901fff37ebcfee0110d1e89f876 Mon Sep 17 00:00:00 2001
+From c063a2c808cd26cfa249b331dacd5f3966cdf04e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jan 2016 14:39:01 +1100
-Subject: [PATCH 4/6] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
+Subject: [PATCH 4/7] wined3d: Add WINED3DFMT_R24G8_TYPELESS support
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
