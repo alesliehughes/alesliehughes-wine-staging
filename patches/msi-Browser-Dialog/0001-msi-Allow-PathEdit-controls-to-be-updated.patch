@@ -1,0 +1,25 @@
+From babdb2dbb1f4d55b7ae5d5adf06242ef0f0fd2d9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 19 Jan 2016 11:47:48 +1100
+Subject: [PATCH 1/2] msi: Allow PathEdit controls to be updated.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msi/dialog.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/msi/dialog.c b/dlls/msi/dialog.c
+index 64cbbbc..9b61937 100644
+--- a/dlls/msi/dialog.c
++++ b/dlls/msi/dialog.c
+@@ -2229,6 +2229,7 @@ static UINT msi_dialog_pathedit_control( msi_dialog *dialog, MSIRECORD *rec )
+     control->attributes = MSI_RecordGetInteger( rec, 8 );
+     prop = MSI_RecordGetString( rec, 9 );
+     control->property = msi_dialog_dup_property( dialog, prop, FALSE );
++    control->update = msi_dialog_update_pathedit;
+ 
+     info->dialog = dialog;
+     info->control = control;
+-- 
+1.9.1
+
