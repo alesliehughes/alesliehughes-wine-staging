@@ -1,0 +1,196 @@
+From 4a79947680ef96fd481d6cd766bebcbcc51e764d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 Jan 2016 15:12:38 +1100
+Subject: [PATCH] d3dx9: Signature isn't part of the DDS header
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx9_36/surface.c | 78 ++++++++++++++++++++++++++-----------------------
+ 1 file changed, 41 insertions(+), 37 deletions(-)
+
+diff --git a/dlls/d3dx9_36/surface.c b/dlls/d3dx9_36/surface.c
+index 4fa2a76..a7bf9b7 100644
+--- a/dlls/d3dx9_36/surface.c
++++ b/dlls/d3dx9_36/surface.c
+@@ -125,7 +125,6 @@ struct dds_pixel_format
+ 
+ struct dds_header
+ {
+-    DWORD signature;
+     DWORD size;
+     DWORD flags;
+     DWORD height;
+@@ -142,6 +141,12 @@ struct dds_header
+     DWORD reserved2;
+ };
+ 
++struct DDS
++{
++    DWORD signature;
++    struct dds_header header;
++};
++
+ static D3DFORMAT dds_fourcc_to_d3dformat(DWORD fourcc)
+ {
+     unsigned int i;
+@@ -355,7 +360,7 @@ static UINT calculate_dds_file_size(D3DFORMAT format, UINT width, UINT height, U
+     }
+ 
+     file_size *= faces;
+-    file_size += sizeof(struct dds_header);
++    file_size += sizeof(struct DDS);
+     return file_size;
+ }
+ 
+@@ -379,37 +384,37 @@ static HRESULT get_image_info_from_dds(const void *buffer, UINT length, D3DXIMAG
+ {
+     UINT faces = 1;
+     UINT expected_length;
+-    const struct dds_header *header = buffer;
++    const struct DDS *dds = buffer;
+ 
+-    if (length < sizeof(*header) || !info)
++    if (length < sizeof(*dds) || !info)
+         return D3DXERR_INVALIDDATA;
+ 
+-    if (header->pixel_format.size != sizeof(header->pixel_format))
++    if (dds->header.pixel_format.size != sizeof(dds->header.pixel_format))
+         return D3DXERR_INVALIDDATA;
+ 
+-    info->Width = header->width;
+-    info->Height = header->height;
++    info->Width = dds->header.width;
++    info->Height = dds->header.height;
+     info->Depth = 1;
+-    info->MipLevels = header->miplevels ? header->miplevels : 1;
++    info->MipLevels = dds->header.miplevels ? dds->header.miplevels : 1;
+ 
+-    info->Format = dds_pixel_format_to_d3dformat(&header->pixel_format);
++    info->Format = dds_pixel_format_to_d3dformat(&dds->header.pixel_format);
+     if (info->Format == D3DFMT_UNKNOWN)
+         return D3DXERR_INVALIDDATA;
+ 
+     TRACE("Pixel format is %#x\n", info->Format);
+ 
+-    if (header->caps2 & DDS_CAPS2_VOLUME)
++    if (dds->header.caps2 & DDS_CAPS2_VOLUME)
+     {
+-        info->Depth = header->depth;
++        info->Depth = dds->header.depth;
+         info->ResourceType = D3DRTYPE_VOLUMETEXTURE;
+     }
+-    else if (header->caps2 & DDS_CAPS2_CUBEMAP)
++    else if (dds->header.caps2 & DDS_CAPS2_CUBEMAP)
+     {
+         DWORD face;
+         faces = 0;
+         for (face = DDS_CAPS2_CUBEMAP_POSITIVEX; face <= DDS_CAPS2_CUBEMAP_NEGATIVEZ; face <<= 1)
+         {
+-            if (header->caps2 & face)
++            if (dds->header.caps2 & face)
+                 faces++;
+         }
+         info->ResourceType = D3DRTYPE_CUBETEXTURE;
+@@ -437,8 +442,8 @@ static HRESULT load_surface_from_dds(IDirect3DSurface9 *dst_surface, const PALET
+ {
+     UINT size;
+     UINT src_pitch;
+-    const struct dds_header *header = src_data;
+-    const BYTE *pixels = (BYTE *)(header + 1);
++    const struct DDS *dds = src_data;
++    const BYTE *pixels = (BYTE *)(dds + 1);
+ 
+     if (src_info->ResourceType != D3DRTYPE_TEXTURE)
+         return D3DXERR_INVALIDDATA;
+@@ -457,7 +462,7 @@ static HRESULT save_dds_surface_to_memory(ID3DXBuffer **dst_buffer, IDirect3DSur
+     D3DSURFACE_DESC src_desc;
+     D3DLOCKED_RECT locked_rect;
+     ID3DXBuffer *buffer;
+-    struct dds_header *header;
++    struct DDS *dds;
+     BYTE *pixels;
+     struct volume volume;
+     const struct pixel_format_desc *pixel_format;
+@@ -482,18 +487,17 @@ static HRESULT save_dds_surface_to_memory(ID3DXBuffer **dst_buffer, IDirect3DSur
+     hr = D3DXCreateBuffer(file_size, &buffer);
+     if (FAILED(hr)) return hr;
+ 
+-    header = ID3DXBuffer_GetBufferPointer(buffer);
+-    pixels = (BYTE *)(header + 1);
+-
+-    memset(header, 0, sizeof(*header));
+-    header->signature = MAKEFOURCC('D','D','S',' ');
+-    /* The signature is not really part of the DDS header */
+-    header->size = sizeof(*header) - FIELD_OFFSET(struct dds_header, size);
+-    header->flags = DDS_CAPS | DDS_HEIGHT | DDS_WIDTH | DDS_PIXELFORMAT;
+-    header->height = src_desc.Height;
+-    header->width = src_desc.Width;
+-    header->caps = DDS_CAPS_TEXTURE;
+-    hr = d3dformat_to_dds_pixel_format(&header->pixel_format, src_desc.Format);
++    dds = ID3DXBuffer_GetBufferPointer(buffer);
++    pixels = (BYTE *)(dds + 1);
++
++    memset(dds, 0, sizeof(*dds));
++    dds->signature = MAKEFOURCC('D','D','S',' ');
++    dds->header.size = sizeof(struct dds_header);
++    dds->header.flags = DDS_CAPS | DDS_HEIGHT | DDS_WIDTH | DDS_PIXELFORMAT;
++    dds->header.height = src_desc.Height;
++    dds->header.width = src_desc.Width;
++    dds->header.caps = DDS_CAPS_TEXTURE;
++    hr = d3dformat_to_dds_pixel_format(&dds->header.pixel_format, src_desc.Format);
+     if (FAILED(hr))
+     {
+         ID3DXBuffer_Release(buffer);
+@@ -524,8 +528,8 @@ HRESULT load_volume_from_dds(IDirect3DVolume9 *dst_volume, const PALETTEENTRY *d
+     const D3DXIMAGE_INFO *src_info)
+ {
+     UINT row_pitch, slice_pitch;
+-    const struct dds_header *header = src_data;
+-    const BYTE *pixels = (BYTE *)(header + 1);
++    const struct DDS *dds = src_data;
++    const BYTE *pixels = (BYTE *)(dds + 1);
+ 
+     if (src_info->ResourceType != D3DRTYPE_VOLUMETEXTURE)
+         return D3DXERR_INVALIDDATA;
+@@ -549,8 +553,8 @@ HRESULT load_texture_from_dds(IDirect3DTexture9 *texture, const void *src_data,
+     UINT mip_level_size;
+     UINT width, height;
+     IDirect3DSurface9 *surface;
+-    const struct dds_header *header = src_data;
+-    const BYTE *pixels = (BYTE *)(header + 1);
++    const struct DDS *dds = src_data;
++    const BYTE *pixels = (BYTE *)(dds + 1);
+ 
+     /* Loading a cube texture as a simple texture is also supported
+      * (only first face texture is taken). Same with volume textures. */
+@@ -606,13 +610,13 @@ HRESULT load_cube_texture_from_dds(IDirect3DCubeTexture9 *cube_texture, const vo
+     UINT mip_levels;
+     UINT mip_level_size;
+     IDirect3DSurface9 *surface;
+-    const struct dds_header *header = src_data;
+-    const BYTE *pixels = (BYTE *)(header + 1);
++    const struct DDS *dds = src_data;
++    const BYTE *pixels = (BYTE *)(dds + 1);
+ 
+     if (src_info->ResourceType != D3DRTYPE_CUBETEXTURE)
+         return D3DXERR_INVALIDDATA;
+ 
+-    if ((header->caps2 & DDS_CAPS2_CUBEMAP_ALL_FACES) != DDS_CAPS2_CUBEMAP_ALL_FACES)
++    if ((dds->header.caps2 & DDS_CAPS2_CUBEMAP_ALL_FACES) != DDS_CAPS2_CUBEMAP_ALL_FACES)
+     {
+         WARN("Only full cubemaps are supported\n");
+         return D3DXERR_INVALIDDATA;
+@@ -658,8 +662,8 @@ HRESULT load_volume_texture_from_dds(IDirect3DVolumeTexture9 *volume_texture, co
+     D3DBOX src_box;
+     UINT width, height, depth;
+     IDirect3DVolume9 *volume;
+-    const struct dds_header *header = src_data;
+-    const BYTE *pixels = (BYTE *)(header + 1);
++    const struct DDS *dds = src_data;
++    const BYTE *pixels = (BYTE *)(dds + 1);
+ 
+     if (src_info->ResourceType != D3DRTYPE_VOLUMETEXTURE)
+         return D3DXERR_INVALIDDATA;
+-- 
+1.9.1
+
