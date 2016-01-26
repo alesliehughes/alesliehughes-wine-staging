@@ -3,6 +3,9 @@ From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 Jan 2016 20:19:43 +1100
 Subject: [PATCH] d3d11: Fake ID3D11Device CheckFormatSupport supported formats
 
+More Information
+https://msdn.microsoft.com/en-us/library/windows/desktop/mt427455%28v=vs.85%29.aspx#
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/d3d11/device.c | 34 +++++++++++++++++++++++++++++++++-
