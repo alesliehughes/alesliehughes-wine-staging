@@ -1,0 +1,60 @@
+From 783cb22bb644721e762863a4bf73e4da52717a2e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 13 Jan 2016 11:26:42 +1100
+Subject: [PATCH] comctrl32/trackbar: Send WM_CTLCOLORSTATIC when drawing
+ background
+
+WM_PAINT is called, with a NULL wParam.
+
+A test need to be added for this case.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/comctl32/trackbar.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/comctl32/trackbar.c b/dlls/comctl32/trackbar.c
+index 87d955c..6bcab90 100644
+--- a/dlls/comctl32/trackbar.c
++++ b/dlls/comctl32/trackbar.c
+@@ -901,7 +901,7 @@ TRACKBAR_UpdateToolTip (const TRACKBAR_INFO *infoPtr)
+ 
+ 
+ static void
+-TRACKBAR_Refresh (TRACKBAR_INFO *infoPtr, HDC hdcDst)
++TRACKBAR_Refresh (TRACKBAR_INFO *infoPtr, HDC hdcDst, BOOL querybg)
+ {
+     RECT rcClient;
+     HDC hdc;
+@@ -956,7 +956,13 @@ TRACKBAR_Refresh (TRACKBAR_INFO *infoPtr, HDC hdcDst)
+             DrawThemeParentBackground (infoPtr->hwndSelf, hdc, 0);
+         }
+         else
+-	    FillRect (hdc, &rcClient, GetSysColorBrush(COLOR_BTNFACE));
++        {
++            HBRUSH hBrush = NULL;
++            if(querybg)
++                hBrush = (HBRUSH)SendMessageW(infoPtr->hwndNotify, WM_CTLCOLORSTATIC,
++                                  (WPARAM)hdc, (LPARAM)infoPtr->hwndSelf);
++            FillRect (hdc, &rcClient, hBrush ? hBrush : GetSysColorBrush(COLOR_BTNFACE));
++        }
+         if (gcdrf != CDRF_DODEFAULT)
+ 	    notify_customdraw(infoPtr, &nmcd, CDDS_POSTERASE);
+     }
+@@ -1639,11 +1645,11 @@ static LRESULT
+ TRACKBAR_Paint (TRACKBAR_INFO *infoPtr, HDC hdc)
+ {
+     if (hdc) {
+-	TRACKBAR_Refresh(infoPtr, hdc);
++        TRACKBAR_Refresh(infoPtr, hdc, FALSE);
+     } else {
+ 	PAINTSTRUCT ps;
+     	hdc = BeginPaint (infoPtr->hwndSelf, &ps);
+-    	TRACKBAR_Refresh (infoPtr, hdc);
++        TRACKBAR_Refresh (infoPtr, hdc, TRUE);
+     	EndPaint (infoPtr->hwndSelf, &ps);
+     }
+ 
+-- 
+1.9.1
+
