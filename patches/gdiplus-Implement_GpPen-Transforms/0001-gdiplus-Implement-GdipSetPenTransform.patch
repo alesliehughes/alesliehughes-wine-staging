@@ -1,0 +1,98 @@
+From bfeac9d87ad8ed9605c79d66bdfaed4e8ac23b92 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 27 Jan 2016 15:09:14 +1100
+Subject: [PATCH 1/3] gdiplus: Implement GdipSetPenTransform
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/gdiplus/gdiplus_private.h | 1 +
+ dlls/gdiplus/pen.c             | 9 ++++-----
+ dlls/gdiplus/tests/pen.c       | 6 +++---
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/dlls/gdiplus/gdiplus_private.h b/dlls/gdiplus/gdiplus_private.h
+index 1af0bd0..fd45a49 100644
+--- a/dlls/gdiplus/gdiplus_private.h
++++ b/dlls/gdiplus/gdiplus_private.h
+@@ -197,6 +197,7 @@ struct GpPen{
+     REAL offset;    /* dash offset */
+     GpBrush *brush;
+     GpPenAlignment align;
++    GpMatrix *transform;
+ };
+ 
+ struct GpGraphics{
+diff --git a/dlls/gdiplus/pen.c b/dlls/gdiplus/pen.c
+index f7dacef..1783ef8 100644
+--- a/dlls/gdiplus/pen.c
++++ b/dlls/gdiplus/pen.c
+@@ -171,6 +171,7 @@ GpStatus WINGDIPAPI GdipCreatePen2(GpBrush *brush, REAL width, GpUnit unit,
+     gp_pen->offset = 0.0;
+     gp_pen->customstart = NULL;
+     gp_pen->customend = NULL;
++    GdipCreateMatrix(&gp_pen->transform);
+ 
+     if(!((gp_pen->unit == UnitWorld) || (gp_pen->unit == UnitPixel))) {
+         FIXME("UnitWorld, UnitPixel only supported units\n");
+@@ -197,6 +198,7 @@ GpStatus WINGDIPAPI GdipDeletePen(GpPen *pen)
+     GdipDeleteBrush(pen->brush);
+     GdipDeleteCustomLineCap(pen->customstart);
+     GdipDeleteCustomLineCap(pen->customend);
++    GdipDeleteMatrix(pen->transform);
+     heap_free(pen->dashes);
+     heap_free(pen);
+ 
+@@ -448,17 +450,14 @@ GpStatus WINGDIPAPI GdipSetPenTransform(GpPen *pen, GpMatrix *matrix)
+ 
+ GpStatus WINGDIPAPI GdipGetPenTransform(GpPen *pen, GpMatrix *matrix)
+ {
+-    static int calls;
+-
+     TRACE("(%p,%p)\n", pen, matrix);
+ 
+     if(!pen || !matrix)
+         return InvalidParameter;
+ 
+-    if(!(calls++))
+-        FIXME("not implemented\n");
++    memcpy(matrix->matrix, pen->transform->matrix, 6 * sizeof(REAL));
+ 
+-    return NotImplemented;
++    return Ok;
+ }
+ 
+ GpStatus WINGDIPAPI GdipTranslatePenTransform(GpPen *pen, REAL dx, REAL dy, GpMatrixOrder order)
+diff --git a/dlls/gdiplus/tests/pen.c b/dlls/gdiplus/tests/pen.c
+index 6eee2ea..1e63560 100644
+--- a/dlls/gdiplus/tests/pen.c
++++ b/dlls/gdiplus/tests/pen.c
+@@ -380,7 +380,7 @@ static void test_transform(void)
+     expect(Ok, status);
+ 
+     status = GdipGetPenTransform(pen, matrix);
+-    todo_wine expect(Ok, status);
++    expect(Ok, status);
+ 
+     status = GdipGetMatrixElements(matrix, values);
+     expect(Ok, status);
+@@ -398,7 +398,7 @@ static void test_transform(void)
+     GdipDeleteMatrix(matrix2);
+ 
+     status = GdipGetPenTransform(pen, matrix);
+-    todo_wine expect(Ok, status);
++    expect(Ok, status);
+     status = GdipGetMatrixElements(matrix, values);
+     expect(Ok, status);
+ todo_wine {
+@@ -413,7 +413,7 @@ todo_wine {
+     todo_wine expect(Ok, status);
+ 
+     status = GdipGetPenTransform(pen, matrix);
+-    todo_wine expect(Ok, status);
++    expect(Ok, status);
+     status = GdipGetMatrixElements(matrix, values);
+     expect(Ok, status);
+ 
+-- 
+1.9.1
+
