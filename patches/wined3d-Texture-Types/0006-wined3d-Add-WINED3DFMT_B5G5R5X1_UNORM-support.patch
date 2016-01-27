@@ -1,4 +1,4 @@
-From e7282e34e9c318d5262f9fead26589ac64324de8 Mon Sep 17 00:00:00 2001
+From 7a6fa3f7010447f642caee8818342be117ba26d2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 19 Jan 2016 19:28:58 +1100
 Subject: [PATCH 6/7] wined3d: Add WINED3DFMT_B5G5R5X1_UNORM support
