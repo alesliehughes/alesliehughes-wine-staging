@@ -1,4 +1,4 @@
-From 712776f26f30b316088dacce1baab1907bf4450f Mon Sep 17 00:00:00 2001
+From 02404a2e3827c7da258c8621791780fc6ca61778 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Jan 2016 15:22:43 +1100
 Subject: [PATCH 3/3] gdiplus: Implement GdipResetPenTransform
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/gdiplus/pen.c b/dlls/gdiplus/pen.c
-index eecb216..071629b 100644
+index 83907ec..61e6a89 100644
 --- a/dlls/gdiplus/pen.c
 +++ b/dlls/gdiplus/pen.c
 @@ -420,17 +420,14 @@ GpStatus WINGDIPAPI GdipGetPenWidth(GpPen *pen, REAL *width)
