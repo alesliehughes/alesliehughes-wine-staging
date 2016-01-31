@@ -1,4 +1,4 @@
-From 373c3dc5146432eeb59b8842ccd201d85289f910 Mon Sep 17 00:00:00 2001
+From c26246903eacbe1a76d1793c689c61b3a6a3eb41 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Jan 2016 15:17:45 +1100
 Subject: [PATCH 2/3] gdiplus: Implement GdipSetPenTransform
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 6 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/gdiplus/pen.c b/dlls/gdiplus/pen.c
-index af16ff4..b232b06 100644
+index 47e91ec..8a9172b 100644
 --- a/dlls/gdiplus/pen.c
 +++ b/dlls/gdiplus/pen.c
-@@ -435,17 +435,14 @@ GpStatus WINGDIPAPI GdipResetPenTransform(GpPen *pen)
+@@ -434,17 +434,14 @@ GpStatus WINGDIPAPI GdipResetPenTransform(GpPen *pen)
  
  GpStatus WINGDIPAPI GdipSetPenTransform(GpPen *pen, GpMatrix *matrix)
  {
@@ -26,7 +26,7 @@ index af16ff4..b232b06 100644
  
 -    if(!(calls++))
 -        FIXME("not implemented\n");
-+    *pen->transform = *matrix;
++    pen->transform = *matrix;
  
 -    return NotImplemented;
 +    return Ok;
