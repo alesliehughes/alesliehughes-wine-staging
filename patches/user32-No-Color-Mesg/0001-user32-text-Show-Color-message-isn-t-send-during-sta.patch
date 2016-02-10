@@ -66,7 +66,7 @@ index 6ff7225..6d60e2c 100644
      ok(33 == r, "Expected %d, got %d\n", 33, r);
 +
 +    r = DialogBoxParamA(hinst, "EDIT_READONLY_DIALOG", NULL, edit_dialog_proc, 11);
-+    ok(33 == r, "Expected %d, got %d\n", 444, r);
++    ok(33 == r, "Expected %d, got %d\n", 33, r);
 +    todo_wine ok(!color_message_called, "Unexpected color message\n");
 +
  }
