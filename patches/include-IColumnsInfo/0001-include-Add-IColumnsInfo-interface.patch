@@ -1,4 +1,4 @@
-From 4242ef7f80b5ceb4de1eb2bba54b53cf81051d1f Mon Sep 17 00:00:00 2001
+From de096f373da36fd34553131684734d79e22b55f2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 24 Dec 2015 10:04:21 +1100
 Subject: [PATCH] include: Add IColumnsInfo interface
@@ -6,14 +6,15 @@ Subject: [PATCH] include: Add IColumnsInfo interface
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/msdaps/usrmarshal.c | 30 ++++++++++++++++++++++++++++++
+ include/Makefile.in      |  1 +
  include/colinf.idl       | 45 +++++++++++++++++++++++++++++++++++++++++++++
  include/dbs.idl          | 28 ++++++++++++++++++++++++++++
  include/oledb.idl        |  1 +
- 4 files changed, 104 insertions(+)
+ 5 files changed, 105 insertions(+)
  create mode 100644 include/colinf.idl
 
 diff --git a/dlls/msdaps/usrmarshal.c b/dlls/msdaps/usrmarshal.c
-index 1243e48..a93a661 100644
+index 1243e48..6ad29c9 100644
 --- a/dlls/msdaps/usrmarshal.c
 +++ b/dlls/msdaps/usrmarshal.c
 @@ -1513,3 +1513,33 @@ HRESULT CALLBACK IChapteredRowset_ReleaseChapter_Proxy(IChapteredRowset* This, H
@@ -22,7 +23,7 @@ index 1243e48..a93a661 100644
  }
 +
 +HRESULT CALLBACK IColumnsInfo_GetColumnInfo_Proxy(IColumnsInfo* This, DBORDINAL *columns,
-+        DBCOLUMNINFO **colinfo, OLECHAR *stringsbuffer)
++        DBCOLUMNINFO **colinfo, OLECHAR **stringsbuffer)
 +{
 +    FIXME("(%p)->(%p %p %p): stub\n", This, columns, colinfo, stringsbuffer);
 +    return E_NOTIMPL;
@@ -44,20 +45,32 @@ index 1243e48..a93a661 100644
 +    return E_NOTIMPL;
 +}
 +
-+HRESULT __RPC_STUB IColumnsInfo_MapColumnIDs_Stub(IColumnsInfo* This,DBORDINAL column_ids, const DBID *dbids,
++HRESULT __RPC_STUB IColumnsInfo_MapColumnIDs_Stub(IColumnsInfo* This, DBORDINAL column_ids, const DBID *dbids,
 +    DBORDINAL *columns, IErrorInfo **error)
 +{
 +    FIXME("(%p)->(%ld %p %p %p): stub\n", This, column_ids, dbids, columns, error);
 +    return E_NOTIMPL;
 +}
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 129ff6d..010abe5 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -24,6 +24,7 @@ IDL_SRCS = \
+ 	chprst.idl \
+ 	cmdbas.idl \
+ 	cmdtxt.idl \
++	colinf.idl \
+ 	comcat.idl \
+ 	commoncontrols.idl \
+ 	control.idl \
 diff --git a/include/colinf.idl b/include/colinf.idl
 new file mode 100644
-index 0000000..9d2d4f5
+index 0000000..c4d0af4
 --- /dev/null
 +++ b/include/colinf.idl
 @@ -0,0 +1,45 @@
 +/*
-+ * Copyright (C) 2015 Alistair Leslie-Hughes
++ * Copyright (C) 2016 Alistair Leslie-Hughes
 + *
 + * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
@@ -74,6 +87,9 @@ index 0000000..9d2d4f5
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
 +
++#if 0
++#pragma makedep install
++#endif
 +
 +[
 +    object,
@@ -83,23 +99,20 @@ index 0000000..9d2d4f5
 +interface IColumnsInfo : IUnknown
 +{
 +    [local]
-+    HRESULT GetColumnInfo([in, out] DBORDINAL *columns,[out, size_is(*columns)] DBCOLUMNINFO **colinfo,
-+        [out] OLECHAR *stringsbuffer);
++    HRESULT GetColumnInfo([in, out] DBORDINAL *columns, [out] DBCOLUMNINFO **colinfo, [out] OLECHAR **stringsbuffer);
 +
 +    [call_as(GetColumnInfo)]
-+    HRESULT RemoteGetColumnInfo([in, out] DBORDINAL *columns, [out, size_is((ULONG)*columns)] DBCOLUMNINFO  **col_info,
-+        [out, size_is((ULONG)*columns)] DBBYTEOFFSET **name_offsets,
-+        [out, size_is((ULONG)*columns)] DBBYTEOFFSET **columnid_offsets,
-+        [in, out] DBLENGTH *string_len, [in, out, unique, size_is((ULONG)*string_len)] OLECHAR **stringsbuffer,
++    HRESULT RemoteGetColumnInfo([in, out] DBORDINAL *columns, [out] DBCOLUMNINFO **colinfo,
++        [out] DBBYTEOFFSET **name_offsets, [out] DBBYTEOFFSET **columnid_offsets,
++        [in, out] DBLENGTH *string_len, [in, out, unique] OLECHAR **stringsbuffer,
 +        [out] IErrorInfo **error);
 +
 +    [local]
-+    HRESULT MapColumnIDs([in] DBORDINAL column_ids, [in, size_is(column_ids)] const DBID *dbids,
-+        [out, size_is(column_ids)] DBORDINAL *columns);
++    HRESULT MapColumnIDs([in] DBORDINAL column_ids, [in] const DBID *dbids, [out] DBORDINAL *columns);
 +
 +    [call_as(MapColumnIDs)]
-+    HRESULT RemoteMapColumnIDs([in] DBORDINAL column_ids, [in, size_is((ULONG)column_ids)] const DBID *dbids,
-+        [out, size_is((ULONG)column_ids)] DBORDINAL *columns, [out] IErrorInfo **error);
++    HRESULT RemoteMapColumnIDs([in] DBORDINAL column_ids, [in] const DBID *dbids,
++        [out] DBORDINAL *columns, [out] IErrorInfo **error);
 +}
 diff --git a/include/dbs.idl b/include/dbs.idl
 index 2c46c2b..00e16f9 100644
@@ -150,5 +163,5 @@ index 8d7f001..537bb21 100644
  #include "dbcses.idl"
  #include "srcrst.idl"
 -- 
-1.9.1
+2.5.0
 
