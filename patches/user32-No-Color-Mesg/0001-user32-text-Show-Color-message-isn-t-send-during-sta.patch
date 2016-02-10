@@ -1,0 +1,77 @@
+From c8497b264b5c0fc049e05756225a35dac073d0f3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 10 Feb 2016 16:11:19 +1100
+Subject: [PATCH] user32/text: Show Color message isn't send during startup
+
+https://bugs.winehq.org/show_bug.cgi?id=14928
+https://bugs.winehq.org/show_bug.cgi?id=14879
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/user32/tests/edit.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/dlls/user32/tests/edit.c b/dlls/user32/tests/edit.c
+index 6ff7225..6d60e2c 100644
+--- a/dlls/user32/tests/edit.c
++++ b/dlls/user32/tests/edit.c
+@@ -148,6 +148,7 @@ static INT_PTR CALLBACK multi_edit_dialog_proc(HWND hdlg, UINT msg, WPARAM wpara
+     return FALSE;
+ }
+ 
++static BOOL color_message_called = FALSE;
+ static INT_PTR CALLBACK edit_dialog_proc(HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam)
+ {
+     switch (msg)
+@@ -155,9 +156,12 @@ static INT_PTR CALLBACK edit_dialog_proc(HWND hdlg, UINT msg, WPARAM wparam, LPA
+         case WM_INITDIALOG:
+         {
+             HWND hedit = GetDlgItem(hdlg, 1000);
++            HWND hok = GetDlgItem(hdlg, IDOK);
+             SetFocus(hedit);
+             switch (lparam)
+             {
++                color_message_called = FALSE;
++
+                 /* from bug 11841 */
+                 case 0:
+                     PostMessageA(hedit, WM_KEYDOWN, VK_ESCAPE, 0x10001);
+@@ -214,6 +218,12 @@ static INT_PTR CALLBACK edit_dialog_proc(HWND hdlg, UINT msg, WPARAM wparam, LPA
+                     PostMessageA(hdlg, WM_USER, 0xdeadbeef, 2);
+                     break;
+ 
++                /* Set Text During startup */
++                case 11:
++                    SendMessageA(hok, WM_SETTEXT, 0, (WPARAM)"Testing");
++                    PostMessageA(hdlg, WM_USER, 0xdeadbeef, 2);
++                    break;
++
+                 default:
+                     break;
+             }
+@@ -284,6 +294,10 @@ static INT_PTR CALLBACK edit_dialog_proc(HWND hdlg, UINT msg, WPARAM wparam, LPA
+             }
+             break;
+         }
++        case WM_CTLCOLORBTN:
++        case WM_CTLCOLORSTATIC:
++            color_message_called = TRUE;
++            break;
+ 
+         case WM_CLOSE:
+             EndDialog(hdlg, 333);
+@@ -2067,6 +2081,11 @@ static void test_edit_dialog(void)
+     ok(22 == r, "Expected %d, got %d\n", 22, r);
+     r = DialogBoxParamA(hinst, "EDIT_DIALOG", NULL, edit_dialog_proc, 10);
+     ok(33 == r, "Expected %d, got %d\n", 33, r);
++
++    r = DialogBoxParamA(hinst, "EDIT_READONLY_DIALOG", NULL, edit_dialog_proc, 11);
++    ok(33 == r, "Expected %d, got %d\n", 444, r);
++    todo_wine ok(!color_message_called, "Unexpected color message\n");
++
+ }
+ 
+ static void test_multi_edit_dialog(void)
+-- 
+2.7.0
+
