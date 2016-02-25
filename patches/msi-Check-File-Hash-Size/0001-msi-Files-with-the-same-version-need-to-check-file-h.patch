@@ -1,0 +1,42 @@
+From 5a4f4a6a4f99d9015ff330de4b0521c97e30d363 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 25 Feb 2016 09:27:34 +1100
+Subject: [PATCH] msi: Files with the same version need to check file/hash as
+ well
+
+Fixes https://bugs.winehq.org/show_bug.cgi?id=40087
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msi/files.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/dlls/msi/files.c b/dlls/msi/files.c
+index 9b46762..0285a7e 100644
+--- a/dlls/msi/files.c
++++ b/dlls/msi/files.c
+@@ -120,18 +120,11 @@ static msi_file_state calculate_install_state( MSIPACKAGE *package, MSIFILE *fil
+                       debugstr_w(file->File), debugstr_w(file->Version),
+                       HIWORD(file_version->dwFileVersionMS), LOWORD(file_version->dwFileVersionMS),
+                       HIWORD(file_version->dwFileVersionLS), LOWORD(file_version->dwFileVersionLS));
+-                state = msifs_overwrite;
+-            }
+-            else
+-            {
+-                TRACE("keeping %s (new version %s old version %u.%u.%u.%u)\n",
+-                      debugstr_w(file->File), debugstr_w(file->Version),
+-                      HIWORD(file_version->dwFileVersionMS), LOWORD(file_version->dwFileVersionMS),
+-                      HIWORD(file_version->dwFileVersionLS), LOWORD(file_version->dwFileVersionLS));
+-                state = msifs_present;
++                return msifs_overwrite;
+             }
++
+             msi_free( file_version );
+-            return state;
++            /* Fall through to check the size and hash */
+         }
+         else if ((font_version = msi_font_version_from_file( file->TargetPath )))
+         {
+-- 
+1.9.1
+
