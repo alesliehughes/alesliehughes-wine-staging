@@ -1,1 +1,0 @@
-Adjust Dx11 test to Dx10
