@@ -1,0 +1,47 @@
+From 3e4841ea0f02e6904c1a5f68a203d2331bbe9f5c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 20 Nov 2015 16:00:15 +1100
+Subject: [PATCH] d3dx10: Semi-Implement D3DX10CreateEffectFromMemory
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx10_43/Makefile.in      | 1 +
+ dlls/d3dx10_43/d3dx10_43_main.c | 9 ++++++---
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/d3dx10_43/Makefile.in b/dlls/d3dx10_43/Makefile.in
+index 2585f48..f5f577b 100644
+--- a/dlls/d3dx10_43/Makefile.in
++++ b/dlls/d3dx10_43/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE    = d3dx10_43.dll
++IMPORTS   = d3d10
+ 
+ C_SRCS = \
+ 	d3dx10_43_main.c
+diff --git a/dlls/d3dx10_43/d3dx10_43_main.c b/dlls/d3dx10_43/d3dx10_43_main.c
+index 77986ed..cf10bae 100644
+--- a/dlls/d3dx10_43/d3dx10_43_main.c
++++ b/dlls/d3dx10_43/d3dx10_43_main.c
+@@ -96,12 +96,15 @@ HRESULT WINAPI D3DX10CreateEffectFromMemory(const void *data, SIZE_T datasize, c
+         UINT fxflags, ID3D10Device *device, ID3D10EffectPool *effectpool, ID3DX10ThreadPump *pump,
+         ID3D10Effect **effect, ID3D10Blob **errors, HRESULT *hresult)
+ {
+-    FIXME("data %p, datasize %lu, filename %s, defines %p, include %p, profile %s, hlslflags %#x, fxflags %#x, "
+-            "device %p, effectpool %p, pump %p, effect %p, errors %p, hresult %p\n",
++    TRACE("data %p, datasize %lu, filename %s, defines %p, include %p, profile %s, hlslflags %#x, fxflags %#x, "
++            "device %p, effectpool %p, pump %p, effect %p, errors %p, hresult %p. Semi-stub\n",
+             data, datasize, debugstr_a(filename), defines, include, debugstr_a(profile), hlslflags, fxflags, device,
+             effectpool, pump, effect, errors, hresult);
+ 
+-    return E_NOTIMPL;
++    if(pump || errors || hresult)
++        WARN("pump, errors and hresult arguments being ignored.\n");
++
++    return D3D10CreateEffectFromMemory( (void*)data, datasize, fxflags, device, effectpool, effect);
+ }
+ 
+ HRESULT WINAPI D3DX10CreateEffectPoolFromMemory(const void *data, SIZE_T datasize, const char *filename,
+-- 
+1.9.1
+

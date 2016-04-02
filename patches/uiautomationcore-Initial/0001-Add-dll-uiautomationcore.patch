@@ -1,0 +1,218 @@
+From 77cd8cc2f4ddf95bf96391a0c4eca199d5bb7229 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 May 2015 14:26:37 +1000
+Subject: [PATCH] Add dll uiautomationcore
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/uiautomationcore/Makefile.in           |  5 ++
+ dlls/uiautomationcore/main.c                | 84 ++++++++++++++++++++++++++
+ dlls/uiautomationcore/uiautomationcore.spec | 93 +++++++++++++++++++++++++++++
+ 3 files changed, 182 insertions(+)
+ create mode 100644 dlls/uiautomationcore/Makefile.in
+ create mode 100644 dlls/uiautomationcore/main.c
+ create mode 100644 dlls/uiautomationcore/uiautomationcore.spec
+
+diff --git a/dlls/uiautomationcore/Makefile.in b/dlls/uiautomationcore/Makefile.in
+new file mode 100644
+index 0000000..63f0a9c
+--- /dev/null
++++ b/dlls/uiautomationcore/Makefile.in
+@@ -0,0 +1,5 @@
++MODULE    = uiautomationcore.dll
++IMPORTLIB = uiautomationcore
++
++C_SRCS = \
++	main.c
+diff --git a/dlls/uiautomationcore/main.c b/dlls/uiautomationcore/main.c
+new file mode 100644
+index 0000000..a8c23b7
+--- /dev/null
++++ b/dlls/uiautomationcore/main.c
+@@ -0,0 +1,84 @@
++/*
++ * UIAutomationCore
++ *
++ * Copyright 2015 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define COBJMACROS
++
++#include "config.h"
++
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "ole2.h"
++#include "rpcproxy.h"
++
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(uia);
++
++static HINSTANCE UIAutomation_hInstance;
++
++BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID lpv)
++{
++    switch(reason)
++    {
++    case DLL_WINE_PREATTACH:
++        return FALSE;    /* prefer native version */
++    case DLL_PROCESS_ATTACH:
++        UIAutomation_hInstance = hinst;
++        DisableThreadLibraryCalls(hinst);
++        break;
++    }
++    return TRUE;
++}
++
++/******************************************************************
++ * DllGetClassObject
++ */
++HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID iid, LPVOID *ppv)
++{
++    FIXME("(%s,%s,%p) stub\n", debugstr_guid(rclsid), debugstr_guid(iid), ppv);
++
++    return CLASS_E_CLASSNOTAVAILABLE;
++}
++
++/******************************************************************
++ * DllCanUnloadNow
++ */
++HRESULT WINAPI DllCanUnloadNow(void)
++{
++    return S_FALSE;
++}
++
++/***********************************************************************
++ * DllRegisterServer (comsvcs.@)
++ */
++HRESULT WINAPI DllRegisterServer(void)
++{
++    return __wine_register_resources( UIAutomation_hInstance );
++}
++
++/***********************************************************************
++ * DllUnregisterServer (comsvcs.@)
++ */
++HRESULT WINAPI DllUnregisterServer(void)
++{
++    return __wine_unregister_resources( UIAutomation_hInstance );
++}
+diff --git a/dlls/uiautomationcore/uiautomationcore.spec b/dlls/uiautomationcore/uiautomationcore.spec
+new file mode 100644
+index 0000000..5b3b08c
+--- /dev/null
++++ b/dlls/uiautomationcore/uiautomationcore.spec
+@@ -0,0 +1,93 @@
++@ stdcall -private DllCanUnloadNow()
++@ stdcall -private DllGetClassObject(ptr ptr ptr)
++@ stdcall -private DllRegisterServer()
++@ stdcall -private DllUnregisterServer()
++@ stub DockPattern_SetDockPosition
++@ stub ExpandCollapsePattern_Collapse
++@ stub ExpandCollapsePattern_Expand
++@ stub GridPattern_GetItem
++@ stub InvokePattern_Invoke
++@ stub ItemContainerPattern_FindItemByProperty
++@ stub LegacyIAccessiblePattern_DoDefaultAction
++@ stub LegacyIAccessiblePattern_GetIAccessible
++@ stub LegacyIAccessiblePattern_Select
++@ stub LegacyIAccessiblePattern_SetValue
++@ stub MultipleViewPattern_GetViewName
++@ stub MultipleViewPattern_SetCurrentView
++@ stub RangeValuePattern_SetValue
++@ stub ScrollItemPattern_ScrollIntoView
++@ stub ScrollPattern_Scroll
++@ stub ScrollPattern_SetScrollPercent
++@ stub SelectionItemPattern_AddToSelection
++@ stub SelectionItemPattern_RemoveFromSelection
++@ stub SelectionItemPattern_Select
++@ stub SynchronizedInputPattern_Cancel
++@ stub SynchronizedInputPattern_StartListening
++@ stub TextPattern_GetSelection
++@ stub TextPattern_GetVisibleRanges
++@ stub TextPattern_RangeFromChild
++@ stub TextPattern_RangeFromPoint
++@ stub TextPattern_get_DocumentRange
++@ stub TextPattern_get_SupportedTextSelection
++@ stub TextRange_AddToSelection
++@ stub TextRange_Clone
++@ stub TextRange_Compare
++@ stub TextRange_CompareEndpoints
++@ stub TextRange_ExpandToEnclosingUnit
++@ stub TextRange_FindAttribute
++@ stub TextRange_FindText
++@ stub TextRange_GetAttributeValue
++@ stub TextRange_GetBoundingRectangles
++@ stub TextRange_GetChildren
++@ stub TextRange_GetEnclosingElement
++@ stub TextRange_GetText
++@ stub TextRange_Move
++@ stub TextRange_MoveEndpointByRange
++@ stub TextRange_MoveEndpointByUnit
++@ stub TextRange_RemoveFromSelection
++@ stub TextRange_ScrollIntoView
++@ stub TextRange_Select
++@ stub TogglePattern_Toggle
++@ stub TransformPattern_Move
++@ stub TransformPattern_Resize
++@ stub TransformPattern_Rotate
++@ stub UiaAddEvent
++@ stub UiaClientsAreListening
++@ stub UiaEventAddWindow
++@ stub UiaEventRemoveWindow
++@ stub UiaFind
++@ stub UiaGetErrorDescription
++@ stub UiaGetPatternProvider
++@ stub UiaGetPropertyValue
++@ stub UiaGetReservedMixedAttributeValue
++@ stub UiaGetReservedNotSupportedValue
++@ stub UiaGetRootNode
++@ stub UiaGetRuntimeId
++@ stub UiaGetUpdatedCache
++@ stub UiaHPatternObjectFromVariant
++@ stub UiaHTextRangeFromVariant
++@ stub UiaHUiaNodeFromVariant
++@ stub UiaHasServerSideProvider
++@ stub UiaHostProviderFromHwnd
++@ stub UiaLookupId
++@ stub UiaNavigate
++@ stub UiaNodeFromFocus
++@ stub UiaNodeFromHandle
++@ stub UiaNodeFromPoint
++@ stub UiaNodeFromProvider
++@ stub UiaNodeRelease
++@ stub UiaPatternRelease
++@ stub UiaRaiseAsyncContentLoadedEvent
++@ stub UiaRaiseAutomationEvent
++@ stub UiaRaiseAutomationPropertyChangedEvent
++@ stub UiaRaiseStructureChangedEvent
++@ stub UiaRegisterProviderCallback
++@ stub UiaRemoveEvent
++@ stub UiaReturnRawElementProvider
++@ stub UiaSetFocus
++@ stub UiaTextRangeRelease
++@ stub ValuePattern_SetValue
++@ stub VirtualizedItemPattern_Realize
++@ stub WindowPattern_Close
++@ stub WindowPattern_SetWindowVisualState
++@ stub WindowPattern_WaitForInputIdle
+-- 
+1.9.1
+
