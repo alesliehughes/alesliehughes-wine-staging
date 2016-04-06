@@ -1,0 +1,72 @@
+From 856e36f5ac5cfa312e6f84de1d9d9993b96f534a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 4 Apr 2016 11:53:17 +1000
+Subject: [PATCH 2/2] comctrl32/tooltips: AddTool doesn't fails on empty
+ TTTOOLINFO structure
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/comctl32/tests/tooltips.c | 31 +++++++++++++++++++++++++++++++
+ dlls/comctl32/tooltips.c       |  4 ++++
+ 2 files changed, 35 insertions(+)
+
+diff --git a/dlls/comctl32/tests/tooltips.c b/dlls/comctl32/tests/tooltips.c
+index f1034a9..de9e394 100644
+--- a/dlls/comctl32/tests/tooltips.c
++++ b/dlls/comctl32/tests/tooltips.c
+@@ -366,6 +366,37 @@ static void test_gettext(void)
+         return;
+     }
+ 
++    /* Empty TTTOOLINFO */
++    memset(&toolinfoA, 0, sizeof(toolinfoA));
++    toolinfoA.cbSize = TTTOOLINFOA_V1_SIZE;
++    r = SendMessageA(hwnd, TTM_ADDTOOLA, 0, (LPARAM)&toolinfoA);
++    ok(r, "Adding the tool to the tooltip failed\n");
++
++    memset(&toolinfoA, 0, sizeof(toolinfoA));
++    toolinfoA.cbSize = TTTOOLINFOA_V2_SIZE;
++    r = SendMessageA(hwnd, TTM_ADDTOOLA, 0, (LPARAM)&toolinfoA);
++    ok(r, "Adding the tool to the tooltip failed\n");
++
++    memset(&toolinfoA, 0, sizeof(toolinfoA));
++    toolinfoA.cbSize = sizeof(TTTOOLINFOA);
++    r = SendMessageA(hwnd, TTM_ADDTOOLA, 0, (LPARAM)&toolinfoA);
++    ok(r, "Adding the tool to the tooltip failed\n");
++
++    memset(&toolinfoW, 0, sizeof(toolinfoW));
++    toolinfoW.cbSize = TTTOOLINFOW_V1_SIZE;
++    r = SendMessageA(hwnd, TTM_ADDTOOLW, 0, (LPARAM)&toolinfoW);
++    ok(r, "Adding the tool to the tooltip failed\n");
++
++    memset(&toolinfoW, 0, sizeof(toolinfoW));
++    toolinfoW.cbSize = TTTOOLINFOW_V2_SIZE;
++    r = SendMessageA(hwnd, TTM_ADDTOOLW, 0, (LPARAM)&toolinfoW);
++    ok(r, "Adding the tool to the tooltip failed\n");
++
++    memset(&toolinfoW, 0, sizeof(toolinfoW));
++    toolinfoW.cbSize = sizeof(TTTOOLINFOW);
++    r = SendMessageA(hwnd, TTM_ADDTOOLW, 0, (LPARAM)&toolinfoW);
++    ok(!r, "Adding the tool to the tooltip succeeded\n");
++
+     /* add another tool with text */
+     toolinfoA.cbSize = sizeof(TTTOOLINFOA);
+     toolinfoA.hwnd = NULL;
+diff --git a/dlls/comctl32/tooltips.c b/dlls/comctl32/tooltips.c
+index e8db167..e6e182f 100644
+--- a/dlls/comctl32/tooltips.c
++++ b/dlls/comctl32/tooltips.c
+@@ -1038,6 +1038,10 @@ TOOLTIPS_AddToolT (TOOLTIPS_INFO *infoPtr, const TTTOOLINFOW *ti, BOOL isW)
+ 	   infoPtr->hwndSelf, ti->hwnd, ti->uId,
+ 	   (ti->uFlags & TTF_IDISHWND) ? " TTF_IDISHWND" : "");
+ 
++    if(ti->cbSize < TTTOOLINFOW_V3_SIZE && !ti->uFlags && !ti->hwnd && !ti->uId &&
++         IsRectEmpty(&ti->rect) && !ti->hinst && !ti->lpszText && !ti->lParam)
++        return TRUE;
++
+     if (ti->cbSize >= TTTOOLINFOW_V2_SIZE && isW && (!ti->lpszText ||
+         (ti->lpszText != LPSTR_TEXTCALLBACKW && !IS_INTRESOURCE(ti->lpszText)
+          && IsBadStringPtrW(ti->lpszText, sizeof(WCHAR)))) )
+-- 
+2.5.0
+
