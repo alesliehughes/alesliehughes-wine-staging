@@ -1,0 +1,72 @@
+From 625d8f714f313f03d09bdbcf330f91faa968d1b0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Apr 2016 16:04:36 +1000
+Subject: [PATCH 2/2] user32/msgbox: Support WM_COPY Message
+
+Fixes: ????
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/user32/msgbox.c | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/dlls/user32/msgbox.c b/dlls/user32/msgbox.c
+index 2ba98c9..e65a1c2 100644
+--- a/dlls/user32/msgbox.c
++++ b/dlls/user32/msgbox.c
+@@ -319,6 +319,40 @@ static void MSGBOX_OnInit(HWND hwnd, LPMSGBOXPARAMSW lpmb)
+     HeapFree( GetProcessHeap(), 0, buffer );
+ }
+ 
++static void MSGBOX_CopyToClipbaord( HWND hwnd )
++{
++    int len = GetWindowTextLengthW(hwnd);
++    WCHAR *text = HeapAlloc( GetProcessHeap(), 0, (len + 1) * sizeof(WCHAR) );
++    if(text)
++    {
++FIXME("**** WM_COPY detected\n");
++/*
++---------------------------
++Dialog Title
++---------------------------
++Dialog Message (SetWindowTextW(GetDlgItem(hwnd, MSGBOX_IDTEXT), lpszText);)
++---------------------------
++Button(s) Text. OK
++---------------------------
++*/
++        if (GetWindowTextW(hwnd, text, len))
++        {
++            HGLOBAL hMem;
++            WCHAR *data;
++            hMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE|GMEM_ZEROINIT, len);
++            data = GlobalLock(hMem);
++            lstrcpyW(data, text);
++            GlobalUnlock(hMem);
++
++            OpenClipboard(hwnd);
++            EmptyClipboard();
++            SetClipboardData(CF_UNICODETEXT, hMem);
++            CloseClipboard();
++        }
++
++        HeapFree(GetProcessHeap(), 0, text);
++    }
++}
+ 
+ /**************************************************************************
+  *           MSGBOX_DlgProc
+@@ -337,6 +371,11 @@ static INT_PTR CALLBACK MSGBOX_DlgProc( HWND hwnd, UINT message,
+        SetPropA(hwnd, "WINE_MSGBOX_HELPCALLBACK", mbp->lpfnMsgBoxCallback);
+        break;
+    }
++   case WM_COPY:
++   {
++        MSGBOX_CopyToClipbaord(hwnd);
++        break;
++   }
+ 
+    case WM_COMMAND:
+     switch (LOWORD(wParam))
+-- 
+1.9.1
+
