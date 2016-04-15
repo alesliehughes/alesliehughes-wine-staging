@@ -1,0 +1,68 @@
+From 13a6a1af3dae2a4c8fed058616d7e08bd4528b1f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 12 Apr 2016 11:52:22 +1000
+Subject: [v3 PATCH 1/2] d3d10core: Support NULL DepthStecilView pointer in
+ ClearDepthStencilView
+
+Corrected failed test
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d10core/tests/device.c | 12 ++++++++++++
+ dlls/d3d11/device.c           |  3 +++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/dlls/d3d10core/tests/device.c b/dlls/d3d10core/tests/device.c
+index 6978c26..57f013c 100644
+--- a/dlls/d3d10core/tests/device.c
++++ b/dlls/d3d10core/tests/device.c
+@@ -22,6 +22,8 @@
+ #include "wine/test.h"
+ #include <limits.h>
+ 
++static BOOL d3d11_available = FALSE;
++
+ struct vec2
+ {
+     float x, y;
+@@ -478,6 +480,8 @@ static void test_feature_level(void)
+         return;
+     }
+ 
++    d3d11_available = TRUE;
++
+     /* Device was created by D3D10CreateDevice. */
+     feature_level = ID3D11Device_GetFeatureLevel(device11);
+     ok(feature_level == D3D_FEATURE_LEVEL_10_0, "Got unexpected feature level %#x.\n", feature_level);
+@@ -6222,6 +6226,14 @@ static void test_clear_depth_stencil_view(void)
+     ID3D10Device_ClearDepthStencilView(device, dsv, D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 0.0f, 0);
+     check_texture_color(depth_texture, 0x00000000, 0);
+ 
++    if(d3d11_available)
++    {
++        ID3D10Device_ClearDepthStencilView(device, NULL, D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0xff);
++        check_texture_color(depth_texture, 0x00000000, 0);
++    }
++    else
++        win_skip("D3D11 is not available, skipping test.\n");
++
+     ID3D10Device_ClearDepthStencilView(device, dsv, D3D10_CLEAR_DEPTH, 1.0f, 0xff);
+     todo_wine check_texture_color(depth_texture, 0x00ffffff, 0);
+ 
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index 9144438..4a83882 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -3463,6 +3463,9 @@ static void STDMETHODCALLTYPE d3d10_device_ClearDepthStencilView(ID3D10Device1 *
+     TRACE("iface %p, depth_stencil_view %p, flags %#x, depth %.8e, stencil %u.\n",
+             iface, depth_stencil_view, flags, depth, stencil);
+ 
++    if (!view)
++        return;
++
+     wined3d_flags = wined3d_clear_flags_from_d3d11_clear_flags(flags);
+ 
+     wined3d_mutex_lock();
+-- 
+1.9.1
+

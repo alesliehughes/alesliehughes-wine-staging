@@ -1,0 +1,86 @@
+From 304cfddd524c094850c01ea8fff738b529bfbf2d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 14 Apr 2016 18:04:51 +1000
+Subject: [PATCH 2/5] inetcomm: IMimeMessage has a HBODY_ROOT node by default.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c       |  8 ++++++++
+ dlls/inetcomm/tests/mimeole.c | 22 ++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index d63da8c..36c3ec9 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -1706,6 +1706,8 @@ static HRESULT WINAPI MimeMessage_Load(IMimeMessage *iface, IStream *pStm)
+         return E_FAIL;
+     }
+ 
++    empty_body_list(&This->body_tree);
++
+     IStream_AddRef(pStm);
+     This->stream = pStm;
+     offsets.cbBoundaryStart = offsets.cbHeaderStart = 0;
+@@ -2544,6 +2546,8 @@ static const IMimeMessageVtbl MimeMessageVtbl =
+ HRESULT MimeMessage_create(IUnknown *outer, void **obj)
+ {
+     MimeMessage *This;
++    MimeBody *mime_body;
++    body_t *root_body;
+ 
+     TRACE("(%p, %p)\n", outer, obj);
+ 
+@@ -2564,6 +2568,10 @@ HRESULT MimeMessage_create(IUnknown *outer, void **obj)
+     list_init(&This->body_tree);
+     This->next_index = 1;
+ 
++    mime_body = mimebody_create();
++    root_body = new_body_entry(mime_body, This->next_index++, NULL);
++    list_add_head(&This->body_tree, &root_body->entry);
++
+     *obj = &This->IMimeMessage_iface;
+     return S_OK;
+ }
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index 7e98563..2b6dee2 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -332,6 +332,27 @@ static void test_CreateMessage(void)
+     IStream_Release(stream);
+ }
+ 
++void test_BindToObject(void)
++{
++    HRESULT hr;
++    IMimeMessage *msg;
++    IMimeBody *body;
++    ULONG count;
++
++    hr = MimeOleCreateMessage(NULL, &msg);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    hr = IMimeMessage_CountBodies(msg, HBODY_ROOT, TRUE, &count);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(count == 1, "got %d\n", count);
++
++    hr = IMimeMessage_BindToObject(msg, HBODY_ROOT, &IID_IMimeBody, (void**)&body);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    IMimeBody_Release(body);
++
++    IMimeMessage_Release(msg);
++}
++
+ START_TEST(mimeole)
+ {
+     OleInitialize(NULL);
+@@ -340,5 +361,6 @@ START_TEST(mimeole)
+     test_CreateBody();
+     test_Allocator();
+     test_CreateMessage();
++    test_BindToObject();
+     OleUninitialize();
+ }
+-- 
+1.9.1
+

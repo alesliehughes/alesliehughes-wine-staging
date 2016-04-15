@@ -1,0 +1,58 @@
+From e359f6523a4c988a53b5133d10ea494e2c7fc586 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 15 Apr 2016 16:09:30 +1000
+Subject: [PATCH 5/5] mimeole.idl: Correct IMimePropertySchema interface
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/mimeole.idl | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/include/mimeole.idl b/include/mimeole.idl
+index 65c0b42..dddfc26 100644
+--- a/include/mimeole.idl
++++ b/include/mimeole.idl
+@@ -469,6 +469,8 @@ library MIMEOLE
+     ]
+     interface IMimePropertySchema : IUnknown
+     {
++        typedef [unique] IMimePropertySchema *LPMIMEPROPERTYSCHEMA;
++
+         typedef enum tagMIMEPROPFLAGS
+         {
+             MPF_INETCSET            = 0x01,
+@@ -479,7 +481,30 @@ library MIMEOLE
+             MPF_READONLY            = 0x20
+         } MIMEPROPFLAGS;
+ 
+-        /* FIXME: fill this in */
++        HRESULT RegisterProperty(
++                [in]  const char *name,
++                [in]  DWORD      flags,
++                [in]  DWORD      rownumber,
++                [in]  VARTYPE    vtdefault,
++                [out] DWORD      *propid);
++
++        HRESULT ModifyProperty(
++                [in] const char  *name,
++                [in] DWORD       flags,
++                [in] DWORD       rownumber,
++                [in] VARTYPE     vtdefault);
++
++        HRESULT GetPropertyId(
++                [in]  const char *name,
++                [out] DWORD      *propid);
++
++        HRESULT GetPropertyName(
++                [in]  DWORD      propid,
++                [out] char       **name);
++
++        HRESULT RegisterAddressType(
++                [in]  const char *name,
++                [out] DWORD      *adrtype);
+     }
+ 
+     [
+-- 
+1.9.1
+
