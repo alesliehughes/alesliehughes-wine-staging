@@ -1,7 +1,7 @@
-From 789a20e5fc25277b3a85eb8d2300ee993d29bad3 Mon Sep 17 00:00:00 2001
+From afcc44ce6133338c704a3da77763bd618b51ace3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 15 Apr 2016 15:46:23 +1000
-Subject: [PATCH 4/5] inetcomm: Add MimeOleGetPropertySchema stub
+Subject: [PATCH 4/7] inetcomm: Add MimeOleGetPropertySchema stub
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

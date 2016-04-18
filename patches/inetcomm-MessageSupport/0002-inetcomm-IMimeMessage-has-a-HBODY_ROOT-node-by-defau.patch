@@ -1,7 +1,7 @@
-From 304cfddd524c094850c01ea8fff738b529bfbf2d Mon Sep 17 00:00:00 2001
+From 79ddb86c1edd3d58052dc164621b181b709eeb27 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 14 Apr 2016 18:04:51 +1000
-Subject: [PATCH 2/5] inetcomm: IMimeMessage has a HBODY_ROOT node by default.
+Subject: [PATCH 2/7] inetcomm: IMimeMessage has a HBODY_ROOT node by default.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

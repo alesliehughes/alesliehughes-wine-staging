@@ -1,7 +1,7 @@
-From b38c8860780468ddb56493cfc62c9c410f0e9d13 Mon Sep 17 00:00:00 2001
+From e2b4657ff498d1299e28141375604a8d7b6814db Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 15 Apr 2016 08:28:37 +1000
-Subject: [PATCH 3/5] inetcomm: Trace all IMimeBody function parameters
+Subject: [PATCH 3/7] inetcomm: Trace all IMimeBody function parameters
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
