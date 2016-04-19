@@ -1,25 +1,27 @@
-From 05da6b18c27f79217ab4a665115ba4aa578e760d Mon Sep 17 00:00:00 2001
+From 64125e9f0d545db67b19656d7859902493f2fe02 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 19 Apr 2016 09:47:47 +1000
 Subject: [PATCH 4/4] inetcomm/tests: Add IMimeMessage SetOption tests
 
+Fixed crash
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/inetcomm/tests/mimeole.c | 61 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
+ dlls/inetcomm/tests/mimeole.c | 63 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
 
 diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
-index 7f72903..6978be9 100644
+index 7f72903..d49b831 100644
 --- a/dlls/inetcomm/tests/mimeole.c
 +++ b/dlls/inetcomm/tests/mimeole.c
-@@ -332,6 +332,66 @@ static void test_CreateMessage(void)
+@@ -332,6 +332,68 @@ static void test_CreateMessage(void)
      IStream_Release(stream);
  }
  
 +void test_MessageOptions(void)
 +{
-+    static char string[] = "XXXXX";
-+    static char zero[] =   "0";
++    static const char string[] = "XXXXX";
++    static const char zero[] =   "0";
 +    HRESULT hr;
 +    IMimeMessage *msg;
 +    PROPVARIANT prop;
@@ -42,7 +44,8 @@ index 7f72903..6978be9 100644
 +    PropVariantClear(&prop);
 +
 +    prop.vt = VT_LPSTR;
-+    prop.u.pszVal = string;
++    prop.u.pszVal = CoTaskMemAlloc(strlen(string)+1);
++    strcpy(prop.u.pszVal, string);
 +    hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
 +    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
 +    PropVariantClear(&prop);
@@ -55,7 +58,8 @@ index 7f72903..6978be9 100644
 +
 +    /* Invalid property type doesn't change the value */
 +    prop.vt = VT_LPSTR;
-+    prop.u.pszVal = zero;
++    prop.u.pszVal = CoTaskMemAlloc(strlen(zero)+1);
++    strcpy(prop.u.pszVal, zero);
 +    hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
 +    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
 +    PropVariantClear(&prop);
@@ -79,7 +83,7 @@ index 7f72903..6978be9 100644
  void test_BindToObject(void)
  {
      HRESULT hr;
-@@ -372,6 +432,7 @@ START_TEST(mimeole)
+@@ -372,6 +434,7 @@ START_TEST(mimeole)
      test_CreateBody();
      test_Allocator();
      test_CreateMessage();
@@ -88,5 +92,5 @@ index 7f72903..6978be9 100644
      test_MimeOleGetPropertySchema();
      OleUninitialize();
 -- 
-1.9.1
+2.8.0.rc3
 
