@@ -1,0 +1,92 @@
+From 05da6b18c27f79217ab4a665115ba4aa578e760d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 19 Apr 2016 09:47:47 +1000
+Subject: [PATCH 4/4] inetcomm/tests: Add IMimeMessage SetOption tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/tests/mimeole.c | 61 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
+
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index 7f72903..6978be9 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -332,6 +332,66 @@ static void test_CreateMessage(void)
+     IStream_Release(stream);
+ }
+ 
++void test_MessageOptions(void)
++{
++    static char string[] = "XXXXX";
++    static char zero[] =   "0";
++    HRESULT hr;
++    IMimeMessage *msg;
++    PROPVARIANT prop;
++
++    hr = MimeOleCreateMessage(NULL, &msg);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    PropVariantInit(&prop);
++
++    prop.vt = VT_BOOL;
++    prop.u.boolVal = TRUE;
++    hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    PropVariantClear(&prop);
++
++    hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
++    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    todo_wine ok(prop.vt == VT_BOOL, "vt %08x\n", prop.vt);
++    todo_wine ok(prop.u.boolVal == TRUE, "Hide Attachments got %d\n", prop.u.boolVal);
++    PropVariantClear(&prop);
++
++    prop.vt = VT_LPSTR;
++    prop.u.pszVal = string;
++    hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
++    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    PropVariantClear(&prop);
++
++    hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
++    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    todo_wine ok(prop.vt == VT_BOOL, "vt %08x\n", prop.vt);
++    todo_wine ok(prop.u.boolVal == TRUE, "Hide Attachments got %d\n", prop.u.boolVal);
++    PropVariantClear(&prop);
++
++    /* Invalid property type doesn't change the value */
++    prop.vt = VT_LPSTR;
++    prop.u.pszVal = zero;
++    hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
++    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    PropVariantClear(&prop);
++
++    hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
++    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    todo_wine ok(prop.vt == VT_BOOL, "vt %08x\n", prop.vt);
++    todo_wine ok(prop.u.boolVal == TRUE, "Hide Attachments got %d\n", prop.u.boolVal);
++    PropVariantClear(&prop);
++
++    /* Invalid OID */
++    prop.vt = VT_BOOL;
++    prop.u.boolVal = TRUE;
++    hr = IMimeMessage_SetOption(msg, 0xff00000a, &prop);
++    todo_wine ok(hr == MIME_E_INVALID_OPTION_ID, "ret %08x\n", hr);
++    PropVariantClear(&prop);
++
++    IMimeMessage_Release(msg);
++}
++
+ void test_BindToObject(void)
+ {
+     HRESULT hr;
+@@ -372,6 +432,7 @@ START_TEST(mimeole)
+     test_CreateBody();
+     test_Allocator();
+     test_CreateMessage();
++    test_MessageOptions();
+     test_BindToObject();
+     test_MimeOleGetPropertySchema();
+     OleUninitialize();
+-- 
+1.9.1
+
