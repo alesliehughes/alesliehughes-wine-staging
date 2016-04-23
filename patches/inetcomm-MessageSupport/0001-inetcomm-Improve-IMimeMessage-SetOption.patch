@@ -1,0 +1,129 @@
+From 3b20e2c6fb714e5ee0edee37720b28f9ae6acc92 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 Apr 2016 10:40:01 +1000
+Subject: [PATCH 5/6] inetcomm: Improve IMimeMessage SetOption
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c       | 23 +++++++++++++++++++----
+ dlls/inetcomm/tests/mimeole.c | 13 ++++++++++---
+ include/mimeole.idl           |  7 +++++++
+ 3 files changed, 36 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 7a0b5bf..640d564 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -2242,27 +2242,42 @@ static HRESULT WINAPI MimeMessage_SetOption(
+     const TYPEDID oid,
+     LPCPROPVARIANT pValue)
+ {
+-    HRESULT hr = E_NOTIMPL;
++    HRESULT hr = S_OK;
+     TRACE("(%p)->(%08x, %p)\n", iface, oid, pValue);
++#ifndef _WIN64
++    #define LAST_OID OID_SECURITY_2KEY_CERT_BAG
++#else
++    #define LAST_OID OID_SECURITY_2KEY_CERT_BAG_64
++#endif
++
++    /* Message ID is checked before type,.
++     *  OID 0x4D -> 0x56 and 0x58 aren't defined but will filtered out later.
++     */
++    if(TYPEDID_ID(oid) < TYPEDID_ID(OID_ALLOW_8BIT_HEADER) ||  TYPEDID_ID(oid) > TYPEDID_ID(LAST_OID) )
++    {
++        WARN("oid (%08x) out of range\n", oid);
++        return MIME_E_INVALID_OPTION_ID;
++    }
++
++#undef LAST_OID
+ 
+     if(pValue->vt != TYPEDID_TYPE(oid))
+     {
+         WARN("Called with vartype %04x and oid %08x\n", pValue->vt, oid);
+-        return E_INVALIDARG;
++        return S_OK;
+     }
+ 
+     switch(oid)
+     {
+     case OID_HIDE_TNEF_ATTACHMENTS:
+         FIXME("OID_HIDE_TNEF_ATTACHMENTS (value %d): ignoring\n", pValue->u.boolVal);
+-        hr = S_OK;
+         break;
+     case OID_SHOW_MACBINARY:
+         FIXME("OID_SHOW_MACBINARY (value %d): ignoring\n", pValue->u.boolVal);
+-        hr = S_OK;
+         break;
+     default:
+         FIXME("Unhandled oid %08x\n", oid);
++        hr = MIME_E_INVALID_OPTION_ID;
+     }
+ 
+     return hr;
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index 6978be9..b988140 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -360,7 +360,7 @@ void test_MessageOptions(void)
+     prop.vt = VT_LPSTR;
+     prop.u.pszVal = string;
+     hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
+-    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    ok(hr == S_OK, "ret %08x\n", hr);
+     PropVariantClear(&prop);
+ 
+     hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
+@@ -373,7 +373,7 @@ void test_MessageOptions(void)
+     prop.vt = VT_LPSTR;
+     prop.u.pszVal = zero;
+     hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
+-    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    ok(hr == S_OK, "ret %08x\n", hr);
+     PropVariantClear(&prop);
+ 
+     hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
+@@ -386,7 +386,14 @@ void test_MessageOptions(void)
+     prop.vt = VT_BOOL;
+     prop.u.boolVal = TRUE;
+     hr = IMimeMessage_SetOption(msg, 0xff00000a, &prop);
+-    todo_wine ok(hr == MIME_E_INVALID_OPTION_ID, "ret %08x\n", hr);
++    ok(hr == MIME_E_INVALID_OPTION_ID, "ret %08x\n", hr);
++    PropVariantClear(&prop);
++    
++    /* Out of range before type. */
++    prop.vt = VT_I4;
++    prop.u.lVal = 1;
++    hr = IMimeMessage_SetOption(msg, 0xff00000a, &prop);
++    ok(hr == MIME_E_INVALID_OPTION_ID, "ret %08x\n", hr);
+     PropVariantClear(&prop);
+ 
+     IMimeMessage_Release(msg);
+diff --git a/include/mimeole.idl b/include/mimeole.idl
+index 7cebb77..6c3696d 100644
+--- a/include/mimeole.idl
++++ b/include/mimeole.idl
+@@ -153,6 +153,7 @@ cpp_quote("    PID_ATT_ACCOUNTNAME   = 78,")
+ cpp_quote("    PID_LAST              = 79,")
+ cpp_quote("} MIMEPROPID;")
+ 
++cpp_quote("#define TYPEDID_ID(_typedid)          (((ULONG)(_typedid))>>16)")
+ cpp_quote("#define TYPEDID_MASK                  ((ULONG)0xffff)")
+ cpp_quote("#define TYPEDID_TYPE(t)               ((VARTYPE)((t) & TYPEDID_MASK))")
+ 
+@@ -177,6 +178,12 @@ cpp_quote("#define OID_CAN_INLINE_TEXT_BODIES    (0x00380000 | VT_BOOL)")
+ cpp_quote("#define OID_SHOW_MACBINARY            (0x00390000 | VT_BOOL)")
+ cpp_quote("#define OID_SAVEBODY_KEEPBOUNDARY     (0x00400000 | VT_BOOL)")
+ 
++cpp_quote("#ifndef _WIN64")
++cpp_quote("#define OID_SECURITY_2KEY_CERT_BAG    (0x00590000 | VT_VECTOR | VT_UI4)")
++cpp_quote("#else")
++cpp_quote("#define OID_SECURITY_2KEY_CERT_BAG_64 (0x00590000 | VT_VECTOR | VT_UI8)")
++cpp_quote("#endif")
++
+ [
+     uuid(e4b28371-83b0-11d0-8259-00c04fd85ab4),
+     version(1.0)
+-- 
+1.9.1
+

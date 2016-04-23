@@ -1,0 +1,79 @@
+From 0a80d58f8f935b62422bd63747bd082de56f853f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 Apr 2016 11:36:25 +1000
+Subject: [PATCH 6/6] inetcomm: Improve IMimePropertySchema ModifyProperty stub
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c       | 10 +++++++++-
+ dlls/inetcomm/tests/mimeole.c | 19 +++++++++++++++++++
+ include/mimeole.idl           |  2 ++
+ 3 files changed, 30 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 640d564..e6fb7c1 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -3119,7 +3119,15 @@ static HRESULT WINAPI propschema_ModifyProperty(IMimePropertySchema *iface, cons
+ {
+     propschema *This = impl_from_IMimePropertySchema(iface);
+     FIXME("(%p)->(%s, %x, %d, %d) stub\n", This, debugstr_a(name), flags, rownumber, vtdefault);
+-    return E_NOTIMPL;
++
++    if(!name)
++        return E_INVALIDARG;
++
++    if(vtdefault != VT_LPSTR && vtdefault != VT_LPWSTR && vtdefault != VT_FILETIME && vtdefault != VT_UI4
++       && vtdefault != VT_I4 && vtdefault != VT_STREAM)
++        return MIME_E_UNSUPPORTED_VARTYPE;
++
++    return MIME_E_NOT_FOUND;
+ }
+ 
+ static HRESULT WINAPI propschema_GetPropertyId(IMimePropertySchema *iface, const char *name, DWORD *propid)
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index b988140..1770381 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -428,6 +428,25 @@ void test_MimeOleGetPropertySchema(void)
+     hr = MimeOleGetPropertySchema(&schema);
+     ok(hr == S_OK, "ret %08x\n", hr);
+ 
++    hr = IMimePropertySchema_ModifyProperty(schema, NULL, MPF_INETCSET | MPF_RFC1522, 0, VT_LPWSTR);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    hr = IMimePropertySchema_ModifyProperty(schema, "Thread-Topic", MPF_INETCSET | MPF_RFC1522, 0, VT_DISPATCH);
++    ok(hr == MIME_E_UNSUPPORTED_VARTYPE, "ret %08x\n", hr);
++
++    hr = IMimePropertySchema_ModifyProperty(schema, "Thread-Topic", MPF_INETCSET | MPF_RFC1522, 0, VT_LPWSTR);
++    ok(hr == MIME_E_NOT_FOUND, "ret %08x\n", hr);
++    if(hr == MIME_E_NOT_FOUND)
++    {
++        DWORD propid = 0;
++        hr = IMimePropertySchema_RegisterProperty(schema, "Thread-Topic", MPF_INETCSET | MPF_RFC1522, 0,
++                VT_LPWSTR, &propid);
++        todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++
++        hr = IMimePropertySchema_ModifyProperty(schema, "Thread-Topic", MPF_INETCSET | MPF_RFC1522, 0, VT_LPWSTR);
++        todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    }
++
+     IMimePropertySchema_Release(schema);
+ }
+ 
+diff --git a/include/mimeole.idl b/include/mimeole.idl
+index 6c3696d..b88b3c0 100644
+--- a/include/mimeole.idl
++++ b/include/mimeole.idl
+@@ -69,6 +69,8 @@ cpp_quote("#define MIME_E_INVALID_CHARSET_TYPE   0x800cce31")
+ 
+ cpp_quote("#define MIME_E_INVALID_TEXT_TYPE      0x800cce38")
+ 
++cpp_quote("#define MIME_E_UNSUPPORTED_VARTYPE    0x800cce3c")
++
+ cpp_quote("#define MIME_E_SECURITY_NOOP          0x800cceb1")
+ cpp_quote("#define MIME_S_SECURITY_NOOP          0x000cceb1")
+ 
+-- 
+1.9.1
+
