@@ -1,0 +1,40 @@
+From 321e04890a0064d3efd0d6d9fc5ebe92d9e58eff Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 27 Apr 2016 12:17:37 +1000
+Subject: [PATCH 7/7] inetcomm: temp return S_OK
+
+---
+ dlls/inetcomm/mimeole.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 448da5c..6adcdc5 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -622,7 +622,13 @@ static HRESULT WINAPI MimeBody_GetPropInfo(
+ {
+     MimeBody *This = impl_from_IMimeBody(iface);
+     FIXME("(%p)->(%s, %p) stub\n", This, debugstr_a(pszName), pInfo);
+-    return E_NOTIMPL;
++
++    pInfo->dwMask = PIM_ENCODINGTYPE | PIM_ROWNUMBER | PIM_FLAGS;
++    pInfo->dwFlags = 0x10000000;
++    pInfo->dwRowNumber = 0;
++    pInfo->ietEncoding = 629;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI MimeBody_SetPropInfo(
+@@ -811,7 +817,7 @@ static HRESULT WINAPI MimeBody_SetCharset(
+ {
+     MimeBody *This = impl_from_IMimeBody(iface);
+     FIXME("(%p)->(%p, %d) stub\n", This, hCharset, applytype);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI MimeBody_GetParameters(
+-- 
+2.8.0.rc3
+

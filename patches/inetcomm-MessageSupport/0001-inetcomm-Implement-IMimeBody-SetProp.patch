@@ -1,0 +1,143 @@
+From 7681f9e53fd67f710279e030099b68dcc2f62f7d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 26 Apr 2016 09:30:47 +1000
+Subject: [PATCH 1/7] inetcomm: Implement IMimeBody SetProp
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c       | 56 +++++++++++++++++++++++++++++++++++++++++--
+ dlls/inetcomm/tests/mimeole.c | 44 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 98 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 7a0b5bf..86d03cf 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -663,8 +663,60 @@ static HRESULT WINAPI MimeBody_SetProp(
+                               LPCPROPVARIANT pValue)
+ {
+     MimeBody *This = impl_from_IMimeBody(iface);
+-    FIXME("(%p)->(%s, 0x%x, %p) stub\n", This, debugstr_a(pszName), dwFlags, pValue);
+-    return E_NOTIMPL;
++    header_t *header;
++    HRESULT hr;
++
++    TRACE("(%p)->(%s, 0x%x, %p)\n", This, debugstr_a(pszName), dwFlags, pValue);
++
++    if(!pszName || !pValue)
++        return E_INVALIDARG;
++
++    hr = find_prop(This, pszName, &header);
++    if(hr != S_OK)
++    {
++        property_list_entry_t *prop_entry;
++        const property_t *prop = NULL;
++
++        LIST_FOR_EACH_ENTRY(prop_entry, &This->new_props, property_list_entry_t, entry)
++        {
++            if(!strcasecmp(pszName, prop_entry->prop.name))
++            {
++                TRACE("Found match with already added new property id %d\n", prop_entry->prop.id);
++                prop = &prop_entry->prop;
++                break;
++            }
++        }
++
++        header = HeapAlloc(GetProcessHeap(), 0, sizeof(*header));
++        if(!header)
++            return E_OUTOFMEMORY;
++
++        if(!prop)
++        {
++            prop_entry = HeapAlloc(GetProcessHeap(), 0, sizeof(*prop_entry));
++            if(!prop_entry)
++            {
++                HeapFree(GetProcessHeap(), 0, header);
++                return E_OUTOFMEMORY;
++            }
++            prop_entry->prop.name = strdupA(pszName);
++            prop_entry->prop.id = This->next_prop_id++;
++            prop_entry->prop.flags = 0;
++            prop_entry->prop.default_vt = pValue->vt;
++            list_add_tail(&This->new_props, &prop_entry->entry);
++            prop = &prop_entry->prop;
++            TRACE("Allocating new prop id %d\n", prop_entry->prop.id);
++        }
++
++        header->prop = prop;
++        PropVariantInit(&header->value);
++        list_init(&header->params);
++        list_add_tail(&This->headers, &header->entry);
++    }
++
++    PropVariantCopy(&header->value, pValue);
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI MimeBody_AppendProp(
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index a0fc695..c94252a 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -332,6 +332,49 @@ static void test_CreateMessage(void)
+     IStream_Release(stream);
+ }
+ 
++static void test_MessageSetProp(void)
++{
++    static const char topic[] = "wine topic";
++    HRESULT hr;
++    IMimeMessage *msg;
++    IMimeBody *body;
++    PROPVARIANT prop;
++    MIMEPROPINFO info;
++
++    hr = MimeOleCreateMessage(NULL, &msg);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    PropVariantInit(&prop);
++
++    hr = IMimeMessage_BindToObject(msg, HBODY_ROOT, &IID_IMimeBody, (void**)&body);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    hr = IMimeBody_SetProp(body, NULL, 0, &prop);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    hr = IMimeBody_SetProp(body, "Thread-Topic", 0, NULL);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    prop.vt = VT_LPSTR;
++    prop.u.pszVal = CoTaskMemAlloc(strlen(topic)+1);
++    strcpy(prop.u.pszVal, topic);
++    hr = IMimeBody_SetProp(body, "Thread-Topic", 0, &prop);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    PropVariantClear(&prop);
++
++    hr = IMimeBody_GetProp(body, "Thread-Topic", 0, &prop);
++    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    if(hr == S_OK)
++    {
++        todo_wine ok(prop.vt == VT_LPSTR, "type %d\n", prop.vt);
++        todo_wine ok(!strcmp(prop.u.pszVal, topic), "got  %s\n", prop.u.pszVal);
++        PropVariantClear(&prop);
++    }
++
++    IMimeBody_Release(body);
++    IMimeMessage_Release(msg);
++}
++
+ static void test_MessageOptions(void)
+ {
+     static const char string[] = "XXXXX";
+@@ -434,6 +477,7 @@ START_TEST(mimeole)
+     test_CreateBody();
+     test_Allocator();
+     test_CreateMessage();
++    test_MessageSetProp();
+     test_MessageOptions();
+     test_BindToObject();
+     test_MimeOleGetPropertySchema();
+-- 
+2.8.0.rc3
+

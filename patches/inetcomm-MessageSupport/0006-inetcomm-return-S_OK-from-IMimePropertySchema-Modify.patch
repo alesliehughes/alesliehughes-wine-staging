@@ -1,0 +1,27 @@
+From 2c7002a316ed73e526d385370b1e16a30e1a2f4b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 27 Apr 2016 11:50:40 +1000
+Subject: [PATCH 6/7] inetcomm: return S_OK from IMimePropertySchema
+ ModifyProperty
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index c12b234..448da5c 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -3185,7 +3185,7 @@ static HRESULT WINAPI propschema_ModifyProperty(IMimePropertySchema *iface, cons
+ {
+     propschema *This = impl_from_IMimePropertySchema(iface);
+     FIXME("(%p)->(%s, %x, %d, %d) stub\n", This, debugstr_a(name), flags, rownumber, vtdefault);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI propschema_GetPropertyId(IMimePropertySchema *iface, const char *name, DWORD *propid)
+-- 
+2.8.0.rc3
+

@@ -1,7 +1,7 @@
-From 3b20e2c6fb714e5ee0edee37720b28f9ae6acc92 Mon Sep 17 00:00:00 2001
+From 123b1d48dde5ae31924006e05e690377d421d04e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 21 Apr 2016 10:40:01 +1000
-Subject: [PATCH 5/6] inetcomm: Improve IMimeMessage SetOption
+Date: Wed, 27 Apr 2016 11:35:09 +1000
+Subject: [PATCH 4/7] inetcomm: Improve IMimeMessage SetOption
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,10 +11,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 7a0b5bf..640d564 100644
+index 794bb1b..f8194f6 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
-@@ -2242,27 +2242,42 @@ static HRESULT WINAPI MimeMessage_SetOption(
+@@ -2305,27 +2305,42 @@ static HRESULT WINAPI MimeMessage_SetOption(
      const TYPEDID oid,
      LPCPROPVARIANT pValue)
  {
@@ -27,7 +27,7 @@ index 7a0b5bf..640d564 100644
 +    #define LAST_OID OID_SECURITY_2KEY_CERT_BAG_64
 +#endif
 +
-+    /* Message ID is checked before type,.
++    /* Message ID is checked before type.
 +     *  OID 0x4D -> 0x56 and 0x58 aren't defined but will filtered out later.
 +     */
 +    if(TYPEDID_ID(oid) < TYPEDID_ID(OID_ALLOW_8BIT_HEADER) ||  TYPEDID_ID(oid) > TYPEDID_ID(LAST_OID) )
@@ -62,28 +62,28 @@ index 7a0b5bf..640d564 100644
  
      return hr;
 diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
-index 6978be9..b988140 100644
+index 530d0df..f72ac4b 100644
 --- a/dlls/inetcomm/tests/mimeole.c
 +++ b/dlls/inetcomm/tests/mimeole.c
-@@ -360,7 +360,7 @@ void test_MessageOptions(void)
-     prop.vt = VT_LPSTR;
-     prop.u.pszVal = string;
+@@ -413,7 +413,7 @@ static void test_MessageOptions(void)
+     prop.u.pszVal = CoTaskMemAlloc(strlen(string)+1);
+     strcpy(prop.u.pszVal, string);
      hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
 -    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
 +    ok(hr == S_OK, "ret %08x\n", hr);
      PropVariantClear(&prop);
  
      hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
-@@ -373,7 +373,7 @@ void test_MessageOptions(void)
-     prop.vt = VT_LPSTR;
-     prop.u.pszVal = zero;
+@@ -427,7 +427,7 @@ static void test_MessageOptions(void)
+     prop.u.pszVal = CoTaskMemAlloc(strlen(zero)+1);
+     strcpy(prop.u.pszVal, zero);
      hr = IMimeMessage_SetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
 -    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
 +    ok(hr == S_OK, "ret %08x\n", hr);
      PropVariantClear(&prop);
  
      hr = IMimeMessage_GetOption(msg, OID_HIDE_TNEF_ATTACHMENTS, &prop);
-@@ -386,7 +386,14 @@ void test_MessageOptions(void)
+@@ -440,7 +440,14 @@ static void test_MessageOptions(void)
      prop.vt = VT_BOOL;
      prop.u.boolVal = TRUE;
      hr = IMimeMessage_SetOption(msg, 0xff00000a, &prop);
@@ -100,7 +100,7 @@ index 6978be9..b988140 100644
  
      IMimeMessage_Release(msg);
 diff --git a/include/mimeole.idl b/include/mimeole.idl
-index 7cebb77..6c3696d 100644
+index 5990c29..2028077 100644
 --- a/include/mimeole.idl
 +++ b/include/mimeole.idl
 @@ -153,6 +153,7 @@ cpp_quote("    PID_ATT_ACCOUNTNAME   = 78,")
@@ -125,5 +125,5 @@ index 7cebb77..6c3696d 100644
      uuid(e4b28371-83b0-11d0-8259-00c04fd85ab4),
      version(1.0)
 -- 
-1.9.1
+2.8.0.rc3
 

@@ -1,0 +1,78 @@
+From e8479c4a7c14d5cd8e720c18163aa953b764c6ed Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 26 Apr 2016 14:50:19 +1000
+Subject: [PATCH 2/7] inetcomm: Implement IMimeBody GetProp
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c       | 15 +++++++++++++--
+ dlls/inetcomm/tests/mimeole.c | 15 ++++++++++++---
+ 2 files changed, 25 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 86d03cf..0c8e004 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -642,8 +642,14 @@ static HRESULT WINAPI MimeBody_GetProp(
+                               LPPROPVARIANT pValue)
+ {
+     MimeBody *This = impl_from_IMimeBody(iface);
++    header_t *header;
++    HRESULT hr;
++
+     TRACE("(%p)->(%s, 0x%x, %p)\n", This, pszName, dwFlags, pValue);
+ 
++    if(!pszName || !pValue)
++        return E_INVALIDARG;
++
+     if(!strcasecmp(pszName, "att:pri-content-type"))
+     {
+         PropVariantClear(pValue);
+@@ -652,8 +658,13 @@ static HRESULT WINAPI MimeBody_GetProp(
+         return S_OK;
+     }
+ 
+-    FIXME("stub!\n");
+-    return E_FAIL;
++    hr = find_prop(This, pszName, &header);
++    if(hr == S_OK)
++    {
++        PropVariantCopy(pValue, &header->value);
++    }
++
++    return hr;
+ }
+ 
+ static HRESULT WINAPI MimeBody_SetProp(
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index c94252a..530d0df 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -362,12 +362,21 @@ static void test_MessageSetProp(void)
+     ok(hr == S_OK, "ret %08x\n", hr);
+     PropVariantClear(&prop);
+ 
++    hr = IMimeBody_GetProp(body, NULL, 0, &prop);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    hr = IMimeBody_GetProp(body, "Thread-Topic", 0, NULL);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    hr = IMimeBody_GetProp(body, "Wine-Topic", 0, &prop);
++    ok(hr == MIME_E_NOT_FOUND, "ret %08x\n", hr);
++
+     hr = IMimeBody_GetProp(body, "Thread-Topic", 0, &prop);
+-    todo_wine ok(hr == S_OK, "ret %08x\n", hr);
++    ok(hr == S_OK, "ret %08x\n", hr);
+     if(hr == S_OK)
+     {
+-        todo_wine ok(prop.vt == VT_LPSTR, "type %d\n", prop.vt);
+-        todo_wine ok(!strcmp(prop.u.pszVal, topic), "got  %s\n", prop.u.pszVal);
++        ok(prop.vt == VT_LPSTR, "type %d\n", prop.vt);
++        ok(!strcmp(prop.u.pszVal, topic), "got  %s\n", prop.u.pszVal);
+         PropVariantClear(&prop);
+     }
+ 
+-- 
+2.8.0.rc3
+
