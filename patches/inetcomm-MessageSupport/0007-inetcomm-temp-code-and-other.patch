@@ -1,52 +1,45 @@
-From 8f42b089031447e820a52b707b1fbee12381b778 Mon Sep 17 00:00:00 2001
+From 7961eb2801d101e4c3567c011a1ff55d9611a3c7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Apr 2016 12:17:37 +1000
 Subject: [PATCH 7/7] inetcomm: temp code and other
 
 ---
- dlls/inetcomm/mimeole.c | 79 ++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 72 insertions(+), 7 deletions(-)
+ dlls/inetcomm/mimeole.c | 89 ++++++++++++++++++++++++++++++++++++++++++-------
+ include/mimeole.idl     |  4 +++
+ 2 files changed, 81 insertions(+), 12 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 448da5c..f622d04 100644
+index 448da5c..5f9f71c 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
-@@ -506,6 +506,24 @@ static HRESULT find_prop(MimeBody *body, const char *name, header_t **prop)
-     return MIME_E_NOT_FOUND;
+@@ -473,7 +473,8 @@ static void empty_new_prop_list(struct list *list)
+     LIST_FOR_EACH_ENTRY_SAFE(prop, cursor2, list, property_list_entry_t, entry)
+     {
+         list_remove(&prop->entry);
+-        HeapFree(GetProcessHeap(), 0, (char *)prop->prop.name);
++        if(!ISPIDSTR(prop->prop.name))
++            HeapFree(GetProcessHeap(), 0, (char *)prop->prop.name);
+         HeapFree(GetProcessHeap(), 0, prop);
+     }
  }
+@@ -496,7 +497,15 @@ static HRESULT find_prop(MimeBody *body, const char *name, header_t **prop)
  
-+static HRESULT find_prop_by_id(MimeBody *body, DWORD id, header_t **prop)
-+{
-+    header_t *header;
-+
-+    *prop = NULL;
-+
-+    LIST_FOR_EACH_ENTRY(header, &body->headers, header_t, entry)
-+    {
-+        if(id == header->prop->id)
+     LIST_FOR_EACH_ENTRY(header, &body->headers, header_t, entry)
+     {
+-        if(!strcasecmp(name, header->prop->name))
++        if(ISPIDSTR(name))
 +        {
-+            *prop = header;
-+            return S_OK;
++            if(STRTOPID(name) == header->prop->id)
++            {
++                *prop = header;
++                return S_OK;
++            }
 +        }
-+    }
-+
-+    return MIME_E_NOT_FOUND;
-+}
-+
- static HRESULT WINAPI MimeBody_QueryInterface(IMimeBody* iface,
-                                      REFIID riid,
-                                      void** ppvObject)
-@@ -615,14 +633,50 @@ static HRESULT WINAPI MimeBody_InitNew(
-     return S_OK;
- }
- 
-+/* Move these to mimeole.idl */
-+#define ISPIDSTR(_name)   ((HIWORD((DWORD_PTR)(_name)) == 0))
-+#define STRTOPID(_name)   ((DWORD)((DWORD_PTR)((LPCSTR)(_name))))
-+
- static HRESULT WINAPI MimeBody_GetPropInfo(
-                                   IMimeBody* iface,
-                                   LPCSTR pszName,
++        else if(!ISPIDSTR(header->prop->name) && !strcasecmp(name, header->prop->name))
+         {
+             *prop = header;
+             return S_OK;
+@@ -621,8 +630,38 @@ static HRESULT WINAPI MimeBody_GetPropInfo(
                                    LPMIMEPROPINFO pInfo)
  {
      MimeBody *This = impl_from_IMimeBody(iface);
@@ -59,11 +52,7 @@ index 448da5c..f622d04 100644
 +    if(!pszName || !pInfo)
 +        return E_INVALIDARG;
 +
-+    if(ISPIDSTR(pszName))
-+        hr = find_prop_by_id(This, STRTOPID(pszName), &header);
-+    else
-+        hr = find_prop(This, pszName, &header);
-+
++    hr = find_prop(This, pszName, &header);
 +    if(hr == S_OK)
 +    {
 +        TRACE("mask 0x%04x\n", pInfo->dwMask);
@@ -74,7 +63,7 @@ index 448da5c..f622d04 100644
 +        if(pInfo->dwMask | PIM_ROWNUMBER)
 +            pInfo->dwRowNumber = 0;
 +        if(pInfo->dwMask | PIM_ENCODINGTYPE)
-+            pInfo->ietEncoding = This->encoding;
++            pInfo->ietEncoding = 0;
 +        if(pInfo->dwMask | PIM_VALUES)
 +            pInfo->cValues = 0;
 +        if(pInfo->dwMask | PIM_VTDEFAULT)
@@ -84,11 +73,36 @@ index 448da5c..f622d04 100644
 +
 +    }
 +
++FIXME("5: %08x\n", hr);
++
 +    return hr;
  }
  
  static HRESULT WINAPI MimeBody_SetPropInfo(
-@@ -677,12 +731,16 @@ static HRESULT WINAPI MimeBody_SetProp(
+@@ -645,12 +684,12 @@ static HRESULT WINAPI MimeBody_GetProp(
+     header_t *header;
+     HRESULT hr;
+ 
+-    TRACE("(%p)->(%s, 0x%x, %p)\n", This, pszName, dwFlags, pValue);
++    TRACE("(%p)->(%s, 0x%x, %p)\n", This, debugstr_a(pszName), dwFlags, pValue);
+ 
+     if(!pszName || !pValue)
+         return E_INVALIDARG;
+ 
+-    if(!strcasecmp(pszName, "att:pri-content-type"))
++    if(!ISPIDSTR(pszName) && !strcasecmp(pszName, "att:pri-content-type"))
+     {
+         PropVariantClear(pValue);
+         pValue->vt = VT_LPSTR;
+@@ -659,6 +698,7 @@ static HRESULT WINAPI MimeBody_GetProp(
+     }
+ 
+     hr = find_prop(This, pszName, &header);
++FIXME("3: 0x%08x\n", hr);
+     if(hr == S_OK)
+     {
+         PropVariantCopy(pValue, &header->value);
+@@ -677,12 +717,14 @@ static HRESULT WINAPI MimeBody_SetProp(
      header_t *header;
      HRESULT hr;
  
@@ -98,39 +112,71 @@ index 448da5c..f622d04 100644
      if(!pszName || !pValue)
          return E_INVALIDARG;
  
--    hr = find_prop(This, pszName, &header);
-+    if(ISPIDSTR(pszName))
-+        hr = find_prop_by_id(This, STRTOPID(pszName), &header);
-+    else
-+        hr = find_prop(This, pszName, &header);
+     hr = find_prop(This, pszName, &header);
 +
++FIXME("3: hr %08x\n", hr);
      if(hr != S_OK)
      {
          property_list_entry_t *prop_entry;
-@@ -710,9 +768,10 @@ static HRESULT WINAPI MimeBody_SetProp(
+@@ -690,7 +732,15 @@ static HRESULT WINAPI MimeBody_SetProp(
+ 
+         LIST_FOR_EACH_ENTRY(prop_entry, &This->new_props, property_list_entry_t, entry)
+         {
+-            if(!strcasecmp(pszName, prop_entry->prop.name))
++            if(ISPIDSTR(pszName))
++            {
++                if(prop_entry->prop.id == STRTOPID(pszName))
++                {
++                    TRACE("Found match with already added new property id %d\n", prop_entry->prop.id);
++                    prop = &prop_entry->prop;
++                }
++            }
++            else if(!ISPIDSTR(prop_entry->prop.name) && !strcasecmp(pszName, prop_entry->prop.name))
+             {
+                 TRACE("Found match with already added new property id %d\n", prop_entry->prop.id);
+                 prop = &prop_entry->prop;
+@@ -710,9 +760,17 @@ static HRESULT WINAPI MimeBody_SetProp(
                  HeapFree(GetProcessHeap(), 0, header);
                  return E_OUTOFMEMORY;
              }
+-            prop_entry->prop.name = strdupA(pszName);
 +
-             prop_entry->prop.name = strdupA(pszName);
++FIXME("ID crash?\n");
++
++            if(ISPIDSTR(pszName))
++            {
++                prop_entry->prop.name = PIDTOSTR(STRTOPID(pszName));
++            }
++            else
++                prop_entry->prop.name = strdupA(pszName);
              prop_entry->prop.id = This->next_prop_id++;
 -            prop_entry->prop.flags = 0;
 +            prop_entry->prop.flags = dwFlags;
              prop_entry->prop.default_vt = pValue->vt;
              list_add_tail(&This->new_props, &prop_entry->entry);
              prop = &prop_entry->prop;
-@@ -723,8 +782,10 @@ static HRESULT WINAPI MimeBody_SetProp(
+@@ -723,8 +781,11 @@ static HRESULT WINAPI MimeBody_SetProp(
          PropVariantInit(&header->value);
          list_init(&header->params);
          list_add_tail(&This->headers, &header->entry);
 -    }
  
++        TRACE("count %d\n", list_count(&This->headers) );
 +    }
 +    else
 +        TRACE("Found prop\n");
      PropVariantCopy(&header->value, pValue);
  
      return S_OK;
+@@ -747,7 +808,7 @@ static HRESULT WINAPI MimeBody_DeleteProp(
+ {
+     MimeBody *This = impl_from_IMimeBody(iface);
+     FIXME("(%p)->(%s) stub\n", This, debugstr_a(pszName));
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI MimeBody_CopyProps(
 @@ -811,7 +872,7 @@ static HRESULT WINAPI MimeBody_SetCharset(
  {
      MimeBody *This = impl_from_IMimeBody(iface);
@@ -140,19 +186,32 @@ index 448da5c..f622d04 100644
  }
  
  static HRESULT WINAPI MimeBody_GetParameters(
-@@ -871,7 +932,11 @@ static HRESULT WINAPI MimeBody_IsContentType(
-     {
-         const char *pri = This->content_pri_type;
-         if(!pri) pri = "text";
--        if(strcasecmp(pri, pszPriType)) return S_FALSE;
-+        if(strcasecmp(pri, pszPriType))
-+            {
-+                TRACE("pri %s\n", pri);
-+                return S_FALSE;
-+            }
+@@ -924,6 +985,10 @@ static HRESULT WINAPI MimeBody_SetOption(
+         FIXME("OID_SECURITY_HWND_OWNER (value %08x): ignoring\n", pValue->u.ulVal);
+         hr = S_OK;
+         break;
++    case OID_TRANSMIT_BODY_ENCODING:
++        FIXME("OID_TRANSMIT_BODY_ENCODING (value %08x): ignoring\n", pValue->u.ulVal);
++        hr = S_OK;
++        break;
+     default:
+         FIXME("Unhandled oid %08x\n", oid);
      }
+diff --git a/include/mimeole.idl b/include/mimeole.idl
+index 2028077..f6c0f96 100644
+--- a/include/mimeole.idl
++++ b/include/mimeole.idl
+@@ -153,6 +153,10 @@ cpp_quote("    PID_ATT_ACCOUNTNAME   = 78,")
+ cpp_quote("    PID_LAST              = 79,")
+ cpp_quote("} MIMEPROPID;")
  
-     if(pszSubType)
++cpp_quote("#define ISPIDSTR(_name)   ((HIWORD((DWORD_PTR)(_name)) == 0))")
++cpp_quote("#define STRTOPID(_name)   ((DWORD)((DWORD_PTR)((LPCSTR)(_name))))")
++cpp_quote("#define PIDTOSTR(_id) ((LPCSTR)((DWORD_PTR)(_id)))")
++
+ cpp_quote("#define TYPEDID_ID(_typedid)          (((ULONG)(_typedid))>>16)")
+ cpp_quote("#define TYPEDID_MASK                  ((ULONG)0xffff)")
+ cpp_quote("#define TYPEDID_TYPE(t)               ((VARTYPE)((t) & TYPEDID_MASK))")
 -- 
 2.8.0.rc3
 
