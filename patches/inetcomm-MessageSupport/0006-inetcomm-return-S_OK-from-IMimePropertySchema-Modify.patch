@@ -1,7 +1,7 @@
-From 2c7002a316ed73e526d385370b1e16a30e1a2f4b Mon Sep 17 00:00:00 2001
+From 5972d4e7c1f717c563be72b787b332ad94045f31 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Apr 2016 11:50:40 +1000
-Subject: [PATCH 6/7] inetcomm: return S_OK from IMimePropertySchema
+Subject: [PATCH 6/8] inetcomm: return S_OK from IMimePropertySchema
  ModifyProperty
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index c12b234..448da5c 100644
+index bcfa2db..851d52c 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -3185,7 +3185,7 @@ static HRESULT WINAPI propschema_ModifyProperty(IMimePropertySchema *iface, cons
@@ -23,5 +23,5 @@ index c12b234..448da5c 100644
  
  static HRESULT WINAPI propschema_GetPropertyId(IMimePropertySchema *iface, const char *name, DWORD *propid)
 -- 
-2.8.0.rc3
+1.9.1
 

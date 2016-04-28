@@ -1,0 +1,29 @@
+From 996b90f28c5772c42e3cd385d25ffc8c40dd456b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 28 Apr 2016 14:26:53 +1000
+Subject: [PATCH 7/8] inetcomm: inetcomm: Support OID_TRANSMIT_BODY_ENCODING
+ value in IMimeBody SetOption
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 851d52c..f3226d9 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -924,6 +924,10 @@ static HRESULT WINAPI MimeBody_SetOption(
+         FIXME("OID_SECURITY_HWND_OWNER (value %08x): ignoring\n", pValue->u.ulVal);
+         hr = S_OK;
+         break;
++    case OID_TRANSMIT_BODY_ENCODING:
++        FIXME("OID_TRANSMIT_BODY_ENCODING (value %08x): ignoring\n", pValue->u.ulVal);
++        hr = S_OK;
++        break;
+     default:
+         FIXME("Unhandled oid %08x\n", oid);
+     }
+-- 
+1.9.1
+

@@ -1,7 +1,7 @@
-From 7681f9e53fd67f710279e030099b68dcc2f62f7d Mon Sep 17 00:00:00 2001
+From b1a579cf9969fde2563754f229d05dbca6a62bd5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 Apr 2016 09:30:47 +1000
-Subject: [PATCH 1/7] inetcomm: Implement IMimeBody SetProp
+Subject: [PATCH 1/8] inetcomm: Implement IMimeBody SetProp
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -139,5 +139,5 @@ index a0fc695..c94252a 100644
      test_BindToObject();
      test_MimeOleGetPropertySchema();
 -- 
-2.8.0.rc3
+1.9.1
 

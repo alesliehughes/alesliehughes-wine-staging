@@ -1,7 +1,7 @@
-From 9daeb45344bf0aefda8d34ebfa88aa61928ee59e Mon Sep 17 00:00:00 2001
+From 1b932c49aff9736e286ec07a290ef1056701bd40 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Apr 2016 11:12:31 +1000
-Subject: [PATCH 3/7] inetcomm: Add MimeGetAddressFormatW stub
+Subject: [PATCH 3/8] inetcomm: Add MimeGetAddressFormatW stub
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -24,7 +24,7 @@ index 86eb9bd..bfd115c 100644
  @ stub MimeOleAlgStrengthFromSMimeCap
  @ stub MimeOleClearDirtyTree
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 0c8e004..794bb1b 100644
+index eb6c829..d2db23b 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -3221,3 +3221,11 @@ HRESULT WINAPI MimeOleGetPropertySchema(IMimePropertySchema **schema)
@@ -53,5 +53,5 @@ index bc1f3ac..5990c29 100644
  cpp_quote("}")
  cpp_quote("#endif")
 -- 
-2.8.0.rc3
+1.9.1
 

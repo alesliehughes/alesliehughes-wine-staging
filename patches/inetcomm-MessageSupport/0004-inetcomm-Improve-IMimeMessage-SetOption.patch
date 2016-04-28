@@ -1,7 +1,7 @@
-From 123b1d48dde5ae31924006e05e690377d421d04e Mon Sep 17 00:00:00 2001
+From 35b64a4f14ae739b7fc99327a9971ca1d231212d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Apr 2016 11:35:09 +1000
-Subject: [PATCH 4/7] inetcomm: Improve IMimeMessage SetOption
+Subject: [PATCH 4/8] inetcomm: Improve IMimeMessage SetOption
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 794bb1b..f8194f6 100644
+index d2db23b..45df88b 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -2305,27 +2305,42 @@ static HRESULT WINAPI MimeMessage_SetOption(
@@ -125,5 +125,5 @@ index 5990c29..2028077 100644
      uuid(e4b28371-83b0-11d0-8259-00c04fd85ab4),
      version(1.0)
 -- 
-2.8.0.rc3
+1.9.1
 

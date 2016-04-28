@@ -1,33 +1,33 @@
-From e8479c4a7c14d5cd8e720c18163aa953b764c6ed Mon Sep 17 00:00:00 2001
+From 8cd2dd9dd03a99c8daf7a995e35ddc4fee5ec99c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 Apr 2016 14:50:19 +1000
-Subject: [PATCH 2/7] inetcomm: Implement IMimeBody GetProp
+Subject: [PATCH 2/8] inetcomm: Implement IMimeBody GetProp
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/inetcomm/mimeole.c       | 15 +++++++++++++--
+ dlls/inetcomm/mimeole.c       | 17 ++++++++++++++---
  dlls/inetcomm/tests/mimeole.c | 15 ++++++++++++---
- 2 files changed, 25 insertions(+), 5 deletions(-)
+ 2 files changed, 26 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 86d03cf..0c8e004 100644
+index 86d03cf..eb6c829 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
-@@ -642,8 +642,14 @@ static HRESULT WINAPI MimeBody_GetProp(
+@@ -642,7 +642,13 @@ static HRESULT WINAPI MimeBody_GetProp(
                                LPPROPVARIANT pValue)
  {
      MimeBody *This = impl_from_IMimeBody(iface);
+-    TRACE("(%p)->(%s, 0x%x, %p)\n", This, pszName, dwFlags, pValue);
 +    header_t *header;
 +    HRESULT hr;
 +
-     TRACE("(%p)->(%s, 0x%x, %p)\n", This, pszName, dwFlags, pValue);
- 
++    TRACE("(%p)->(%s, 0x%x, %p)\n", This, debugstr_a(pszName), dwFlags, pValue);
++
 +    if(!pszName || !pValue)
 +        return E_INVALIDARG;
-+
+ 
      if(!strcasecmp(pszName, "att:pri-content-type"))
      {
-         PropVariantClear(pValue);
 @@ -652,8 +658,13 @@ static HRESULT WINAPI MimeBody_GetProp(
          return S_OK;
      }
@@ -74,5 +74,5 @@ index c94252a..530d0df 100644
      }
  
 -- 
-2.8.0.rc3
+1.9.1
 

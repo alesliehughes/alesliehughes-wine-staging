@@ -1,15 +1,15 @@
-From 7961eb2801d101e4c3567c011a1ff55d9611a3c7 Mon Sep 17 00:00:00 2001
+From 1b50ed75603eb0c33473dca693212353fe1ed825 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 27 Apr 2016 12:17:37 +1000
-Subject: [PATCH 7/7] inetcomm: temp code and other
+Date: Thu, 28 Apr 2016 14:32:17 +1000
+Subject: [PATCH 8/8] netcomm: temp code and others
 
 ---
- dlls/inetcomm/mimeole.c | 89 ++++++++++++++++++++++++++++++++++++++++++-------
+ dlls/inetcomm/mimeole.c | 81 +++++++++++++++++++++++++++++++++++++++++++------
  include/mimeole.idl     |  4 +++
- 2 files changed, 81 insertions(+), 12 deletions(-)
+ 2 files changed, 75 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 448da5c..5f9f71c 100644
+index f3226d9..bc84af0 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -473,7 +473,8 @@ static void empty_new_prop_list(struct list *list)
@@ -79,21 +79,6 @@ index 448da5c..5f9f71c 100644
  }
  
  static HRESULT WINAPI MimeBody_SetPropInfo(
-@@ -645,12 +684,12 @@ static HRESULT WINAPI MimeBody_GetProp(
-     header_t *header;
-     HRESULT hr;
- 
--    TRACE("(%p)->(%s, 0x%x, %p)\n", This, pszName, dwFlags, pValue);
-+    TRACE("(%p)->(%s, 0x%x, %p)\n", This, debugstr_a(pszName), dwFlags, pValue);
- 
-     if(!pszName || !pValue)
-         return E_INVALIDARG;
- 
--    if(!strcasecmp(pszName, "att:pri-content-type"))
-+    if(!ISPIDSTR(pszName) && !strcasecmp(pszName, "att:pri-content-type"))
-     {
-         PropVariantClear(pValue);
-         pValue->vt = VT_LPSTR;
 @@ -659,6 +698,7 @@ static HRESULT WINAPI MimeBody_GetProp(
      }
  
@@ -186,17 +171,6 @@ index 448da5c..5f9f71c 100644
  }
  
  static HRESULT WINAPI MimeBody_GetParameters(
-@@ -924,6 +985,10 @@ static HRESULT WINAPI MimeBody_SetOption(
-         FIXME("OID_SECURITY_HWND_OWNER (value %08x): ignoring\n", pValue->u.ulVal);
-         hr = S_OK;
-         break;
-+    case OID_TRANSMIT_BODY_ENCODING:
-+        FIXME("OID_TRANSMIT_BODY_ENCODING (value %08x): ignoring\n", pValue->u.ulVal);
-+        hr = S_OK;
-+        break;
-     default:
-         FIXME("Unhandled oid %08x\n", oid);
-     }
 diff --git a/include/mimeole.idl b/include/mimeole.idl
 index 2028077..f6c0f96 100644
 --- a/include/mimeole.idl
@@ -213,5 +187,5 @@ index 2028077..f6c0f96 100644
  cpp_quote("#define TYPEDID_MASK                  ((ULONG)0xffff)")
  cpp_quote("#define TYPEDID_TYPE(t)               ((VARTYPE)((t) & TYPEDID_MASK))")
 -- 
-2.8.0.rc3
+1.9.1
 

@@ -1,7 +1,7 @@
-From eff7e742e08ce8362bc5327ca749fd813b79fb68 Mon Sep 17 00:00:00 2001
+From 3a23bb8498ca177301a588e6cbb200bc896a5999 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 27 Apr 2016 11:42:31 +1000
-Subject: [PATCH 5/7] inetcomm: Support OID_SAVEBODY_KEEPBOUNDARY value in
+Subject: [PATCH 5/8] inetcomm: Support OID_SAVEBODY_KEEPBOUNDARY value in
  IMimeMessage_SetOption
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 5/7] inetcomm: Support OID_SAVEBODY_KEEPBOUNDARY value in
  1 file changed, 3 insertions(+)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index f8194f6..c12b234 100644
+index 45df88b..bcfa2db 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -2338,6 +2338,9 @@ static HRESULT WINAPI MimeMessage_SetOption(
@@ -23,5 +23,5 @@ index f8194f6..c12b234 100644
          FIXME("Unhandled oid %08x\n", oid);
          hr = MIME_E_INVALID_OPTION_ID;
 -- 
-2.8.0.rc3
+1.9.1
 
