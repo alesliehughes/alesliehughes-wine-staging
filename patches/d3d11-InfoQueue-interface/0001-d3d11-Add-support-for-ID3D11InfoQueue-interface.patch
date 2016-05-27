@@ -1,0 +1,372 @@
+From 003ba56086af90c6e6e7328501d7283fa52e2cb9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 9 May 2016 09:31:05 +1000
+Subject: [PATCH] d3d11: Add support for ID3D11InfoQueue interface
+
+TODO: Correct tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d11/d3d11_private.h |   1 +
+ dlls/d3d11/device.c        | 319 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 320 insertions(+)
+
+diff --git a/dlls/d3d11/d3d11_private.h b/dlls/d3d11/d3d11_private.h
+index 77079bd..3175127 100644
+--- a/dlls/d3d11/d3d11_private.h
++++ b/dlls/d3d11/d3d11_private.h
+@@ -441,6 +441,7 @@ struct d3d_device
+     ID3D11Device ID3D11Device_iface;
+     ID3D10Device1 ID3D10Device1_iface;
+     ID3D10Multithread ID3D10Multithread_iface;
++    ID3D11InfoQueue   ID3D11InfoQueue_iface;
+     IWineDXGIDeviceParent IWineDXGIDeviceParent_iface;
+     IUnknown *outer_unk;
+     LONG refcount;
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index 7fb28ac..2dcbd34 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -2809,6 +2809,12 @@ static HRESULT STDMETHODCALLTYPE d3d_device_inner_QueryInterface(IUnknown *iface
+     {
+         *out = &device->ID3D10Multithread_iface;
+     }
++    else if(IsEqualGUID(riid, &IID_ID3D11InfoQueue))
++    {
++        WARN("Always returning ID3D11InfoQueue interface\n");
++        /*TODO: Only return this interface when D3D11_CREATE_DEVICE_DEBUG has been specified */
++        *out = &device->ID3D11InfoQueue_iface;
++    }
+     else if (IsEqualGUID(riid, &IID_IWineDXGIDeviceParent))
+     {
+         *out = &device->IWineDXGIDeviceParent_iface;
+@@ -4938,6 +4944,318 @@ static const struct ID3D10MultithreadVtbl d3d10_multithread_vtbl =
+     d3d10_multithread_GetMultithreadProtected,
+ };
+ 
++/* ID3D11InfoQueue Interface */
++static inline struct d3d_device *impl_from_ID3D11InfoQueue(ID3D11InfoQueue *iface)
++{
++    return CONTAINING_RECORD(iface, struct d3d_device, ID3D11InfoQueue_iface);
++}
++
++static HRESULT WINAPI infoqueue_QueryInterface(ID3D11InfoQueue *iface, REFIID iid, void **out)
++{
++    struct d3d_device *device = impl_from_ID3D11InfoQueue(iface);
++
++    TRACE("iface %p, iid %s, out %p.\n", iface, debugstr_guid(iid), out);
++
++    return IUnknown_QueryInterface(device->outer_unk, iid, out);
++}
++
++static ULONG WINAPI infoqueue_AddRef(ID3D11InfoQueue *iface)
++{
++    struct d3d_device *device = impl_from_ID3D11InfoQueue(iface);
++
++    TRACE("iface %p.\n", iface);
++
++    return IUnknown_AddRef(device->outer_unk);
++}
++
++static ULONG WINAPI infoqueue_Release(ID3D11InfoQueue *iface)
++{
++    struct d3d_device *device = impl_from_ID3D11InfoQueue(iface);
++    return IUnknown_Release(device->outer_unk);
++}
++
++static HRESULT WINAPI infoqueue_SetMessageCountLimit(ID3D11InfoQueue *iface, UINT64 limit)
++{
++    FIXME("iface %p, limit %lu stub!\n", iface, limit);
++
++    return E_NOTIMPL;
++}
++
++static void WINAPI infoqueue_ClearStoredMessages(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++}
++
++static HRESULT WINAPI infoqueue_GetMessage(ID3D11InfoQueue *iface, UINT64 index, D3D11_MESSAGE *msg,
++           SIZE_T *len)
++{
++    FIXME("iface %p, index %lu, msg %p, len %p stub!\n", iface, index, msg, len);
++
++    return E_NOTIMPL;
++}
++
++static UINT64 WINAPI infoqueue_GetNumMessagesAllowedByStorageFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static UINT64 WINAPI infoqueue_GetNumMessagesDeniedByStorageFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static UINT64 WINAPI infoqueue_GetNumStoredMessages(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static UINT64 WINAPI infoqueue_GetNumStoredMessagesAllowedByRetrievalFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static UINT64 WINAPI infoqueue_GetNumMessagesDiscardedByMessageCountLimit(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static UINT64 WINAPI infoqueue_GetMessageCountLimit(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static HRESULT WINAPI infoqueue_AddStorageFilterEntries(ID3D11InfoQueue *iface, D3D11_INFO_QUEUE_FILTER *filter)
++{
++    FIXME("iface %p, filter %p stub!\n", iface, filter);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_GetStorageFilter(ID3D11InfoQueue *iface, D3D11_INFO_QUEUE_FILTER *filter,
++        SIZE_T *len)
++{
++    FIXME("iface %p, filter %p, len %p stub!\n", iface, filter, len);
++
++    return E_NOTIMPL;
++}
++
++void WINAPI infoqueue_ClearStorageFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++}
++
++static HRESULT WINAPI infoqueue_PushEmptyStorageFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_PushCopyOfStorageFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_PushStorageFilter(ID3D11InfoQueue *iface, D3D11_INFO_QUEUE_FILTER *filter)
++{
++    FIXME("iface %p, filter %p stub!\n", iface, filter);
++
++    return E_NOTIMPL;
++}
++
++void WINAPI infoqueue_PopStorageFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++}
++
++static UINT WINAPI infoqueue_GetStorageFilterStackSize(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static HRESULT WINAPI infoqueue_AddRetrievalFilterEntries(ID3D11InfoQueue *iface, D3D11_INFO_QUEUE_FILTER *filter)
++{
++    FIXME("iface %p, filter %p stub!\n", iface, filter);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_GetRetrievalFilter(ID3D11InfoQueue *iface, D3D11_INFO_QUEUE_FILTER *filter,
++        SIZE_T *len)
++{
++    FIXME("iface %p, filter %p, len %p stub!\n", iface, filter, len);
++
++    return E_NOTIMPL;
++}
++
++void WINAPI infoqueue_ClearRetrievalFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++}
++
++static HRESULT WINAPI infoqueue_PushEmptyRetrievalFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_PushCopyOfRetrievalFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_PushRetrievalFilter(ID3D11InfoQueue *iface, D3D11_INFO_QUEUE_FILTER *filter)
++{
++    FIXME("iface %p, filter %p stub!\n", iface, filter);
++
++    return E_NOTIMPL;
++}
++
++static void WINAPI infoqueue_PopRetrievalFilter(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++}
++
++static UINT WINAPI infoqueue_GetRetrievalFilterStackSize(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return 0;
++}
++
++static HRESULT WINAPI infoqueue_AddMessage(ID3D11InfoQueue *iface, D3D11_MESSAGE_CATEGORY category,
++        D3D11_MESSAGE_SEVERITY severity, D3D11_MESSAGE_ID id, const char *description)
++{
++    FIXME("iface %p, category %d, severity %d, id %d, description %s stub!\n", iface, category,
++        severity, id, debugstr_a(description));
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_AddApplicationMessage(ID3D11InfoQueue *iface, D3D11_MESSAGE_SEVERITY severity,
++        const char *description)
++{
++    FIXME("iface %p, severity %d, description %s stub!\n", iface, severity, debugstr_a(description));
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_SetBreakOnCategory(ID3D11InfoQueue *iface, D3D11_MESSAGE_CATEGORY category,
++        BOOL enable)
++{
++    FIXME("iface %p, category %d, enable %d stub!\n", iface, category, enable);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_SetBreakOnSeverity(ID3D11InfoQueue *iface, D3D11_MESSAGE_SEVERITY severity,
++        BOOL enable)
++{
++    FIXME("iface %p, severity %d, enable %d stub!\n", iface, severity, enable);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI infoqueue_SetBreakOnID(ID3D11InfoQueue *iface, D3D11_MESSAGE_ID id, BOOL enable)
++{
++    FIXME("iface %p, id %d, enable %d stub!\n", iface, id, enable);
++
++    return E_NOTIMPL;
++}
++
++static BOOL WINAPI infoqueue_GetBreakOnCategory(ID3D11InfoQueue *iface, D3D11_MESSAGE_CATEGORY category)
++{
++    FIXME("iface %p, category %d stub!\n", iface, category);
++
++    return FALSE;
++}
++
++static BOOL WINAPI infoqueue_GetBreakOnSeverity(ID3D11InfoQueue *iface, D3D11_MESSAGE_SEVERITY severity)
++{
++    FIXME("iface %p, severity %d stub!\n", iface, severity);
++
++    return FALSE;
++}
++
++static BOOL WINAPI infoqueue_GetBreakOnID(ID3D11InfoQueue *iface, D3D11_MESSAGE_ID id)
++{
++    FIXME("iface %p, id %d stub!\n", iface, id);
++
++    return FALSE;
++}
++
++void WINAPI infoqueue_SetMuteDebugOutput(ID3D11InfoQueue *iface, BOOL mute)
++{
++    FIXME("iface %p, mute %d stub!\n", iface, mute);
++}
++
++static BOOL WINAPI infoqueue_GetMuteDebugOutput(ID3D11InfoQueue *iface)
++{
++    FIXME("iface %p stub!\n", iface);
++
++    return FALSE;
++}
++static const struct ID3D11InfoQueueVtbl d3d11_infoqueue_vtbl =
++{
++    infoqueue_QueryInterface,
++    infoqueue_AddRef,
++    infoqueue_Release,
++    infoqueue_SetMessageCountLimit,
++    infoqueue_ClearStoredMessages,
++    infoqueue_GetMessage,
++    infoqueue_GetNumMessagesAllowedByStorageFilter,
++    infoqueue_GetNumMessagesDeniedByStorageFilter,
++    infoqueue_GetNumStoredMessages,
++    infoqueue_GetNumStoredMessagesAllowedByRetrievalFilter,
++    infoqueue_GetNumMessagesDiscardedByMessageCountLimit,
++    infoqueue_GetMessageCountLimit,
++    infoqueue_AddStorageFilterEntries,
++    infoqueue_GetStorageFilter,
++    infoqueue_ClearStorageFilter,
++    infoqueue_PushEmptyStorageFilter,
++    infoqueue_PushCopyOfStorageFilter,
++    infoqueue_PushStorageFilter,
++    infoqueue_PopStorageFilter,
++    infoqueue_GetStorageFilterStackSize,
++    infoqueue_AddRetrievalFilterEntries,
++    infoqueue_GetRetrievalFilter,
++    infoqueue_ClearRetrievalFilter,
++    infoqueue_PushEmptyRetrievalFilter,
++    infoqueue_PushCopyOfRetrievalFilter,
++    infoqueue_PushRetrievalFilter,
++    infoqueue_PopRetrievalFilter,
++    infoqueue_GetRetrievalFilterStackSize,
++    infoqueue_AddMessage,
++    infoqueue_AddApplicationMessage,
++    infoqueue_SetBreakOnCategory,
++    infoqueue_SetBreakOnSeverity,
++    infoqueue_SetBreakOnID,
++    infoqueue_GetBreakOnCategory,
++    infoqueue_GetBreakOnSeverity,
++    infoqueue_GetBreakOnID,
++    infoqueue_SetMuteDebugOutput,
++    infoqueue_GetMuteDebugOutput
++};
++
+ /* IWineDXGIDeviceParent IUnknown methods */
+ 
+ static inline struct d3d_device *device_from_dxgi_device_parent(IWineDXGIDeviceParent *iface)
+@@ -5187,6 +5505,7 @@ HRESULT d3d_device_init(struct d3d_device *device, void *outer_unknown)
+     device->ID3D11Device_iface.lpVtbl = &d3d11_device_vtbl;
+     device->ID3D10Device1_iface.lpVtbl = &d3d10_device1_vtbl;
+     device->ID3D10Multithread_iface.lpVtbl = &d3d10_multithread_vtbl;
++    device->ID3D11InfoQueue_iface.lpVtbl = &d3d11_infoqueue_vtbl;
+     device->IWineDXGIDeviceParent_iface.lpVtbl = &d3d_dxgi_device_parent_vtbl;
+     device->device_parent.ops = &d3d_wined3d_device_parent_ops;
+     device->refcount = 1;
+-- 
+1.9.1
+

@@ -1,7 +1,7 @@
-From 996b90f28c5772c42e3cd385d25ffc8c40dd456b Mon Sep 17 00:00:00 2001
+From 3af3579c75d64ee68907f6dba6db6cd4e81e4ea8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 28 Apr 2016 14:26:53 +1000
-Subject: [PATCH 7/8] inetcomm: inetcomm: Support OID_TRANSMIT_BODY_ENCODING
+Subject: [PATCH 2/3] inetcomm: inetcomm: Support OID_TRANSMIT_BODY_ENCODING
  value in IMimeBody SetOption
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 851d52c..f3226d9 100644
+index 0288b59..71dc712 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -924,6 +924,10 @@ static HRESULT WINAPI MimeBody_SetOption(
