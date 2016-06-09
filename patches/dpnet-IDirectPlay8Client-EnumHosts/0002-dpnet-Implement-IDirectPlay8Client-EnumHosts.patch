@@ -1,15 +1,19 @@
-From c3899a72f8d7dbdcdf80a81ad1899d717a79b491 Mon Sep 17 00:00:00 2001
+From eddebef877c25334ccd58178909556f05f3ab03f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 29 Jun 2015 15:11:34 +1000
-Subject: [PATCH 2/5] dpnet: Implement IDirectPlay8Client EnumHosts
+Subject: [PATCH 2/2] dpnet: Implement IDirectPlay8Client EnumHosts
+
+TODO:
+Correct warning under x64 about pointer to int convert, mismatched sizes
+Check if call EnumTwice.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/Makefile.in     |   2 +-
- dlls/dpnet/client.c        | 247 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c        | 284 ++++++++++++++++++++++++++++++++++++++++++++-
  dlls/dpnet/dpnet_private.h |   3 +
  dlls/dpnet/tests/client.c  |   5 +-
- 4 files changed, 250 insertions(+), 7 deletions(-)
+ 4 files changed, 287 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/dpnet/Makefile.in b/dlls/dpnet/Makefile.in
 index 880b7bd..541e104 100644
@@ -24,7 +28,7 @@ index 880b7bd..541e104 100644
  C_SRCS = \
  	address.c \
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index bf2b8d2..f62d25e 100644
+index bf2b8d2..2b0c97e 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,8 @@
@@ -68,7 +72,7 @@ index bf2b8d2..f62d25e 100644
          HeapFree(GetProcessHeap(), 0, This);
      }
      return ref;
-@@ -121,6 +135,191 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -121,6 +135,214 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
    return DPN_OK; 
  }
  
@@ -188,13 +192,20 @@ index bf2b8d2..f62d25e 100644
 +                        int port;
 +                        HRESULT ret;
 +
++                        if(received <= sizeof(struct EnumQueryResponse))
++                        {
++                            ERR("May not have received enough data.\n");
++                            SetEvent(enumdata->event);
++                            break;
++                        }
++
 +                        memset(&response, 0, sizeof(DPNMSG_ENUM_HOSTS_RESPONSE));
 +                        memset(&desc, 0, sizeof(DPN_APPLICATION_DESC));
 +
 +                        response.dwSize = sizeof(DPNMSG_ENUM_HOSTS_RESPONSE);
 +
 +                        /*
-+                         *  We need to create an Address Object with the details Port and IP address.
++                         *  We need to create an Address Object with the Port and IP address.
 +                         *  Applications are required to AddRef this object if they want to keep a reference.
 +                         */
 +                        ret = DPNET_CreateDirectPlay8Address(NULL, NULL, &IID_IDirectPlay8Address, (void**)&sender);
@@ -205,8 +216,20 @@ index bf2b8d2..f62d25e 100644
 +                        port = ntohs(from.sin_port);
 +                        TRACE("Server IP address %s:%d\n", ip, port);
 +
-+                        IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip), DPNA_DATATYPE_STRING_ANSI);
-+                        IDirectPlay8Address_AddComponent(sender, DPNA_KEY_PORT, &port, sizeof(DWORD), DPNA_DATATYPE_DWORD);
++                        if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip), DPNA_DATATYPE_STRING_ANSI)))
++                        {
++                            ERR("Failed to add DPNA_KEY_HOSTNAME\n");
++                            IDirectPlay8Address_Release(sender);
++                            SetEvent(enumdata->event);
++                            break;
++                        }
++                        if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_PORT, &port, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
++                        {
++                            ERR("Failed to add DPNA_KEY_PORT\n");
++                            IDirectPlay8Address_Release(sender);
++                            SetEvent(enumdata->event);
++                            break;
++                        }
 +
 +                        response.pAddressSender = sender;
 +                        response.pAddressDevice = enumdata->device;
@@ -221,8 +244,12 @@ index bf2b8d2..f62d25e 100644
 +                        ret = enumdata->msghandler(NULL, DPN_MSGID_ENUM_HOSTS_RESPONSE, &response);
 +
 +                        IDirectPlay8Address_Release(sender);
++                        /* If a userhandler function anything other than DPN_OK we need to stop. */
 +                        if(ret != DPN_OK)
++                        {
++                            SetEvent(enumdata->event);
 +                            break;
++                        }
 +
 +                        TRACE("Enumresponse Packet.\n");
 +                        break;
@@ -260,7 +287,7 @@ index bf2b8d2..f62d25e 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -128,9 +327,46 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -128,9 +350,60 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
          const DWORD dwFlags)
  {
@@ -300,17 +327,31 @@ index bf2b8d2..f62d25e 100644
 +    enumdata->user_context = pvUserContext;
 +
 +    This->enumhosts = CreateEventA( NULL, TRUE, FALSE, NULL);
++    if(!This->enumhosts)
++    {
++        WARN("Failed to create Event\n");
++        IDirectPlay8Address_Release(pAddrHost);
++        HeapFree(GetProcessHeap(), 0, enumdata);
++        return DPNERR_GENERIC;
++    }
 +    enumdata->event = This->enumhosts;
 +
 +    This->hostthread = CreateThread(NULL, 0, &EnumNetworkHost, enumdata, 0, 0);
-+
++    if(!This->enumhosts)
++    {
++        WARN("Failed to create Thread\n");
++        CloseHandle(This->enumhosts);
++        IDirectPlay8Address_Release(pAddrHost);
++        HeapFree(GetProcessHeap(), 0, enumdata);
++        return DPNERR_GENERIC;
++    }
 +    *pAsyncHandle = (DPNHANDLE)This->enumhosts;
 +
 +    return DPNSUCCESS_PENDING;
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
-@@ -138,6 +374,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -138,6 +411,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  {
    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
    FIXME("(%p):(%u,%x): Stub\n", This, hAsyncHandle, dwFlags);

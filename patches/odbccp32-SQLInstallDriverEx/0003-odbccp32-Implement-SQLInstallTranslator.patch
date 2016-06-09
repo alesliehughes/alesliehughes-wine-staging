@@ -1,4 +1,4 @@
-From 8474460b8d89dbf9017b5ee19afba174fd579033 Mon Sep 17 00:00:00 2001
+From 72a39a75ba85cfc889245eda93715e16ecbbd818 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 22 Dec 2015 10:07:30 +1100
 Subject: [PATCH 3/4] odbccp32: Implement SQLInstallTranslator
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index f1fd64a..1befb08 100644
+index 66754de..cb1058e 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -41,6 +41,7 @@ static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D'
@@ -28,7 +28,7 @@ index f1fd64a..1befb08 100644
      HKEY hkey, hkeydriver;
  
      if (RegCreateKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
-@@ -676,8 +678,9 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
+@@ -675,8 +677,9 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
                      divider++;
                      TRACE("Writing pair %s,%s\n", debugstr_w(entry), debugstr_w(divider));
  
@@ -40,7 +40,7 @@ index f1fd64a..1befb08 100644
                      {
                          lstrcpyW(value, path);
                          lstrcatW(value, slash);
-@@ -954,7 +957,6 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
+@@ -949,7 +952,6 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
                 WORD fRequest, LPDWORD lpdwUsageCount)
  {
      UINT len;
@@ -48,7 +48,7 @@ index f1fd64a..1befb08 100644
      WCHAR path[MAX_PATH];
  
      clear_errors();
-@@ -962,14 +964,16 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
+@@ -957,14 +959,16 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
            debugstr_w(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
            fRequest, lpdwUsageCount);
  

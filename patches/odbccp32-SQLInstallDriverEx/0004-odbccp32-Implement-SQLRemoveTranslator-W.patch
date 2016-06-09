@@ -1,4 +1,4 @@
-From b030b105631ce55d12690c7c8b55b5911d4e2208 Mon Sep 17 00:00:00 2001
+From 720b676f154b3a6fa87ff8cc493bbe34e49eb2d7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
 Subject: [PATCH 4/4] odbccp32: Implement SQLRemoveTranslator/W
@@ -9,15 +9,15 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 50 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 1befb08..d0e93bf 100644
+index cb1058e..148cb1c 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1199,20 +1199,63 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+@@ -1194,20 +1194,63 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
      return FALSE;
  }
  
 -BOOL WINAPI SQLRemoveTranslatorW(LPCWSTR lpszTranslator, LPDWORD lpdwUsageCount)
-+BOOL WINAPI SQLRemoveTranslatorW(LPCWSTR lpszTranslator, LPDWORD usage_count)
++BOOL WINAPI SQLRemoveTranslatorW(const WCHAR *translator, DWORD *usage_count)
  {
 +    DWORD usage_cnt = 0;
 +    HKEY hkey;
@@ -26,13 +26,13 @@ index 1befb08..d0e93bf 100644
 -    FIXME("%s %p\n", debugstr_w(lpszTranslator), lpdwUsageCount);
 -    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
 -    return FALSE;
-+    TRACE("%s %p\n", debugstr_w(lpszTranslator), usage_count);
++    TRACE("%s %p\n", debugstr_w(translator), usage_count);
 +
 +    if (RegOpenKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
 +    {
 +        HKEY hkeydriver;
 +
-+        if (RegOpenKeyW(hkey, lpszTranslator, &hkeydriver) == ERROR_SUCCESS)
++        if (RegOpenKeyW(hkey, translator, &hkeydriver) == ERROR_SUCCESS)
 +        {
 +            if (usage_count)
 +            {
@@ -45,13 +45,13 @@ index 1befb08..d0e93bf 100644
 +            RegCloseKey(hkeydriver);
 +        }
 +
-+        if(RegDeleteKeyW(hkey, lpszTranslator) != ERROR_SUCCESS)
-+            ERR("Failed to delete registry key: %s\n", debugstr_w(lpszTranslator));
++        if(RegDeleteKeyW(hkey, translator) != ERROR_SUCCESS)
++            ERR("Failed to delete registry key: %s\n", debugstr_w(translator));
 +
 +        if (RegOpenKeyW(hkey, odbctranslators, &hkeydriver) == ERROR_SUCCESS)
 +        {
-+            if(RegDeleteValueW(hkeydriver, lpszTranslator) != ERROR_SUCCESS)
-+                ERR("Failed to delete registry value: %s\n", debugstr_w(lpszTranslator));
++            if(RegDeleteValueW(hkeydriver, translator) != ERROR_SUCCESS)
++                ERR("Failed to delete registry value: %s\n", debugstr_w(translator));
 +
 +            RegCloseKey(hkeydriver);
 +        }

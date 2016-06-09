@@ -1,0 +1,61 @@
+From aade6127d9cf462fd8c9919d7cfd6ed7f91e492b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 7 Jun 2016 15:25:05 +1000
+Subject: [PATCH] user32: Add caret trace statements
+
+---
+ dlls/user32/caret.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/dlls/user32/caret.c b/dlls/user32/caret.c
+index 686dade..cc9d854 100644
+--- a/dlls/user32/caret.c
++++ b/dlls/user32/caret.c
+@@ -208,6 +208,8 @@ BOOL WINAPI DestroyCaret(void)
+     int old_state = 0;
+     int hidden = 0;
+ 
++    TRACE("\n");
++
+     SERVER_START_REQ( set_caret_window )
+     {
+         req->handle = 0;
+@@ -249,6 +251,8 @@ BOOL WINAPI SetCaretPos( INT x, INT y )
+     int old_state = 0;
+     int hidden = 0;
+ 
++    TRACE("x=%d, y=%d\n", x, y);
++
+     SERVER_START_REQ( set_caret_info )
+     {
+         req->flags  = SET_CARET_POS|SET_CARET_STATE;
+@@ -293,6 +297,8 @@ BOOL WINAPI HideCaret( HWND hwnd )
+     int old_state = 0;
+     int hidden = 0;
+ 
++    TRACE("hwnd=%p\n", hwnd);
++
+     SERVER_START_REQ( set_caret_info )
+     {
+         req->flags  = SET_CARET_HIDE|SET_CARET_STATE;
+@@ -332,6 +338,8 @@ BOOL WINAPI ShowCaret( HWND hwnd )
+     RECT r;
+     int hidden = 0;
+ 
++    TRACE("hwnd=%p\n", hwnd);
++
+     SERVER_START_REQ( set_caret_info )
+     {
+         req->flags  = SET_CARET_HIDE|SET_CARET_STATE;
+@@ -368,6 +376,8 @@ BOOL WINAPI GetCaretPos( LPPOINT pt )
+ {
+     BOOL ret;
+ 
++    TRACE("pt=%p\n", pt);
++
+     SERVER_START_REQ( set_caret_info )
+     {
+         req->flags  = 0;  /* don't set anything */
+-- 
+1.9.1
+

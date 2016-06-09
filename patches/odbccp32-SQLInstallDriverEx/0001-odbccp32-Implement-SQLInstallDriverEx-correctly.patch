@@ -1,7 +1,7 @@
-From 2d3adc3d72f066a36fba5de871ce348269b0fe4c Mon Sep 17 00:00:00 2001
+From 075532655b8cdaf7a3d1b77ef56f4fbbab333370 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Nov 2015 16:12:30 +1100
-Subject: [PATCH 1/2] odbccp32: Implement SQLInstallDriverEx correctly
+Subject: [PATCH 1/4] odbccp32: Implement SQLInstallDriverEx correctly
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -47,7 +47,7 @@ index bc643d4..3d150a1 100644
 +        if (RegCreateKeyW(hkey, regkey, &hkeydriver) == ERROR_SUCCESS)
 +        {
 +            if(RegSetValueExW(hkeydriver, driver, 0, REG_SZ, (BYTE*)installed,
-+                                    (lstrlenW(installed)+1)*sizeof(WCHAR)) != ERROR_SUCCESS)
++                                    (sizeof(installed)+1)*sizeof(WCHAR)) != ERROR_SUCCESS)
 +                ERR("Failed to write registry installed key\n");
 +
 +            RegCloseKey(hkeydriver);

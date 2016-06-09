@@ -1,7 +1,7 @@
-From 66c700b32116c6df99b751bf1cc9ec3e3ac747dc Mon Sep 17 00:00:00 2001
+From 47869fb1e2c2be11ccbea82637fb371354ab764d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 22 Dec 2015 09:59:09 +1100
-Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
+Subject: [PATCH 2/4] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 52 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 3d150a1..a55947b 100644
+index 3d150a1..66754de 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -1105,22 +1105,65 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
@@ -19,7 +19,7 @@ index 3d150a1..a55947b 100644
  
 -BOOL WINAPI SQLRemoveDriverW(LPCWSTR lpszDriver, BOOL fRemoveDSN,
 -               LPDWORD lpdwUsageCount)
-+BOOL WINAPI SQLRemoveDriverW(LPCWSTR lpszDriver, BOOL removeDSN, LPDWORD usage_count)
++BOOL WINAPI SQLRemoveDriverW(LPCWSTR drivername, BOOL removeDSN, LPDWORD usage_count)
  {
 +    DWORD usage_cnt = 0;
 +    HKEY hkey;
@@ -27,13 +27,13 @@ index 3d150a1..a55947b 100644
      clear_errors();
 -    FIXME("%s %d %p\n", debugstr_w(lpszDriver), fRemoveDSN, lpdwUsageCount);
 -    if (lpdwUsageCount) *lpdwUsageCount = 1;
-+    TRACE("%s %d %p\n", debugstr_w(lpszDriver), removeDSN, usage_count);
++    TRACE("%s %d %p\n", debugstr_w(drivername), removeDSN, usage_count);
 +
 +    if (RegOpenKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
 +    {
 +        HKEY hkeydriver;
 +
-+        if (RegOpenKeyW(hkey, lpszDriver, &hkeydriver) == ERROR_SUCCESS)
++        if (RegOpenKeyW(hkey, drivername, &hkeydriver) == ERROR_SUCCESS)
 +        {
 +            if (usage_count)
 +            {
@@ -46,13 +46,13 @@ index 3d150a1..a55947b 100644
 +            RegCloseKey(hkeydriver);
 +        }
 +
-+        if(RegDeleteKeyW(hkey, lpszDriver) != ERROR_SUCCESS)
-+            ERR("Failed to delete registry key: %s\n", debugstr_w(lpszDriver));
++        if(RegDeleteKeyW(hkey, drivername) != ERROR_SUCCESS)
++            ERR("Failed to delete registry key: %s\n", debugstr_w(drivername));
 +
 +        if (RegOpenKeyW(hkey, odbcdrivers, &hkeydriver) == ERROR_SUCCESS)
 +        {
-+            if(RegDeleteValueW(hkeydriver, lpszDriver) != ERROR_SUCCESS)
-+                ERR("Failed to delete registry value: %s\n", debugstr_w(lpszDriver));
++            if(RegDeleteValueW(hkeydriver, drivername) != ERROR_SUCCESS)
++                ERR("Failed to delete registry value: %s\n", debugstr_w(drivername));
 +
 +            RegCloseKey(hkeydriver);
 +        }
