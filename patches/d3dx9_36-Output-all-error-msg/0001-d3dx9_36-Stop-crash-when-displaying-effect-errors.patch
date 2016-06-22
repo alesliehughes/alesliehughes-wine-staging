@@ -1,0 +1,26 @@
+From d080d5f13785dd8033a770f2ce631eb7e64e8ce4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 1 Jun 2016 20:04:05 +1000
+Subject: [PATCH] d3dx9_36: Stop crash when displaying effect errors
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx9_36/effect.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3dx9_36/effect.c b/dlls/d3dx9_36/effect.c
+index 7772406..a72aa3a 100644
+--- a/dlls/d3dx9_36/effect.c
++++ b/dlls/d3dx9_36/effect.c
+@@ -5969,7 +5969,7 @@ static HRESULT d3dx9_base_effect_init(struct d3dx9_base_effect *base,
+             if (bytecode)
+                 ID3D10Blob_Release(bytecode);
+             if (temp_errors)
+-                TRACE("%s\n", (char *)ID3D10Blob_GetBufferPointer(temp_errors));
++                TRACE("%s\n", debugstr_a((char *)ID3D10Blob_GetBufferPointer(temp_errors)));
+             if (errors)
+                 *errors = temp_errors;
+             else if (temp_errors)
+-- 
+2.8.1
+
