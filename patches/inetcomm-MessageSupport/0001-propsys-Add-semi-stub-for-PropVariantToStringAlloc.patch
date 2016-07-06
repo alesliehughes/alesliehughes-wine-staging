@@ -1,0 +1,153 @@
+From caebcebf07937d1d08d3fa36eca11c3946926d29 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 1 Jul 2016 10:17:28 +1000
+Subject: [PATCH 1/7] propsys: Add semi-stub for PropVariantToStringAlloc
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/propsys/propsys.spec    |  2 +-
+ dlls/propsys/propvar.c       | 40 ++++++++++++++++++++++++++++++++++++++++
+ dlls/propsys/tests/propsys.c | 28 +++++++++++++++++++++++++++-
+ include/propvarutil.h        |  2 ++
+ 4 files changed, 70 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/propsys/propsys.spec b/dlls/propsys/propsys.spec
+index 92b6d7c..674df2cb 100644
+--- a/dlls/propsys/propsys.spec
++++ b/dlls/propsys/propsys.spec
+@@ -134,7 +134,7 @@
+ @ stub PropVariantToInt64WithDefault
+ @ stub PropVariantToStrRet
+ @ stub PropVariantToString
+-@ stub PropVariantToStringAlloc
++@ stdcall PropVariantToStringAlloc(ptr ptr)
+ @ stub PropVariantToStringVector
+ @ stub PropVariantToStringVectorAlloc
+ @ stub PropVariantToStringWithDefault
+diff --git a/dlls/propsys/propvar.c b/dlls/propsys/propvar.c
+index fd22c9d..80b4d04 100644
+--- a/dlls/propsys/propvar.c
++++ b/dlls/propsys/propvar.c
+@@ -209,6 +209,46 @@ HRESULT WINAPI PropVariantToUInt64(REFPROPVARIANT propvarIn, ULONGLONG *ret)
+     return hr;
+ }
+ 
++HRESULT WINAPI PropVariantToStringAlloc(REFPROPVARIANT propvarIn, WCHAR **ret)
++{
++    WCHAR *res = NULL;
++    HRESULT hr = S_OK;
++
++    TRACE("%p,%p semi-stub\n", propvarIn, ret);
++
++    switch(propvarIn->vt)
++    {
++        case VT_NULL:
++            res = CoTaskMemAlloc(1*sizeof(WCHAR));
++            res[0] = '\0';
++            break;
++        case VT_LPSTR:
++        {
++            if(propvarIn->u.pszVal)
++            {
++                DWORD len;
++
++                len = MultiByteToWideChar(CP_ACP, 0, propvarIn->u.pszVal, -1, NULL, 0);
++                res = CoTaskMemAlloc(len*sizeof(WCHAR));
++                if(!res)
++                    return E_OUTOFMEMORY;
++
++                MultiByteToWideChar(CP_ACP, 0, propvarIn->u.pszVal, -1, res, len);
++            }
++            break;
++        }
++        default:
++        {
++            FIXME("Unsupported conversion (%d)\n", propvarIn->vt);
++            hr = E_FAIL;
++        }
++    }
++
++    *ret = res;
++
++    return hr;
++}
++
+ /******************************************************************
+  *  PropVariantChangeType   (PROPSYS.@)
+  */
+diff --git a/dlls/propsys/tests/propsys.c b/dlls/propsys/tests/propsys.c
+index 0dd052c..d7d83d8 100644
+--- a/dlls/propsys/tests/propsys.c
++++ b/dlls/propsys/tests/propsys.c
+@@ -38,6 +38,10 @@ DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
+ DEFINE_GUID(dummy_guid, 0xdeadbeef, 0xdead, 0xbeef, 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe, 0xba, 0xbe);
+ DEFINE_GUID(expect_guid, 0x12345678, 0x1234, 0x1234, 0x12, 0x34, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12);
+ 
++static const char topic[] = "wine topic";
++static const WCHAR topicW[] = {'w','i','n','e',' ','t','o','p','i','c',0};
++static const WCHAR emptyW[] = {0};
++
+ static int strcmp_wa(LPCWSTR strw, const char *stra)
+ {
+     CHAR buf[512];
+@@ -150,7 +154,6 @@ static void test_PSStringFromPropertyKey(void)
+ 
+ static void test_PSPropertyKeyFromString(void)
+ {
+-    static const WCHAR emptyW[] = {0};
+     static const WCHAR fmtid_clsidW[] = {'S','t','d','F','o','n','t',' ','1',0};
+     static const WCHAR fmtid_truncatedW[] = {'{','1','2','3','4','5','6','7','8','-','1','2','3','4','-',
+                                              '1','2','3','4','-',0};
+@@ -616,6 +619,28 @@ static void test_PropVariantToGUID(void)
+     PropVariantClear(&propvar);
+ }
+ 
++static void test_PropVariantToStringAlloc(void)
++{
++    PROPVARIANT prop;
++    WCHAR *str;
++    HRESULT hres;
++
++    prop.vt = VT_NULL;
++    hres = PropVariantToStringAlloc(&prop, &str);
++    ok(hres == S_OK, "returned %x\n", hres);
++    ok(!lstrcmpW(str, emptyW), "got %s\n", wine_dbgstr_w(str));
++    CoTaskMemFree(str);
++
++    prop.vt = VT_LPSTR;
++    prop.u.pszVal = CoTaskMemAlloc(strlen(topic)+1);
++    strcpy(prop.u.pszVal, topic);
++    hres = PropVariantToStringAlloc(&prop, &str);
++    ok(hres == S_OK, "returned %x\n", hres);
++    ok(!lstrcmpW(str, topicW), "got %s\n", wine_dbgstr_w(str));
++    CoTaskMemFree(str);
++    PropVariantClear(&prop);
++}
++
+ static void test_PropVariantCompare(void)
+ {
+     PROPVARIANT empty, null, emptyarray, i2_0, i2_2, i4_large, i4_largeneg, i4_2, str_2, str_02, str_b;
+@@ -874,6 +899,7 @@ START_TEST(propsys)
+     test_InitPropVariantFromGUIDAsString();
+     test_InitPropVariantFromBuffer();
+     test_PropVariantToGUID();
++    test_PropVariantToStringAlloc();
+     test_PropVariantCompare();
+     test_intconversions();
+ }
+diff --git a/include/propvarutil.h b/include/propvarutil.h
+index 4791543..d0aecdb 100644
+--- a/include/propvarutil.h
++++ b/include/propvarutil.h
+@@ -77,6 +77,8 @@ HRESULT WINAPI PropVariantToUInt16(REFPROPVARIANT propvarIn, USHORT *ret);
+ HRESULT WINAPI PropVariantToUInt32(REFPROPVARIANT propvarIn, ULONG *ret);
+ HRESULT WINAPI PropVariantToUInt64(REFPROPVARIANT propvarIn, ULONGLONG *ret);
+ 
++HRESULT WINAPI PropVariantToStringAlloc(REFPROPVARIANT propvarIn, WCHAR **ret);
++
+ #ifdef __cplusplus
+ 
+ HRESULT InitPropVariantFromBoolean(BOOL fVal, PROPVARIANT *ppropvar);
+-- 
+1.9.1
+

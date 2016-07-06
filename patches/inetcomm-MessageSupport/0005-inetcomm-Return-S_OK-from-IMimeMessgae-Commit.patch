@@ -1,0 +1,26 @@
+From 35c6ff4fc7e4c1ca9345c37f10cf9d0dab6377dd Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 30 Jun 2016 12:41:30 +1000
+Subject: [PATCH 5/7] inetcomm: Return S_OK from IMimeMessgae Commit
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index f1fed8b..2c02d28 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -2077,7 +2077,7 @@ static HRESULT WINAPI MimeMessage_Commit(
+     DWORD dwFlags)
+ {
+     FIXME("(%p)->(0x%x)\n", iface, dwFlags);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ 
+-- 
+1.9.1
+

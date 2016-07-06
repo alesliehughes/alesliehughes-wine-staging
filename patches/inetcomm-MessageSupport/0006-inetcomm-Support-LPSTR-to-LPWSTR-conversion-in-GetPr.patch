@@ -1,0 +1,105 @@
+From 58d9b7be8218921f91be72464e9aae6e0e3123fa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 30 Jun 2016 14:09:50 +1000
+Subject: [PATCH 6/7] inetcomm: Support LPSTR to LPWSTR conversion in GetProp
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/Makefile.in     |  2 +-
+ dlls/inetcomm/mimeole.c       |  7 ++++++-
+ dlls/inetcomm/tests/mimeole.c | 14 ++++++++++++++
+ 3 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/inetcomm/Makefile.in b/dlls/inetcomm/Makefile.in
+index d3d1ded..b55fce6 100644
+--- a/dlls/inetcomm/Makefile.in
++++ b/dlls/inetcomm/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = inetcomm.dll
+ IMPORTLIB = inetcomm
+-IMPORTS   = uuid oleaut32 ole32 ws2_32 user32 advapi32
++IMPORTS   = uuid oleaut32 ole32 ws2_32 user32 advapi32 propsys
+ 
+ C_SRCS = \
+ 	imaptransport.c \
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 2c02d28..58fc7a3 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -31,6 +31,7 @@
+ #include "objbase.h"
+ #include "ole2.h"
+ #include "mimeole.h"
++#include "propvarutil.h"
+ 
+ #include "wine/list.h"
+ #include "wine/debug.h"
+@@ -785,7 +786,11 @@ static HRESULT WINAPI MimeBody_GetProp(
+     hr = find_prop(This, pszName, &header);
+     if(hr == S_OK)
+     {
+-        PropVariantCopy(pValue, &header->value);
++        TRACE("type %d->%d\n", header->value.vt, pValue->vt);
++
++        hr = PropVariantChangeType(pValue, &header->value, 0,  pValue->vt);
++        if(FAILED(hr))
++            FIXME("Conversion not currently supported (%d->%d)\n", header->value.vt, pValue->vt);
+     }
+ 
+     return hr;
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index 46fd1d5..84b2c8d 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -335,6 +335,7 @@ static void test_CreateMessage(void)
+ static void test_MessageSetProp(void)
+ {
+     static const char topic[] = "wine topic";
++    static const WCHAR topicW[] = {'w','i','n','e',' ','t','o','p','i','c',0};
+     HRESULT hr;
+     IMimeMessage *msg;
+     IMimeBody *body;
+@@ -370,6 +371,7 @@ static void test_MessageSetProp(void)
+     hr = IMimeBody_GetProp(body, "Wine-Topic", 0, &prop);
+     ok(hr == MIME_E_NOT_FOUND, "ret %08x\n", hr);
+ 
++    prop.vt = VT_LPSTR;
+     hr = IMimeBody_GetProp(body, "Thread-Topic", 0, &prop);
+     ok(hr == S_OK, "ret %08x\n", hr);
+     if(hr == S_OK)
+@@ -386,6 +388,7 @@ static void test_MessageSetProp(void)
+     ok(hr == S_OK, "ret %08x\n", hr);
+     PropVariantClear(&prop);
+ 
++    prop.vt = VT_LPSTR;
+     hr = IMimeBody_GetProp(body, PIDTOSTR(PID_HDR_SUBJECT), 0, &prop);
+     ok(hr == S_OK, "ret %08x\n", hr);
+     if(hr == S_OK)
+@@ -396,6 +399,7 @@ static void test_MessageSetProp(void)
+     }
+ 
+     /* Using the name or PID returns the same result. */
++    prop.vt = VT_LPSTR;
+     hr = IMimeBody_GetProp(body, "Subject", 0, &prop);
+     ok(hr == S_OK, "ret %08x\n", hr);
+     if(hr == S_OK)
+@@ -405,6 +409,16 @@ static void test_MessageSetProp(void)
+         PropVariantClear(&prop);
+     }
+ 
++    prop.vt = VT_LPWSTR;
++    hr = IMimeBody_GetProp(body, "Subject", 0, &prop);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    if(hr == S_OK)
++    {
++        ok(prop.vt == VT_LPWSTR, "type %d\n", prop.vt);
++        ok(!lstrcmpW(prop.u.pwszVal, topicW), "got %s\n", wine_dbgstr_w(prop.u.pwszVal));
++        PropVariantClear(&prop);
++    }
++
+     prop.vt = VT_LPSTR;
+     prop.u.pszVal = CoTaskMemAlloc(strlen(topic)+1);
+     strcpy(prop.u.pszVal, topic);
+-- 
+1.9.1
+
