@@ -1,0 +1,56 @@
+From 24681f4679f3e52449fe1b709a2fff12a1a3f41d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 10 Jul 2016 19:15:05 +1000
+Subject: [PATCH] dxgi: Implement IDXGISwapChain GetFullscreenState
+
+---
+ dlls/dxgi/swapchain.c | 32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dxgi/swapchain.c b/dlls/dxgi/swapchain.c
+index 921fcdf..b2cbe79 100644
+--- a/dlls/dxgi/swapchain.c
++++ b/dlls/dxgi/swapchain.c
+@@ -212,9 +212,37 @@ static HRESULT STDMETHODCALLTYPE DECLSPEC_HOTPATCH dxgi_swapchain_SetFullscreenS
+ static HRESULT STDMETHODCALLTYPE dxgi_swapchain_GetFullscreenState(IDXGISwapChain *iface,
+         BOOL *fullscreen, IDXGIOutput **target)
+ {
+-    FIXME("iface %p, fullscreen %p, target %p stub!\n", iface, fullscreen, target);
++    IDXGIAdapter *adapter;
++    IDXGIDevice *device;
++    HRESULT hr = S_OK;
+ 
+-    return E_NOTIMPL;
++    TRACE("iface %p, fullscreen %p, target %p!\n", iface, fullscreen, target);
++
++    *fullscreen = TRUE;
++    if(target)
++    {
++        if (FAILED(hr = dxgi_swapchain_GetDevice(iface, &IID_IDXGIDevice, (void **)&device)))
++            return hr;
++
++        hr = IDXGIDevice_GetAdapter(device, &adapter);
++        IDXGIDevice_Release(device);
++        if (FAILED(hr))
++        {
++            WARN("GetAdapter failed, hr %#x.\n", hr);
++            return hr;
++        }
++
++        if (SUCCEEDED(IDXGIAdapter_EnumOutputs(adapter, 1, target)))
++        {
++            FIXME("Adapter has got multiple outputs, returning the first one.\n");
++            IDXGIOutput_Release(*target);
++        }
++
++        hr = IDXGIAdapter_EnumOutputs(adapter, 0, target);
++        IDXGIAdapter_Release(adapter);
++    }
++
++    return hr;
+ }
+ 
+ static HRESULT STDMETHODCALLTYPE dxgi_swapchain_GetDesc(IDXGISwapChain *iface, DXGI_SWAP_CHAIN_DESC *desc)
+-- 
+2.8.1
+
