@@ -1,0 +1,190 @@
+From b0d3ab94c5c086971645b04d1ed3f1d978888679 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Jul 2016 16:16:04 +1000
+Subject: [PATCH] inetcomm: Impelement MimeGetAddressFormatW
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c       | 45 +++++++++++++++++++-
+ dlls/inetcomm/tests/mimeole.c | 97 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 140 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index f4537f3..a3c00a6 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -191,6 +191,23 @@ static LPSTR strdupA(LPCSTR str)
+     return ret;
+ }
+ 
++static inline WCHAR *heap_strdupAtoW(const char *str)
++{
++    WCHAR *ret = NULL;
++
++    if(str)
++    {
++        DWORD len;
++
++        len = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
++        ret = HeapAlloc(GetProcessHeap(), 0, len*sizeof(WCHAR));
++        if(ret)
++            MultiByteToWideChar(CP_ACP, 0, str, -1, ret, len);
++    }
++
++    return ret;
++}
++
+ #define PARSER_BUF_SIZE 1024
+ 
+ /*****************************************************
+@@ -3419,7 +3436,31 @@ HRESULT WINAPI MimeOleGetPropertySchema(IMimePropertySchema **schema)
+ HRESULT WINAPI MimeGetAddressFormatW(REFIID riid, void *object, DWORD addr_type,
+        ADDRESSFORMAT addr_format, WCHAR **address)
+ {
+-    FIXME("(%s, %p, %d, %d, %p) stub\n", debugstr_guid(riid), object, addr_type, addr_format, address);
++    HRESULT hr;
+ 
+-    return E_NOTIMPL;
++    TRACE("(%s, %p, %d, %d, %p)\n", debugstr_guid(riid), object, addr_type, addr_format, address);
++
++    if(!object || !address)
++        return E_INVALIDARG;
++
++    *address = NULL;
++
++    if(IsEqualIID(riid, &IID_IMimeMessage))
++    {
++        char *addr;
++        IMimeMessage *msg = (IMimeMessage *)object;
++
++        hr = IMimeMessage_GetAddressFormat(msg, addr_type, addr_format, &addr);
++        if(SUCCEEDED(hr))
++        {
++            *address = heap_strdupAtoW(addr);
++        }
++    }
++    else
++    {
++        FIXME("Unsupported interface %s.\n", debugstr_guid(riid));
++        hr = E_NOINTERFACE;
++    }
++
++    return hr;
+ }
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index 84b2c8d..f39d473 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -681,6 +681,102 @@ static void test_MimeOleGetPropertySchema(void)
+     IMimePropertySchema_Release(schema);
+ }
+ 
++static void test_MimeGetAddressFormatW(void)
++{
++    static WCHAR result1[] = {'H','u','w',' ','D','a','v','i','e','s',';',' ','M','e',0};
++    static WCHAR result2[] = {'<','h','u','w','@','c','o','d','e','w','e','a','v','e','r','s','.','c',
++                              'o','m','>',';',' ','<','x','x','x','@','c','o','d','e','w','e','a','v',
++                              'e','r','s','.','c','o','m','>',0};
++    static WCHAR result3[] = {'\"','H','u','w',' ','D','a','v','i','e','s','\"',' ','<','h','u','w',
++                              '@','c','o','d','e','w','e','a','v','e','r','s','.','c','o','m','>',';',
++                              ' ','\"','M','e','\"',' ','<','x','x','x','@','c','o','d','e','w','e','a',
++                              'v','e','r','s','.','c','o','m','>',0};
++    static WCHAR result4[] = {'\"','H','u','w',' ','D','a','v','i','e','s','\"',' ','<','h','u','w',
++                              '@','c','o','d','e','w','e','a','v','e','r','s','.','c','o','m','>',',',
++                              ' ','\"','M','e','\"',' ','<','x','x','x','@','c','o','d','e','w','e','a',
++                              'v','e','r','s','.','c','o','m','>',0};
++    static WCHAR result5[] = {'\"','H','u','w',' ','D','a','v','i','e','s','\"',' ','<','h','u','w',
++                              '@','c','o','d','e','w','e','a','v','e','r','s','.','c','o','m','>',',','\r',
++                              '\n','\t','\"','M','e','\"',' ','<','x','x','x','@','c','o','d','e','w',
++                              'e','a','v','e','r','s','.','c','o','m','>',0};
++    HRESULT hr;
++    IMimeMessage *msg;
++    IMimeBody *body;
++    IStream *in;
++    LARGE_INTEGER off;
++    WCHAR *address;
++
++    hr = MimeOleCreateMessage(NULL, &msg);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    hr = CoCreateInstance(&CLSID_IMimeBody, NULL, CLSCTX_INPROC_SERVER, &IID_IMimeBody, (void**)&body);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    hr = MimeGetAddressFormatW(&IID_IUnknown, msg, IAT_FROM, 3, &address);
++    ok(hr == E_NOINTERFACE, "ret %08x\n", hr);
++
++    hr = MimeGetAddressFormatW(&IID_IDispatch, msg, IAT_FROM, 3, &address);
++    ok(hr == E_NOINTERFACE, "ret %08x\n", hr);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeBody, body, IAT_FROM, 3, &address);
++    ok(hr == E_NOINTERFACE, "ret %08x\n", hr);
++
++    hr = MimeGetAddressFormatW(&IID_IDispatch, NULL, IAT_FROM, 3, &address);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, 3, NULL);
++    ok(hr == E_INVALIDARG, "ret %08x\n", hr);
++
++    hr = CreateStreamOnHGlobal(NULL, TRUE, &in);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    IStream_Write(in, msg1, sizeof(msg1) - 1, NULL);
++    off.QuadPart = 0;
++    IStream_Seek(in, off, STREAM_SEEK_SET, NULL);
++
++    hr = IMimeMessage_Load(msg, in);
++    ok(hr == S_OK, "ret %08x\n", hr);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, AFT_DISPLAY_FRIENDLY, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result1, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, AFT_DISPLAY_EMAIL, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result2, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, AFT_DISPLAY_BOTH, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result3, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, AFT_RFC822_DECODED, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result4, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, AFT_RFC822_ENCODED, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result4, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, AFT_RFC822_TRANSMIT, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result5, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    /* default to AFT_DISPLAY_BOTH */
++    hr = MimeGetAddressFormatW(&IID_IMimeMessage, msg, IAT_FROM, 6, &address);
++    ok(hr == S_OK, "ret %08x\n", hr);
++    ok(!lstrcmpW(result3, address), "got %s\n", wine_dbgstr_w(address));
++    CoTaskMemFree(address);
++
++    IStream_Release(in);
++    IMimeBody_Release(body);
++    IMimeMessage_Release(msg);
++}
++
+ START_TEST(mimeole)
+ {
+     OleInitialize(NULL);
+@@ -695,5 +791,6 @@ START_TEST(mimeole)
+     test_BindToObject();
+     test_BodyDeleteProp();
+     test_MimeOleGetPropertySchema();
++    test_MimeGetAddressFormatW();
+     OleUninitialize();
+ }
+-- 
+1.9.1
+
