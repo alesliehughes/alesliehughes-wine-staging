@@ -1,7 +1,7 @@
 From 24681f4679f3e52449fe1b709a2fff12a1a3f41d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 10 Jul 2016 19:15:05 +1000
-Subject: [PATCH] dxgi: Implement IDXGISwapChain GetFullscreenState
+Subject: [PATCH 1/2] dxgi: Implement IDXGISwapChain GetFullscreenState
 
 ---
  dlls/dxgi/swapchain.c | 32 ++++++++++++++++++++++++++++++--
