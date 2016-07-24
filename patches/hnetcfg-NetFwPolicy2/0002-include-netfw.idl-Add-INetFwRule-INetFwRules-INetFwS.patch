@@ -1,8 +1,10 @@
-From 908ededdc8e95836ad4a22f44fa7828709eaa0e6 Mon Sep 17 00:00:00 2001
+From 4b612ad9fa6df080a16a07c654597eda00767593 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 13 Jul 2016 09:16:23 +1000
-Subject: [PATCH 2/4] include/netfw.idl: Add INetFwRule, INetFwRules,
+Subject: [v2 PATCH 2/4] include/netfw.idl: Add INetFwRule, INetFwRules,
  INetFwServiceRestriction, INetFwPolicy2 interfaces
+
+No changes
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

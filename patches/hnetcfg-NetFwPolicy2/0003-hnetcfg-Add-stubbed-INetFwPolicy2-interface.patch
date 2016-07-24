@@ -1,15 +1,18 @@
-From 71c1df754bd1d49ec4b10af8269877b96f86839d Mon Sep 17 00:00:00 2001
+From b10fe62e375d56d07016980dbc345bd4f0912e27 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 15 Jul 2016 10:35:36 +1000
-Subject: [PATCH 4/4] hnetcfg: Add stubbed INetFwPolicy2 interface
+Subject: [v2 PATCH 3/4] hnetcfg: Add stubbed INetFwPolicy2 interface
+
+Merged register DLL into this patch (hnetcfg.idl).
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/hnetcfg/apps.c            |   1 +
  dlls/hnetcfg/hnetcfg.c         |   5 +
+ dlls/hnetcfg/hnetcfg.idl       |   8 +
  dlls/hnetcfg/hnetcfg_private.h |   2 +
- dlls/hnetcfg/policy.c          | 334 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 342 insertions(+)
+ dlls/hnetcfg/policy.c          | 332 +++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 348 insertions(+)
 
 diff --git a/dlls/hnetcfg/apps.c b/dlls/hnetcfg/apps.c
 index ea6d411..2b8d78c 100644
@@ -46,6 +49,22 @@ index fadd367..e56dbab 100644
  
      if (!cf) return CLASS_E_CLASSNOTAVAILABLE;
      return IClassFactory_QueryInterface( cf, iid, ppv );
+diff --git a/dlls/hnetcfg/hnetcfg.idl b/dlls/hnetcfg/hnetcfg.idl
+index 9934f6a..763529a 100644
+--- a/dlls/hnetcfg/hnetcfg.idl
++++ b/dlls/hnetcfg/hnetcfg.idl
+@@ -43,3 +43,11 @@ coclass NetFwAuthorizedApplication { interface INetFwAuthorizedApplications; }
+     uuid(0ca545c6-37ad-4a6c-bf92-9f7610067ef5)
+ ]
+ coclass NetFwOpenPort { interface INetFwOpenPort; }
++
++[
++    helpstring("HNetCfg.FwPolicy2"),
++    progid("HNetCfg.FwPolicy2"),
++    threading(both),
++    uuid(e2b3c97f-6ae1-41ac-817a-f6f92166d7dd)
++]
++coclass NetFwPolicy2 { interface INetFwPolicy2; }
 diff --git a/dlls/hnetcfg/hnetcfg_private.h b/dlls/hnetcfg/hnetcfg_private.h
 index bb3f3aa..812d970 100644
 --- a/dlls/hnetcfg/hnetcfg_private.h
@@ -67,16 +86,13 @@ index bb3f3aa..812d970 100644
  HRESULT NetFwAuthorizedApplication_create(IUnknown *, LPVOID *) DECLSPEC_HIDDEN;
  HRESULT NetFwAuthorizedApplications_create(IUnknown *, LPVOID *) DECLSPEC_HIDDEN;
 diff --git a/dlls/hnetcfg/policy.c b/dlls/hnetcfg/policy.c
-index e340ffb..a8376ba 100644
+index e340ffb..7a5a8f5 100644
 --- a/dlls/hnetcfg/policy.c
 +++ b/dlls/hnetcfg/policy.c
-@@ -214,3 +214,337 @@ HRESULT NetFwPolicy_create( IUnknown *pUnkOuter, LPVOID *ppObj )
-     TRACE("returning iface %p\n", *ppObj);
-     return S_OK;
+@@ -45,6 +45,17 @@ static inline fw_policy *impl_from_INetFwPolicy( INetFwPolicy *iface )
+     return CONTAINING_RECORD(iface, fw_policy, INetFwPolicy_iface);
  }
-+
-+/******/
-+
+ 
 +typedef struct fw_policy2
 +{
 +    INetFwPolicy2 INetFwPolicy2_iface;
@@ -87,6 +103,14 @@ index e340ffb..a8376ba 100644
 +{
 +    return CONTAINING_RECORD(iface, fw_policy2, INetFwPolicy2_iface);
 +}
++
+ static ULONG WINAPI fw_policy_AddRef(
+     INetFwPolicy *iface )
+ {
+@@ -214,3 +225,324 @@ HRESULT NetFwPolicy_create( IUnknown *pUnkOuter, LPVOID *ppObj )
+     TRACE("returning iface %p\n", *ppObj);
+     return S_OK;
+ }
 +
 +static HRESULT WINAPI fwpolicy2_QueryInterface(INetFwPolicy2 *iface, REFIID riid, void **out)
 +{
@@ -217,7 +241,7 @@ index e340ffb..a8376ba 100644
 +static HRESULT WINAPI fwpolicy2_put_ExcludedInterfaces(INetFwPolicy2 *iface, NET_FW_PROFILE_TYPE2 profileType, VARIANT interfaces)
 +{
 +    fw_policy2 *This = impl_from_INetFwPolicy2( iface );
-+
++// TO VARIANT
 +    FIXME("%p %d\n", This, profileType);
 +    return E_NOTIMPL;
 +}

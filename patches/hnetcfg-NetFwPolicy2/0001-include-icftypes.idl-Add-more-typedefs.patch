@@ -1,7 +1,9 @@
-From 03116e6e89ff5dbcaf43d3978c9efa6d6a232ffc Mon Sep 17 00:00:00 2001
+From 952dc55a475eed4747e1a28a424e9769b2807d4a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 13 Jul 2016 09:14:14 +1000
-Subject: [PATCH 1/4] include/icftypes.idl: Add more typedefs
+Subject: [v2 PATCH 1/4] include/icftypes.idl: Add more typedefs
+
+No changes
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

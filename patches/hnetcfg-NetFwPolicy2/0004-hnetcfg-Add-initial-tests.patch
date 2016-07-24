@@ -1,0 +1,150 @@
+From 16cd895071dacd70f070751cf6f6127ff9de6807 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 22 Jul 2016 08:50:16 +1000
+Subject: [v2 PATCH 4/4] hnetcfg: Add initial tests
+
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                      |  1 +
+ configure.ac                   |  1 +
+ dlls/hnetcfg/tests/Makefile.in |  5 +++
+ dlls/hnetcfg/tests/policy.c    | 90 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 97 insertions(+)
+ create mode 100644 dlls/hnetcfg/tests/Makefile.in
+ create mode 100644 dlls/hnetcfg/tests/policy.c
+
+diff --git a/configure b/configure
+index 06e13d2..1688dd3 100755
+--- a/configure
++++ b/configure
+@@ -17734,6 +17734,7 @@ wine_fn_config_dll hidclass.sys enable_hidclass_sys implib hidclass
+ wine_fn_config_dll hlink enable_hlink clean,implib
+ wine_fn_config_test dlls/hlink/tests hlink_test
+ wine_fn_config_dll hnetcfg enable_hnetcfg clean
++wine_fn_config_test dlls/hnetcfg/tests hnetcfg_test
+ wine_fn_config_dll httpapi enable_httpapi
+ wine_fn_config_dll iccvid enable_iccvid clean
+ wine_fn_config_dll icmp enable_icmp
+diff --git a/configure.ac b/configure.ac
+index 0a42855..1cdba77 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2968,6 +2968,7 @@ WINE_CONFIG_DLL(hidclass.sys,,[implib],[hidclass])
+ WINE_CONFIG_DLL(hlink,,[clean,implib])
+ WINE_CONFIG_TEST(dlls/hlink/tests)
+ WINE_CONFIG_DLL(hnetcfg,,[clean])
++WINE_CONFIG_TEST(dlls/hnetcfg/tests)
+ WINE_CONFIG_DLL(httpapi)
+ WINE_CONFIG_DLL(iccvid,,[clean])
+ WINE_CONFIG_DLL(icmp)
+diff --git a/dlls/hnetcfg/tests/Makefile.in b/dlls/hnetcfg/tests/Makefile.in
+new file mode 100644
+index 0000000..aa4062a
+--- /dev/null
++++ b/dlls/hnetcfg/tests/Makefile.in
+@@ -0,0 +1,5 @@
++TESTDLL   = hnetcfg.dll
++IMPORTS   = ole32 uuid
++
++C_SRCS = \
++	policy.c
+diff --git a/dlls/hnetcfg/tests/policy.c b/dlls/hnetcfg/tests/policy.c
+new file mode 100644
+index 0000000..a3ed4b2
+--- /dev/null
++++ b/dlls/hnetcfg/tests/policy.c
+@@ -0,0 +1,90 @@
++/*
++ * Copyright 2016 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#define COBJMACROS
++#include <stdio.h>
++
++#include "windows.h"
++#include "ole2.h"
++#include "oleauto.h"
++#include "olectl.h"
++#include "dispex.h"
++
++#include "wine/test.h"
++
++#include "netfw.h"
++
++static void test_interfaces(void)
++{
++    INetFwMgr *manager;
++    INetFwPolicy *policy;
++    INetFwPolicy2 *policy2;
++    HRESULT hr;
++
++    hr = CoCreateInstance(&CLSID_NetFwMgr, NULL, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER,
++            &IID_INetFwMgr, (void**)&manager);
++    ok(hr == S_OK, "NetFwMgr create failed: %08x\n", hr);
++
++    hr = INetFwMgr_QueryInterface(manager, &IID_INetFwPolicy, (void**)&policy);
++    ok(hr == E_NOINTERFACE, "got 0x%08x\n", hr);
++
++    hr = INetFwMgr_QueryInterface(manager, &IID_INetFwPolicy2, (void**)&policy2);
++    ok(hr == E_NOINTERFACE, "got 0x%08x\n", hr);
++
++    hr = INetFwMgr_get_LocalPolicy(manager, &policy);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = INetFwPolicy_QueryInterface(policy, &IID_INetFwPolicy2, (void**)&policy2);
++    ok(hr == E_NOINTERFACE, "got 0x%08x\n", hr);
++
++    INetFwPolicy_Release(policy);
++
++    hr = CoCreateInstance(&CLSID_NetFwPolicy2, NULL, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER,
++            &IID_INetFwPolicy2, (void**)&policy2);
++    if(hr == S_OK)
++    {
++        INetFwPolicy2_Release(policy2);
++    }
++    else
++        win_skip("NetFwPolicy2 object is not supported: %08x\n", hr);
++
++    INetFwMgr_Release(manager);
++}
++
++START_TEST(policy)
++{
++    INetFwMgr *manager;
++    HRESULT hr;
++
++    CoInitialize(NULL);
++
++    hr = CoCreateInstance(&CLSID_NetFwMgr, NULL, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER,
++            &IID_INetFwMgr, (void**)&manager);
++    if(FAILED(hr))
++    {
++        win_skip("NetFwMgr object is not supported: %08x\n", hr);
++        CoUninitialize();
++        return;
++    }
++
++    INetFwMgr_Release(manager);
++
++    test_interfaces();
++
++
++    CoUninitialize();
++}
+-- 
+1.9.1
+
