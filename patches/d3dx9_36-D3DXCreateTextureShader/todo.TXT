@@ -1,3 +1,38 @@
-Add tests that return a valid shader.
+Add tests that return a shader.
 
-NOTE: Doesn't apply cleanly to staging.
+Examples
+http://www.gamedev.net/topic/377746-texture-shader-example/
+https://books.google.com.au/books?id=pCwwxlMuNycC&pg=PA141&lpg=PA141&dq=D3DXFillTextureTX&source=bl&ots=vVrd-cWWzS&sig=rAt3qKuoYUGnWetHKoXdsqxxXn4&hl=en&sa=X&ved=0ahUKEwjqu7ey7pLOAhWBq5QKHUffCOUQ6AEIPzAG#v=onepage&q=D3DXFillTextureTX&f=false
+
+
+LPD3DXBUFFER pCode = NULL;
+LPD3DXBUFFER errorMsg = NULL;
+LPCSTR shaderProfile = "tx_1_0";
+hr = D3DXCompileShaderFromFile(L"fill.hlpsh", NULL, NULL, "main", shaderProfile, 0, &pCode, &errorMsg, NULL);
+if (FAILED(hr)) {
+	CStringW errorMessageW((char*)errorMsg->GetBufferPointer());
+	MessageBox(0, errorMessageW, L"Error compiling pixel shader!", MB_OK);
+	return;
+}
+
+LPD3DXTEXTURESHADER textureShader;
+hr = D3DXCreateTextureShader((DWORD*)pCode->GetBufferPointer(), &textureShader);
+if (FAILED(hr)) {
+	MessageBox(0, L"Error during D3DXCreateTextureShader", L"Error!", MB_OK);
+}
+
+LPDIRECT3DTEXTURE9 texture;
+hr = D3DXCreateTexture(pd3dDevice, 512, 512, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &texture);
+if (FAILED(hr)) {
+	MessageBox(0, L"Error during D3DXCreateTexture", L"Error!", MB_OK);
+}
+
+hr = D3DXFillTextureTX(texture, textureShader);
+if (FAILED(hr)) {
+	MessageBox(0, L"Error during D3DXFillTextureTX", L"Error!", MB_OK);
+}
+
+hr = D3DXSaveTextureToFile(L"out.png", D3DXIFF_PNG, texture, NULL);
+if (FAILED(hr)) {
+	MessageBox(0, L"Error during D3DXSaveTextureToFile", L"Error!", MB_OK);
+}

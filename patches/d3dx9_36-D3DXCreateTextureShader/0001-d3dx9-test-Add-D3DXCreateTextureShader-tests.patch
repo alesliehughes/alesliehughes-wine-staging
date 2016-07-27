@@ -1,0 +1,54 @@
+From b0fb600fffb0b660f1e34b270035d72741b4cd93 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 20 Nov 2015 12:34:27 +1100
+Subject: [PATCH] d3dx9/test: Add D3DXCreateTextureShader tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx9_36/tests/shader.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/dlls/d3dx9_36/tests/shader.c b/dlls/d3dx9_36/tests/shader.c
+index 4a7ae67..52391c2 100644
+--- a/dlls/d3dx9_36/tests/shader.c
++++ b/dlls/d3dx9_36/tests/shader.c
+@@ -6489,6 +6489,30 @@ static void test_registerset_defaults(void)
+     if (wnd) DestroyWindow(wnd);
+ }
+ 
++void test_D3DXCreateTextureShader(void)
++{
++    HRESULT hr;
++    ID3DXTextureShader *shader;
++
++    hr = D3DXCreateTextureShader(NULL, NULL);
++    ok(hr == D3DERR_INVALIDCALL, "got %08x, expected %08x\n", hr, D3DERR_INVALIDCALL);
++
++    hr = D3DXCreateTextureShader(NULL, &shader);
++    ok(hr == D3DERR_INVALIDCALL, "got %08x, expected %08x\n", hr, D3DERR_INVALIDCALL);
++
++    hr = D3DXCreateTextureShader(shader_invalid, &shader);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++
++    hr = D3DXCreateTextureShader(shader_zero, &shader);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++
++    hr = D3DXCreateTextureShader(shader_empty, &shader);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++
++    hr = D3DXCreateTextureShader(simple_fx, &shader);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++}
++
+ START_TEST(shader)
+ {
+     test_get_shader_size();
+@@ -6502,4 +6526,5 @@ START_TEST(shader)
+     test_get_shader_constant_variables();
+     test_registerset();
+     test_registerset_defaults();
++    test_D3DXCreateTextureShader();
+ }
+-- 
+2.8.1
+
