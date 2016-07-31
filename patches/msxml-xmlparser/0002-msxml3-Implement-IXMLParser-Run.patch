@@ -1,0 +1,57 @@
+From 13c7b58d5c2d3712495d133a7c9e0c01fa7418c9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 28 Jul 2016 15:52:58 +1000
+Subject: [PATCH] msxml3: Implement IXMLParser Run
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c |  2 ++
+ dlls/msxml3/xmlparser.c | 31 +++++++++++++++++++++++++++++--
+ 2 files changed, 31 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msxml3/xmlparser.c b/dlls/msxml3/xmlparser.c
+index ca40b22..ddd1b92 100644
+--- a/dlls/msxml3/xmlparser.c
++++ b/dlls/msxml3/xmlparser.c
+@@ -335,10 +335,37 @@ static HRESULT WINAPI xmlparser_GetRoot( IXMLParser *iface, PVOID *ppRoot)
+ static HRESULT WINAPI xmlparser_Run(IXMLParser *iface, LONG chars)
+ {
+     xmlparser *This = impl_from_IXMLParser( iface );
++    HRESULT hr;
+ 
+     FIXME("(%p %d)\n", This, chars);
+ 
+-    return E_NOTIMPL;
++    hr = IXMLNodeFactory_NotifyEvent(This->nodefactory, NULL, XMLNF_STARTDOCUMENT);
++    FIXME("hr = %08x\n", hr);
++    if(SUCCEEDED(hr))
++    {
++        /* Parse Document. */
++        IStream *stream;
++        hr = IUnknown_QueryInterface(This->input, &IID_IStream, (void**)&stream);
++        FIXME("stream hr = %08x\n", hr);
++        if(SUCCEEDED(hr))
++        {
++            XML_NODE_INFO *info = NULL;
++            FIXME("Before - Must Supply a IXMLNodeSource\n");
++            hr = IXMLNodeFactory_CreateNode(This->nodefactory, (IXMLNodeSource *)0xdeadbeef, NULL, 3, &info);
++            FIXME("Create node hr = %08x\n", hr);
++            if(hr == S_OK)
++            {
++FIXME("size %d type %d\n", info->dwSize, info->dwType);
++            } 
++            IStream_Release(stream);
++        }
++
++    }
++    hr = IXMLNodeFactory_NotifyEvent(This->nodefactory, NULL, XMLNF_ENDDOCUMENT);
++FIXME("hr = %08x\n", hr);
++
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI xmlparser_GetParserState(IXMLParser *iface)
+-- 
+2.7.4
+
