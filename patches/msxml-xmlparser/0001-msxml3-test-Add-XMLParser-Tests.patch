@@ -1,29 +1,63 @@
-From ae3b69c2cbeba5e02c240e33a4265dc0f647dae1 Mon Sep 17 00:00:00 2001
+From 9c8595dbdad90013366271b0d82563e9d09a630f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Mar 2014 12:59:34 +1100
 Subject: [PATCH] msxml3/test: Add XMLParser Tests
 
 ---
- dlls/msxml3/tests/xmlparser.c | 111 +++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 103 insertions(+), 8 deletions(-)
+ dlls/msxml3/tests/xmlparser.c | 196 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 188 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/msxml3/tests/xmlparser.c b/dlls/msxml3/tests/xmlparser.c
-index 51f2a27..93e6fd6 100644
+index 32514e3..bf896e4 100644
 --- a/dlls/msxml3/tests/xmlparser.c
 +++ b/dlls/msxml3/tests/xmlparser.c
-@@ -26,9 +26,11 @@
+@@ -26,8 +26,45 @@
  #include "windows.h"
  #include "ole2.h"
  #include "xmlparser.h"
 +#include "rpcproxy.h"
  #include "wine/test.h"
  
- 
++#define DEFINE_EXPECT(func) \
++    static BOOL expect_ ## func = FALSE, called_ ## func = FALSE
 +
++#define SET_EXPECT(func) \
++    do { called_ ## func = FALSE; expect_ ## func = TRUE; } while(0)
++
++#define CHECK_EXPECT2(func) \
++    do { \
++        ok(expect_ ##func, "unexpected call " #func "\n"); \
++        called_ ## func = TRUE; \
++    }while(0)
++
++#define CHECK_EXPECT(func) \
++    do { \
++        CHECK_EXPECT2(func); \
++        expect_ ## func = FALSE; \
++    }while(0)
++
++#define CHECK_CALLED(func) \
++    do { \
++        ok(called_ ## func, "expected " #func "\n"); \
++        expect_ ## func = called_ ## func = FALSE; \
++    }while(0)
++
++#define CLEAR_CALLED(func) \
++    expect_ ## func = called_ ## func = FALSE
++
++DEFINE_EXPECT(NotifyStartDocument);
++DEFINE_EXPECT(NotifyEndDocument);
++DEFINE_EXPECT(NotifyEndProlog);
++DEFINE_EXPECT(NotifyDataAvailable);
++DEFINE_EXPECT(FactoryError);
++
++const char empty_document[] = "<?xml version=\"1.0\" ?><root></root>";
++
++static HRESULT hresult_NotifyEvent = S_OK;
+ 
  static HRESULT WINAPI nodefact_QueryInterface(IXMLNodeFactory *iface,
          REFIID riid, void **ppvObject)
- {
-@@ -54,34 +56,83 @@ static ULONG WINAPI nodefact_Release(IXMLNodeFactory *iface)
+@@ -54,34 +91,67 @@ static ULONG WINAPI nodefact_Release(IXMLNodeFactory *iface)
  }
  
  static HRESULT WINAPI nodefact_NotifyEvent(IXMLNodeFactory *iface,
@@ -34,15 +68,19 @@ index 51f2a27..93e6fd6 100644
 +    switch(event)
 +    {
 +        case XMLNF_STARTDOCUMENT:
++            CHECK_EXPECT(NotifyStartDocument);
 +            trace("NotifyEvent: XMLNF_STARTDOCUMENT\n");
 +            break;
 +        case XMLNF_ENDPROLOG:
++            CHECK_EXPECT(NotifyEndProlog);
 +            trace("NotifyEvent: XMLNF_ENDPROLOG\n");
 +            break;
 +        case XMLNF_ENDDOCUMENT:
++            CHECK_EXPECT(NotifyEndDocument);
 +            trace("NotifyEvent: XMLNF_ENDDOCUMENT\n");
 +            break;
 +        case XMLNF_DATAAVAILABLE:
++            CHECK_EXPECT(NotifyDataAvailable);
 +            trace("NotifyEvent: XMLNF_DATAAVAILABLE\n");
 +            break;
 +        default:
@@ -50,15 +88,15 @@ index 51f2a27..93e6fd6 100644
 +            return E_FAIL;
 +    }
 +
-+    return S_OK;
++    return hresult_NotifyEvent;
  }
  
  static HRESULT WINAPI nodefact_BeginChildren(IXMLNodeFactory *iface,
          IXMLNodeSource *pSource, XML_NODE_INFO *pNodeInfo)
  {
 -    return E_NOTIMPL;
-+    trace("nodefact_BeginChildren %p %p\n", pSource, pNodeInfo);
-+    trace("nodefact_BeginChildren type %d\n", pNodeInfo->dwType);
++    trace("nodefact_BeginChildren %p %p %d\n", pSource, pNodeInfo,
++                pNodeInfo ? pNodeInfo->dwType : 0);
 +    return S_OK;
  }
  
@@ -66,8 +104,8 @@ index 51f2a27..93e6fd6 100644
          IXMLNodeSource *pSource, BOOL fEmpty, XML_NODE_INFO *pNodeInfo)
  {
 -    return E_NOTIMPL;
-+    trace("nodefact_EndChildren %p %d %p\n", pSource, fEmpty, pNodeInfo);
-+    trace("nodefact_EndChildren type %d\n", pNodeInfo->dwType);
++    trace("nodefact_EndChildren %p %d %p %d\n", pSource, fEmpty, pNodeInfo,
++                pNodeInfo ? pNodeInfo->dwType : 0);
 +    return S_OK;
  }
  
@@ -76,7 +114,8 @@ index 51f2a27..93e6fd6 100644
          XML_NODE_INFO **ppNodeInfo)
  {
 -    return E_NOTIMPL;
-+    trace("nodefact_Error\n");
++    CHECK_EXPECT(FactoryError);
++    trace("nodefact_Error %p %08x %d %p\n", pSource, hrErrorCode, cNumRecs, ppNodeInfo);
 +    return S_OK;
  }
  
@@ -86,48 +125,25 @@ index 51f2a27..93e6fd6 100644
 +        void *parent, USHORT recs, XML_NODE_INFO **nodeinfo)
  {
 -    return E_NOTIMPL;
-+    HRESULT hr;
-+    const WCHAR *buf;
-+    ULONG len;
-+    ULONG start, pos;
 +    trace("nodefact_CreateNode %p %p %d %p\n", source, parent, recs, nodeinfo);
 +
-+    hr = IXMLNodeSource_GetLineBuffer(source, &buf, &len, &start);
-+    ok(hr == S_OK, "Expected S_OK got 0x%08x\n", hr);
-+
-+    pos = IXMLNodeSource_GetAbsolutePosition(source);
-+
-+    trace("%d %d %s\n", pos, start, wine_dbgstr_w(buf));
-+    /* Free buf */
-+
-+    *nodeinfo = HeapAlloc(GetProcessHeap(), 0, sizeof(XML_NODE_INFO));
-+
-+    (*nodeinfo)->dwSize = sizeof(XML_NODE_INFO);
-+    (*nodeinfo)->dwType = XML_ELEMENT;
-+    //(*nodeinfo)->dwSubType;
-+    //(*nodeinfo)->fTerminal;
-+    //(*nodeinfo)->pwcText;
-+    //(*nodeinfo)->ulLen;
-+    //(*nodeinfo)->pNode;
++    *nodeinfo = NULL;
 +
 +    return S_OK;
-+
  }
  
  static const IXMLNodeFactoryVtbl nodefactoryVtbl =
-@@ -147,6 +198,49 @@ static void create_test(void)
+@@ -150,6 +220,114 @@ static void create_test(void)
      IXMLParser_Release(parser);
  }
  
 +static void parse_documnet(void)
 +{
-+    const char xmlbasic[] = "<?xml version=\"1.0\" ?><root></root>";
 +    HRESULT hr;
 +    IXMLParser *parser;
 +    IStream* stream = NULL;
 +    HGLOBAL hMem;
 +    LPBYTE bytes;
-+
 +
 +    hr = CoCreateInstance(&CLSID_XMLParser30, NULL, CLSCTX_INPROC_SERVER, &IID_IXMLParser, (void**)&parser);
 +    if (FAILED(hr))
@@ -136,9 +152,9 @@ index 51f2a27..93e6fd6 100644
 +        return;
 +    }
 +
-+    hMem = GlobalAlloc(GMEM_MOVEABLE, strlen(xmlbasic));
++    hMem = GlobalAlloc(GMEM_MOVEABLE, strlen(empty_document));
 +    bytes = GlobalLock(hMem);
-+    memcpy(bytes, xmlbasic, strlen(xmlbasic));
++    memcpy(bytes, empty_document, strlen(empty_document));
 +    GlobalUnlock(hMem);
 +
 +    CreateStreamOnHGlobal(hMem, TRUE, &stream);
@@ -152,11 +168,78 @@ index 51f2a27..93e6fd6 100644
 +    hr = IXMLParser_GetParserState(parser);
 +    ok(hr == XMLPARSER_IDLE, "got 0x%08x\n", hr);
 +
++    SET_EXPECT(NotifyStartDocument);
++    SET_EXPECT(NotifyEndDocument);
++    SET_EXPECT(NotifyEndProlog);
++    SET_EXPECT(NotifyDataAvailable);
 +    hr = IXMLParser_Run(parser, -1);
++    todo_wine ok(hr == S_OK, "Expected S_OK got 0x%08x\n", hr);
++    todo_wine CHECK_CALLED(NotifyStartDocument);
++    todo_wine CHECK_CALLED(NotifyEndDocument);
++    todo_wine CHECK_CALLED(NotifyEndProlog);
++    todo_wine CHECK_CALLED(NotifyDataAvailable);
++
++    hr = IXMLParser_GetParserState(parser);
++    todo_wine ok(hr == XMLPARSER_STOPPED, "got 0x%08x\n", hr);
++
++    CLEAR_CALLED(NotifyStartDocument);
++    CLEAR_CALLED(NotifyEndDocument);
++    CLEAR_CALLED(NotifyEndProlog);
++    CLEAR_CALLED(NotifyDataAvailable);
++
++    IXMLParser_Release(parser);
++    IStream_Release(stream);
++}
++
++static void parse_documnet_error(void)
++{
++    HRESULT hr;
++    IXMLParser *parser;
++    IStream* stream = NULL;
++    HGLOBAL hMem;
++    LPBYTE bytes;
++
++    hr = CoCreateInstance(&CLSID_XMLParser30, NULL, CLSCTX_INPROC_SERVER, &IID_IXMLParser, (void**)&parser);
++    if (FAILED(hr))
++    {
++        win_skip("IXMLParser is not available (0x%08x)\n", hr);
++        return;
++    }
++
++    hMem = GlobalAlloc(GMEM_MOVEABLE, strlen(empty_document));
++    bytes = GlobalLock(hMem);
++    memcpy(bytes, empty_document, strlen(empty_document));
++    GlobalUnlock(hMem);
++
++    CreateStreamOnHGlobal(hMem, TRUE, &stream);
++
++    hr = IXMLParser_SetFactory(parser, &thenodefactory);
++    ok(hr == S_OK, "Expected S_OK got 0x%08x\n", hr);
++
++    hr = IXMLParser_SetInput(parser, (IUnknown *)stream);
 +    ok(hr == S_OK, "Expected S_OK got 0x%08x\n", hr);
 +
 +    hr = IXMLParser_GetParserState(parser);
-+    ok(hr == XMLPARSER_STOPPED, "got 0x%08x\n", hr);
++    ok(hr == XMLPARSER_IDLE, "got 0x%08x\n", hr);
++
++    hresult_NotifyEvent = E_FAIL;
++    SET_EXPECT(NotifyStartDocument);
++    SET_EXPECT(NotifyEndDocument);
++    SET_EXPECT(FactoryError);
++    hr = IXMLParser_Run(parser, -1);
++    todo_wine ok(hr == E_FAIL, "Expected S_OK got 0x%08x\n", hr);
++    todo_wine CHECK_CALLED(NotifyStartDocument);
++    todo_wine CHECK_CALLED(NotifyEndDocument);
++    todo_wine CHECK_CALLED(FactoryError);
++
++    hr = IXMLParser_GetParserState(parser);
++    todo_wine ok(hr == XMLPARSER_ERROR, "got 0x%08x\n", hr);
++
++    CLEAR_CALLED(NotifyStartDocument);
++    CLEAR_CALLED(NotifyEndDocument);
++    CLEAR_CALLED(NotifyEndProlog);
++    CLEAR_CALLED(NotifyDataAvailable);
++    CLEAR_CALLED(FactoryError);
 +
 +    IXMLParser_Release(parser);
 +    IStream_Release(stream);
@@ -165,11 +248,12 @@ index 51f2a27..93e6fd6 100644
  START_TEST(xmlparser)
  {
      HRESULT hr;
-@@ -157,6 +251,7 @@ START_TEST(xmlparser)
+@@ -160,6 +338,8 @@ START_TEST(xmlparser)
          return;
  
      create_test();
 +    parse_documnet();
++    parse_documnet_error();
  
      CoUninitialize();
  }
