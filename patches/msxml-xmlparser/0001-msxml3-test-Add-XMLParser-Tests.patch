@@ -1,8 +1,11 @@
 From 9c8595dbdad90013366271b0d82563e9d09a630f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Mar 2014 12:59:34 +1100
-Subject: [PATCH] msxml3/test: Add XMLParser Tests
+Subject: [PATCH v2] msxml3/test: Add XMLParser Tests
 
+With Signed-off.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/msxml3/tests/xmlparser.c | 196 ++++++++++++++++++++++++++++++++++++++++--
  1 file changed, 188 insertions(+), 8 deletions(-)
