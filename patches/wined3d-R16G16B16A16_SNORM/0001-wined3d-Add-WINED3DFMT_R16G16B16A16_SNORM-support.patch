@@ -1,0 +1,29 @@
+From eebd8f9846a08abd451008bae8e8a210fd8d61c0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 3 Aug 2016 11:08:07 +1000
+Subject: [PATCH] wined3d: Add WINED3DFMT_R16G16B16A16_SNORM support
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/wined3d/utils.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/dlls/wined3d/utils.c b/dlls/wined3d/utils.c
+index aae347b..4ca6c80 100644
+--- a/dlls/wined3d/utils.c
++++ b/dlls/wined3d/utils.c
+@@ -1281,6 +1281,11 @@ static const struct wined3d_format_texture_info format_texture_info[] =
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING
+             | WINED3DFMT_FLAG_RENDERTARGET,
+             WINED3D_GL_EXT_NONE,        NULL},
++    {WINED3DFMT_R16G16B16A16_SNORM,     GL_RGBA16,                        GL_RGBA16,                              0,
++            GL_RGBA,                    GL_UNSIGNED_SHORT,                0,
++            WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING
++            | WINED3DFMT_FLAG_RENDERTARGET,
++            WINED3D_GL_EXT_NONE,        NULL},
+     {WINED3DFMT_R8G8_UNORM,             GL_RG8,                           GL_RG8,                                 0,
+             GL_RG,                      GL_UNSIGNED_BYTE,                 0,
+             WINED3DFMT_FLAG_TEXTURE | WINED3DFMT_FLAG_POSTPIXELSHADER_BLENDING | WINED3DFMT_FLAG_FILTERING
+-- 
+2.8.1
+
