@@ -1,0 +1,26 @@
+From a519da437f97989ad76544582c23107dc26f985f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 3 Aug 2016 10:27:39 +1000
+Subject: [PATCH] wined3d: Check pointer before use
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/wined3d/query.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/wined3d/query.c b/dlls/wined3d/query.c
+index 97675ad..2101e62 100644
+--- a/dlls/wined3d/query.c
++++ b/dlls/wined3d/query.c
+@@ -537,7 +537,7 @@ static BOOL wined3d_timestamp_query_ops_poll(struct wined3d_query *query)
+ 
+     TRACE("query %p.\n", query);
+ 
+-    if (tq->context->tid != GetCurrentThreadId())
++    if (!tq->context || tq->context->tid != GetCurrentThreadId())
+     {
+         FIXME("%p Wrong thread, returning 1.\n", query);
+         tq->timestamp = 1;
+-- 
+2.8.1
+
