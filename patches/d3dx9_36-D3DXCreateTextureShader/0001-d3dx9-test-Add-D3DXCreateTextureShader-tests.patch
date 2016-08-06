@@ -1,49 +1,129 @@
-From b0fb600fffb0b660f1e34b270035d72741b4cd93 Mon Sep 17 00:00:00 2001
+From 3693341d4730f5bce0eab64f5080c61ab955714a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 12:34:27 +1100
 Subject: [PATCH] d3dx9/test: Add D3DXCreateTextureShader tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/d3dx9_36/tests/shader.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ dlls/d3dx9_36/tests/shader.c | 105 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 105 insertions(+)
 
 diff --git a/dlls/d3dx9_36/tests/shader.c b/dlls/d3dx9_36/tests/shader.c
-index 4a7ae67..52391c2 100644
+index 4a7ae67..a327ead 100644
 --- a/dlls/d3dx9_36/tests/shader.c
 +++ b/dlls/d3dx9_36/tests/shader.c
-@@ -6489,6 +6489,30 @@ static void test_registerset_defaults(void)
+@@ -6489,6 +6489,110 @@ static void test_registerset_defaults(void)
      if (wnd) DestroyWindow(wnd);
  }
  
++/*
++float4 Noise(float3 pos : POSITION, float3 size : PSIZE) : COLOR
++{
++return float4(.5, .5, .5, .5);
++}
++*/
++static const DWORD texture_noise[] = {
++    0x54580100, 0x0016fffe, 0x42415443, 0x0000001c, 0x0000001f, 0x54580100,
++    0x00000000, 0x00000000, 0x00008100, 0x0000001c, 0x4d007874, 0x6f726369,
++    0x74666f73, 0x29522820, 0x534c4820, 0x6853204c, 0x72656461, 0x6d6f4320,
++    0x656c6970, 0x2e362072, 0x36392e33, 0x312e3030, 0x34383336, 0xababab00,
++    0x000afffe, 0x54494c43, 0x00000004, 0x00000000, 0x3fe00000, 0x00000000,
++    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x0024fffe,
++    0x434c5846, 0x00000004, 0x10000001, 0x00000001, 0x00000000, 0x00000001,
++    0x00000000, 0x00000000, 0x00000004, 0x00000000, 0x10000001, 0x00000001,
++    0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000004, 0x00000001,
++    0x10000001, 0x00000001, 0x00000000, 0x00000001, 0x00000000, 0x00000000,
++    0x00000004, 0x00000002, 0x10000001, 0x00000001, 0x00000000, 0x00000001,
++    0x00000000, 0x00000000, 0x00000004, 0x00000003, 0xf0f0f0f0, 0x0f0f0f0f,
++    0x0000ffff
++};
++
 +void test_D3DXCreateTextureShader(void)
 +{
++    HWND wnd;
++    IDirect3D9 *d3d;
++    IDirect3DDevice9 *device;
++    D3DPRESENT_PARAMETERS d3dpp;
 +    HRESULT hr;
 +    ID3DXTextureShader *shader;
 +
++    if (!(wnd = CreateWindowA("static", "d3dx9_test", WS_OVERLAPPEDWINDOW, 0, 0,
++            640, 480, NULL, NULL, NULL, NULL)))
++    {
++        skip("Couldn't create application window\n");
++        return;
++    }
++    if (!(d3d = Direct3DCreate9(D3D_SDK_VERSION)))
++    {
++        skip("Couldn't create IDirect3D9 object\n");
++        DestroyWindow(wnd);
++        return;
++    }
++
++    ZeroMemory(&d3dpp, sizeof(d3dpp));
++    d3dpp.Windowed   = TRUE;
++    d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
++    hr = IDirect3D9_CreateDevice(d3d, D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, wnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &device);
++    if (FAILED(hr))
++    {
++        skip("Failed to create IDirect3DDevice9 object %#x\n", hr);
++        IDirect3D9_Release(d3d);
++        DestroyWindow(wnd);
++        return;
++    }
++
 +    hr = D3DXCreateTextureShader(NULL, NULL);
-+    ok(hr == D3DERR_INVALIDCALL, "got %08x, expected %08x\n", hr, D3DERR_INVALIDCALL);
++    ok(hr == D3DERR_INVALIDCALL, "got %08x\n", hr);
 +
 +    hr = D3DXCreateTextureShader(NULL, &shader);
-+    ok(hr == D3DERR_INVALIDCALL, "got %08x, expected %08x\n", hr, D3DERR_INVALIDCALL);
++    ok(hr == D3DERR_INVALIDCALL, "got %08x\n", hr);
 +
 +    hr = D3DXCreateTextureShader(shader_invalid, &shader);
-+    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x\n", hr);
 +
 +    hr = D3DXCreateTextureShader(shader_zero, &shader);
-+    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x\n", hr);
 +
 +    hr = D3DXCreateTextureShader(shader_empty, &shader);
-+    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x\n", hr);
 +
-+    hr = D3DXCreateTextureShader(simple_fx, &shader);
-+    todo_wine ok(hr == D3DXERR_INVALIDDATA, "got %08x, expected %08x\n", hr, D3DXERR_INVALIDDATA);
++    hr = D3DXCreateTextureShader(texture_noise, &shader);
++    ok(hr == S_OK, "got %08x\n", hr);
++    if(hr == S_OK)
++    {
++        ID3DXBuffer *buffer = NULL;
++        IDirect3DTexture9 *texture;
++
++        hr = shader->lpVtbl->GetConstantBuffer(shader, &buffer);
++        todo_wine ok(hr == S_OK, "got %08x\n", hr);
++        if(hr == S_OK)
++        {
++            /* Check contents */
++            ID3DXBuffer_Release(buffer);
++        }
++
++        hr = D3DXCreateTexture(device, 32, 32, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &texture);
++        ok(hr == S_OK, "got %08x\n", hr);
++
++        hr = D3DXFillTextureTX(texture, shader);
++        todo_wine ok(hr == S_OK, "got %08x\n", hr);
++        if(hr == S_OK)
++        {
++            /* Test what? */
++        }
++
++        shader->lpVtbl->Release(shader);
++        if(buffer)
++            IDirect3DTexture9_Release(buffer);
++    }
++
++    IDirect3D9_Release(device);
 +}
 +
  START_TEST(shader)
  {
      test_get_shader_size();
-@@ -6502,4 +6526,5 @@ START_TEST(shader)
+@@ -6502,4 +6606,5 @@ START_TEST(shader)
      test_get_shader_constant_variables();
      test_registerset();
      test_registerset_defaults();
