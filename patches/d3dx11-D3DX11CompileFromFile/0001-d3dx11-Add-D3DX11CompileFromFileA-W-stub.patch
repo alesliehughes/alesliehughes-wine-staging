@@ -1,0 +1,95 @@
+From 1b374bee9d77b4e71b09ec2db9fa4f8d3428e089 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 10 Aug 2016 14:23:15 +1000
+Subject: [PATCH] d3dx11: Add D3DX11CompileFromFileA/W stub
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=40846
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx11_42/d3dx11_42.spec |  4 ++--
+ dlls/d3dx11_43/async.c        | 24 ++++++++++++++++++++++++
+ dlls/d3dx11_43/d3dx11_43.spec |  4 ++--
+ include/d3dx11async.h         |  8 ++++++++
+ 4 files changed, 36 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/d3dx11_42/d3dx11_42.spec b/dlls/d3dx11_42/d3dx11_42.spec
+index 632e201..cb02a95 100644
+--- a/dlls/d3dx11_42/d3dx11_42.spec
++++ b/dlls/d3dx11_42/d3dx11_42.spec
+@@ -1,6 +1,6 @@
+ @ stdcall D3DX11CheckVersion(long long)
+-@ stub D3DX11CompileFromFileA
+-@ stub D3DX11CompileFromFileW
++@ stdcall D3DX11CompileFromFileA(str ptr ptr str str long long ptr ptr ptr ptr)
++@ stdcall D3DX11CompileFromFileW(wstr ptr ptr str str long long ptr ptr ptr ptr)
+ @ stdcall D3DX11CompileFromMemory(str long str ptr ptr str str long long ptr ptr ptr ptr)
+ @ stub D3DX11CompileFromResourceA
+ @ stub D3DX11CompileFromResourceW
+diff --git a/dlls/d3dx11_43/async.c b/dlls/d3dx11_43/async.c
+index 2c17ffb..b33c235 100644
+--- a/dlls/d3dx11_43/async.c
++++ b/dlls/d3dx11_43/async.c
+@@ -41,3 +41,27 @@ HRESULT WINAPI D3DX11CompileFromMemory(const char *data, SIZE_T data_size, const
+     return D3DCompile(data, data_size, filename, defines, include, entry_point, target,
+             sflags, eflags, shader, error_messages);
+ }
++
++HRESULT WINAPI D3DX11CompileFromFileA(const char *filename, const D3D10_SHADER_MACRO *defines,
++        ID3D10Include *include, const char *entry_point, const char *target, UINT sflags, UINT eflags,
++        ID3DX11ThreadPump *pump, ID3D10Blob **shader, ID3D10Blob **error_messages, HRESULT *hresult)
++{
++    FIXME("filename %s, defines %p, include %p, entry_point %s, target %s, sflags %#x, "
++            "eflags %#x, pump %p, shader %p, error_messages %p, hresult %p stub.\n",
++            debugstr_a(filename), defines, include, debugstr_a(entry_point), debugstr_a(target),
++            sflags, eflags, pump, shader, error_messages, hresult);
++
++    return E_NOTIMPL;
++}
++
++HRESULT WINAPI D3DX11CompileFromFileW(const WCHAR *filename, const D3D10_SHADER_MACRO *defines,
++        ID3D10Include *include, const char *entry_point, const char *target, UINT sflags, UINT eflags,
++        ID3DX11ThreadPump *pump, ID3D10Blob **shader, ID3D10Blob **error_messages, HRESULT *hresult)
++{
++    FIXME("filename %s, defines %p, include %p, entry_point %s, target %s, sflags %#x, "
++            "eflags %#x, pump %p, shader %p, error_messages %p, hresult %p stub.\n",
++            debugstr_w(filename), defines, include, debugstr_a(entry_point), debugstr_a(target),
++            sflags, eflags, pump, shader, error_messages, hresult);
++
++    return E_NOTIMPL;
++}
+diff --git a/dlls/d3dx11_43/d3dx11_43.spec b/dlls/d3dx11_43/d3dx11_43.spec
+index cb76d5f..69c12fb 100644
+--- a/dlls/d3dx11_43/d3dx11_43.spec
++++ b/dlls/d3dx11_43/d3dx11_43.spec
+@@ -1,6 +1,6 @@
+ @ stdcall D3DX11CheckVersion(long long)
+-@ stub D3DX11CompileFromFileA
+-@ stub D3DX11CompileFromFileW
++@ stdcall D3DX11CompileFromFileA(str ptr ptr str str long long ptr ptr ptr ptr)
++@ stdcall D3DX11CompileFromFileW(wstr ptr ptr str str long long ptr ptr ptr ptr)
+ @ stdcall D3DX11CompileFromMemory(str long str ptr ptr str str long long ptr ptr ptr ptr)
+ @ stub D3DX11CompileFromResourceA
+ @ stub D3DX11CompileFromResourceW
+diff --git a/include/d3dx11async.h b/include/d3dx11async.h
+index 210067b..ab4b507 100644
+--- a/include/d3dx11async.h
++++ b/include/d3dx11async.h
+@@ -30,6 +30,14 @@ HRESULT WINAPI D3DX11CompileFromMemory(const char *data, SIZE_T data_size, const
+         const char *target, UINT sflags, UINT eflags, ID3DX11ThreadPump *pump, ID3D10Blob **shader,
+         ID3D10Blob **error_messages, HRESULT *hresult);
+ 
++HRESULT WINAPI D3DX11CompileFromFileA(const char *filename, const D3D10_SHADER_MACRO *defines,
++        ID3D10Include *include, const char *entry_point, const char *target, UINT sflags, UINT eflags,
++        ID3DX11ThreadPump *pump, ID3D10Blob **shader, ID3D10Blob **error_messages, HRESULT *hresult);
++
++HRESULT WINAPI D3DX11CompileFromFileW(const WCHAR *filename, const D3D10_SHADER_MACRO *defines,
++        ID3D10Include *include, const char *entry_point, const char *target, UINT sflags, UINT eflags,
++        ID3DX11ThreadPump *pump, ID3D10Blob **shader, ID3D10Blob **error_messages, HRESULT *hresult);
++
+ #ifdef __cplusplus
+ }
+ #endif
+-- 
+2.8.1
+
