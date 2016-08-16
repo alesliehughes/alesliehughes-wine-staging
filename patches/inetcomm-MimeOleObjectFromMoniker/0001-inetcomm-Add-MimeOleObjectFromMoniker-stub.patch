@@ -1,0 +1,45 @@
+From f4975b931ef59eae0e12b192af3445ad7b3149e8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 12 Aug 2016 20:58:13 +1000
+Subject: [v3 PATCH] inetcomm: Add MimeOleObjectFromMoniker stub
+
+Fixes https://bugs.winehq.org/show_bug.cgi?id=41125
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/inetcomm.spec | 2 +-
+ dlls/inetcomm/mimeole.c     | 8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/inetcomm/inetcomm.spec b/dlls/inetcomm/inetcomm.spec
+index bfd115c..439a409 100644
+--- a/dlls/inetcomm/inetcomm.spec
++++ b/dlls/inetcomm/inetcomm.spec
+@@ -82,7 +82,7 @@
+ @ stdcall MimeOleGetPropertySchema(ptr)
+ @ stub MimeOleGetRelatedSection
+ @ stub MimeOleInetDateToFileTime
+-@ stub MimeOleObjectFromMoniker
++@ stdcall MimeOleObjectFromMoniker(long ptr ptr ptr ptr ptr)
+ @ stub MimeOleOpenFileStream
+ @ stub MimeOleParseMhtmlUrl
+ @ stub MimeOleParseRfc822Address
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 6046c74..e1e10bd 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -3436,3 +3436,11 @@ HRESULT WINAPI MimeGetAddressFormatW(REFIID riid, void *object, DWORD addr_type,
+ 
+     return E_NOTIMPL;
+ }
++
++HRESULT WINAPI MimeOleObjectFromMoniker(BINDF bindf, IMoniker *moniker, IBindCtx *binding,
++       REFIID riid, void **out, IMoniker **moniker_new)
++{
++    FIXME("(0x%08x, %p, %p, %s, %p, %p) stub\n", bindf, moniker, binding, debugstr_guid(riid), out, moniker_new);
++
++    return E_NOTIMPL;
++}
+-- 
+2.8.1
+
