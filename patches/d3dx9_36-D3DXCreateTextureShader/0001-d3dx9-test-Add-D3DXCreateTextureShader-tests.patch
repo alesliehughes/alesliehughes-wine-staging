@@ -1,18 +1,18 @@
-From 3693341d4730f5bce0eab64f5080c61ab955714a Mon Sep 17 00:00:00 2001
+From ab9d940503a544f9f98cdc76d4d130b7423bc3c0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 12:34:27 +1100
 Subject: [PATCH] d3dx9/test: Add D3DXCreateTextureShader tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/d3dx9_36/tests/shader.c | 105 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+ dlls/d3dx9_36/tests/shader.c | 107 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 107 insertions(+)
 
 diff --git a/dlls/d3dx9_36/tests/shader.c b/dlls/d3dx9_36/tests/shader.c
-index 4a7ae67..a327ead 100644
+index 4a7ae67..cb267e7 100644
 --- a/dlls/d3dx9_36/tests/shader.c
 +++ b/dlls/d3dx9_36/tests/shader.c
-@@ -6489,6 +6489,110 @@ static void test_registerset_defaults(void)
+@@ -6489,6 +6489,112 @@ static void test_registerset_defaults(void)
      if (wnd) DestroyWindow(wnd);
  }
  
@@ -98,7 +98,9 @@ index 4a7ae67..a327ead 100644
 +        todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +        if(hr == S_OK)
 +        {
-+            /* Check contents */
++            int size = ID3DXBuffer_GetBufferSize(buffer);
++            ok(size == 0, "GetBufferSize failed, got %u\n", size);
++
 +            ID3DXBuffer_Release(buffer);
 +        }
 +
@@ -123,12 +125,12 @@ index 4a7ae67..a327ead 100644
  START_TEST(shader)
  {
      test_get_shader_size();
-@@ -6502,4 +6606,5 @@ START_TEST(shader)
+@@ -6502,4 +6608,5 @@ START_TEST(shader)
      test_get_shader_constant_variables();
      test_registerset();
      test_registerset_defaults();
 +    test_D3DXCreateTextureShader();
  }
 -- 
-2.8.1
+1.9.1
 
