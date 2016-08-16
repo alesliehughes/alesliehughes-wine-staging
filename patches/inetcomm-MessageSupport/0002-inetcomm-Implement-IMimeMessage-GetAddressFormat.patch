@@ -1,0 +1,62 @@
+From dd5b2987a81f14e9bd36d979f6991b1c86e2ebbb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 25 Jul 2016 15:24:15 +1000
+Subject: [PATCH 2/2] inetcomm: Implement IMimeMessage GetAddressFormat
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/inetcomm/mimeole.c | 36 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index ddde4af..12a604a 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -2775,12 +2775,40 @@ static HRESULT WINAPI MimeMessage_GetAddressTypes(
+ 
+ static HRESULT WINAPI MimeMessage_GetAddressFormat(
+     IMimeMessage *iface,
+-    DWORD dwAdrTypes,
++    DWORD addr_type,
+     ADDRESSFORMAT format,
+-    LPSTR *ppszFormat)
++    LPSTR *value)
+ {
+-    FIXME("(%p)->(%d, %d, %p)\n", iface, dwAdrTypes, format, ppszFormat);
+-    return E_NOTIMPL;
++    PROPVARIANT prop;
++    HRESULT hr;
++
++    TRACE("(%p)->(%d, %d, %p)\n", iface, addr_type, format, value);
++
++    PropVariantInit(&prop);
++
++    prop.vt = VT_LPSTR;
++    switch(addr_type)
++    {
++        case IAT_FROM:
++            hr = MimeMessage_GetBodyProp(iface, HBODY_ROOT, "From", 0, &prop);
++            break;
++        case IAT_TO:
++            hr = MimeMessage_GetBodyProp(iface, HBODY_ROOT, "To", 0, &prop);
++            break;
++        case IAT_CC:
++            hr = MimeMessage_GetBodyProp(iface, HBODY_ROOT, "Cc", 0, &prop);
++            break;
++        default:
++            FIXME("Unknown address type %d\n", addr_type);
++            hr = MIME_E_NOT_FOUND;
++    }
++
++    if(SUCCEEDED(hr))
++        *value = prop.u.pszVal;
++
++FIXME("<- %s", debugstr_a(*value));
++
++    return hr;
+ }
+ 
+ static HRESULT WINAPI MimeMessage_EnumAddressTypes(
+-- 
+1.9.1
+

@@ -1,9 +1,10 @@
-From b0d3ab94c5c086971645b04d1ed3f1d978888679 Mon Sep 17 00:00:00 2001
+From 35b8111d17903f1f58ced83a952c4185ae596b53 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jul 2016 16:16:04 +1000
-Subject: [PATCH 1/2] inetcomm: Impelement MimeGetAddressFormatW
+Subject: [PATCH 1/2] inetcomm: Implement MimeGetAddressFormatW
 
 WIP: Requires IMimeMessage_GetAddressFormat to be implemented.
+WIP: Needs more test, so that I can have something to pass ;)
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -12,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 140 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index f4537f3..a3c00a6 100644
+index 6046c74..ddde4af 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -191,6 +191,23 @@ static LPSTR strdupA(LPCSTR str)
@@ -39,7 +40,7 @@ index f4537f3..a3c00a6 100644
  #define PARSER_BUF_SIZE 1024
  
  /*****************************************************
-@@ -3419,7 +3436,31 @@ HRESULT WINAPI MimeOleGetPropertySchema(IMimePropertySchema **schema)
+@@ -3432,7 +3449,31 @@ HRESULT WINAPI MimeOleGetPropertySchema(IMimePropertySchema **schema)
  HRESULT WINAPI MimeGetAddressFormatW(REFIID riid, void *object, DWORD addr_type,
         ADDRESSFORMAT addr_format, WCHAR **address)
  {
@@ -74,10 +75,10 @@ index f4537f3..a3c00a6 100644
 +    return hr;
  }
 diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
-index 84b2c8d..f39d473 100644
+index 011c19f..5fcaffa 100644
 --- a/dlls/inetcomm/tests/mimeole.c
 +++ b/dlls/inetcomm/tests/mimeole.c
-@@ -681,6 +681,102 @@ static void test_MimeOleGetPropertySchema(void)
+@@ -707,6 +707,102 @@ static void test_MimeOleGetPropertySchema(void)
      IMimePropertySchema_Release(schema);
  }
  
@@ -180,7 +181,7 @@ index 84b2c8d..f39d473 100644
  START_TEST(mimeole)
  {
      OleInitialize(NULL);
-@@ -695,5 +791,6 @@ START_TEST(mimeole)
+@@ -721,5 +817,6 @@ START_TEST(mimeole)
      test_BindToObject();
      test_BodyDeleteProp();
      test_MimeOleGetPropertySchema();
