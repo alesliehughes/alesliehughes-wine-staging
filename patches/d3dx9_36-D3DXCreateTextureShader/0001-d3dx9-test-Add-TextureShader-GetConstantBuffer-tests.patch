@@ -1,0 +1,141 @@
+From 139563844958eba93f8f78f7a3a4a95ee09e8457 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 Aug 2016 11:22:49 +1000
+Subject: [PATCH] d3dx9/test: Add TextureShader GetConstantBuffer tests
+
+Also makes test_texture_shader static
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3dx9_36/tests/texture.c | 97 ++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 82 insertions(+), 15 deletions(-)
+
+diff --git a/dlls/d3dx9_36/tests/texture.c b/dlls/d3dx9_36/tests/texture.c
+index 011f756..3b4748d 100644
+--- a/dlls/d3dx9_36/tests/texture.c
++++ b/dlls/d3dx9_36/tests/texture.c
+@@ -2007,27 +2007,28 @@ static void test_D3DXSaveTextureToFileInMemory(IDirect3DDevice9 *device)
+     IDirect3DVolumeTexture9_Release(volume_texture);
+ }
+ 
+-void test_texture_shader(void)
+-{
+-    static const DWORD shader_zero[] = {0x0};
+-    static const DWORD shader_invalid[] = {0xeeee0100};
+-    static const DWORD shader_empty[] = {0xfffe0200, 0x0000ffff};
+ #if 0
+ float4 main(float3 pos : POSITION, float3 size : PSIZE) : COLOR
+ {
+     return float4(pos, 1.0);
+ }
+ #endif
+-    static const DWORD shader_code[] =
+-    {
+-        0x54580100, 0x0015fffe, 0x42415443, 0x0000001c, 0x0000001f, 0x54580100, 0x00000000, 0x00000000,
+-        0x00000100, 0x0000001c, 0x4d007874, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820, 0x6853204c,
+-        0x72656461, 0x6d6f4320, 0x656c6970, 0x2e392072, 0x392e3932, 0x332e3235, 0x00313131, 0x000afffe,
+-        0x54494c43, 0x00000004, 0x00000000, 0x3ff00000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+-        0x00000000, 0x00000000, 0x0014fffe, 0x434c5846, 0x00000002, 0x10000003, 0x00000001, 0x00000000,
+-        0x00000003, 0x00000000, 0x00000000, 0x00000004, 0x00000000, 0x10000001, 0x00000001, 0x00000000,
+-        0x00000001, 0x00000000, 0x00000000, 0x00000004, 0x00000003, 0xf0f0f0f0, 0x0f0f0f0f, 0x0000ffff,
+-    };
++static const DWORD shader_code[] =
++{
++    0x54580100, 0x0015fffe, 0x42415443, 0x0000001c, 0x0000001f, 0x54580100, 0x00000000, 0x00000000,
++    0x00000100, 0x0000001c, 0x4d007874, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820, 0x6853204c,
++    0x72656461, 0x6d6f4320, 0x656c6970, 0x2e392072, 0x392e3932, 0x332e3235, 0x00313131, 0x000afffe,
++    0x54494c43, 0x00000004, 0x00000000, 0x3ff00000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
++    0x00000000, 0x00000000, 0x0014fffe, 0x434c5846, 0x00000002, 0x10000003, 0x00000001, 0x00000000,
++    0x00000003, 0x00000000, 0x00000000, 0x00000004, 0x00000000, 0x10000001, 0x00000001, 0x00000000,
++    0x00000001, 0x00000000, 0x00000000, 0x00000004, 0x00000003, 0xf0f0f0f0, 0x0f0f0f0f, 0x0000ffff,
++};
++
++static void test_texture_shader(void)
++{
++    static const DWORD shader_zero[] = {0x0};
++    static const DWORD shader_invalid[] = {0xeeee0100};
++    static const DWORD shader_empty[] = {0xfffe0200, 0x0000ffff};
+     IDirect3DVolumeTexture9 *volume_texture;
+     IDirect3DCubeTexture9 *cube_texture;
+     D3DPRESENT_PARAMETERS d3dpp;
+@@ -2231,6 +2232,71 @@ float4 main(float3 pos : POSITION, float3 size : PSIZE) : COLOR
+     IUnknown_Release(tx);
+ }
+ 
++static void test_texture_shader_const_buffer(void)
++{
++    HRESULT hr;
++    ID3DXTextureShader *shader;
++#if 0
++float x = .5;
++float4 main(float3 pos : POSITION, float3 size : PSIZE) : COLOR
++{
++return float4(.5, x, .5, .5);
++}
++#endif
++    static const DWORD texture_noise[] = {
++        0x54580100, 0x0024fffe, 0x42415443, 0x0000001c, 0x00000057, 0x54580100, 0x00000001, 0x0000001c,
++        0x00000100, 0x00000054, 0x00000030, 0x00000002, 0x00000001, 0x00000034, 0x00000044, 0xabab0078,
++        0x00030000, 0x00010001, 0x00000001, 0x00000000, 0x3f000000, 0x00000000, 0x00000000, 0x00000000,
++        0x4d007874, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820, 0x6853204c, 0x72656461, 0x6d6f4320,
++        0x656c6970, 0x2e362072, 0x36392e33, 0x312e3030, 0x34383336, 0xababab00, 0x0012fffe, 0x54494c43,
++        0x00000008, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
++        0x00000000, 0x00000000, 0x3fe00000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
++        0x00000000, 0x0024fffe, 0x434c5846, 0x00000004, 0x10000001, 0x00000001, 0x00000000, 0x00000001,
++        0x00000004, 0x00000000, 0x00000004, 0x00000000, 0x10000001, 0x00000001, 0x00000000, 0x00000001,
++        0x00000004, 0x00000000, 0x00000004, 0x00000002, 0x10000001, 0x00000001, 0x00000000, 0x00000001,
++        0x00000004, 0x00000000, 0x00000004, 0x00000003, 0x10000001, 0x00000001, 0x00000000, 0x00000002,
++        0x00000000, 0x00000000, 0x00000004, 0x00000001, 0xf0f0f0f0, 0x0f0f0f0f, 0x0000ffff
++    };
++
++    hr = D3DXCreateTextureShader(texture_noise, &shader);
++    ok(hr == S_OK, "got %08x\n", hr);
++    if(hr == S_OK)
++    {
++        ID3DXBuffer *buffer = NULL;
++
++        hr = shader->lpVtbl->GetConstantBuffer(shader, &buffer);
++        todo_wine ok(hr == S_OK, "got %08x\n", hr);
++        if(hr == S_OK)
++        {
++            int size = ID3DXBuffer_GetBufferSize(buffer);
++            ok(size == 16, "GetBufferSize failed, got %u\n", size);
++
++            ID3DXBuffer_Release(buffer);
++        }
++
++        shader->lpVtbl->Release(shader);
++    }
++
++    hr = D3DXCreateTextureShader(shader_code, &shader);
++    ok(hr == S_OK, "got %08x\n", hr);
++    if(hr == S_OK)
++    {
++        ID3DXBuffer *buffer = NULL;
++
++        hr = shader->lpVtbl->GetConstantBuffer(shader, &buffer);
++        todo_wine ok(hr == S_OK, "got %08x\n", hr);
++        if(hr == S_OK)
++        {
++            int size = ID3DXBuffer_GetBufferSize(buffer);
++            ok(size == 0, "GetBufferSize failed, got %u\n", size);
++
++            ID3DXBuffer_Release(buffer);
++        }
++
++        shader->lpVtbl->Release(shader);
++    }
++}
++
+ START_TEST(texture)
+ {
+     HWND wnd;
+@@ -2295,4 +2361,5 @@ START_TEST(texture)
+     DestroyWindow(wnd);
+ 
+     test_texture_shader();
++    test_texture_shader_const_buffer();
+ }
+-- 
+2.8.1
+
