@@ -1,0 +1,31 @@
+From 13ba62eb8d4b261388759e506685604adffbf134 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Aug 2016 16:30:13 +1000
+Subject: [PATCH 2/2] comdlg: Select all text when enter is pressed
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/comdlg32/filedlg.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/dlls/comdlg32/filedlg.c b/dlls/comdlg32/filedlg.c
+index c4bced9..95eacd3 100644
+--- a/dlls/comdlg32/filedlg.c
++++ b/dlls/comdlg32/filedlg.c
+@@ -2552,6 +2552,13 @@ BOOL FILEDLG95_OnOpen(HWND hwnd)
+           COMDLG32_SHFree(pidlCurrent);
+           if (filename_is_edit( fodInfos ))
+               SendMessageW(fodInfos->DlgInfos.hwndFileName, EM_SETSEL, 0, -1);
++          else
++          {
++              HWND hwnd;
++
++              hwnd = (HWND)SendMessageA(fodInfos->DlgInfos.hwndFileName, CBEM_GETEDITCONTROL, 0, 0);
++              SendMessageW(hwnd, EM_SETSEL, 0, -1);
++          }
+         }
+       }
+       ret = FALSE;
+-- 
+1.9.1
+
