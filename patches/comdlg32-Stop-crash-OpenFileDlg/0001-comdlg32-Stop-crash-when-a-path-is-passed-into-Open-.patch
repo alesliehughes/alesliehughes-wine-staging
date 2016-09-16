@@ -1,0 +1,35 @@
+From 2aa1472ede5e943d19d19645c5616916f67cc172 Mon Sep 17 00:00:00 2001
+From: Bruno Jesus <00cpxxx@gmail.com>
+Date: Tue, 13 Sep 2016 15:22:56 +1000
+Subject: [PATCH] comdlg32: Stop crash when a path is passed into Open File
+ Dialog
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=30673
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/comdlg32/filedlg.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/comdlg32/filedlg.c b/dlls/comdlg32/filedlg.c
+index 95eacd3..b84ed72 100644
+--- a/dlls/comdlg32/filedlg.c
++++ b/dlls/comdlg32/filedlg.c
+@@ -1565,8 +1565,12 @@ static LRESULT FILEDLG95_InitControls(HWND hwnd)
+          result = GetFullPathNameW(fodInfos->filename, MAX_PATH, tmpBuf, &nameBit);
+          if (result) {
+ 
+-            /* nameBit is always shorter than the original filename */
+-            lstrcpyW(fodInfos->filename,nameBit);
++            /* nameBit is always shorter than the original filename. It may be NULL
++             * when the filename contains only a drive name instead of file name */
++            if (nameBit)
++                lstrcpyW(fodInfos->filename,nameBit);
++            else
++                *fodInfos->filename = '\0';
+ 
+             *nameBit = 0x00;
+             MemFree(fodInfos->initdir);
+-- 
+1.9.1
+
