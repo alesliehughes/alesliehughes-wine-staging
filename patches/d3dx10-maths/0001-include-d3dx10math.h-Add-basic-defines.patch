@@ -1,0 +1,69 @@
+From f7d2c5f172c162c997d9c9e3d1fb47ef6e500f48 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Aug 2016 09:13:27 +1000
+Subject: [PATCH] include/d3dx10math.h: Add basic defines
+
+Defines taken from d3d9types.h
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/d3dx10math.h | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+
+diff --git a/include/d3dx10math.h b/include/d3dx10math.h
+index a96784b..2481eaa 100644
+--- a/include/d3dx10math.h
++++ b/include/d3dx10math.h
+@@ -24,6 +24,49 @@
+ 
+ #include <math.h>
+ 
++#ifndef D3DVECTOR_DEFINED
++typedef struct _D3DVECTOR
++{
++    union
++    {
++        float x;
++        float dvX;
++    } DUMMYUNIONNAME1;
++    union
++    {
++        float y;
++        float dvY;
++    } DUMMYUNIONNAME2;
++    union
++    {
++        float z;
++        float dvZ;
++    } DUMMYUNIONNAME3;
++} D3DVECTOR;
++#define D3DVECTOR_DEFINED
++#endif
++
++#ifndef D3DMATRIX_DEFINED
++typedef struct _D3DMATRIX
++{
++    union
++    {
++        struct
++        {
++            float _11, _12, _13, _14;
++            float _21, _22, _23, _24;
++            float _31, _32, _33, _34;
++            float _41, _42, _43, _44;
++        };
++        float m[4][4];
++    };
++} D3DMATRIX;
++#define D3DMATRIX_DEFINED
++#endif
++
++#define D3DX_PI    (3.14159265358979323846)
++#define D3DX_1BYPI (1.0 / D3DX_PI)
++
+ typedef enum _D3DX_CPU_OPTIMIZATION
+ {
+     D3DX_NOT_OPTIMIZED,
+-- 
+1.9.1
+

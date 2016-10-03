@@ -1,0 +1,1 @@
+To replace d3dx10-D3DX-Stubs\0001-include-Add-d3dx10math.h.patch into smaller chucks.
