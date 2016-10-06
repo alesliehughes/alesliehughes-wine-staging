@@ -1,20 +1,20 @@
-From 9a5c7063566bd7ef26c90dd94f292aeb5c4cd39b Mon Sep 17 00:00:00 2001
+From 2260c58f6e70abb8c70d6c868a60e24564a409fa Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Dec 2015 12:07:51 +1100
-Subject: [PATCH 2/9] include: Add msado15.idl
+Subject: [PATCH 02/12] include: Add msado15.idl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  include/Makefile.in |    1 +
- include/msado15.idl | 2024 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 2025 insertions(+)
+ include/msado15.idl | 2043 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 2044 insertions(+)
  create mode 100644 include/msado15.idl
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 129ff6d..fe66557 100644
+index 89004b8..c77b14e 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -90,6 +90,7 @@ IDL_SRCS = \
+@@ -94,6 +94,7 @@ IDL_SRCS = \
  	mmc.idl \
  	mmdeviceapi.idl \
  	mmstream.idl \
@@ -24,10 +24,10 @@ index 129ff6d..fe66557 100644
  	msdadc.idl \
 diff --git a/include/msado15.idl b/include/msado15.idl
 new file mode 100644
-index 0000000..0eb6c97
+index 0000000..826edde
 --- /dev/null
 +++ b/include/msado15.idl
-@@ -0,0 +1,2024 @@
+@@ -0,0 +1,2043 @@
 +/*
 + * Copyright 2015 Alistair Leslie-Hughes
 + *
@@ -48,6 +48,12 @@ index 0000000..0eb6c97
 +
 +import "oaidl.idl";
 +import "ocidl.idl";
++
++#if !defined(progid) && !defined(__WIDL__)
++#define threading(model)
++#define progid(str)
++#define vi_progid(str)
++#endif
 +
 +interface _ADO;
 +interface _Collection;
@@ -1997,8 +2003,10 @@ index 0000000..0eb6c97
 +    importlib("stdole2.tlb");
 +
 +    [
-+      uuid(00000514-0000-0010-8000-00aa006d2ea4),
-+      licensed
++        progid("ADODB.Connection.6.0"),
++        vi_progid("ADODB.Connection"),
++        threading(apartment),
++        uuid(00000514-0000-0010-8000-00aa006d2ea4)
 +    ]
 +    coclass Connection
 +    {
@@ -2007,8 +2015,10 @@ index 0000000..0eb6c97
 +    };
 +
 +    [
-+        uuid(00000507-0000-0010-8000-00aa006d2ea4),
-+        licensed
++        progid("ADODB.Command.6.0"),
++        vi_progid("ADODB.Command"),
++        threading(both),
++        uuid(00000507-0000-0010-8000-00aa006d2ea4)
 +    ]
 +    coclass Command
 +    {
@@ -2016,8 +2026,10 @@ index 0000000..0eb6c97
 +    };
 +
 +    [
-+        uuid(00000535-0000-0010-8000-00aa006d2ea4),
-+        licensed
++        progid("ADODB.Recordset.6.0"),
++        vi_progid("ADODB.Recordset"),
++        threading(both),
++        uuid(00000535-0000-0010-8000-00aa006d2ea4)
 +    ]
 +    coclass Recordset
 +    {
@@ -2026,8 +2038,10 @@ index 0000000..0eb6c97
 +    };
 +
 +    [
-+      uuid(0000050b-0000-0010-8000-00aa006d2ea4),
-+      licensed
++        progid("ADODB.Parameter.6.0"),
++        vi_progid("ADODB.Parameter"),
++        threading(both),
++        uuid(0000050b-0000-0010-8000-00aa006d2ea4)
 +    ]
 +    coclass Parameter
 +    {
@@ -2035,8 +2049,10 @@ index 0000000..0eb6c97
 +    };
 +
 +    [
-+        uuid(00000560-0000-0010-8000-00aa006d2ea4),
-+        licensed
++        progid("ADODB.Record.6.0"),
++        vi_progid("ADODB.Record"),
++        threading(apartment),
++        uuid(00000560-0000-0010-8000-00aa006d2ea4)
 +    ]
 +    coclass Record
 +    {
@@ -2044,6 +2060,9 @@ index 0000000..0eb6c97
 +    };
 +
 +    [
++        progid("ADODB.Stream.6.0"),
++        vi_progid("ADODB.Stream"),
++        threading(apartment),
 +        uuid(00000566-0000-0010-8000-00aa006d2ea4),
 +        licensed
 +    ]

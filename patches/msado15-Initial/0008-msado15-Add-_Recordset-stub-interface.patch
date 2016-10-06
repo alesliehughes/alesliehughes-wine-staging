@@ -1,7 +1,7 @@
-From c060056d7f0cb13648018c3c73a954eedb1515e2 Mon Sep 17 00:00:00 2001
+From 42847bf28663ff9d16b29a47f8dec77c4cc4ab87 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Mon, 4 Jan 2016 14:36:06 +1100
-Subject: [PATCH 8/9] msado15: Add _Recordset stub interface
+Date: Fri, 7 Oct 2016 09:44:05 +1100
+Subject: [PATCH 08/12] msado15: Add _Recordset stub interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -15,16 +15,18 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/msado15/recordset.c
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
-index bd93d3c..505db20 100644
+index c24f305..d63e890 100644
 --- a/dlls/msado15/Makefile.in
 +++ b/dlls/msado15/Makefile.in
-@@ -3,4 +3,5 @@ MODULE    = msado15.dll
+@@ -3,6 +3,7 @@ MODULE    = msado15.dll
  
  C_SRCS = \
  	connection.c \
 -	msado15.c
 +	msado15.c \
 +	recordset.c
+ 
+ IDL_SRCS = msado15_typelib.idl
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
 index c52af11..e159671 100644
 --- a/dlls/msado15/connection.c

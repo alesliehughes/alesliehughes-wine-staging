@@ -1,0 +1,72 @@
+From b60cc12f2ddfcd9314b0eeb06e78c8508c640bf2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 7 Oct 2016 14:33:42 +1100
+Subject: [PATCH 11/12] msado15/tests: Add initial _Recordset test
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msado15/tests/connection.c | 43 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/tests/connection.c b/dlls/msado15/tests/connection.c
+index 4c16c21..eca79e0 100644
+--- a/dlls/msado15/tests/connection.c
++++ b/dlls/msado15/tests/connection.c
+@@ -82,11 +82,52 @@ if(0)   /* Crashes on windows */
+     _Connection_Release(connection);
+ }
+ 
++static void test_recordset_interface(void)
++{
++    HRESULT hr;
++    _Recordset *recordset;
++    _ADO *ado;
++    Recordset15 *recordset15;
++    Recordset20 *recordset20;
++    Recordset21 *recordset21;
++
++    hr = CoCreateInstance(&CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER,
++            &IID__Recordset, (void**)&recordset);
++    if(FAILED(hr))
++    {
++        skip("Failed to create Recordset instance\n");
++        return;
++    }
++
++    hr = _Recordset_QueryInterface(recordset, &IID__ADO, (void**)&ado);
++    ok(hr == S_OK, "Failed to get _ADO interface\n");
++    if(hr == S_OK)
++        _ADO_Release(ado);
++
++    hr = _Recordset_QueryInterface(recordset, &IID_Recordset15, (void**)&recordset15);
++    ok(hr == S_OK, "Failed to get Recordset15 interface\n");
++    if(hr == S_OK)
++        Recordset15_Release(recordset15);
++
++    hr = _Recordset_QueryInterface(recordset, &IID_Recordset20, (void**)&recordset20);
++    ok(hr == S_OK, "Failed to get Recordset20 interface\n");
++    if(hr == S_OK)
++        Recordset20_Release(recordset20);
++
++    hr = _Recordset_QueryInterface(recordset, &IID_Recordset21, (void**)&recordset21);
++    ok(hr == S_OK, "Failed to get Recordset21 interface\n");
++    if(hr == S_OK)
++        Recordset21_Release(recordset21);
++
++    _Recordset_Release(recordset);
++}
++
+ START_TEST(connection)
+ {
+     CoInitialize(NULL);
+ 
+     test_connection_interface();
++    test_recordset_interface();
+ 
+     CoUninitialize();
+-}
+\ No newline at end of file
++}
+-- 
+1.9.1
+

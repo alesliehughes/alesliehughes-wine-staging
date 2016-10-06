@@ -1,7 +1,7 @@
-From 9a956975c7f6506be82f15f1076469a1c9074157 Mon Sep 17 00:00:00 2001
+From e52f2f776e5c41ee0cb8c7d6f08156c340ec2933 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Dec 2015 14:41:44 +1100
-Subject: [PATCH 6/9] msado15: Implement _Connection.get_state
+Subject: [PATCH 06/12] msado15: Implement _Connection.get_state
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

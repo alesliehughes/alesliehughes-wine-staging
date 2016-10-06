@@ -1,7 +1,7 @@
-From f6c7f399dc0f471513400a546a3e7836d5dd5781 Mon Sep 17 00:00:00 2001
+From 503638be9ca1408425929fca90692aef29a2efaf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Dec 2015 08:46:24 +1100
-Subject: [PATCH 7/9] msado: Implement Connection get/put CommandTimeout
+Subject: [PATCH 07/12] msado: Implement Connection get/put CommandTimeout
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

@@ -1,7 +1,7 @@
-From 7fb6e631458a5c827d8fdd0d2f90145d418e4316 Mon Sep 17 00:00:00 2001
+From db2c82e2a60860f485ba1d23d072773bff551006 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Dec 2015 11:09:39 +1100
-Subject: [PATCH 4/9] msad015: Add stubbed _Connection interface
+Subject: [PATCH 04/12] msad015: Add stubbed _Connection interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -12,10 +12,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/msado15/connection.c
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
-index 888be9a..bd93d3c 100644
+index 0a98cc6..c24f305 100644
 --- a/dlls/msado15/Makefile.in
 +++ b/dlls/msado15/Makefile.in
-@@ -1,4 +1,6 @@
+@@ -1,6 +1,8 @@
  MODULE    = msado15.dll
  
  
@@ -23,6 +23,8 @@ index 888be9a..bd93d3c 100644
 +C_SRCS = \
 +	connection.c \
 +	msado15.c
+ 
+ IDL_SRCS = msado15_typelib.idl
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
 new file mode 100644
 index 0000000..0bf506f

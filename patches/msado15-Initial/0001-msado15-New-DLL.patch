@@ -1,7 +1,7 @@
-From b8b5eea199fe718268cb10e88f366a911a82aa02 Mon Sep 17 00:00:00 2001
+From 930d29b6c56fa417450c3f95b1e9d4a3651befe4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 15 Dec 2015 10:39:50 +1100
-Subject: [PATCH 1/9] msado15: New DLL
+Date: Fri, 7 Oct 2016 09:13:06 +1100
+Subject: [PATCH 01/12] msado15: New DLL
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -17,10 +17,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/msado15/msado15.spec
 
 diff --git a/configure b/configure
-index 06e3b4a..abbcb35 100755
+index e3181e0..4deb3d7 100755
 --- a/configure
 +++ b/configure
-@@ -1164,6 +1164,7 @@ enable_mpr
+@@ -1230,6 +1230,7 @@ enable_mpr
  enable_mprapi
  enable_msacm32_drv
  enable_msacm32
@@ -28,21 +28,21 @@ index 06e3b4a..abbcb35 100755
  enable_msadp32_acm
  enable_msasn1
  enable_mscat32
-@@ -17663,6 +17664,7 @@ wine_fn_config_dll msacm.dll16 enable_win16
+@@ -18019,6 +18020,7 @@ wine_fn_config_dll msacm.dll16 enable_win16
  wine_fn_config_dll msacm32.drv enable_msacm32_drv
- wine_fn_config_dll msacm32 enable_msacm32 implib,po
+ wine_fn_config_dll msacm32 enable_msacm32 clean,implib
  wine_fn_config_test dlls/msacm32/tests msacm32_test
 +wine_fn_config_dll msado15 enable_msado15
  wine_fn_config_dll msadp32.acm enable_msadp32_acm
  wine_fn_config_dll msasn1 enable_msasn1 implib
  wine_fn_config_dll mscat32 enable_mscat32
 diff --git a/configure.ac b/configure.ac
-index d47f7e9..5f12926 100644
+index 741a4ef..ca1638e 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2997,6 +2997,7 @@ WINE_CONFIG_DLL(msacm.dll16,enable_win16)
+@@ -3109,6 +3109,7 @@ WINE_CONFIG_DLL(msacm.dll16,enable_win16)
  WINE_CONFIG_DLL(msacm32.drv)
- WINE_CONFIG_DLL(msacm32,,[implib,po])
+ WINE_CONFIG_DLL(msacm32,,[clean,implib])
  WINE_CONFIG_TEST(dlls/msacm32/tests)
 +WINE_CONFIG_DLL(msado15)
  WINE_CONFIG_DLL(msadp32.acm)
@@ -162,11 +162,11 @@ index 0000000..d7da6e7
 +@ stub RNIGetCompatibleVersion
 \ No newline at end of file
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index 7178140..240833d 100644
+index a92a9fe..8f40fb9 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -2586,6 +2586,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
- 16422,Windows NT\Accessories,wordpad.exe
+@@ -2603,6 +2603,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+ 16427,Microsoft Shared\TextConv,
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
 +16427,System\ado,msado15.dll

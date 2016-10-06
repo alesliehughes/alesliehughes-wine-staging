@@ -1,7 +1,7 @@
-From d1d9a2a19d9752cdb0feca6baf93290ccfb67828 Mon Sep 17 00:00:00 2001
+From b8af92093f6e3fd62e71fffde9971dfe7af943f0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 4 Jan 2016 15:46:53 +1100
-Subject: [PATCH 9/9] msado15: Add _Command stub interface
+Subject: [PATCH 09/12] msado15: Add _Command stub interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/msado15/command.c
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
-index 505db20..58d78ef 100644
+index d63e890..1754dcc 100644
 --- a/dlls/msado15/Makefile.in
 +++ b/dlls/msado15/Makefile.in
 @@ -2,6 +2,7 @@ MODULE    = msado15.dll
@@ -26,7 +26,7 @@ index 505db20..58d78ef 100644
  	recordset.c
 diff --git a/dlls/msado15/command.c b/dlls/msado15/command.c
 new file mode 100644
-index 0000000..8a709f8
+index 0000000..454edb8
 --- /dev/null
 +++ b/dlls/msado15/command.c
 @@ -0,0 +1,391 @@
@@ -67,7 +67,7 @@ index 0000000..8a709f8
 +
 +typedef struct
 +{
-+    _Command _Command_iface;
++    _Command Command_iface;
 +
 +    LONG ref;
 +} command;
@@ -75,7 +75,7 @@ index 0000000..8a709f8
 +
 +static inline command *impl_from_Command(_Command *iface)
 +{
-+    return CONTAINING_RECORD(iface, command, _Command_iface);
++    return CONTAINING_RECORD(iface, command, Command_iface);
 +}
 +
 +static HRESULT WINAPI command_QueryInterface(_Command *iface, REFIID riid, void **out)
@@ -85,9 +85,9 @@ index 0000000..8a709f8
 +
 +    *out = NULL;
 +
-+    if(IsEqualIID(riid, &IID_IUnknown)    ||
-+       IsEqualIID(riid, &IID_IDispatch)   ||
-+       IsEqualIID(riid, &IID__ADO)        ||
++    if(IsEqualIID(riid, &IID_IUnknown)   ||
++       IsEqualIID(riid, &IID_IDispatch)  ||
++       IsEqualIID(riid, &IID__ADO)       ||
 +       IsEqualIID(riid, &IID_Command15)  ||
 +       IsEqualIID(riid, &IID_Command25)  ||
 +       IsEqualIID(riid, &IID__Command))
@@ -252,7 +252,7 @@ index 0000000..8a709f8
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI command_CreateParameter(_Command *iface, BSTR name, DataTypeEnum type, 
++static HRESULT WINAPI command_CreateParameter(_Command *iface, BSTR name, DataTypeEnum type,
 +    ParameterDirectionEnum direction, LONG size, VARIANT value, _Parameter **parameter)
 +{
 +    command *This = impl_from_Command(iface);
@@ -414,14 +414,13 @@ index 0000000..8a709f8
 +    if (!This)
 +	    return E_OUTOFMEMORY;
 +
-+    This->_Command_iface.lpVtbl = &command_vtbl;
++    This->Command_iface.lpVtbl = &command_vtbl;
 +    This->ref = 1;
 +
-+    *out = &This->_Command_iface;
++    *out = &This->Command_iface;
 +
 +    return S_OK;
 +}
-\ No newline at end of file
 diff --git a/dlls/msado15/msado15.c b/dlls/msado15/msado15.c
 index b8adf74..07a642f 100644
 --- a/dlls/msado15/msado15.c
