@@ -3,6 +3,9 @@ From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Aug 2016 10:27:39 +1000
 Subject: [PATCH] wined3d: Check pointer before use
 
+Need for Speed - The Run
+See Mailing list - Dev for comments about a proper fix.
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/wined3d/query.c | 2 +-
