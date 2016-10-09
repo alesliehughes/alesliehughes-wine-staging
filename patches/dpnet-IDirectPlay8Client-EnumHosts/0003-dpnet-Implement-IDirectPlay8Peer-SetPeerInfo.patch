@@ -1,16 +1,16 @@
-From f78d841c44a8a7d7024fd862eb4eacddb927ee9f Mon Sep 17 00:00:00 2001
+From 2ea12bb915ac8c688b9bbf5a2fdec7c987e418d0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
-Subject: [PATCH 3/5] dpnet: Implement IDirectPlay8Peer SetPeerInfo
+Subject: [PATCH 3/6] dpnet: Implement IDirectPlay8Peer SetPeerInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/peer.c       | 61 ++++++++++++++++++++++++++++++++++++++++++++++---
- dlls/dpnet/tests/peer.c | 41 +++++++++++++++++++++++++++++++++
- 2 files changed, 99 insertions(+), 3 deletions(-)
+ dlls/dpnet/peer.c       | 67 ++++++++++++++++++++++++++++++++++++++++++++++---
+ dlls/dpnet/tests/peer.c | 61 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 125 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index a07a59a..cab95df 100644
+index a07a59a..d2a9a4a 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -33,6 +33,8 @@
@@ -72,7 +72,7 @@ index a07a59a..cab95df 100644
  
      return RefCount;
  }
-@@ -310,9 +339,32 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SetPeerInfo(IDirectPlay8Peer *iface,
+@@ -310,9 +339,38 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SetPeerInfo(IDirectPlay8Peer *iface,
          const DPN_PLAYER_INFO * const pdpnPlayerInfo, void * const pvAsyncContext,
          DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -82,13 +82,19 @@ index a07a59a..cab95df 100644
 -    return DPNERR_GENERIC;
 +    TRACE("(%p)->(%p,%p,%p,%x)\n", This, pdpnPlayerInfo, pvAsyncContext, phAsyncHandle, dwFlags);
 +
++    if(!pdpnPlayerInfo)
++        return E_POINTER;
++
 +    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_NAME)
 +    {
 +        heap_free(This->peername);
 +
++        if(!pdpnPlayerInfo->pwszName)
++            return E_OUTOFMEMORY;
++
 +        This->peername = heap_strdupW(pdpnPlayerInfo->pwszName);
 +        if (!This->peername)
-+            return DPNERR_OUTOFMEMORY;
++            return E_OUTOFMEMORY;
 +    }
 +
 +    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_DATA)
@@ -98,7 +104,7 @@ index a07a59a..cab95df 100644
 +        This->datasize = pdpnPlayerInfo->dwDataSize;
 +        This->data = heap_alloc(pdpnPlayerInfo->dwDataSize);
 +        if (!This->data)
-+            return DPNERR_OUTOFMEMORY;
++            return E_OUTOFMEMORY;
 +
 +        memcpy(This->data, pdpnPlayerInfo->pvData, pdpnPlayerInfo->dwDataSize);
 +    }
@@ -107,7 +113,7 @@ index a07a59a..cab95df 100644
  }
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_GetPeerInfo(IDirectPlay8Peer *iface, const DPNID dpnid,
-@@ -533,6 +585,9 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
+@@ -533,6 +591,9 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
      Client->usercontext = NULL;
      Client->msghandler = NULL;
      Client->flags = 0;
@@ -118,10 +124,10 @@ index a07a59a..cab95df 100644
      init_dpn_sp_caps(&Client->spcaps);
  
 diff --git a/dlls/dpnet/tests/peer.c b/dlls/dpnet/tests/peer.c
-index 1fec1f2..6d4102a 100644
+index 1fec1f2..4f699f2 100644
 --- a/dlls/dpnet/tests/peer.c
 +++ b/dlls/dpnet/tests/peer.c
-@@ -212,6 +212,46 @@ static void test_get_sp_caps(void)
+@@ -212,6 +212,66 @@ static void test_get_sp_caps(void)
         "expected 0x10000, got 0x%x\n", caps.dwSystemBufferSize);
  }
  
@@ -137,9 +143,12 @@ index 1fec1f2..6d4102a 100644
 +    info.dwSize = sizeof(DPN_PLAYER_INFO);
 +    info.dwInfoFlags = DPNINFO_NAME;
 +
++    hr = IDirectPlay8Peer_SetPeerInfo(peer, NULL, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == E_POINTER, "got %x\n", hr);
++
 +    info.pwszName = NULL;
 +    hr = IDirectPlay8Peer_SetPeerInfo(peer, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
-+    ok(hr == S_OK, "got %x\n", hr);
++    ok(hr == E_OUTOFMEMORY, "got %x\n", hr);
 +
 +    info.pwszName = name;
 +    hr = IDirectPlay8Peer_SetPeerInfo(peer, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
@@ -147,6 +156,23 @@ index 1fec1f2..6d4102a 100644
 +
 +    info.dwInfoFlags = DPNINFO_NAME;
 +    info.pwszName = name2;
++    hr = IDirectPlay8Peer_SetPeerInfo(peer, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++if(0) /* Crashes on windows */
++{
++    info.dwInfoFlags = DPNINFO_DATA;
++    info.pwszName = NULL;
++    info.pvData = NULL;
++    info.dwDataSize = sizeof(data);
++    hr = IDirectPlay8Peer_SetPeerInfo(peer, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++}
++
++    info.dwInfoFlags = DPNINFO_DATA;
++    info.pwszName = NULL;
++    info.pvData = data;
++    info.dwDataSize = 0;
 +    hr = IDirectPlay8Peer_SetPeerInfo(peer, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
 +    ok(hr == S_OK, "got %x\n", hr);
 +
@@ -168,7 +194,7 @@ index 1fec1f2..6d4102a 100644
  static void test_cleanup_dp(void)
  {
      HRESULT hr;
-@@ -238,5 +278,6 @@ START_TEST(peer)
+@@ -238,5 +298,6 @@ START_TEST(peer)
      test_enum_service_providers();
      test_enum_hosts();
      test_get_sp_caps();

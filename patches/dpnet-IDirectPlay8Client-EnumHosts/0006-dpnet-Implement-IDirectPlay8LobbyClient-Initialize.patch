@@ -1,0 +1,65 @@
+From 44489218074c8ee35284a97e4a4d652f8362420d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 10 Oct 2016 12:12:04 +1100
+Subject: [PATCH 6/6] dpnet: Implement IDirectPlay8LobbyClient Initialize
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c       | 15 +++++++++++++--
+ dlls/dpnet/tests/client.c |  5 ++++-
+ 2 files changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 0306d12..5712809 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -45,6 +45,10 @@ typedef struct IDirectPlay8LobbyClientImpl
+ {
+     IDirectPlay8LobbyClient IDirectPlay8LobbyClient_iface;
+     LONG ref;
++
++    PFNDPNMESSAGEHANDLER msghandler;
++    DWORD flags;
++    void *usercontext;
+ } IDirectPlay8LobbyClientImpl;
+ 
+ static inline IDirectPlay8LobbyClientImpl *impl_from_IDirectPlay8LobbyClient(IDirectPlay8LobbyClient *iface)
+@@ -689,9 +693,16 @@ static HRESULT WINAPI lobbyclient_Initialize(IDirectPlay8LobbyClient *iface, voi
+ {
+     IDirectPlay8LobbyClientImpl *This = impl_from_IDirectPlay8LobbyClient(iface);
+ 
+-    FIXME("(%p)->(%p %p 0x%08x)\n", This, context, msghandler, flags);
++    TRACE("(%p):(%p,%p,%x)\n", This, context, msghandler, flags);
+ 
+-    return E_NOTIMPL;
++    if(!msghandler)
++        return DPNERR_INVALIDPARAM;
++
++    This->usercontext = context;
++    This->msghandler = msghandler;
++    This->flags = flags;
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI lobbyclient_EnumLocalPrograms(IDirectPlay8LobbyClient *iface, GUID* guidapplication,
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 4f7b084..2e83fce 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -221,8 +221,11 @@ static void test_lobbyclient(void)
+     ok(hr == S_OK, "Failed to create object\n");
+     if(SUCCEEDED(hr))
+     {
++        hr = IDirectPlay8LobbyClient_Initialize(client, NULL, NULL, 0);
++        ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
++
+         hr = IDirectPlay8LobbyClient_Initialize(client, NULL, DirectPlayLobbyClientMessageHandler, 0);
+-        todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++        ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+         hr = IDirectPlay8LobbyClient_Close(client, 0);
+         todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
+-- 
+1.9.1
+

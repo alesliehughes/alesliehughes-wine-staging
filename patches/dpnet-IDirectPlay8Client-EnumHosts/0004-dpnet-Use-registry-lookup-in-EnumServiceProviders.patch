@@ -1,7 +1,7 @@
-From f8da505363b3a933e112e90810a461ebf9cf0cee Mon Sep 17 00:00:00 2001
+From 644acfa1bf5ab3a5fb5723c094e5887c1c7a784d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Feb 2014 15:11:16 +1100
-Subject: [PATCH 4/5] dpnet: Use registry lookup in EnumServiceProviders
+Subject: [PATCH 4/6] dpnet: Use registry lookup in EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 65 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index cab95df..6b2e2a6 100644
+index d2a9a4a..0905b24 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -150,23 +150,50 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer

@@ -1,7 +1,15 @@
-From 2680877b1c61584d33d7d3ff7447be6d2d276b9c Mon Sep 17 00:00:00 2001
+From 76b403412003c228afb0222ea68c53420b8016cf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 1 Dec 2015 13:02:05 +1100
-Subject: [PATCH 5/5] dpnet: Implement IDirectPlay8Client Connect
+Subject: [PATCH 5/6] dpnet: Implement IDirectPlay8Client Connect
+
+WIP.
+- Connect to Server
+- Send INTERNAL msg DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO or
+                    DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
+- Revice DN_SEND_CONNECT_INFO.
+- Send DN_ACK_CONNECT_INFO
+- Send message to caller.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,10 +17,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 37 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f62d25e..df148a1 100644
+index a066f46..0306d12 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -381,15 +381,44 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -419,15 +419,44 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
