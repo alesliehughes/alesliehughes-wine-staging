@@ -1,13 +1,7 @@
-From 251e38eb857bebb1570b9b332bbcb887f8f417ce Mon Sep 17 00:00:00 2001
+From 57c01dbbbffc41b7836193d045dd25c60b5e2195 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Mon, 29 Jun 2015 15:11:34 +1000
-Subject: [PATCH 2/6] dpnet: Implement IDirectPlay8Client EnumHosts
-
-TODO:
-(need to use a List for multiple connections, since Enum can be called
-multiple times)
-Correct warning under x64 about pointer to int convert, mismatched sizes
-Check if call EnumTwice.
+Date: Sun, 16 Oct 2016 13:57:55 +1100
+Subject: [PATCH 4/7] dpnet: Implement IDirectPlay8Client EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -30,7 +24,7 @@ index 880b7bd..541e104 100644
  C_SRCS = \
  	address.c \
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index bf2b8d2..a066f46 100644
+index af89958..abca108 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,8 @@
@@ -365,11 +359,11 @@ index bf2b8d2..a066f46 100644
  }
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index f9c4400..103aca0 100644
+index dc6a4f1..8351d85 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -57,6 +57,9 @@ struct IDirectPlay8ClientImpl
-     void *usercontext;
+@@ -61,6 +61,9 @@ struct IDirectPlay8ClientImpl
+     DWORD datasize;
  
      DPN_SP_CAPS spcaps;
 +
@@ -396,5 +390,5 @@ index 253526a..4f7b084 100644
      ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
  
 -- 
-1.9.1
+2.9.3
 

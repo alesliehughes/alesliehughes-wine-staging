@@ -1,0 +1,76 @@
+From bfb79cb72de94816d7d861a4740bf2af936da97e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 16 Oct 2016 13:53:56 +1100
+Subject: [PATCH 2/7] dpnet: Semi-stub IDirectPlay8Client SetClientInfo
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 37 ++++++++++++++++++++++++++++++++++---
+ dlls/dpnet/dpnet_private.h |  3 +++
+ 2 files changed, 37 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index bf2b8d2..af89958 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -182,9 +182,40 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_SetClientInfo(IDirectPlay8Client *i
+         const DPN_PLAYER_INFO * const pdpnPlayerInfo, void * const pvAsyncContext,
+         DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    FIXME("(%p):(%p,%p,%x): Semi-stub.\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
++
++    if(!pdpnPlayerInfo)
++       return E_POINTER;
++
++    if(phAsyncHandle)
++        FIXME("Async handle currently not supported.\n");
++
++    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_NAME)
++    {
++        heap_free(This->username);
++
++        if(!pdpnPlayerInfo->pwszName)
++            return E_OUTOFMEMORY;
++
++        This->username = heap_strdupW(pdpnPlayerInfo->pwszName);
++        if (!This->username)
++            return E_OUTOFMEMORY;
++    }
++
++    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_DATA)
++    {
++        heap_free(This->data);
++
++        This->datasize = pdpnPlayerInfo->dwDataSize;
++        This->data = heap_alloc(pdpnPlayerInfo->dwDataSize);
++        if (!This->data)
++            return E_OUTOFMEMORY;
++
++        memcpy(This->data, pdpnPlayerInfo->pvData, pdpnPlayerInfo->dwDataSize);
++    }
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_GetServerInfo(IDirectPlay8Client *iface,
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 05608a6..dc6a4f1 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -56,6 +56,9 @@ struct IDirectPlay8ClientImpl
+     PFNDPNMESSAGEHANDLER msghandler;
+     DWORD flags;
+     void *usercontext;
++    WCHAR *username;
++    void  *data;
++    DWORD datasize;
+ 
+     DPN_SP_CAPS spcaps;
+ };
+-- 
+2.9.3
+

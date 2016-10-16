@@ -1,0 +1,434 @@
+From 0c637ac41f0fd893f034e29389091f2ffb948db8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 1 Dec 2015 13:02:05 +1100
+Subject: [PATCH 6/7] dpnet: Implement IDirectPlay8Client Connect
+
+WIP - Need Loop for Recieve/Send
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 406 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 398 insertions(+), 8 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index abca108..4873efa 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -418,16 +418,406 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+   return DPN_OK; 
+ }
+ 
++/*
++   0x00010004 - Basic Support
++   0x00010005 - Supports coalescence
++   0x00010006 - Supports coalescence and adds support for signing
++ */
++#define PROTOCOL_VERSION        0x00010006
++
++#define PACKET_COMMAND_DATA       0x01
++#define PACKET_COMMAND_RELIABLE   0x02
++#define PACKET_COMMAND_SEQUENTIAL 0x04
++#define PACKET_COMMAND_POLL       0x08
++#define PACKET_COMMAND_NEW_MSG    0x10
++#define PACKET_COMMAND_END_MSG    0x20
++#define PACKET_COMMAND_USER_1     0x40
++#define PACKET_COMMAND_USER_2     0x80
++#define PACKET_COMMAND_CFRAME     PACKET_COMMAND_USER_2
++
++#define FRAME_EXOPCODE_CONNECT          0x01
++#define FRAME_EXOPCODE_CONNECTED        0x02
++#define FRAME_EXOPCODE_CONNECTED_SIGNED 0x03
++#define FRAME_EXOPCODE_HARD_DISCONNECT  0x04
++#define FRAME_EXOPCODE_SACK             0x06
++
++#define PACKET_SIGNING_FAST     0x00000001
++#define PACKET_SIGNING_FULL     0x00000002
++
++#define SACK_FLAGS_RESPONSE     0x01
++#define SACK_FLAGS_SACK_MASK1   0x02
++#define SACK_FLAGS_SACK_MASK2   0x04
++#define SACK_FLAGS_SEND_MASK1   0x08
++#define SACK_FLAGS_SEND_MASK2   0x10
++
++#define PACKET_CONTROL_RETRY                  0x01
++#define PACKET_CONTROL_KEEPALIVE_OR_CORRELATE 0x02
++#define PACKET_CONTROL_COALESCE               0x04
++#define PACKET_CONTROL_END_STREAM             0x08
++#define PACKET_CONTROL_SACK1                  0x10
++#define PACKET_CONTROL_SACK2                  0x20
++#define PACKET_CONTROL_SEND1                  0x40
++#define PACKET_CONTROL_SEND2                  0x80
++
++/* GROUP Theses - TODO */
++#define DN_MSG_INTERNAL_PLAYER_CONNECT_INFO 0x000000C1
++
++#define DP_OBECT_TYPE_CLIENT   0x00000002
++#define DP_OBECT_TYPE_PEER     0x00000004
++
++#define DP_OBECT_NET_VER_8_0      0x00000001
++#define DP_OBECT_NET_VER_8_1      0x00000002
++#define DP_OBECT_NET_VER_POCKETPC 0x00000003
++#define DP_OBECT_NET_VER_W2K3     0x00000005
++#define DP_OBECT_NET_VER_8_2      0x00000006
++#define DP_OBECT_NET_VER_9_0      0x00000007
++#define DP_OBECT_NET_VER_9_0A     0x00000008
++
++struct DFRAME_PACKET
++{
++    BYTE command;
++    BYTE control;
++    BYTE seq;
++    BYTE nseq;
++};
++
++struct DN_MESSAGE_CONNECT
++{
++    BYTE command;
++    BYTE opcode;
++    BYTE msgid;
++    BYTE rspid;
++    DWORD protocol;
++    DWORD session;
++    DWORD timestamp;
++};
++
++
++struct SACK_PACKET
++{
++    BYTE command;
++    BYTE opcode;
++    BYTE flags;
++    BYTE retry;
++    BYTE nseq;
++    BYTE nrcv;
++    WORD padding;
++    DWORD timestamp;
++};
++
++static void *dframe_packet_keepalive(int *size, DWORD session)
++{
++    struct DFRAME_PACKET *packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
++                  sizeof(struct DFRAME_PACKET) + sizeof(DWORD));
++    if(!packet)
++        return packet;
++
++    packet->command =
++        PACKET_COMMAND_DATA | PACKET_COMMAND_RELIABLE | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
++        PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG;
++    packet->control  = PACKET_CONTROL_KEEPALIVE_OR_CORRELATE;
++    packet->seq      = 0;
++    packet->nseq     = 0;
++    *((DWORD*)packet + sizeof(struct DFRAME_PACKET)) = session;
++
++    *size = sizeof(struct DFRAME_PACKET) + sizeof(DWORD);
++
++    return packet;
++}
++
++struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO
++{
++    DWORD type;
++    DWORD flags;
++    DWORD version;
++    DWORD name_offset;
++    DWORD name_size;
++    DWORD data_offset;
++    DWORD data_size;
++    DWORD pwd_offset;
++    DWORD pwd_size;
++    DWORD connect_offset;
++    DWORD connect_size;
++    DWORD url_offset;
++    DWORD url_size;
++    GUID  instance;
++    GUID  application;
++};
++
++struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
++{
++    DWORD type;
++    DWORD flags;
++    DWORD version;
++    DWORD name_offset;
++    DWORD name_size;
++    DWORD data_offset;
++    DWORD data_size;
++    DWORD pwd_offset;
++    DWORD pwd_size;
++    DWORD connect_offset;
++    DWORD connect_size;
++    DWORD url_offset;
++    DWORD url_size;
++    GUID  instance;
++    GUID  application;
++    DWORD alt_address_offset;
++    DWORD alt_address_size;
++};
++
++/* 2.2.1.1 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO */
++static void *dframe_packet_player_connect_info(int *size, DWORD session, const DPN_APPLICATION_DESC * const app_desc,
++                            WCHAR *name)
++{
++    struct DFRAME_PACKET *packet;
++    struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO *info;
++
++    *size = sizeof(struct DFRAME_PACKET) + sizeof(*info) + ((lstrlenW(name)+1) * sizeof(WCHAR));
++    packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, *size);
++
++    if(!packet)
++        return packet;
++
++    packet->command =
++        PACKET_COMMAND_DATA | PACKET_COMMAND_RELIABLE | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
++        PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG | PACKET_COMMAND_USER_1;
++    packet->control  = PACKET_CONTROL_KEEPALIVE_OR_CORRELATE;
++    packet->seq      = 1;
++    packet->nseq     = 0;
++
++    info = (struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO *)(packet + sizeof(struct DFRAME_PACKET));
++    info->type    = DN_MSG_INTERNAL_PLAYER_CONNECT_INFO;
++    info->flags   = DP_OBECT_TYPE_CLIENT;
++    info->version = DP_OBECT_NET_VER_8_2;
++    info->name_offset = sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO);
++    info->name_size = lstrlenW(name);
++    info->instance    = app_desc->guidInstance;
++    info->application = app_desc->guidApplication;
++
++    lstrcpyW( (WCHAR*)(info+sizeof(*info)), name);
++/*
++
++    DWORD data_offset;
++    DWORD data_size;
++    DWORD pwd_offset;
++    DWORD pwd_size;
++    DWORD connect_offset;
++    DWORD connect_size;
++    DWORD url_offset;
++    DWORD url_size;
++*/
++
++    return packet;
++}
++
++
++static void init_package_connect(struct DN_MESSAGE_CONNECT *msg)
++{
++    msg->command = PACKET_COMMAND_CFRAME | PACKET_COMMAND_POLL;
++    msg->opcode  = FRAME_EXOPCODE_CONNECT;
++    msg->msgid   = 0;
++    msg->rspid   = 0;
++    msg->protocol = PROTOCOL_VERSION;
++    msg->session  = 88;
++    msg->timestamp = GetTickCount();
++}
++
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+-        const DPN_APPLICATION_DESC * const pdnAppDesc, IDirectPlay8Address * const pHostAddr,
+-        IDirectPlay8Address * const pDeviceInfo, const DPN_SECURITY_DESC * const pdnSecurity,
+-        const DPN_SECURITY_CREDENTIALS * const pdnCredentials, const void * const pvUserConnectData,
+-        const DWORD dwUserConnectDataSize, void * const pvAsyncContext,
+-        DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
++        const DPN_APPLICATION_DESC * const app_desc, IDirectPlay8Address * const host_addr,
++        IDirectPlay8Address * const device, const DPN_SECURITY_DESC * const security,
++        const DPN_SECURITY_CREDENTIALS * const credentials, const void * const user_data,
++        const DWORD data_size, void * const context,
++        DPNHANDLE * const async_handle, const DWORD flags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    HRESULT hr;
++    DWORD port = 0;
++    char *buffer = NULL;
++    DWORD size, type;
++    char temp[1024] = {0};
++    struct DN_MESSAGE_CONNECT msg;
++    
++    WCHAR nnn[] = {'t','e','s','t','P','l','a','y','e','r','1', 0};
++
++    SOCKET sock;
++    struct sockaddr_in addr;
++    int n;
++    int buflen;
++    struct sockaddr_in from;
++    int fromlen = sizeof(from);
++    int value;
++
++    FIXME("(%p) : (%p, %p, %p, %p, %p, %p, %u, %p, %p, %x)\n", This, app_desc, host_addr,
++        device, security, credentials, user_data, data_size, context, async_handle, flags);
++
++    if(!This->msghandler)
++        return DPNERR_UNINITIALIZED;
++
++    size = sizeof(port);
++    hr = IDirectPlay8Address_GetComponentByName(host_addr, DPNA_KEY_PORT, &port, &size, &type);
++    if(FAILED(hr))
++    {
++        ERR("Failed to get host port.\n");
++        return DPNERR_UNINITIALIZED; // TODO.
++    }
++
++    size = 0;
++    type = 0;
++    hr = IDirectPlay8Address_GetComponentByName(host_addr, DPNA_KEY_HOSTNAME, NULL, &size, &type);
++    if(hr != DPNERR_BUFFERTOOSMALL)
++    {
++        ERR("Failed to get host name size.\n");
++        return DPNERR_UNINITIALIZED; // TODO.
++    }
++
++    buffer =  HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size * sizeof(char));
++    if(!buffer)
++    {
++        ERR("Cannot allocate memory.\n");
++        return E_OUTOFMEMORY;
++    }
++
++    hr = IDirectPlay8Address_GetComponentByName(host_addr, DPNA_KEY_HOSTNAME, buffer, &size, &type);
++    if(FAILED(hr))
++    {
++        ERR("Failed to get host name.\n");
++        return DPNERR_UNINITIALIZED; // TODO - If flag set, prompt user.
++    }
++FIXME("type: %d\n", type);
++FIXME("%s:%d\n", debugstr_a(buffer), port);
++
++    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++
++    /* TODO - Update Timeout with correct value. */
++    value = 2000;
++    setsockopt(sock, SOL_SOCKET,  SO_RCVTIMEO, (char *)&value, sizeof(value));
++
++    memset(&addr, 0, sizeof(addr));
++
++    addr.sin_family = AF_INET;
++    addr.sin_port = htons(port);
++
++    /* TODO - use getaddrinfo to better handle errors and name lookups. */
++    addr.sin_addr.s_addr = inet_addr(buffer);
++
++    init_package_connect(&msg);
++
++    n = sendto(sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++    if(n == -1)
++    {
++        FIXME("Socket DN_MESSAGE_CONNECT failed.\n");
++    }
++    else
++    {
++        FIXME("Socket DN_MESSAGE_CONNECT successful. (%d)\n", n);
++    }
++
++    buflen = sizeof(temp);
++    n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++    FIXME("Received DN_MESSAGE_CONNECT %d.\n", n);
++    if(n == sizeof(struct DN_MESSAGE_CONNECT))
++    {
++        struct DN_MESSAGE_CONNECT *connected = (struct DN_MESSAGE_CONNECT *)temp;
++        FIXME("command %x, opcode %x, msgid %x, rspid %x, protocol %x, sess %d, time %x\n",
++          connected->command, connected->opcode, connected->msgid, connected->rspid,
++          connected->protocol, connected->session, connected->timestamp);
++
++        msg.command = PACKET_COMMAND_CFRAME;
++        msg.opcode  = FRAME_EXOPCODE_CONNECTED;
++        msg.msgid   = connected->msgid + 1;
++        msg.rspid   = 0;
++        msg.protocol = PROTOCOL_VERSION;
++        msg.session  = 88;
++        msg.timestamp = GetTickCount();
++        
++        n = sendto(sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++        if(n == -1)
++        {
++            FIXME("Socket2 DN_MESSAGE_CONNECT_ACK failed.\n");
++        }
++        else
++        {
++            FIXME("Socket2 DN_MESSAGE_CONNECT_ACK successful. (%d)\n", n);
++        }
++        
++        {
++            int size2 = 0;
++            void *data = dframe_packet_keepalive(&size2, 88);
++            n = sendto(sock, (void *)&data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++            if(n == -1)
++            {
++                FIXME("Socket3 keepalive failed.\n");
++            }
++            else
++            {
++                FIXME("Socket3 keepalive successful. (%d)\n", n);
++            }
++
++            HeapFree(GetProcessHeap(), 0, data);
++
++            buflen = sizeof(temp);
++            n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++            FIXME("Received after keepalive %d.\n", n);
++
++            size2 = 0;
++            data = dframe_packet_player_connect_info(&size2, 88, app_desc, nnn);
++            n = sendto(sock, (void *)&data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++            if(n == -1)
++            {
++                FIXME("Socket3 connect_info failed.\n");
++            }
++            else
++            {
++                FIXME("Socket3 connect_info successful. (%d)\n", n);
++            }
++            HeapFree(GetProcessHeap(), 0, data);
++
++            buflen = sizeof(temp);
++            n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++            FIXME("Received after connect_info %d.\n", n);
++
++/*            buflen = sizeof(temp);
++            n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++            FIXME("Received %d.\n", n);
++            if(n >= sizeof(struct DFRAME_PACKET))
++            {
++                struct DFRAME_PACKET *connected = (struct DFRAME_PACKET *)temp;
++
++                FIXME("command %x, control %x, seq %x, rspid %x\n",
++                  connected->command, connected->control, connected->seq, connected->nseq);
++                FIXME("%d\n", *((DWORD*)(connected + sizeof(struct DFRAME_PACKET))));
++            }
++             */
++        }
++
++    }
++
++    Sleep(2000);
++
++    closesocket(sock);
++
++    HeapFree(GetProcessHeap(), 0, buffer);
++
++
++    /// Pass through to Application.
++    {
++       DPNMSG_CONNECT_COMPLETE complete;
++       complete.dwSize = sizeof(complete);
++       complete.hAsyncOp = 0;
++       complete.pvUserContext = NULL;
++       complete.hResultCode = DPN_OK;
++       complete.pvApplicationReplyData = NULL;
++       complete.dwApplicationReplyDataSize = 0;
++       complete.dpnidLocal = 0x000000ff; // DPNID
++
++       This->msghandler(NULL, DPN_MSGID_CONNECT_COMPLETE, &complete); // Check Return ???
++     }
++
++    /* Closing the enum thread(s) is done last. */
++    SetEvent(This->enumhosts);
++
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
+-- 
+2.9.3
+
