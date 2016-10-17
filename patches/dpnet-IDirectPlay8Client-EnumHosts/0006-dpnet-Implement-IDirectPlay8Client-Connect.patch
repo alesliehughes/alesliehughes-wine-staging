@@ -1,7 +1,7 @@
-From 0c637ac41f0fd893f034e29389091f2ffb948db8 Mon Sep 17 00:00:00 2001
+From 30e45a9e43c60f60682eeaabca05dc652edec0a2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 1 Dec 2015 13:02:05 +1100
-Subject: [PATCH 6/7] dpnet: Implement IDirectPlay8Client Connect
+Subject: [PATCH 6/8] dpnet: Implement IDirectPlay8Client Connect
 
 WIP - Need Loop for Recieve/Send
 
@@ -11,10 +11,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 398 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index abca108..4873efa 100644
+index efe3a2b..f46d7d7 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -418,16 +418,406 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -420,16 +420,406 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
    return DPN_OK; 
  }
  
@@ -244,7 +244,7 @@ index abca108..4873efa 100644
 +    DWORD size, type;
 +    char temp[1024] = {0};
 +    struct DN_MESSAGE_CONNECT msg;
-+    
++
 +    WCHAR nnn[] = {'t','e','s','t','P','l','a','y','e','r','1', 0};
 +
 +    SOCKET sock;
@@ -337,7 +337,7 @@ index abca108..4873efa 100644
 +        msg.protocol = PROTOCOL_VERSION;
 +        msg.session  = 88;
 +        msg.timestamp = GetTickCount();
-+        
++
 +        n = sendto(sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 +        if(n == -1)
 +        {
@@ -347,7 +347,7 @@ index abca108..4873efa 100644
 +        {
 +            FIXME("Socket2 DN_MESSAGE_CONNECT_ACK successful. (%d)\n", n);
 +        }
-+        
++
 +        {
 +            int size2 = 0;
 +            void *data = dframe_packet_keepalive(&size2, 88);
@@ -430,5 +430,5 @@ index abca108..4873efa 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
 -- 
-2.9.3
+1.9.1
 

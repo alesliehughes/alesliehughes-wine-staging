@@ -1,19 +1,34 @@
-From bfb79cb72de94816d7d861a4740bf2af936da97e Mon Sep 17 00:00:00 2001
+From 9a94816bbd304ba296b7c69592ef4b550816f425 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 16 Oct 2016 13:53:56 +1100
-Subject: [PATCH 2/7] dpnet: Semi-stub IDirectPlay8Client SetClientInfo
+Subject: [PATCH 2/8] dpnet: Semi-stub IDirectPlay8Client SetClientInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 37 ++++++++++++++++++++++++++++++++++---
+ dlls/dpnet/client.c        | 51 ++++++++++++++++++++++++++++++++++++----
  dlls/dpnet/dpnet_private.h |  3 +++
- 2 files changed, 37 insertions(+), 3 deletions(-)
+ dlls/dpnet/tests/client.c  | 58 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 107 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index bf2b8d2..af89958 100644
+index bf2b8d2..5473a93 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -182,9 +182,40 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_SetClientInfo(IDirectPlay8Client *i
+@@ -86,8 +86,11 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+ 
+     TRACE("(%p) ref=%u\n", This, ref);
+ 
+-    if (!ref) {
+-        HeapFree(GetProcessHeap(), 0, This);
++    if (!ref)
++    {
++        heap_free(This->username);
++        heap_free(This->data);
++        heap_free(This);
+     }
+     return ref;
+ }
+@@ -182,9 +185,47 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_SetClientInfo(IDirectPlay8Client *i
          const DPN_PLAYER_INFO * const pdpnPlayerInfo, void * const pvAsyncContext,
          DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -32,25 +47,32 @@ index bf2b8d2..af89958 100644
 +    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_NAME)
 +    {
 +        heap_free(This->username);
++        This->username = NULL;
 +
-+        if(!pdpnPlayerInfo->pwszName)
-+            return E_OUTOFMEMORY;
-+
-+        This->username = heap_strdupW(pdpnPlayerInfo->pwszName);
-+        if (!This->username)
-+            return E_OUTOFMEMORY;
++        if(pdpnPlayerInfo->pwszName)
++        {
++            This->username = heap_strdupW(pdpnPlayerInfo->pwszName);
++            if (!This->username)
++                return E_OUTOFMEMORY;
++        }
 +    }
 +
 +    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_DATA)
 +    {
 +        heap_free(This->data);
++        This->data = NULL;
++        This->datasize = 0;
 +
-+        This->datasize = pdpnPlayerInfo->dwDataSize;
-+        This->data = heap_alloc(pdpnPlayerInfo->dwDataSize);
-+        if (!This->data)
-+            return E_OUTOFMEMORY;
++        if(pdpnPlayerInfo->dwDataSize && pdpnPlayerInfo->pvData)
++        {
++            This->data = heap_alloc(pdpnPlayerInfo->dwDataSize);
++            if (!This->data)
++                return E_OUTOFMEMORY;
 +
-+        memcpy(This->data, pdpnPlayerInfo->pvData, pdpnPlayerInfo->dwDataSize);
++            This->datasize = pdpnPlayerInfo->dwDataSize;
++
++            memcpy(This->data, pdpnPlayerInfo->pvData, pdpnPlayerInfo->dwDataSize);
++        }
 +    }
 +
 +    return DPN_OK;
@@ -71,6 +93,82 @@ index 05608a6..dc6a4f1 100644
  
      DPN_SP_CAPS spcaps;
  };
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 253526a..7512118 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -230,6 +230,63 @@ static void test_lobbyclient(void)
+     }
+ }
+ 
++static void test_player_info(void)
++{
++    HRESULT hr;
++    DPN_PLAYER_INFO info;
++    WCHAR name[] = {'w','i','n','e',0};
++    WCHAR name2[] = {'w','i','n','e','2',0};
++    WCHAR data[] = {'X','X','X','X',0};
++
++    ZeroMemory( &info, sizeof(DPN_PLAYER_INFO) );
++    info.dwSize = sizeof(DPN_PLAYER_INFO);
++    info.dwInfoFlags = DPNINFO_NAME;
++
++    hr = IDirectPlay8Client_SetClientInfo(client, NULL, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == E_POINTER, "got %x\n", hr);
++
++    info.pwszName = NULL;
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    info.pwszName = name;
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    info.dwInfoFlags = DPNINFO_NAME;
++    info.pwszName = name2;
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    info.dwInfoFlags = DPNINFO_DATA;
++    info.pwszName = NULL;
++    info.pvData = NULL;
++    info.dwDataSize = sizeof(data);
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    info.dwInfoFlags = DPNINFO_DATA;
++    info.pwszName = NULL;
++    info.pvData = data;
++    info.dwDataSize = 0;
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    info.dwInfoFlags = DPNINFO_DATA;
++    info.pwszName = NULL;
++    info.pvData = data;
++    info.dwDataSize = sizeof(data);
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    info.dwInfoFlags = DPNINFO_DATA | DPNINFO_NAME;
++    info.pwszName = name;
++    info.pvData = data;
++    info.dwDataSize = sizeof(data);
++    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
++    ok(hr == S_OK, "got %x\n", hr);
++}
++
+ static void test_cleanup_dp(void)
+ {
+     HRESULT hr;
+@@ -258,6 +315,7 @@ START_TEST(client)
+     test_enum_service_providers();
+     test_enum_hosts();
+     test_get_sp_caps();
++    test_player_info();
+     test_lobbyclient();
+     test_cleanup_dp();
+ }
 -- 
-2.9.3
+1.9.1
 

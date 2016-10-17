@@ -1,15 +1,15 @@
-From 57c01dbbbffc41b7836193d045dd25c60b5e2195 Mon Sep 17 00:00:00 2001
+From 502a943daf19b64b87ad8dece4930248f4395319 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Sun, 16 Oct 2016 13:57:55 +1100
-Subject: [PATCH 4/7] dpnet: Implement IDirectPlay8Client EnumHosts
+Date: Mon, 17 Oct 2016 11:05:06 +1100
+Subject: [PATCH 4/8] dpnet: Implement IDirectPlay8Client EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/Makefile.in     |   2 +-
- dlls/dpnet/client.c        | 285 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c        | 282 ++++++++++++++++++++++++++++++++++++++++++++-
  dlls/dpnet/dpnet_private.h |   3 +
  dlls/dpnet/tests/client.c  |   5 +-
- 4 files changed, 288 insertions(+), 7 deletions(-)
+ 4 files changed, 286 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/dpnet/Makefile.in b/dlls/dpnet/Makefile.in
 index 880b7bd..541e104 100644
@@ -24,7 +24,7 @@ index 880b7bd..541e104 100644
  C_SRCS = \
  	address.c \
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index af89958..abca108 100644
+index 5473a93..efe3a2b 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,8 @@
@@ -50,13 +50,10 @@ index af89958..abca108 100644
  
  WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
  
-@@ -86,7 +91,16 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+@@ -88,6 +93,14 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
  
-     TRACE("(%p) ref=%u\n", This, ref);
- 
--    if (!ref) {
-+    if (!ref)
-+    {
+     if (!ref)
+     {
 +        if(This->enumhosts)
 +        {
 +           SetEvent(This->enumhosts);
@@ -65,10 +62,10 @@ index af89958..abca108 100644
 +           CloseHandle(This->hostthread);
 +        }
 +
-         HeapFree(GetProcessHeap(), 0, This);
-     }
-     return ref;
-@@ -121,6 +135,215 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+         heap_free(This->username);
+         heap_free(This->data);
+         heap_free(This);
+@@ -124,6 +137,215 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
    return DPN_OK; 
  }
  
@@ -284,7 +281,7 @@ index af89958..abca108 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -128,9 +351,60 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -131,9 +353,60 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
          const DWORD dwFlags)
  {
@@ -348,7 +345,7 @@ index af89958..abca108 100644
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
-@@ -138,6 +412,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -141,6 +414,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  {
    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
    FIXME("(%p):(%u,%x): Stub\n", This, hAsyncHandle, dwFlags);
@@ -373,7 +370,7 @@ index dc6a4f1..8351d85 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 253526a..4f7b084 100644
+index 7512118..723f7be 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -172,9 +172,10 @@ static void test_enum_hosts(void)
@@ -390,5 +387,5 @@ index 253526a..4f7b084 100644
      ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
  
 -- 
-2.9.3
+1.9.1
 

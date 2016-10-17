@@ -1,15 +1,15 @@
-From 5780e26e50629abd4c445776cceac593dd4f6ea0 Mon Sep 17 00:00:00 2001
+From 0774cb2428947a4e713c0ffe908953a842d8eded Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
-Subject: [PATCH 1/7] dpnet: Semi-stub IDirectPlay8Peer SetPeerInfo
+Subject: [PATCH 1/8] dpnet: Semi-stub IDirectPlay8Peer SetPeerInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/address.c       | 31 -----------------------
  dlls/dpnet/dpnet_private.h | 22 +++++++++++++++++
- dlls/dpnet/peer.c          | 47 ++++++++++++++++++++++++++++++++---
+ dlls/dpnet/peer.c          | 48 +++++++++++++++++++++++++++++++++---
  dlls/dpnet/tests/peer.c    | 61 ++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 127 insertions(+), 34 deletions(-)
+ 4 files changed, 128 insertions(+), 34 deletions(-)
 
 diff --git a/dlls/dpnet/address.c b/dlls/dpnet/address.c
 index 6305fe7..c5457eb 100644
@@ -94,7 +94,7 @@ index f9c4400..05608a6 100644
  
  #endif
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index a07a59a..0d69c54 100644
+index a07a59a..264ca70 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -48,6 +48,10 @@ typedef struct IDirectPlay8PeerImpl
@@ -122,7 +122,7 @@ index a07a59a..0d69c54 100644
  
      return RefCount;
  }
-@@ -310,9 +319,41 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SetPeerInfo(IDirectPlay8Peer *iface,
+@@ -310,9 +319,42 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SetPeerInfo(IDirectPlay8Peer *iface,
          const DPN_PLAYER_INFO * const pdpnPlayerInfo, void * const pvAsyncContext,
          DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -141,6 +141,7 @@ index a07a59a..0d69c54 100644
 +    if (pdpnPlayerInfo->dwInfoFlags & DPNINFO_NAME)
 +    {
 +        heap_free(This->username);
++        This->username = NULL;
 +
 +        if(pdpnPlayerInfo->pwszName)
 +        {
@@ -245,5 +246,5 @@ index 1fec1f2..21dae00 100644
      test_cleanup_dp();
  }
 -- 
-2.9.3
+1.9.1
 
