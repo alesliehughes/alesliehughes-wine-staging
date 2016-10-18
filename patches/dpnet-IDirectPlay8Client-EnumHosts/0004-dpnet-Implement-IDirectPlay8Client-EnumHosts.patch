@@ -1,4 +1,4 @@
-From 502a943daf19b64b87ad8dece4930248f4395319 Mon Sep 17 00:00:00 2001
+From 19322c5d8948d65674e9bc509d810087244d1ff5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Oct 2016 11:05:06 +1100
 Subject: [PATCH 4/8] dpnet: Implement IDirectPlay8Client EnumHosts

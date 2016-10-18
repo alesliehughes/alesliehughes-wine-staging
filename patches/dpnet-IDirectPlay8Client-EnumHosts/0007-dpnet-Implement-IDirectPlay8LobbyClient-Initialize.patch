@@ -1,4 +1,4 @@
-From e36b2ac6ec9c424da1cef30b8ba59fd0f8f593d4 Mon Sep 17 00:00:00 2001
+From 002a306809efd50c320c5827ebf297014f4eca53 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 10 Oct 2016 12:12:04 +1100
 Subject: [PATCH 7/8] dpnet: Implement IDirectPlay8LobbyClient Initialize
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f46d7d7..3e7ae53 100644
+index 593dd29..9360619 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -45,6 +45,10 @@ typedef struct IDirectPlay8LobbyClientImpl
+@@ -46,6 +46,10 @@ typedef struct IDirectPlay8LobbyClientImpl
  {
      IDirectPlay8LobbyClient IDirectPlay8LobbyClient_iface;
      LONG ref;
@@ -24,7 +24,7 @@ index f46d7d7..3e7ae53 100644
  } IDirectPlay8LobbyClientImpl;
  
  static inline IDirectPlay8LobbyClientImpl *impl_from_IDirectPlay8LobbyClient(IDirectPlay8LobbyClient *iface)
-@@ -1090,9 +1094,16 @@ static HRESULT WINAPI lobbyclient_Initialize(IDirectPlay8LobbyClient *iface, voi
+@@ -1097,9 +1101,16 @@ static HRESULT WINAPI lobbyclient_Initialize(IDirectPlay8LobbyClient *iface, voi
  {
      IDirectPlay8LobbyClientImpl *This = impl_from_IDirectPlay8LobbyClient(iface);
  

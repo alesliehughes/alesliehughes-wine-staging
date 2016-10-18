@@ -1,4 +1,4 @@
-From f322bff607685b6906d06cce024b3880bcc9e182 Mon Sep 17 00:00:00 2001
+From bde7568d50280376503f163002609cf4e0d47f06 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2015 11:22:17 +1000
 Subject: [PATCH 3/8] dpnet: Add DirectPlay network structures
