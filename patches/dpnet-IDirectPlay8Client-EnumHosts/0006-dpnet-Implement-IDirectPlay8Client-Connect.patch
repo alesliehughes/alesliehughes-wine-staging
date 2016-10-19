@@ -1,18 +1,18 @@
-From aef937d91156355d5e3e4123d2ae16caa13a6821 Mon Sep 17 00:00:00 2001
+From 0e732522394ed4addbe06d8179a042a57062f2c3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 1 Dec 2015 13:02:05 +1100
-Subject: [PATCH 6/8] dpnet: Implement IDirectPlay8Client Connect
+Subject: [PATCH 06/10] dpnet: Implement IDirectPlay8Client Connect
 
 WIP - Need Loop for Recieve/Send
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 413 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c        | 422 ++++++++++++++++++++++++++++++++++++++++++++-
  dlls/dpnet/dpnet_private.h |   1 +
- 2 files changed, 406 insertions(+), 8 deletions(-)
+ 2 files changed, 415 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index efe3a2b..593dd29 100644
+index db63262..61e5b78 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -30,6 +30,7 @@
@@ -23,7 +23,7 @@ index efe3a2b..593dd29 100644
  #include "objbase.h"
  #include "winsock2.h"
  #include "ws2tcpip.h"
-@@ -420,16 +421,407 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -422,16 +423,416 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
    return DPN_OK; 
  }
  
@@ -89,6 +89,15 @@ index efe3a2b..593dd29 100644
 +    BYTE control;
 +    BYTE seq;
 +    BYTE nseq;
++};
++
++struct DFRAME_PACKET_KEEPALIVE
++{
++    BYTE command;
++    BYTE control;
++    BYTE seq;
++    BYTE nseq;
++    DWORD session;
 +};
 +
 +struct DN_MESSAGE_CONNECT
@@ -159,20 +168,20 @@ index efe3a2b..593dd29 100644
 +
 +static void *dframe_packet_keepalive(int *size, DWORD session)
 +{
-+    struct DFRAME_PACKET *packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
-+                  sizeof(struct DFRAME_PACKET) + sizeof(DWORD));
++    struct DFRAME_PACKET_KEEPALIVE *packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
++                  sizeof(struct DFRAME_PACKET_KEEPALIVE));
 +    if(!packet)
 +        return packet;
 +
 +    packet->command =
 +        PACKET_COMMAND_DATA | PACKET_COMMAND_RELIABLE | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
 +        PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG;
-+    packet->control  = PACKET_CONTROL_KEEPALIVE_OR_CORRELATE;
-+    packet->seq      = 0;
-+    packet->nseq     = 0;
-+    *((DWORD*)packet + sizeof(struct DFRAME_PACKET)) = session;
++    packet->control = PACKET_CONTROL_KEEPALIVE_OR_CORRELATE;
++    packet->seq     = 0;
++    packet->nseq    = 0;
++    packet->session = session;
 +
-+    *size = sizeof(struct DFRAME_PACKET) + sizeof(DWORD);
++    *size = sizeof(struct DFRAME_PACKET_KEEPALIVE);
 +
 +    return packet;
 +}
@@ -361,7 +370,7 @@ index efe3a2b..593dd29 100644
 +        {
 +            int size2 = 0;
 +            void *data = dframe_packet_keepalive(&size2, This->session);
-+            n = sendto(sock, (void *)&data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++            n = sendto(sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 +            if(n == -1)
 +            {
 +                FIXME("Socket3 keepalive failed.\n");
@@ -379,7 +388,7 @@ index efe3a2b..593dd29 100644
 +
 +            size2 = 0;
 +            data = dframe_packet_player_connect_info(&size2, This->session, app_desc, This->username);
-+            n = sendto(sock, (void *)&data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++            n = sendto(sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 +            if(n == -1)
 +            {
 +                FIXME("Socket3 connect_info failed.\n");
@@ -439,7 +448,7 @@ index efe3a2b..593dd29 100644
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
-@@ -626,6 +1018,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -631,6 +1032,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
  {
      IDirectPlay8ClientImpl* client;
      HRESULT hr;
@@ -447,7 +456,7 @@ index efe3a2b..593dd29 100644
  
      TRACE("(%p, %s, %p)\n", pUnkOuter, debugstr_guid(riid), ppv);
  
-@@ -634,12 +1027,16 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -639,12 +1041,16 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
      if(pUnkOuter)
          return CLASS_E_NOAGGREGATION;
  

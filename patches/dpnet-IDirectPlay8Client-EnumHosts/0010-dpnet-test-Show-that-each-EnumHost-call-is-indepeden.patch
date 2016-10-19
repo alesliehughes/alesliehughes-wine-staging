@@ -1,0 +1,45 @@
+From 0f5e5bac53e8b2fdc0966580e8da27ac8757b7ea Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 20 Oct 2016 12:12:27 +1100
+Subject: [PATCH 10/10] dpnet/test: Show that each EnumHost call is indepedent
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/tests/client.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index ac9bd83..1a07ba1 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -147,7 +147,7 @@ static void test_enum_hosts(void)
+     IDirectPlay8Address *host = NULL;
+     IDirectPlay8Address *local = NULL;
+     DPN_APPLICATION_DESC appdesc;
+-    DPNHANDLE async = 0;
++    DPNHANDLE async = 0, async2 = 0;
+     static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
+ 
+     memset( &appdesc, 0, sizeof(DPN_APPLICATION_DESC) );
+@@ -175,10 +175,18 @@ static void test_enum_hosts(void)
+     ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
+     ok(async, "No Handle returned\n");
+ 
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
++    ok(async2, "No Handle returned\n");
++    ok(async2 != async, "Same handle returned.\n");
++
+     Sleep(500);
+     hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
+     ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
+ 
++    hr = IDirectPlay8Client_CancelAsyncOperation(client, async2, 0);
++    ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
++
+     IDirectPlay8Address_Release(local);
+     IDirectPlay8Address_Release(host);
+ }
+-- 
+1.9.1
+

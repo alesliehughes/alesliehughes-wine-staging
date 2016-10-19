@@ -1,7 +1,7 @@
-From 3770b8258e71f66844fc8ec280e9e613e09962ac Mon Sep 17 00:00:00 2001
+From a888787351f12b594f5e8e8db04a1fd94596083d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2015 12:16:19 +1100
-Subject: [PATCH 1/8] dpnet: Semi-stub IDirectPlay8Peer SetPeerInfo
+Subject: [PATCH 01/10] dpnet: Semi-stub IDirectPlay8Peer SetPeerInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

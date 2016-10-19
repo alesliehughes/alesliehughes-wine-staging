@@ -1,17 +1,17 @@
-From 30fb7968bbfc494574c492b07e8948ad7819d37f Mon Sep 17 00:00:00 2001
+From 1eef3350f87959843b4681daa7b799040e163b88 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 16 Oct 2016 13:53:56 +1100
-Subject: [PATCH 2/8] dpnet: Semi-stub IDirectPlay8Client SetClientInfo
+Subject: [PATCH 02/10] dpnet: Semi-stub IDirectPlay8Client SetClientInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 51 ++++++++++++++++++++++++++++++++++++----
+ dlls/dpnet/client.c        | 54 ++++++++++++++++++++++++++++++++++++++----
  dlls/dpnet/dpnet_private.h |  3 +++
  dlls/dpnet/tests/client.c  | 58 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 107 insertions(+), 5 deletions(-)
+ 3 files changed, 110 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index bf2b8d2..5473a93 100644
+index bf2b8d2..a1aef72 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -86,8 +86,11 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
@@ -28,7 +28,7 @@ index bf2b8d2..5473a93 100644
      }
      return ref;
  }
-@@ -182,9 +185,47 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_SetClientInfo(IDirectPlay8Client *i
+@@ -182,9 +185,50 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_SetClientInfo(IDirectPlay8Client *i
          const DPN_PLAYER_INFO * const pdpnPlayerInfo, void * const pvAsyncContext,
          DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -63,6 +63,9 @@ index bf2b8d2..5473a93 100644
 +        This->data = NULL;
 +        This->datasize = 0;
 +
++        if(!pdpnPlayerInfo->pvData)
++            return E_POINTER;
++
 +        if(pdpnPlayerInfo->dwDataSize && pdpnPlayerInfo->pvData)
 +        {
 +            This->data = heap_alloc(pdpnPlayerInfo->dwDataSize);
@@ -94,7 +97,7 @@ index 05608a6..dc6a4f1 100644
      DPN_SP_CAPS spcaps;
  };
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 253526a..7512118 100644
+index 253526a..89ee8fa 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -230,6 +230,63 @@ static void test_lobbyclient(void)
@@ -134,7 +137,7 @@ index 253526a..7512118 100644
 +    info.pvData = NULL;
 +    info.dwDataSize = sizeof(data);
 +    hr = IDirectPlay8Client_SetClientInfo(client, &info, NULL, NULL, DPNSETPEERINFO_SYNC);
-+    ok(hr == S_OK, "got %x\n", hr);
++    ok(hr == E_POINTER, "got %x\n", hr);
 +
 +    info.dwInfoFlags = DPNINFO_DATA;
 +    info.pwszName = NULL;

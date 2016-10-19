@@ -1,0 +1,518 @@
+From 59fa4cd0354a2abf3d1a30b13936be7bdad4337c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 19 Oct 2016 16:33:27 +1100
+Subject: [PATCH 09/10] dpnet: various changes
+
+---
+ dlls/dpnet/client.c        | 247 ++++++++++++++++++++++++++++++---------------
+ dlls/dpnet/dpnet_private.h |   3 +
+ 2 files changed, 167 insertions(+), 83 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index e130a18..df76459 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -32,7 +32,6 @@
+ #include "winuser.h"
+ #include "ntsecapi.h"
+ #include "objbase.h"
+-#include "winsock2.h"
+ #include "ws2tcpip.h"
+ #include "wine/debug.h"
+ 
+@@ -105,6 +104,9 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+            WaitForSingleObject(This->hostthread, 1000);
+            CloseHandle(This->hostthread);
+         }
++        
++        if(This->sock != INVALID_SOCKET)
++            closesocket(This->sock);
+ 
+         heap_free(This->username);
+         heap_free(This->data);
+@@ -154,6 +156,7 @@ struct EnumHostData
+     DWORD retry_interval;
+     DWORD timeout;
+     void *user_context;
++    SOCKET sock;
+ 
+     HANDLE event;
+ };
+@@ -162,10 +165,6 @@ static DWORD WINAPI EnumNetworkHost(void *hostdata)
+ {
+     struct EnumHostData *enumdata = hostdata;
+     DWORD starttime = 0;
+-    SOCKET sock;
+-    WSADATA data;
+-    int value;
+-    struct sockaddr_in addr;
+     int received;
+     char sendbuf[1024];
+     int buflen = sizeof(sendbuf);
+@@ -173,33 +172,8 @@ static DWORD WINAPI EnumNetworkHost(void *hostdata)
+     int fromlen = sizeof(from);
+     WORD payloadvalue = 0;
+ 
+-    if (WSAStartup(MAKEWORD(2, 2), &data))
+-        return 1;
+-
+     TRACE("EnumNetworkHost thread started.\n");
+ 
+-    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+-    if(sock == INVALID_SOCKET)
+-    {
+-        ERR("Cannot create socket.\n");
+-        goto cleanup;
+-    }
+-
+-    memset(&addr, 0, sizeof(addr));
+-    addr.sin_family = AF_INET;
+-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+-
+-    value = 1;
+-    setsockopt(sock, SOL_SOCKET,  SO_BROADCAST, (char *)&value, sizeof(value));
+-    value = enumdata->spcaps.dwDefaultEnumTimeout;
+-    setsockopt(sock, SOL_SOCKET,  SO_RCVTIMEO, (char *)&value, sizeof(value));
+-
+-    if(bind(sock, (struct sockaddr*)&addr, sizeof(addr)) == INVALID_SOCKET)
+-    {
+-       ERR("Failed to bind socket.\n");
+-       goto cleanup;
+-    }
+-
+     while(TRUE)
+     {
+         buflen = sizeof(sendbuf);
+@@ -222,7 +196,7 @@ static DWORD WINAPI EnumNetworkHost(void *hostdata)
+             from.sin_family = AF_INET;
+             from.sin_port = htons(DPNA_DPNSVR_PORT);
+             from.sin_addr.s_addr = INADDR_BROADCAST;
+-            err = sendto(sock, (void *)&query, sizeof(query), 0,  (struct sockaddr *)&from, sizeof(struct sockaddr_in));
++            err = sendto(enumdata->sock, (void *)&query, sizeof(query), 0,  (struct sockaddr *)&from, sizeof(struct sockaddr_in));
+             if(err == -1)
+                 ERR("sendto failed (%d).\n", GetLastError());
+             else
+@@ -232,7 +206,7 @@ static DWORD WINAPI EnumNetworkHost(void *hostdata)
+         }
+ 
+         /* Query Enumeration Packets */
+-        received = recvfrom(sock, sendbuf, buflen, 0, (struct sockaddr *)&from, &fromlen);
++        received = recvfrom(enumdata->sock, sendbuf, buflen, 0, (struct sockaddr *)&from, &fromlen);
+         if(received >= (int)sizeof(struct EnumHeader))
+         {
+             struct EnumHeader *header = (struct EnumHeader *)sendbuf;
+@@ -342,11 +316,10 @@ static DWORD WINAPI EnumNetworkHost(void *hostdata)
+         }
+     }
+ 
+-cleanup:
+     IDirectPlay8Address_Release(enumdata->device);
+     HeapFree(GetProcessHeap(), 0, enumdata);
+-    closesocket(sock);
+-    WSACleanup();
++    //closesocket(sock);
++    //WSACleanup();
+ 
+     TRACE("EnumNetworkHost thread ended.\n");
+ 
+@@ -363,6 +336,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+     IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+     struct EnumHostData *enumdata;
+     HRESULT hr;
++    WSADATA wsdata;
++    int value;
++    struct sockaddr_in addr;
+ 
+     TRACE("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo, pUserEnumData,
+         dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle, dwFlags);
+@@ -371,6 +347,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+     if(!enumdata)
+         return E_OUTOFMEMORY;
+ 
++    if (WSAStartup(MAKEWORD(2, 2), &wsdata))
++        return 1;
++
+     enumdata->spcaps = This->spcaps;
+     enumdata->msghandler = This->msghandler;
+ 
+@@ -401,6 +380,33 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+         return DPNERR_GENERIC;
+     }
+     enumdata->event = This->enumhosts;
++    
++    This->sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++    if(This->sock == INVALID_SOCKET)
++    {
++        ERR("Cannot create socket.\n");
++        return DPNERR_GENERIC;
++    }
++
++    memset(&addr, 0, sizeof(addr));
++    addr.sin_family = AF_INET;
++    addr.sin_port = htons(2302);
++    addr.sin_addr.s_addr = htonl(INADDR_ANY);
++
++    value = 1;
++    setsockopt(This->sock, SOL_SOCKET,  SO_BROADCAST, (char *)&value, sizeof(value));
++    value = enumdata->spcaps.dwDefaultEnumTimeout;
++    setsockopt(This->sock, SOL_SOCKET,  SO_RCVTIMEO, (char *)&value, sizeof(value));
++
++    if(bind(This->sock, (struct sockaddr*)&addr, sizeof(addr)) == INVALID_SOCKET)
++    {
++       ERR("Failed to bind socket.\n");
++       closesocket(This->sock);
++       This->sock = INVALID_SOCKET;
++       return DPNERR_GENERIC;
++    }
++    
++    enumdata->sock = This->sock;
+ 
+     This->hostthread = CreateThread(NULL, 0, &EnumNetworkHost, enumdata, 0, 0);
+     if(!This->enumhosts)
+@@ -469,8 +475,10 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+ #define PACKET_CONTROL_SEND1                  0x40
+ #define PACKET_CONTROL_SEND2                  0x80
+ 
+-/* GROUP Theses - TODO */
++
+ #define DN_MSG_INTERNAL_PLAYER_CONNECT_INFO 0x000000C1
++#define DN_MSG_INTERNAL_SEND_CONNECT_INFO   0x000000C2
++#define DN_MSG_INTERNAL_ACK_CONNECT_INFO    0x000000C3
+ 
+ #define DP_OBECT_TYPE_CLIENT   0x00000002
+ #define DP_OBECT_TYPE_PEER     0x00000004
+@@ -564,6 +572,11 @@ struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
+     DWORD alt_address_size;
+ };
+ 
++struct DN_ACK_CONNECT_INFO
++{
++    DWORD type;
++};
++
+ #include "poppack.h"
+ 
+ static void *dframe_packet_keepalive(int *size, DWORD session)
+@@ -592,7 +605,7 @@ static void *dframe_packet_player_connect_info(int *size, DWORD session, const D
+                             WCHAR *name)
+ {
+     struct DFRAME_PACKET *packet;
+-    struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO *info;
++    struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX *info;
+ 
+     *size = sizeof(struct DFRAME_PACKET) + sizeof(*info) + ((lstrlenW(name)+1) * sizeof(WCHAR));
+     packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, *size);
+@@ -603,31 +616,45 @@ static void *dframe_packet_player_connect_info(int *size, DWORD session, const D
+     packet->command =
+         PACKET_COMMAND_DATA | PACKET_COMMAND_RELIABLE | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
+         PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG | PACKET_COMMAND_USER_1;
+-    packet->control  = PACKET_CONTROL_KEEPALIVE_OR_CORRELATE;
++    packet->control  = 0;
+     packet->seq      = 1;
+     packet->nseq     = 0;
+ 
+-    info = (struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO *)(packet + sizeof(struct DFRAME_PACKET));
++    info = (struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX *)(((char*)packet + sizeof(struct DFRAME_PACKET)));
+     info->type    = DN_MSG_INTERNAL_PLAYER_CONNECT_INFO;
+     info->flags   = DP_OBECT_TYPE_CLIENT;
+-    info->version = DP_OBECT_NET_VER_8_2;
+-    info->name_offset = sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO);
+-    info->name_size = lstrlenW(name);
++    info->version = DP_OBECT_NET_VER_9_0;
++    info->name_offset = sizeof(*info) - sizeof(DWORD);
++    info->name_size = lstrlenW(name) * sizeof(WCHAR);
+     info->instance    = app_desc->guidInstance;
+     info->application = app_desc->guidApplication;
+ 
+-    lstrcpyW( (WCHAR*)(info+sizeof(*info)), name);
+-/*
++    lstrcpyW( (WCHAR*)((char*)info+sizeof(*info)), name);
+ 
+-    DWORD data_offset;
+-    DWORD data_size;
+-    DWORD pwd_offset;
+-    DWORD pwd_size;
+-    DWORD connect_offset;
+-    DWORD connect_size;
+-    DWORD url_offset;
+-    DWORD url_size;
+-*/
++    return packet;
++}
++
++/* 2.2.1.8 DN_ACK_CONNECT_INFO */
++static void *dframe_packet_ack_session_info(int *size, DWORD seq)
++{
++    struct DFRAME_PACKET *packet;
++    struct DN_ACK_CONNECT_INFO *info;
++
++    *size = sizeof(struct DFRAME_PACKET) + sizeof(*info);
++    packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, *size);
++
++    if(!packet)
++        return packet;
++
++    packet->command =
++        PACKET_COMMAND_DATA | PACKET_COMMAND_RELIABLE | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
++        PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG | PACKET_COMMAND_USER_1;
++    packet->control  = 0;
++    packet->seq      = seq;
++    packet->nseq     = 0;
++
++    info = (struct DN_ACK_CONNECT_INFO *)(((char*)packet + sizeof(struct DFRAME_PACKET)));
++    info->type    = DN_MSG_INTERNAL_ACK_CONNECT_INFO;
+ 
+     return packet;
+ }
+@@ -643,6 +670,23 @@ static void init_package_connect(struct DN_MESSAGE_CONNECT *msg, DWORD session)
+     msg->timestamp = GetTickCount();
+ }
+ 
++static void *sack_packet(int *size)
++{
++    struct SACK_PACKET *packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(struct SACK_PACKET));
++    
++    *size = sizeof(*packet);
++    
++    packet->command = 0x80;
++    packet->opcode  = 0x06; // FRAME_EXOPCODE_SACK
++    packet->flags   = 0x01;
++    packet->retry   = 0;
++    packet->nseq = 0x3; // TODO
++    packet->nrcv  = 0x03; // TODO
++    packet->timestamp = GetTickCount();
++    
++    return packet;
++}
++
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+         const DPN_APPLICATION_DESC * const app_desc, IDirectPlay8Address * const host_addr,
+         IDirectPlay8Address * const device, const DPN_SECURITY_DESC * const security,
+@@ -658,19 +702,21 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+     char temp[1024] = {0};
+     struct DN_MESSAGE_CONNECT msg;
+ 
+-    SOCKET sock;
+     struct sockaddr_in addr;
+     int n;
+     int buflen;
+     struct sockaddr_in from;
+     int fromlen = sizeof(from);
+-    int value;
+ 
+     FIXME("(%p) : (%p, %p, %p, %p, %p, %p, %u, %p, %p, %x)\n", This, app_desc, host_addr,
+         device, security, credentials, user_data, data_size, context, async_handle, flags);
+ 
+     if(!This->msghandler)
+         return DPNERR_UNINITIALIZED;
++    
++    // TODO: should be done last.
++    SetEvent(This->enumhosts);
++    WaitForSingleObject(This->hostthread, 4000);
+ 
+     size = sizeof(port);
+     hr = IDirectPlay8Address_GetComponentByName(host_addr, DPNA_KEY_PORT, &port, &size, &type);
+@@ -703,15 +749,28 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+         return DPNERR_UNINITIALIZED; // TODO - If flag set, prompt user.
+     }
+ FIXME("type: %d\n", type);
+-FIXME("%s:%d\n", debugstr_a(buffer), port);
+-
+-    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++FIXME("%s:%d session(0x%08x)\n", debugstr_a(buffer), port, This->session);
+ 
++/*    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++*/
+     /* TODO - Update Timeout with correct value. */
+-    value = 2000;
++/*    value = 2000;
+     setsockopt(sock, SOL_SOCKET,  SO_RCVTIMEO, (char *)&value, sizeof(value));
++    value = 1;
++    setsockopt(sock, SOL_SOCKET,  SO_BROADCAST, (char *)&value, sizeof(value));
+ 
+     memset(&addr, 0, sizeof(addr));
++    
++    addr.sin_family = AF_INET;
++    addr.sin_port = htons(2302);
++    addr.sin_addr.s_addr = htonl(INADDR_ANY);
++
++    if(bind(sock, (struct sockaddr*)&addr, sizeof(addr)) == INVALID_SOCKET)
++    {
++       ERR("Failed to bind socket (%d).\n", errno);
++       return DPNERR_UNINITIALIZED; // TODO - FIXME: LEAKS.
++    }
++    */
+ 
+     addr.sin_family = AF_INET;
+     addr.sin_port = htons(port);
+@@ -721,7 +780,7 @@ FIXME("%s:%d\n", debugstr_a(buffer), port);
+ 
+     init_package_connect(&msg, This->session);
+ 
+-    n = sendto(sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++    n = sendto(This->sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+     if(n == -1)
+     {
+         FIXME("Socket DN_MESSAGE_CONNECT failed.\n");
+@@ -732,12 +791,12 @@ FIXME("%s:%d\n", debugstr_a(buffer), port);
+     }
+ 
+     buflen = sizeof(temp);
+-    n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++    n = recvfrom(This->sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
+     FIXME("Received DN_MESSAGE_CONNECT %d.\n", n);
+     if(n == sizeof(struct DN_MESSAGE_CONNECT))
+     {
+         struct DN_MESSAGE_CONNECT *connected = (struct DN_MESSAGE_CONNECT *)temp;
+-        FIXME("command %x, opcode %x, msgid %x, rspid %x, protocol %x, sess %d, time %x\n",
++        FIXME("command 0x%02x, opcode 0x%02x, msgid %x, rspid %x, protocol %x, sess 0x%x, time %d\n",
+           connected->command, connected->opcode, connected->msgid, connected->rspid,
+           connected->protocol, connected->session, connected->timestamp);
+ 
+@@ -749,72 +808,93 @@ FIXME("%s:%d\n", debugstr_a(buffer), port);
+         msg.session  = This->session;
+         msg.timestamp = GetTickCount();
+ 
+-        n = sendto(sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++        n = sendto(This->sock, (void *)&msg, sizeof(msg), 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+         if(n == -1)
+         {
+-            FIXME("Socket2 DN_MESSAGE_CONNECT_ACK failed.\n");
++            FIXME("Send DN_MESSAGE_CONNECT_ACK failed.\n");
+         }
+         else
+         {
+-            FIXME("Socket2 DN_MESSAGE_CONNECT_ACK successful. (%d)\n", n);
++            FIXME("Send DN_MESSAGE_CONNECT_ACK successful. (%d)\n", n);
+         }
+ 
+         {
+             int size2 = 0;
+             void *data = dframe_packet_keepalive(&size2, This->session);
+-            n = sendto(sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++            n = sendto(This->sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+             if(n == -1)
+             {
+-                FIXME("Socket3 keepalive failed.\n");
++                FIXME("Send keepalive failed.\n");
+             }
+             else
+             {
+-                FIXME("Socket3 keepalive successful. (%d)\n", n);
++                FIXME("Send keepalive successful. (%d)\n", n);
+             }
+ 
+             HeapFree(GetProcessHeap(), 0, data);
+ 
+-            buflen = sizeof(temp);
+-            n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
+-            FIXME("Received after keepalive %d.\n", n);
++//            buflen = sizeof(temp);
++//            n = recvfrom(This->sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++//            FIXME("Received after keepalive %d.\n", n);
+ 
+             size2 = 0;
+             data = dframe_packet_player_connect_info(&size2, This->session, app_desc, This->username);
+-            n = sendto(sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++            n = sendto(This->sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+             if(n == -1)
+             {
+-                FIXME("Socket3 connect_info failed.\n");
++                FIXME("Send connect_info failed.\n");
+             }
+             else
+             {
+-                FIXME("Socket3 connect_info successful. (%d)\n", n);
++                FIXME("Send connect_info successful. (%d)\n", n);
+             }
+             HeapFree(GetProcessHeap(), 0, data);
+ 
+             buflen = sizeof(temp);
+-            n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++            n = recvfrom(This->sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
+             FIXME("Received after connect_info %d.\n", n);
+ 
+-/*            buflen = sizeof(temp);
+-            n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
++            buflen = sizeof(temp);
++            n = recvfrom(This->sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
+             FIXME("Received %d.\n", n);
+             if(n >= sizeof(struct DFRAME_PACKET))
+             {
+                 struct DFRAME_PACKET *connected = (struct DFRAME_PACKET *)temp;
+ 
+-                FIXME("command %x, control %x, seq %x, rspid %x\n",
++                FIXME("command 0x%04x, control 0x%02x, seq %x, rspid %x\n",
+                   connected->command, connected->control, connected->seq, connected->nseq);
+                 FIXME("%d\n", *((DWORD*)(connected + sizeof(struct DFRAME_PACKET))));
++                
++                data = dframe_packet_ack_session_info(&size2, connected->seq);
++                n = sendto(This->sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++                if(n == -1)
++                {
++                    FIXME("Send ack_session failed.\n");
++                }
++                else
++                {
++                    FIXME("Send ack_session successful. (%d)\n", n);
++                }
++                
++                HeapFree(GetProcessHeap(), 0, data);
++                
++                data = sack_packet(&size2);
++                n = sendto(This->sock, (void *)data, size2, 0,  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
++                if(n == -1)
++                {
++                    FIXME("Send ack_session failed.\n");
++                }
++                else
++                {
++                    FIXME("Send ack_session successful. (%d)\n", n);
++                }
++                
++                HeapFree(GetProcessHeap(), 0, data);
+             }
+-             */
+         }
+ 
+     }
+ 
+-    Sleep(1000);
+-
+-    closesocket(sock);
+-
+     HeapFree(GetProcessHeap(), 0, buffer);
+ 
+ 
+@@ -1055,6 +1135,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+     client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
+     client->ref = 1;
+     client->session = random;
++    client->sock = INVALID_SOCKET;
+ 
+     init_dpn_sp_caps(&client->spcaps);
+ 
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 4f892e3..e816f3d 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -27,6 +27,7 @@
+ 
+ #include <wine/list.h>
+ #include "wine/unicode.h"
++#include "winsock2.h"
+ 
+ #include "dplay8.h"
+ #include "dplobby8.h"
+@@ -65,6 +66,8 @@ struct IDirectPlay8ClientImpl
+     HANDLE enumhosts;
+     HANDLE hostthread;
+     DWORD session;
++    
++    SOCKET sock;
+ };
+ 
+ /* ------------------- */
+-- 
+1.9.1
+
