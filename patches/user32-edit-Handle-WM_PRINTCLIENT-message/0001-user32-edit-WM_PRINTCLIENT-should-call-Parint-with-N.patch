@@ -7,6 +7,8 @@ Subject: [PATCH] user32/edit: WM_PRINTCLIENT should call Paint with NULL
 WM_PRINTCLIENT message, the wParam may contain a valid HDC, 
 but Begin/End Draw hasn't been called. So stuffs up drawing.
 
+Fixes https://bugs.winehq.org/show_bug.cgi?id=29183
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/user32/edit.c | 3 +++
@@ -20,7 +22,7 @@ index ca40ed0..f587b13 100644
  		break;
  
  	case WM_PRINTCLIENT:
-+		EDIT_WM_Paint(es, NULL);
++	        EDIT_WM_Paint(es, NULL);
 +		break;
 +
  	case WM_PAINT:

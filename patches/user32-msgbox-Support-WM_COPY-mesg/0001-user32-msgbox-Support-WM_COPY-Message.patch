@@ -1,19 +1,19 @@
-From 7c05795e602d0ddbdf519646b0f4ff20f91e38ba Mon Sep 17 00:00:00 2001
+From 1ce1c7c23b6c93e160c626f328c17c722faf1e28 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Apr 2016 16:04:36 +1000
 Subject: [PATCH] user32/msgbox: Support WM_COPY Message
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=17205
 
+(Needs staging patches user32-DialogBoxParam/*)
 TODO:
-Workout why test_DialogBoxParamA causes these tests to fail.
 Correct for non-english locales.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/user32/msgbox.c       |  86 +++++++++++++++++++++--
- dlls/user32/tests/dialog.c | 172 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 252 insertions(+), 6 deletions(-)
+ dlls/user32/tests/dialog.c | 170 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 251 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/user32/msgbox.c b/dlls/user32/msgbox.c
 index 2ba98c9..f7d4475 100644
@@ -134,10 +134,10 @@ index 2ba98c9..f7d4475 100644
     case WM_COMMAND:
      switch (LOWORD(wParam))
 diff --git a/dlls/user32/tests/dialog.c b/dlls/user32/tests/dialog.c
-index a37c678..c1f7494 100644
+index 1970e8f..9d23f1a 100644
 --- a/dlls/user32/tests/dialog.c
 +++ b/dlls/user32/tests/dialog.c
-@@ -1392,6 +1392,175 @@ static void test_MessageBoxFontTest(void)
+@@ -1397,6 +1397,175 @@ static void test_MessageBoxFontTest(void)
      DestroyWindow(hDlg);
  }
  
@@ -313,12 +313,8 @@ index a37c678..c1f7494 100644
  static void test_SaveRestoreFocus(void)
  {
      HWND hDlg;
-@@ -1534,9 +1703,10 @@ START_TEST(dialog)
-     test_focus();
-     test_GetDlgItem();
-     test_GetDlgItemText();
--    test_DialogBoxParamA();
-+//    test_DialogBoxParamA(); // Causes test_MessageBox_WM_COPY_Test to fail.
+@@ -1542,6 +1711,7 @@ START_TEST(dialog)
+     test_DialogBoxParamA();
      test_DisabledDialogTest();
      test_MessageBoxFontTest();
 +    test_MessageBox_WM_COPY_Test();
