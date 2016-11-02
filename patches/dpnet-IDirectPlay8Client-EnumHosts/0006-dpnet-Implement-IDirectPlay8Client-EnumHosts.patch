@@ -1,0 +1,815 @@
+From 4324d3b1d01ef0f40b7a2adaec34903aeeec9f88 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 2 Nov 2016 11:47:11 +1100
+Subject: [PATCH 6/6] dpnet: Implement IDirectPlay8Client EnumHosts
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 377 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/dpnet_private.h |  19 +++
+ dlls/dpnet/dppacket.h      | 240 +++++++++++++++++++++++++++++
+ dlls/dpnet/tests/client.c  |  44 +++++-
+ 4 files changed, 674 insertions(+), 6 deletions(-)
+ create mode 100644 dlls/dpnet/dppacket.h
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index b92d940..b32b9d1 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -29,10 +29,12 @@
+ #include "wingdi.h"
+ #include "winuser.h"
+ #include "objbase.h"
++#include "ws2tcpip.h"
+ #include "wine/debug.h"
+ 
+ #include "dplay8.h"
+ #include "dpnet_private.h"
++#include "dppacket.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
+ 
+@@ -92,6 +94,25 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+ 
+     if (!ref)
+     {
++        struct dataconnections *cursor, *cursor2;
++
++        SetEvent(This->closeevent);
++        if(This->sock != INVALID_SOCKET)
++        {
++            closesocket(This->sock);
++            This->sock = INVALID_SOCKET;
++        }
++
++        LIST_FOR_EACH_ENTRY_SAFE(cursor, cursor2, &This->connections, struct dataconnections, entry)
++        {
++            IDirectPlay8Address_Release(cursor->device);
++            list_remove(&cursor->entry);
++            heap_free(cursor);
++        }
++
++        CloseHandle(This->datathread);
++        CloseHandle(This->closeevent);
++
+         heap_free(This->username);
+         heap_free(This->data);
+         heap_free(This);
+@@ -130,6 +151,244 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+   return DPN_OK; 
+ }
+ 
++static SOCKET find_free_socket(DWORD timeout)
++{
++    SOCKET sock;
++    struct sockaddr_in addr;
++    int value;
++    int port = 2302;
++
++    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++    if(sock == INVALID_SOCKET)
++    {
++        ERR("Cannot create socket.\n");
++        return sock;
++    }
++
++    memset(&addr, 0, sizeof(addr));
++    addr.sin_family = AF_INET;
++    addr.sin_port = htons(port);
++    addr.sin_addr.s_addr = htonl(INADDR_ANY);
++
++    value = 1;
++    setsockopt(sock, SOL_SOCKET,  SO_BROADCAST, (char *)&value, sizeof(value));
++    value = timeout;
++    setsockopt(sock, SOL_SOCKET,  SO_RCVTIMEO, (char *)&value, sizeof(value));
++
++    while(port < 2400)
++    {
++       if(!bind(sock, (struct sockaddr*)&addr, sizeof(addr)))
++       {
++           TRACE("bound to port (%d) successful.\n", port);
++           return sock;
++       }
++       if(WSAGetLastError() == WSAEADDRINUSE)
++           addr.sin_port = htons(++port);
++       else
++           break;
++    }
++
++    ERR("No free ports available.\n");
++    closesocket(sock);
++    sock = INVALID_SOCKET;
++
++    return sock;
++}
++
++struct dpthread_data
++{
++    SOCKET sock;
++    DPN_SP_CAPS spcaps;
++    HANDLE event;
++    PFNDPNMESSAGEHANDLER msghandler;
++
++    struct list *enumations;
++    CRITICAL_SECTION *lock;
++};
++
++static DWORD WINAPI data_thread(void *threaddata)
++{
++    struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
++    DWORD starttime = 0;
++    struct sockaddr_in from;
++    int fromlen;
++    WORD payloadvalue = 0;
++    char *buffer = heap_alloc(tdata->spcaps.dwSystemBufferSize);
++    int buflen;
++    int received;
++    struct dataconnections *cursor;
++
++    TRACE("data thread start.\n");
++
++    while(TRUE)
++    {
++        if( (GetTickCount() - starttime) >= tdata->spcaps.dwDefaultEnumRetryInterval)
++        {
++            struct ENUM_QUERY query;
++            int err;
++
++            TRACE("Sending Enum Query Request.\n");
++
++            query.lead = 0x00;
++            query.command = PACKET_ENUM_QUERY;
++            query.payload = payloadvalue++;
++
++            query.type = PACKET_QUERY_GUID;
++
++            from.sin_family = AF_INET;
++            from.sin_port = htons(DPNA_DPNSVR_PORT);
++            from.sin_addr.s_addr = INADDR_BROADCAST;
++
++            EnterCriticalSection(tdata->lock);
++            LIST_FOR_EACH_ENTRY(cursor, tdata->enumations, struct dataconnections, entry)
++            {
++                query.application = cursor->app_guid;
++                err = sendto(tdata->sock, (void *)&query, sizeof(query), 0,  (struct sockaddr *)&from, sizeof(struct sockaddr_in));
++                if(err == -1)
++                    ERR("sendto failed (%d).\n", GetLastError());
++                else
++                    TRACE("sent (%d).\n", err);
++            }
++            LeaveCriticalSection(tdata->lock);
++
++            starttime = GetTickCount();
++        }
++
++        /* Query Enumeration Packets */
++        buflen = tdata->spcaps.dwSystemBufferSize;
++        fromlen = sizeof(from);
++        received = recvfrom(tdata->sock, buffer, buflen, 0, (struct sockaddr *)&from, &fromlen);
++        if(received >= (int)sizeof(struct ENUM_HEADER))
++        {
++            struct ENUM_HEADER *header = (struct ENUM_HEADER *)buffer;
++
++            if(header->lead == 0)
++            {
++                /* Enum Query */
++                switch(header->command)
++                {
++                    case PACKET_ENUM_QUERY:
++                    {
++                        TRACE("Ignoring EnumQuery Packet.\n");
++                        break;
++                    }
++                    /* Enum response */
++                    case PACKET_ENUM_RESPONSE:
++                    {
++                        DPNMSG_ENUM_HOSTS_RESPONSE response;
++                        DPN_APPLICATION_DESC desc;
++                        struct ENUM_QUERY_RESPONSE *data = (struct ENUM_QUERY_RESPONSE *)header;
++                        IDirectPlay8Address *sender = NULL;
++                        char ip[INET6_ADDRSTRLEN] = {0};
++                        int port;
++                        HRESULT ret;
++
++                        TRACE("PACKET_ENUM_RESPONSE.\n");
++                        if(!list_count(tdata->enumations))
++                        {
++                            TRACE("Dropping PACKET_ENUM_RESPONSE. No Listeners\n");
++                            break;
++                        }
++
++                        if(received <= sizeof(struct ENUM_QUERY_RESPONSE))
++                        {
++                            ERR("May not have received enough data.\n");
++                            SetEvent(tdata->event);
++                            break;
++                        }
++
++                        memset(&response, 0, sizeof(DPNMSG_ENUM_HOSTS_RESPONSE));
++                        memset(&desc, 0, sizeof(DPN_APPLICATION_DESC));
++
++                        response.dwSize = sizeof(DPNMSG_ENUM_HOSTS_RESPONSE);
++
++                        ret = DPN_OK;
++
++                        EnterCriticalSection(tdata->lock);
++                        LIST_FOR_EACH_ENTRY(cursor, tdata->enumations, struct dataconnections, entry)
++                        {
++                            if(IsEqualGUID(&data->application, &cursor->app_guid))
++                            {
++                                /*
++                                 *  We need to create an Address Object with the Port and IP address.
++                                 *  Applications are required to AddRef this object if they want to keep a reference.
++                                 */
++                                ret = DPNET_CreateDirectPlay8Address(NULL, NULL, &IID_IDirectPlay8Address, (void**)&sender);
++                                if(FAILED(ret))
++                                    break;
++
++                                inet_ntop(from.sin_family, &from.sin_addr, ip, sizeof(ip));
++                                port = ntohs(from.sin_port);
++                                TRACE("Server IP address %s:%d\n", ip, port);
++
++                                if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip)+1, DPNA_DATATYPE_STRING_ANSI)))
++                                {
++                                    ERR("Failed to add DPNA_KEY_HOSTNAME\n");
++                                    IDirectPlay8Address_Release(sender);
++                                    SetEvent(tdata->event);
++                                    break;
++                                }
++                                if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_PORT, &port, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
++                                {
++                                    ERR("Failed to add DPNA_KEY_PORT\n");
++                                    IDirectPlay8Address_Release(sender);
++                                    SetEvent(tdata->event);
++                                    break;
++                                }
++
++                                response.pAddressSender = sender;
++                                response.pApplicationDescription = &desc;
++                                response.pAddressDevice = cursor->device;
++
++                                desc.guidInstance     = data->instance;
++                                desc.guidApplication  = data->application;
++                                desc.dwCurrentPlayers = data->current_players;
++                                desc.dwMaxPlayers     = data->max_players;
++
++                                if(data->session_offset && data->session_offset < received)
++                                    desc.pwszSessionName  = (WCHAR*)(((char*)data)+data->session_offset+sizeof(struct ENUM_HEADER));
++
++                                if(tdata->msghandler)
++                                    ret = tdata->msghandler(NULL, DPN_MSGID_ENUM_HOSTS_RESPONSE, &response);
++
++                                IDirectPlay8Address_Release(sender);
++                                /* If a userhandler function returns anything other than DPN_OK we need to stop. */
++                                if(ret != DPN_OK)
++                                    break;
++                            }
++                        }
++                        LeaveCriticalSection(tdata->lock);
++
++                        if(ret != DPN_OK)
++                            SetEvent(tdata->event);
++
++                        break;
++                    }
++                    default:
++                    {
++                        FIXME("Unsupported query command 0x%08x.\n", header->command);
++                    }
++                }
++            }
++            else
++            {
++                struct DFRAME_PACKET *dframe = (struct DFRAME_PACKET *)buffer;
++                FIXME("DFRAME received - command 0x%08x, control 0x%08x.\n", dframe->command, dframe->control);
++            }
++        }
++
++        if(WaitForSingleObject(tdata->event, 500) != WAIT_TIMEOUT)
++        {
++            TRACE("Event Signaled.\n");
++            break;
++        }
++    }
++
++    heap_free(buffer);
++
++    return 0;
++}
++
+ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
+         PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
+         IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
+@@ -137,9 +396,101 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+         const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
+         const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvUserContext, pAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    HRESULT hr;
++    struct dataconnections *conn;
++    static DPNHANDLE cnt = 1;
++
++    TRACE("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo, pUserEnumData,
++        dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle, dwFlags);
++
++    if(!This->msghandler)
++        return DPNERR_UNINITIALIZED;
++
++    if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
++        return DPNERR_ENUMQUERYTOOLARGE;
++
++    if(dwFlags & DPNENUMHOSTS_SYNC)
++    {
++        FIXME("Flag DPNENUMHOSTS_SYNC currently not supported (%u, %u, %u).\n", dwEnumCount, dwRetryInterval, dwTimeOut);
++        return DPNERR_USERCANCEL;
++    }
++
++    if(This->sock == INVALID_SOCKET)
++    {
++        This->sock = find_free_socket(This->spcaps.dwDefaultEnumTimeout);
++        if(This->sock == INVALID_SOCKET)
++            return DPNERR_USERCANCEL; /* Pretend the user cancalled this operation. */
++    }
++
++    if(!This->closeevent)
++    {
++        This->closeevent = CreateEventA( NULL, TRUE, FALSE, NULL);
++        if(!This->closeevent)
++        {
++            WARN("Failed to create Event\n");
++            closesocket(This->sock);
++            This->sock = INVALID_SOCKET;
++            return DPNERR_GENERIC;
++        }
++    }
++
++    conn = heap_alloc(sizeof(struct dataconnections));
++    if(!conn)
++    {
++        closesocket(This->sock);
++        This->sock = INVALID_SOCKET;
++        return E_OUTOFMEMORY;
++    }
++
++    conn->handle = cnt++;
++    conn->type = 1;
++    conn->app_guid = pApplicationDesc->guidApplication;
++    hr = IDirectPlay8Address_Duplicate(pDeviceInfo, &conn->device);
++    if(FAILED(hr))
++    {
++        ERR("Failed to duplicate Device address (0x%08x).\n", hr);
++
++        closesocket(This->sock);
++        This->sock = INVALID_SOCKET;
++        heap_free(conn);
++
++        return E_OUTOFMEMORY;
++    }
++
++    EnterCriticalSection(&This->lock);
++    list_add_tail(&This->connections, &conn->entry);
++    LeaveCriticalSection(&This->lock);
++
++    if(!This->datathread)
++    {
++        struct dpthread_data *tdata = heap_alloc(sizeof(struct dpthread_data));
++        if(!tdata)
++        {
++            closesocket(This->sock);
++            This->sock = INVALID_SOCKET;
++
++            list_remove( &conn->entry );
++            IDirectPlay8Address_Release(conn->device);
++            heap_free(conn);
++
++            return E_OUTOFMEMORY;
++        }
++
++        tdata->sock   = This->sock;
++        tdata->spcaps = This->spcaps;
++        tdata->msghandler = This->msghandler;
++        tdata->event = This->closeevent;
++
++        tdata->enumations = &This->connections;
++        tdata->lock = &This->lock;
++        This->datathread = CreateThread(NULL, 0, &data_thread, tdata, 0, 0);
++    }
++
++    if(pAsyncHandle)
++        *pAsyncHandle = cnt;
++
++    return DPNSUCCESS_PENDING;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
+@@ -256,8 +607,25 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_GetServerAddress(IDirectPlay8Client
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Close(IDirectPlay8Client *iface, const DWORD dwFlags)
+ {
+     IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    struct dataconnections *cursor, *cursor2;
+     FIXME("(%p):(%x): Stub\n", This, dwFlags);
+ 
++    SetEvent(This->closeevent);
++
++    EnterCriticalSection(&This->lock);
++    LIST_FOR_EACH_ENTRY_SAFE(cursor, cursor2, &This->connections, struct dataconnections, entry)
++    {
++        IDirectPlay8Address_Release(cursor->device);
++        list_remove(&cursor->entry);
++        heap_free(cursor);
++    }
++    LeaveCriticalSection(&This->lock);
++
++    CloseHandle(This->datathread);
++    This->datathread = NULL;
++    CloseHandle(This->closeevent);
++    This->closeevent = NULL;
++
+     This->msghandler = NULL;
+ 
+     return DPN_OK;
+@@ -376,6 +744,9 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+ 
+     client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
+     client->ref = 1;
++    client->sock = INVALID_SOCKET;
++    list_init(&client->connections);
++    InitializeCriticalSection(&client->lock);
+ 
+     init_dpn_sp_caps(&client->spcaps);
+ 
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 89e0777..1f1fad5 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -41,6 +41,19 @@ typedef struct IDirectPlay8AddressImpl IDirectPlay8AddressImpl;
+ typedef struct IDirectPlay8LobbiedApplicationImpl IDirectPlay8LobbiedApplicationImpl;
+ typedef struct IDirectPlay8ThreadPoolImpl IDirectPlay8ThreadPoolImpl;
+ 
++struct dataconnections
++{
++    DPNHANDLE handle;
++    BYTE type;
++
++    IDirectPlay8Address *device;
++
++    PFNDPNMESSAGEHANDLER msghandler;
++    GUID app_guid;
++
++    struct list entry;
++};
++
+ /* ------------------ */
+ /* IDirectPlay8Client */
+ /* ------------------ */
+@@ -62,6 +75,12 @@ struct IDirectPlay8ClientImpl
+     DWORD datasize;
+ 
+     DPN_SP_CAPS spcaps;
++
++    SOCKET sock;
++    HANDLE closeevent;
++    HANDLE datathread;
++    struct list connections;
++    CRITICAL_SECTION lock;
+ };
+ 
+ /* ------------------- */
+diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
+new file mode 100644
+index 0000000..297640a
+--- /dev/null
++++ b/dlls/dpnet/dppacket.h
+@@ -0,0 +1,240 @@
++/*
++ * dpnet packet structures
++ *
++ * Copyright 2016 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef __WINE_DPNET_PACKET_H
++#define __WINE_DPNET_PACKET_H
++
++#include <pshpack1.h>
++
++struct ENUM_HEADER
++{
++    BYTE lead;
++    BYTE command;
++    WORD payload;
++};
++
++struct ENUM_QUERY
++{
++    BYTE lead;
++    BYTE command;
++    WORD payload;
++    BYTE type;
++    GUID application;
++};
++
++struct ENUM_QUERY_RESPONSE
++{
++    BYTE   lead;
++    BYTE   command;
++    WORD   payload;
++    DWORD  reply_offset;
++    DWORD  response_size;
++    DWORD  desc_size;
++    DWORD  desc_flags;
++    DWORD  max_players;
++    DWORD  current_players;
++    DWORD  session_offset;
++    DWORD  session_size;
++    DWORD  Password_offset;
++    DWORD  Password_size;
++    DWORD  reserved_offset;
++    DWORD  reserved_size;
++    DWORD  application_offset;
++    DWORD  application_size;
++    GUID   instance;
++    GUID   application;
++};
++
++struct DFRAME_PACKET
++{
++    BYTE command;
++    BYTE control;
++    BYTE seq;
++    BYTE nseq;
++};
++
++/* 2.2.1.8 DN_ACK_CONNECT_INFO */
++struct DN_ACK_CONNECT_INFO
++{
++    DWORD type;
++};
++
++struct DFRAME_PACKET_KEEPALIVE
++{
++    BYTE command;
++    BYTE control;
++    BYTE seq;
++    BYTE nseq;
++    DWORD session;
++};
++
++struct DN_MESSAGE_CONNECT
++{
++    BYTE command;
++    BYTE opcode;
++    BYTE msgid;
++    BYTE rspid;
++    DWORD protocol;
++    DWORD session;
++    DWORD timestamp;
++};
++
++
++struct SACK_PACKET
++{
++    BYTE command;
++    BYTE opcode;
++    BYTE flags;
++    BYTE retry;
++    BYTE nseq;
++    BYTE nrcv;
++    WORD padding;
++    DWORD timestamp;
++};
++
++/* 2.2.1.1 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO */
++struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO
++{
++    DWORD type;
++    DWORD flags;
++    DWORD version;
++    DWORD name_offset;
++    DWORD name_size;
++    DWORD data_offset;
++    DWORD data_size;
++    DWORD pwd_offset;
++    DWORD pwd_size;
++    DWORD connect_offset;
++    DWORD connect_size;
++    DWORD url_offset;
++    DWORD url_size;
++    GUID  instance;
++    GUID  application;
++};
++
++struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
++{
++    DWORD type;
++    DWORD flags;
++    DWORD version;
++    DWORD name_offset;
++    DWORD name_size;
++    DWORD data_offset;
++    DWORD data_size;
++    DWORD pwd_offset;
++    DWORD pwd_size;
++    DWORD connect_offset;
++    DWORD connect_size;
++    DWORD url_offset;
++    DWORD url_size;
++    GUID  instance;
++    GUID  application;
++    DWORD alt_address_offset;
++    DWORD alt_address_size;
++};
++
++/* 2.2.1.4 DN_SEND_CONNECT_INFO */
++struct DN_SEND_CONNECT_INFO
++{
++    DWORD type;                   /* DN_MSG_INTERNAL_SEND_CONNECT_INFO */
++    DWORD reply_offset;
++    DWORD reply_size;
++    DWORD size;
++    DWORD flags;
++    DWORD max_players;
++    DWORD cur_players;
++    DWORD session_offset;
++    DWORD session_size;
++    DWORD password_offset;
++    DWORD password_size;
++    DWORD reserved_offset;
++    DWORD reserved_size;
++    DWORD appdata_offset;
++    DWORD appdata_size;
++    GUID  instance;
++    GUID  application;
++    DWORD dpnid;
++    DWORD version;
++    DWORD ver_not_used;
++    DWORD entry_count;
++    DWORD membership_count;
++};
++
++#define PACKET_ENUM_QUERY                     0x02
++#define PACKET_ENUM_RESPONSE                  0x03
++
++#define PACKET_QUERY_GUID                     0x01
++#define PACKET_QUERY_NO_GUID                  0x02
++
++#define APPLICATIONDESCSIZE                   0x00000050
++
++#define PACKET_COMMAND_DATA                   0x01
++#define PACKET_COMMAND_RELIABLE               0x02
++#define PACKET_COMMAND_SEQUENTIAL             0x04
++#define PACKET_COMMAND_POLL                   0x08
++#define PACKET_COMMAND_NEW_MSG                0x10
++#define PACKET_COMMAND_END_MSG                0x20
++#define PACKET_COMMAND_USER_1                 0x40
++#define PACKET_COMMAND_USER_2                 0x80
++#define PACKET_COMMAND_CFRAME                 PACKET_COMMAND_USER_2
++
++#define PACKET_CONTROL_RETRY                  0x01
++#define PACKET_CONTROL_KEEPALIVE_OR_CORRELATE 0x02
++#define PACKET_CONTROL_COALESCE               0x04
++#define PACKET_CONTROL_END_STREAM             0x08
++#define PACKET_CONTROL_SACK1                  0x10
++#define PACKET_CONTROL_SACK2                  0x20
++#define PACKET_CONTROL_SEND1                  0x40
++#define PACKET_CONTROL_SEND2                  0x80
++
++#define PROTOCOL_VERSION                      0x00010006
++
++#define FRAME_EXOPCODE_CONNECT                0x01
++#define FRAME_EXOPCODE_CONNECTED              0x02
++#define FRAME_EXOPCODE_CONNECTED_SIGNED       0x03
++#define FRAME_EXOPCODE_HARD_DISCONNECT        0x04
++#define FRAME_EXOPCODE_SACK                   0x06
++
++#define PACKET_SIGNING_FAST                   0x00000001
++#define PACKET_SIGNING_FULL                   0x00000002
++
++#define SACK_FLAGS_RESPONSE                   0x01
++#define SACK_FLAGS_SACK_MASK1                 0x02
++#define SACK_FLAGS_SACK_MASK2                 0x04
++#define SACK_FLAGS_SEND_MASK1                 0x08
++#define SACK_FLAGS_SEND_MASK2                 0x10
++
++#define DN_MSG_INTERNAL_PLAYER_CONNECT_INFO   0x000000C1
++#define DN_MSG_INTERNAL_SEND_CONNECT_INFO     0x000000C2
++#define DN_MSG_INTERNAL_ACK_CONNECT_INFO      0x000000C3
++
++#define DP_OBECT_TYPE_CLIENT                  0x00000002
++#define DP_OBECT_TYPE_PEER                    0x00000004
++
++#define DP_OBECT_NET_VER_8_0                  0x00000001
++#define DP_OBECT_NET_VER_8_1                  0x00000002
++#define DP_OBECT_NET_VER_POCKETPC             0x00000003
++#define DP_OBECT_NET_VER_W2K3                 0x00000005
++#define DP_OBECT_NET_VER_8_2                  0x00000006
++#define DP_OBECT_NET_VER_9_0                  0x00000007
++#define DP_OBECT_NET_VER_9_0A                 0x00000008
++
++#include "poppack.h"
++
++#endif
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 4753d74..cb3d918 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -38,6 +38,7 @@ static HRESULT WINAPI DirectPlayMessageHandler(PVOID context, DWORD message_id,
+ static HRESULT WINAPI DirectPlayLobbyMessageHandler(PVOID context, DWORD message_id, PVOID buffer)
+ {
+     trace("DirectPlayLobbyMessageHandler: 0x%08x\n", message_id);
++
+     return S_OK;
+ }
+ 
+@@ -144,16 +145,22 @@ static void test_enum_service_providers(void)
+ static void test_enum_hosts(void)
+ {
+     HRESULT hr;
++    IDirectPlay8Client *client2;
+     IDirectPlay8Address *host = NULL;
+     IDirectPlay8Address *local = NULL;
+     DPN_APPLICATION_DESC appdesc;
+-    DPNHANDLE async = 0;
++    DPNHANDLE async = 0, async2 = 0;
+     static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
++    DPN_SP_CAPS caps;
++    char *data;
+ 
+     memset( &appdesc, 0, sizeof(DPN_APPLICATION_DESC) );
+     appdesc.dwSize  = sizeof( DPN_APPLICATION_DESC );
+     appdesc.guidApplication  = appguid;
+ 
++    hr = CoCreateInstance(&CLSID_DirectPlay8Client, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Client, (void **)&client2);
++    ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
++
+     hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&local);
+     ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
+ 
+@@ -170,16 +177,47 @@ static void test_enum_hosts(void)
+                                                          DPNA_DATATYPE_STRING);
+     ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
+ 
++    caps.dwSize = sizeof(DPN_SP_CAPS);
++
++    hr = IDirectPlay8Client_GetSPCaps(client, &CLSID_DP8SP_TCPIP, &caps, 0);
++    ok(hr == DPN_OK, "got %x\n", hr);
++    data = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, caps.dwMaxEnumPayloadSize + 1);
++
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize + 1, INFINITE, 0, INFINITE, NULL,  &async, 0);
++    ok(hr == DPNERR_ENUMQUERYTOOLARGE, "got 0x%08x\n", hr);
++
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize, INFINITE, 0, INFINITE, NULL,  &async, 0);
++    ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
++
++    hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    HeapFree(GetProcessHeap(), 0, data);
++
++    /* No Initialize has been called on client2. */
++    hr = IDirectPlay8Client_EnumHosts(client2, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
++    ok(hr == DPNERR_UNINITIALIZED, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++
+     /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
+-    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumServiceProviders failed with 0x%08x\n", hr);
+-    todo_wine ok(async, "No Handle returned\n");
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    ok(async, "No Handle returned\n");
++
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    ok(async2, "No Handle returned\n");
++    ok(async2 != async, "Same handle returned.\n");
++
++    Sleep(500);
+ 
+     hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
+     ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
+ 
++    hr = IDirectPlay8Client_CancelAsyncOperation(client, async2, 0);
++    ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
++
+     IDirectPlay8Address_Release(local);
+     IDirectPlay8Address_Release(host);
++    IDirectPlay8Client_Release(client2);
+ }
+ 
+ static void test_get_sp_caps(void)
+-- 
+1.9.1
+
