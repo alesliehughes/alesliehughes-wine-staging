@@ -1,20 +1,20 @@
-From 7df4375afc48e6d3dd303e13ad6067a459e7c7d7 Mon Sep 17 00:00:00 2001
+From 34d6362e959d8725cb65d848ad21afb4c00ca2de Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Nov 2016 09:10:42 +1100
 Subject: [PATCH] setupapi: Add SetupDiGetDevicePropertyW stub
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/setupapi/devinst.c     | 13 +++++++++++++
+ dlls/setupapi/devinst.c     | 14 ++++++++++++++
  dlls/setupapi/setupapi.spec |  1 +
  include/setupapi.h          |  2 ++
- 3 files changed, 16 insertions(+)
+ 3 files changed, 17 insertions(+)
 
 diff --git a/dlls/setupapi/devinst.c b/dlls/setupapi/devinst.c
-index 02e75b6..a245c7a 100644
+index 02e75b6..ef1a6b7 100644
 --- a/dlls/setupapi/devinst.c
 +++ b/dlls/setupapi/devinst.c
-@@ -4143,3 +4143,16 @@ BOOL WINAPI SetupDiGetINFClassW(PCWSTR inf, LPGUID class_guid, PWSTR class_name,
+@@ -4143,3 +4143,17 @@ BOOL WINAPI SetupDiGetINFClassW(PCWSTR inf, LPGUID class_guid, PWSTR class_name,
  
      return (have_guid || have_name);
  }
@@ -29,6 +29,7 @@ index 02e75b6..a245c7a 100644
 +    FIXME("%p, %p, %p, %p, %p, %d, %p, 0x%08x stub\n", info_set, info_data, prop_key,
 +               prop_type, prop_buff, prop_buff_size, required_size, flags);
 +
++    SetLastError(ERROR_NOT_FOUND);
 +    return FALSE;
 +}
 diff --git a/dlls/setupapi/setupapi.spec b/dlls/setupapi/setupapi.spec
