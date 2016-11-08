@@ -1,4 +1,4 @@
-From 1ce1c7c23b6c93e160c626f328c17c722faf1e28 Mon Sep 17 00:00:00 2001
+From 3564c97b0d6bd96898537c17d28bfee345e7f900 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Apr 2016 16:04:36 +1000
 Subject: [PATCH] user32/msgbox: Support WM_COPY Message
@@ -6,14 +6,12 @@ Subject: [PATCH] user32/msgbox: Support WM_COPY Message
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=17205
 
 (Needs staging patches user32-DialogBoxParam/*)
-TODO:
-Correct for non-english locales.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/user32/msgbox.c       |  86 +++++++++++++++++++++--
- dlls/user32/tests/dialog.c | 170 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 251 insertions(+), 5 deletions(-)
+ dlls/user32/msgbox.c       |  86 ++++++++++++++++++++--
+ dlls/user32/tests/dialog.c | 180 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 261 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/user32/msgbox.c b/dlls/user32/msgbox.c
 index 2ba98c9..f7d4475 100644
@@ -134,10 +132,18 @@ index 2ba98c9..f7d4475 100644
     case WM_COMMAND:
      switch (LOWORD(wParam))
 diff --git a/dlls/user32/tests/dialog.c b/dlls/user32/tests/dialog.c
-index 1970e8f..9d23f1a 100644
+index a37c678..a81cbb4 100644
 --- a/dlls/user32/tests/dialog.c
 +++ b/dlls/user32/tests/dialog.c
-@@ -1397,6 +1397,175 @@ static void test_MessageBoxFontTest(void)
+@@ -40,6 +40,7 @@
+ #include "winbase.h"
+ #include "wingdi.h"
+ #include "winuser.h"
++#include "winnls.h"
+ 
+ #define MAXHWNDS 1024
+ static HWND hwnd [MAXHWNDS];
+@@ -1392,6 +1393,184 @@ static void test_MessageBoxFontTest(void)
      DestroyWindow(hDlg);
  }
  
@@ -228,6 +234,8 @@ index 1970e8f..9d23f1a 100644
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
 +
++BOOL non_english = FALSE;
++
 +DWORD WINAPI WorkerThread(void *param)
 +{
 +    WCHAR *expected = param;
@@ -241,15 +249,13 @@ index 1970e8f..9d23f1a 100644
 +
 +    /* Find the Window, if it doesn't have focus */
 +    if (!(IsWindow(hwndMbox) &&
-+	  GetWindowTextA(hwndMbox, windowTitle, sizeof(msgbox_title)) &&
-+	  lstrcmpA(msgbox_title, windowTitle) == 0))
++        GetWindowTextA(hwndMbox, windowTitle, sizeof(msgbox_title)) &&
++        lstrcmpA(msgbox_title, windowTitle) == 0))
 +    {
-+	hwndMbox = FindWindowA(NULL, msgbox_title);
++        hwndMbox = FindWindowA(NULL, msgbox_title);
 +
-+	if (!IsWindow(hwndMbox))
-+        {
++        if (!IsWindow(hwndMbox))
 +            goto cleanup;
-+        }
 +    }
 +
 +    SendMessageA(hwndMbox, WM_COPY, 0, 0);
@@ -261,15 +267,22 @@ index 1970e8f..9d23f1a 100644
 +
 +        if (text != NULL)
 +        {
-+            succeeded = lstrcmpW(expected, text) == 0;
-+            if(!succeeded)
++            if(non_english)
++                ok(lstrlenW(text) > 0, "Empty string on clipboard\n");
++            else
 +            {
-+                ok(0, "%s\n", wine_dbgstr_w(text));
-+                ok(0, "%s\n", wine_dbgstr_w(expected));
++                succeeded = lstrcmpW(expected, text) == 0;
++                if(!succeeded)
++                {
++                    ok(0, "%s\n", wine_dbgstr_w(text));
++                    ok(0, "%s\n", wine_dbgstr_w(expected));
++                }
 +            }
 +
 +            GlobalUnlock(textHandle);
 +        }
++        else
++            ok(0, "No text on clipboard.\n");
 +
 +        CloseClipboard();
 +
@@ -287,6 +300,8 @@ index 1970e8f..9d23f1a 100644
 +static void test_MessageBox_WM_COPY_Test(void)
 +{
 +    DWORD tid = 0;
++
++    non_english = (PRIMARYLANGID(GetUserDefaultLangID()) != LANG_ENGLISH);
 +
 +    CreateThread(NULL, 0, WorkerThread, &expectedOK, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_OK);
@@ -313,7 +328,7 @@ index 1970e8f..9d23f1a 100644
  static void test_SaveRestoreFocus(void)
  {
      HWND hDlg;
-@@ -1542,6 +1711,7 @@ START_TEST(dialog)
+@@ -1537,6 +1716,7 @@ START_TEST(dialog)
      test_DialogBoxParamA();
      test_DisabledDialogTest();
      test_MessageBoxFontTest();
