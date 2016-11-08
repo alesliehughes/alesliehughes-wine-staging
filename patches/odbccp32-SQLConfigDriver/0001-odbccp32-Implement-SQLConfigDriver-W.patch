@@ -1,26 +1,18 @@
-From 31a33e2955046068f2c148ba7b135b26b6e344cf Mon Sep 17 00:00:00 2001
+From e4b7d98dc554bdf588ab5bee48de218afa90a561 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 5 Nov 2015 15:07:46 +1100
+Date: Tue, 8 Nov 2016 16:26:03 +1100
 Subject: [PATCH] odbccp32: Implement SQLConfigDriver/W
 
-Imcomplete
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 80 +++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 1 deletion(-)
+ dlls/odbccp32/odbccp32.c | 124 +++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 114 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 7aac6dd..87b9310 100644
+index aaa488b..934b9d4 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -37,6 +37,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
- 
- /* Registry key names */
- static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\','O','D','B','C',' ','D','r','i','v','e','r','s',0};
-+static const WCHAR odbcini_key[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\',0};
- 
- /* This config mode is known to be process-wide.
-  * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
-@@ -58,6 +59,9 @@ static const WCHAR odbc_error_out_of_mem[] = {'O','u','t',' ','o','f',' ','m','e
+@@ -63,6 +63,9 @@ static const WCHAR odbc_error_out_of_mem[] = {'O','u','t',' ','o','f',' ','m','e
  static const WCHAR odbc_error_invalid_param_sequence[] = {'I','n','v','a','l','i','d',' ','p','a','r','a','m','e','t','e','r',' ','s','e','q','u','e','n','c','e',0};
  static const WCHAR odbc_error_invalid_param_string[] = {'I','n','v','a','l','i','d',' ','p','a','r','a','m','e','t','e','r',' ','s','t','r','i','n','g',0};
  
@@ -30,13 +22,15 @@ index 7aac6dd..87b9310 100644
  /* Push an error onto the error stack, taking care of ranges etc. */
  static void push_error(int code, LPCWSTR msg)
  {
-@@ -243,13 +247,86 @@ BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
+@@ -248,22 +251,123 @@ BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
      return TRUE;
  }
  
-+static BOOL WINAPI configdriver(HWND hwnd, WORD request, const WCHAR *driver,
-+               const WCHAR *args, const WCHAR *msg, WORD msgmax, WORD *msgout)
-+{
+-BOOL WINAPI SQLConfigDriverW(HWND hwndParent, WORD fRequest, LPCWSTR lpszDriver,
+-               LPCWSTR lpszArgs, LPWSTR lpszMsg, WORD cbMsgMax, WORD *pcbMsgOut)
++BOOL WINAPI SQLConfigDriverW(HWND hwnd, WORD request, LPCWSTR driver,
++               LPCWSTR args, LPWSTR msg, WORD msgmax, WORD *msgout)
+ {
 +    static WCHAR reg_driver[] = {'d','r','i','v','e','r',0};
 +    long ret;
 +    HMODULE hmod;
@@ -45,7 +39,14 @@ index 7aac6dd..87b9310 100644
 +    DWORD size = 0, type;
 +    BOOL funcret = FALSE;
 +
-+    if ((ret = RegOpenKeyW(HKEY_CURRENT_USER, odbcini_key, &hkey)) == ERROR_SUCCESS)
+     clear_errors();
+-    FIXME("(%p %d %s %s %p %d %p)\n", hwndParent, fRequest, debugstr_w(lpszDriver),
+-          debugstr_w(lpszArgs), lpszMsg, cbMsgMax, pcbMsgOut);
+-    return TRUE;
++    TRACE("(%p %d %s %s %p %d %p)\n", hwnd, request, debugstr_w(driver),
++          debugstr_w(args), msg, msgmax, msgout);
++
++    if ((ret = RegOpenKeyW(HKEY_CURRENT_USER, odbcini, &hkey)) == ERROR_SUCCESS)
 +    {
 +         HKEY hkeydriver;
 +
@@ -76,56 +77,85 @@ index 7aac6dd..87b9310 100644
 +
 +    hmod = LoadLibraryW(filename);
 +    HeapFree(GetProcessHeap(), 0, filename);
-+    if(hmod)
-+    {
-+        pConfigDriverW = (void*) GetProcAddress(hmod, "ConfigDriverW");
-+        if(pConfigDriverW)
-+        {
-+            funcret = pConfigDriverW(hwnd, request, driver, args, msg, msgmax, msgout);
-+        }
-+        else
-+        {
-+            pConfigDriverA = (void*) GetProcAddress(hmod, "ConfigDriver");
-+            if(pConfigDriverA)
-+            {
-+                // CALL pConfigDriverA
-+//static BOOL (WINAPI *pConfigDriverA)(HWND hwnd, WORD request, const char *driver, const char *args, const char *msg, WORD msgmax, WORD *msgout);
-+
-+            }
-+        }
-+
-+        FreeLibrary(hmod);
-+    }
-+    else
++    if(!hmod)
 +        return ODBC_ERROR_LOAD_LIB_FAILED;
 +
++    pConfigDriverW = (void*) GetProcAddress(hmod, "ConfigDriverW");
++    if(pConfigDriverW)
++    {
++        funcret = pConfigDriverW(hwnd, request, driver, args, msg, msgmax, msgout);
++    }
++
++    FreeLibrary(hmod);
++
 +    return funcret;
-+}
-+
- BOOL WINAPI SQLConfigDriverW(HWND hwndParent, WORD fRequest, LPCWSTR lpszDriver,
-                LPCWSTR lpszArgs, LPWSTR lpszMsg, WORD cbMsgMax, WORD *pcbMsgOut)
+ }
+ 
+-BOOL WINAPI SQLConfigDriver(HWND hwndParent, WORD fRequest, LPCSTR lpszDriver,
+-               LPCSTR lpszArgs, LPSTR lpszMsg, WORD cbMsgMax, WORD *pcbMsgOut)
++BOOL WINAPI SQLConfigDriver(HWND hwnd, WORD request, LPCSTR driver,
++               LPCSTR args, LPSTR msg, WORD msgmax, WORD *msgout)
  {
-+    BOOL ret;
++    long ret;
++    HMODULE hmod;
++    HKEY hkey;
++    char *filename = NULL;
++    DWORD size = 0, type;
++    BOOL funcret = FALSE;
 +
      clear_errors();
-     FIXME("(%p %d %s %s %p %d %p)\n", hwndParent, fRequest, debugstr_w(lpszDriver),
-           debugstr_w(lpszArgs), lpszMsg, cbMsgMax, pcbMsgOut);
+-    FIXME("(%p %d %s %s %p %d %p)\n", hwndParent, fRequest, debugstr_a(lpszDriver),
+-          debugstr_a(lpszArgs), lpszMsg, cbMsgMax, pcbMsgOut);
 -    return TRUE;
++    TRACE("(%p %d %s %s %p %d %p)\n", hwnd, request, debugstr_a(driver),
++          debugstr_a(args), msg, msgmax, msgout);
 +
-+    ret = configdriver(hwndParent, fRequest, lpszDriver, lpszArgs, lpszMsg, cbMsgMax, pcbMsgOut);
++    if ((ret = RegOpenKeyW(HKEY_CURRENT_USER, odbcini, &hkey)) == ERROR_SUCCESS)
++    {
++         HKEY hkeydriver;
 +
-+    return ret;
++         if ((ret = RegOpenKeyA(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
++         {
++              ret = RegGetValueA(hkeydriver, NULL, "Driver", RRF_RT_REG_SZ, &type, NULL, &size);
++              if(ret == ERROR_MORE_DATA)
++              {
++                  filename = HeapAlloc(GetProcessHeap(), 0, size);
++                  if(!filename)
++                  {
++                       return ODBC_ERROR_OUT_OF_MEM;
++                  }
++                  ret = RegGetValueA(hkeydriver, NULL, driver, RRF_RT_REG_SZ, &type, filename, &size);
++              }
++
++              RegCloseKey(hkeydriver);
++         }
++
++         RegCloseKey(hkey);
++    }
++
++    if(ret != ERROR_SUCCESS)
++    {
++        HeapFree(GetProcessHeap(), 0, filename);
++        return ODBC_ERROR_INVALID_DSN;
++    }
++
++    hmod = LoadLibraryA(filename);
++    HeapFree(GetProcessHeap(), 0, filename);
++    if(!hmod)
++        return ODBC_ERROR_LOAD_LIB_FAILED;
++
++    pConfigDriverA = (void*) GetProcAddress(hmod, "ConfigDriver");
++    if(pConfigDriverA)
++    {
++        funcret = pConfigDriverA(hwnd, request, driver, args, msg, msgmax, msgout);
++    }
++
++    FreeLibrary(hmod);
++
++    return funcret;
  }
  
- BOOL WINAPI SQLConfigDriver(HWND hwndParent, WORD fRequest, LPCSTR lpszDriver,
-@@ -258,6 +335,7 @@ BOOL WINAPI SQLConfigDriver(HWND hwndParent, WORD fRequest, LPCSTR lpszDriver,
-     clear_errors();
-     FIXME("(%p %d %s %s %p %d %p)\n", hwndParent, fRequest, debugstr_a(lpszDriver),
-           debugstr_a(lpszArgs), lpszMsg, cbMsgMax, pcbMsgOut);
-+
-     return TRUE;
- }
- 
+ BOOL WINAPI SQLCreateDataSourceW(HWND hwnd, LPCWSTR lpszDS)
 -- 
 1.9.1
 
