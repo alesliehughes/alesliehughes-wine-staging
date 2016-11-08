@@ -1,17 +1,15 @@
-From 3564c97b0d6bd96898537c17d28bfee345e7f900 Mon Sep 17 00:00:00 2001
+From 258cd496e1615ae9195bd70dd7f167b7a145e066 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Apr 2016 16:04:36 +1000
 Subject: [PATCH] user32/msgbox: Support WM_COPY Message
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=17205
 
-(Needs staging patches user32-DialogBoxParam/*)
-
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/user32/msgbox.c       |  86 ++++++++++++++++++++--
- dlls/user32/tests/dialog.c | 180 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 261 insertions(+), 5 deletions(-)
+ dlls/user32/msgbox.c       |  86 +++++++++++++++++++--
+ dlls/user32/tests/dialog.c | 187 ++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 267 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/user32/msgbox.c b/dlls/user32/msgbox.c
 index 2ba98c9..f7d4475 100644
@@ -132,7 +130,7 @@ index 2ba98c9..f7d4475 100644
     case WM_COMMAND:
      switch (LOWORD(wParam))
 diff --git a/dlls/user32/tests/dialog.c b/dlls/user32/tests/dialog.c
-index a37c678..a81cbb4 100644
+index a37c678..0bb7dca 100644
 --- a/dlls/user32/tests/dialog.c
 +++ b/dlls/user32/tests/dialog.c
 @@ -40,6 +40,7 @@
@@ -143,12 +141,12 @@ index a37c678..a81cbb4 100644
  
  #define MAXHWNDS 1024
  static HWND hwnd [MAXHWNDS];
-@@ -1392,6 +1393,184 @@ static void test_MessageBoxFontTest(void)
+@@ -1392,6 +1393,187 @@ static void test_MessageBoxFontTest(void)
      DestroyWindow(hDlg);
  }
  
 +static const char msgbox_title[] = "%5!z9ZXw*ia;57n/FGl.bCH,Su\"mfKN;foCqAU\'j6AmoJgAc_D:Z0A\'E6PF_O/w";
-+static const WCHAR expectedOK[] =
++static WCHAR expectedOK[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -160,7 +158,7 @@ index a37c678..a81cbb4 100644
 +'O','K',' ',' ',' ','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
-+static const WCHAR expectedOkCancel[] =
++static WCHAR expectedOkCancel[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -172,7 +170,7 @@ index a37c678..a81cbb4 100644
 +'O','K',' ',' ',' ','C','a','n','c','e','l',' ',' ',' ','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
-+static const WCHAR expectedAbortRetryIgnore[] =
++static WCHAR expectedAbortRetryIgnore[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -185,7 +183,7 @@ index a37c678..a81cbb4 100644
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
 +
-+static const WCHAR expectedYesNo[] =
++static WCHAR expectedYesNo[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -197,7 +195,7 @@ index a37c678..a81cbb4 100644
 +'Y','e','s',' ',' ',' ','N','o',' ',' ',' ','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
-+static const WCHAR expectedYesNoCancel[] =
++static WCHAR expectedYesNoCancel[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -209,7 +207,7 @@ index a37c678..a81cbb4 100644
 +'Y','e','s',' ',' ',' ','N','o',' ',' ',' ','C','a','n','c','e','l',' ',' ',' ','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
-+static const WCHAR expectedRetryCancel[] =
++static WCHAR expectedRetryCancel[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -221,7 +219,7 @@ index a37c678..a81cbb4 100644
 +'R','e','t','r','y',' ',' ',' ','C','a','n','c','e','l',' ',' ',' ','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n', 0
 +};
-+static const WCHAR expectedCancelTryContinue[] =
++static WCHAR expectedCancelTryContinue[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
@@ -287,12 +285,14 @@ index a37c678..a81cbb4 100644
 +        CloseClipboard();
 +
 +    }
++    else
++        trace("Clipboard error\n");
 +
 +    PostMessageA(hwndMbox, WM_COMMAND, IDIGNORE, 0); /* For MB_ABORTRETRYIGNORE dialog. */
 +    PostMessageA(hwndMbox, WM_CLOSE, 0, 0);
 +
 +cleanup:
-+    ok(succeeded, "Failed to get string.\n");
++    ok(succeeded || non_english, "Failed to get string.\n");
 +
 +    return 0;
 +}
@@ -302,6 +302,7 @@ index a37c678..a81cbb4 100644
 +    DWORD tid = 0;
 +
 +    non_english = (PRIMARYLANGID(GetUserDefaultLangID()) != LANG_ENGLISH);
++    trace("non_english %d\n", non_english);
 +
 +    CreateThread(NULL, 0, WorkerThread, &expectedOK, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_OK);
@@ -328,14 +329,20 @@ index a37c678..a81cbb4 100644
  static void test_SaveRestoreFocus(void)
  {
      HWND hDlg;
-@@ -1537,6 +1716,7 @@ START_TEST(dialog)
-     test_DialogBoxParamA();
+@@ -1534,9 +1716,12 @@ START_TEST(dialog)
+     test_focus();
+     test_GetDlgItem();
+     test_GetDlgItemText();
+-    test_DialogBoxParamA();
      test_DisabledDialogTest();
      test_MessageBoxFontTest();
 +    test_MessageBox_WM_COPY_Test();
      test_SaveRestoreFocus();
      test_timer_message();
++
++    /* This test can make some of the above tests fail. */
++    test_DialogBoxParamA();
  }
 -- 
-1.9.1
+2.10.2
 
