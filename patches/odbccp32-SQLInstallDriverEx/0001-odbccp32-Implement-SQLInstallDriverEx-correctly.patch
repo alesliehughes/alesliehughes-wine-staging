@@ -1,4 +1,4 @@
-From 075532655b8cdaf7a3d1b77ef56f4fbbab333370 Mon Sep 17 00:00:00 2001
+From dec3978b4e17330ed6337f431f585bbb490a03fd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Nov 2015 16:12:30 +1100
 Subject: [PATCH 1/4] odbccp32: Implement SQLInstallDriverEx correctly
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 140 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index bc643d4..3d150a1 100644
+index bc643d4..d9c691a 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -29,6 +29,7 @@

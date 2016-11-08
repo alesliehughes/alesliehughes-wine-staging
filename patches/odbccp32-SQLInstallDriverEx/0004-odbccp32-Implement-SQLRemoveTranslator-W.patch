@@ -1,25 +1,25 @@
-From 720b676f154b3a6fa87ff8cc493bbe34e49eb2d7 Mon Sep 17 00:00:00 2001
+From d79363f495287a1e3412f3aceed7b1629179b347 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
 Subject: [PATCH 4/4] odbccp32: Implement SQLRemoveTranslator/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 57 ++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 50 insertions(+), 7 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 44 +++++++++++++++++++++++++++++++++++++-------
+ dlls/odbccp32/tests/misc.c |  8 ++++----
+ 2 files changed, 41 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index cb1058e..148cb1c 100644
+index 8e8e663..aaa488b 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1194,20 +1194,63 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+@@ -1181,20 +1181,50 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
      return FALSE;
  }
  
 -BOOL WINAPI SQLRemoveTranslatorW(LPCWSTR lpszTranslator, LPDWORD lpdwUsageCount)
 +BOOL WINAPI SQLRemoveTranslatorW(const WCHAR *translator, DWORD *usage_count)
  {
-+    DWORD usage_cnt = 0;
 +    HKEY hkey;
 +
      clear_errors();
@@ -32,19 +32,6 @@ index cb1058e..148cb1c 100644
 +    {
 +        HKEY hkeydriver;
 +
-+        if (RegOpenKeyW(hkey, translator, &hkeydriver) == ERROR_SUCCESS)
-+        {
-+            if (usage_count)
-+            {
-+                if (RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, NULL, &usage_cnt, NULL) == ERROR_SUCCESS)
-+                {
-+                    usage_cnt--;
-+                }
-+            }
-+
-+            RegCloseKey(hkeydriver);
-+        }
-+
 +        if(RegDeleteKeyW(hkey, translator) != ERROR_SUCCESS)
 +            ERR("Failed to delete registry key: %s\n", debugstr_w(translator));
 +
@@ -56,10 +43,11 @@ index cb1058e..148cb1c 100644
 +            RegCloseKey(hkeydriver);
 +        }
 +
++        RegCloseKey(hkey);
 +    }
 +
 +    if (usage_count)
-+        *usage_count = usage_cnt;
++        *usage_count = 0;
 +
 +    return TRUE;
  }
@@ -83,6 +71,28 @@ index cb1058e..148cb1c 100644
  }
  
  BOOL WINAPI SQLSetConfigMode(UWORD wConfigMode)
+diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
+index e374ad4..e76f28c 100644
+--- a/dlls/odbccp32/tests/misc.c
++++ b/dlls/odbccp32/tests/misc.c
+@@ -519,13 +519,13 @@ void test_SQLInstallTranslatorEx(void)
+ 
+     cnt = 100;
+     ret = SQLRemoveTranslator("WINE ODBC Translator", &cnt);
+-    todo_wine ok(ret, "SQLRemoveTranslator failed\n");
+-    todo_wine ok(cnt == 0, "SQLRemoveTranslator failed %d\n", cnt);
++    ok(ret, "SQLRemoveTranslator failed\n");
++    ok(cnt == 0, "SQLRemoveTranslator failed %d\n", cnt);
+ 
+     cnt = 100;
+     ret = SQLRemoveTranslator("WINE ODBC Translator Path", &cnt);
+-    todo_wine ok(ret, "SQLRemoveTranslator failed\n");
+-    todo_wine ok(cnt == 0, "SQLRemoveTranslator failed %d\n", cnt);
++    ok(ret, "SQLRemoveTranslator failed\n");
++    ok(cnt == 0, "SQLRemoveTranslator failed %d\n", cnt);
+ }
+ 
+ START_TEST(misc)
 -- 
 1.9.1
 
