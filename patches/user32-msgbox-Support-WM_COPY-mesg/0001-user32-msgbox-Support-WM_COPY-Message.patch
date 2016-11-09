@@ -1,4 +1,4 @@
-From 258cd496e1615ae9195bd70dd7f167b7a145e066 Mon Sep 17 00:00:00 2001
+From 5ea36cdba51405e01507e4fa3eb976146757a4e3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Apr 2016 16:04:36 +1000
 Subject: [PATCH] user32/msgbox: Support WM_COPY Message
@@ -7,12 +7,12 @@ Fixes: https://bugs.winehq.org/show_bug.cgi?id=17205
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/user32/msgbox.c       |  86 +++++++++++++++++++--
- dlls/user32/tests/dialog.c | 187 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 267 insertions(+), 6 deletions(-)
+ dlls/user32/msgbox.c       |  87 ++++++++++++++++++++++--
+ dlls/user32/tests/dialog.c | 164 ++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 245 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/user32/msgbox.c b/dlls/user32/msgbox.c
-index 2ba98c9..f7d4475 100644
+index 2ba98c9..cfd8a31 100644
 --- a/dlls/user32/msgbox.c
 +++ b/dlls/user32/msgbox.c
 @@ -44,6 +44,11 @@ struct ThreadWindows
@@ -39,16 +39,16 @@ index 2ba98c9..f7d4475 100644
      nclm.cbSize = sizeof(nclm);
      SystemParametersInfoW (SPI_GETNONCLIENTMETRICS, 0, &nclm, 0);
  
-@@ -319,6 +319,77 @@ static void MSGBOX_OnInit(HWND hwnd, LPMSGBOXPARAMSW lpmb)
+@@ -319,6 +319,78 @@ static void MSGBOX_OnInit(HWND hwnd, LPMSGBOXPARAMSW lpmb)
      HeapFree( GetProcessHeap(), 0, buffer );
  }
  
-+static void MSGBOX_CopyToClipbaord( HWND hwnd )
++static void MSGBOX_CopyToClipboard( HWND hwnd )
 +{
 +    int i;
 +    static const WCHAR line[] = {'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',
 +                           '-','-','-','-','-','-','-','-','\r','\n', 0};
-+    static const WCHAR carriage[] = {'\r','\n', 0};
++    static const WCHAR crlf[] = {'\r','\n', 0};
 +    static const WCHAR spaces[] = {' ',' ',' ', 0};
 +    int lenTitle = GetWindowTextLengthW(hwnd) + 1;
 +    int lenMsg = GetWindowTextLengthW(GetDlgItem(hwnd, MSGBOX_IDTEXT)) + 1;
@@ -62,75 +62,76 @@ index 2ba98c9..f7d4475 100644
 +    Button(s) Text. OK
 +    ---------------------------
 +    */
-+    int len = ((sizeof(carriage) * 3) + (sizeof(line) * 4) + lenTitle + lenMsg) * sizeof(WCHAR);
-+    WCHAR *text = HeapAlloc( GetProcessHeap(), 0,  len);
-+    if(text)
++    int len = (sizeof(crlf) * 3) + (sizeof(line) * 4) + (sizeof(spaces) * 4)
++                    + ((lenTitle + lenMsg) * sizeof(WCHAR));
++    WCHAR *text = HeapAlloc(GetProcessHeap(), 0, len);
++    if (!text)
++        return;
++
++    lstrcpyW(text, line);
++    if (GetWindowTextW(hwnd, text + lstrlenW(text), lenTitle))
 +    {
-+        lstrcpyW(text, line);
-+        if (GetWindowTextW(hwnd, text + lstrlenW(text), lenTitle))
++        HGLOBAL hMem;
++        WCHAR *data;
++
++        lstrcatW(text, crlf);
++        lstrcatW(text, line);
++        GetDlgItemTextW(hwnd, MSGBOX_IDTEXT, text + lstrlenW(text), lenMsg);
++        lstrcatW(text, crlf);
++        lstrcatW(text, line);
++
++        for (i = 0; i < (sizeof(buttonOrder) / sizeof(buttonOrder[0])); i++)
 +        {
-+            HGLOBAL hMem;
-+            WCHAR *data;
-+
-+            lstrcatW(text, carriage);
-+            lstrcatW(text, line);
-+            GetWindowTextW(GetDlgItem(hwnd, MSGBOX_IDTEXT), text + lstrlenW(text), lenMsg);
-+            lstrcatW(text, carriage);
-+            lstrcatW(text, line);
-+
-+            for (i = 0; i < (sizeof(buttonOrder) / sizeof(buttonOrder[0])); i++)
++            HWND hItem = GetDlgItem(hwnd, buttonOrder[i]);
++            if (IsWindowVisible(hItem))
 +            {
-+                HWND hItem = GetDlgItem(hwnd, buttonOrder[i]);
-+                if (GetWindowLongW(hItem, GWL_STYLE) & WS_VISIBLE)
++                WCHAR buffer[64] = {0};
++                int j = 0, k = lstrlenW(text);
++                GetWindowTextW(hItem, buffer, 64);
++                while(buffer[j] != 0)
 +                {
-+                    WCHAR buffer[1024] = {0};
-+                    int j = 0, k = lstrlenW(text);
-+                    GetWindowTextW(hItem, buffer, 1024);
-+                    while(buffer[j] != 0)
-+                    {
-+                        if(buffer[j] != '&')
-+                            text[k++] = buffer[j];
-+                        j++;
-+                    }
-+                    text[k] = 0;
-+                    lstrcatW(text, spaces);
++                    if(buffer[j] != '&')
++                        text[k++] = buffer[j];
++                    j++;
 +                }
++                text[k] = 0;
++                lstrcatW(text, spaces);
 +            }
-+
-+            lstrcatW(text, carriage);
-+            lstrcatW(text, line);
-+
-+            hMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE|GMEM_ZEROINIT, (len + 1) * sizeof(WCHAR));
-+            data = GlobalLock(hMem);
-+            lstrcpyW(data, text);
-+            GlobalUnlock(hMem);
-+
-+            OpenClipboard(hwnd);
-+            EmptyClipboard();
-+            SetClipboardData(CF_UNICODETEXT, hMem);
-+            CloseClipboard();
 +        }
 +
-+        HeapFree(GetProcessHeap(), 0, text);
++        lstrcatW(text, crlf);
++        lstrcatW(text, line);
++
++        hMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE|GMEM_ZEROINIT, (len + 1) * sizeof(WCHAR));
++        data = GlobalLock(hMem);
++        lstrcpyW(data, text);
++        GlobalUnlock(hMem);
++
++        OpenClipboard(hwnd);
++        EmptyClipboard();
++        SetClipboardData(CF_UNICODETEXT, hMem);
++        CloseClipboard();
 +    }
++
++    HeapFree(GetProcessHeap(), 0, text);
 +}
  
  /**************************************************************************
   *           MSGBOX_DlgProc
-@@ -337,6 +408,11 @@ static INT_PTR CALLBACK MSGBOX_DlgProc( HWND hwnd, UINT message,
+@@ -337,6 +409,11 @@ static INT_PTR CALLBACK MSGBOX_DlgProc( HWND hwnd, UINT message,
         SetPropA(hwnd, "WINE_MSGBOX_HELPCALLBACK", mbp->lpfnMsgBoxCallback);
         break;
     }
 +   case WM_COPY:
 +   {
-+        MSGBOX_CopyToClipbaord(hwnd);
++        MSGBOX_CopyToClipboard(hwnd);
 +        break;
 +   }
  
     case WM_COMMAND:
      switch (LOWORD(wParam))
 diff --git a/dlls/user32/tests/dialog.c b/dlls/user32/tests/dialog.c
-index a37c678..0bb7dca 100644
+index a37c678..38c5e7f 100644
 --- a/dlls/user32/tests/dialog.c
 +++ b/dlls/user32/tests/dialog.c
 @@ -40,6 +40,7 @@
@@ -141,17 +142,15 @@ index a37c678..0bb7dca 100644
  
  #define MAXHWNDS 1024
  static HWND hwnd [MAXHWNDS];
-@@ -1392,6 +1393,187 @@ static void test_MessageBoxFontTest(void)
+@@ -1392,6 +1393,164 @@ static void test_MessageBoxFontTest(void)
      DestroyWindow(hDlg);
  }
  
-+static const char msgbox_title[] = "%5!z9ZXw*ia;57n/FGl.bCH,Su\"mfKN;foCqAU\'j6AmoJgAc_D:Z0A\'E6PF_O/w";
++static const char msgbox_title[] = "wm_copy";
 +static WCHAR expectedOK[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -161,9 +160,7 @@ index a37c678..0bb7dca 100644
 +static WCHAR expectedOkCancel[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -173,9 +170,7 @@ index a37c678..0bb7dca 100644
 +static WCHAR expectedAbortRetryIgnore[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -186,9 +181,7 @@ index a37c678..0bb7dca 100644
 +static WCHAR expectedYesNo[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -198,9 +191,7 @@ index a37c678..0bb7dca 100644
 +static WCHAR expectedYesNoCancel[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -210,9 +201,7 @@ index a37c678..0bb7dca 100644
 +static WCHAR expectedRetryCancel[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -222,9 +211,7 @@ index a37c678..0bb7dca 100644
 +static WCHAR expectedCancelTryContinue[] =
 +{
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
-+'%','5','!','z','9','Z','X','w','*','i','a',';','5','7','n','/','F','G','l','.','b','C','H',',','S','u','"','m','f',
-+'K','N',';','f','o','C','q','A','U','\'','j','6','A','m','o','J','g','A','c','_','D',':','Z','0','A','\'','E','6','P',
-+'F','_','O','/','w','\r','\n',
++'w','m','_','c','o','p','y','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
 +'M','e','s','s','a','g','e','\r','\n',
 +'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','\r','\n',
@@ -234,12 +221,11 @@ index a37c678..0bb7dca 100644
 +
 +BOOL non_english = FALSE;
 +
-+DWORD WINAPI WorkerThread(void *param)
++DWORD WINAPI wm_copy_thread(void *param)
 +{
 +    WCHAR *expected = param;
 +    char windowTitle[sizeof(msgbox_title)];
 +    HWND hwndMbox;
-+    BOOL succeeded = FALSE;
 +
 +    Sleep(200);
 +
@@ -268,14 +254,7 @@ index a37c678..0bb7dca 100644
 +            if(non_english)
 +                ok(lstrlenW(text) > 0, "Empty string on clipboard\n");
 +            else
-+            {
-+                succeeded = lstrcmpW(expected, text) == 0;
-+                if(!succeeded)
-+                {
-+                    ok(0, "%s\n", wine_dbgstr_w(text));
-+                    ok(0, "%s\n", wine_dbgstr_w(expected));
-+                }
-+            }
++                ok(!lstrcmpW(expected, text), "%s\n%s", wine_dbgstr_w(text), wine_dbgstr_w(expected));
 +
 +            GlobalUnlock(textHandle);
 +        }
@@ -286,13 +265,12 @@ index a37c678..0bb7dca 100644
 +
 +    }
 +    else
-+        trace("Clipboard error\n");
++        ok(0, "Clipboard error\n");
 +
 +    PostMessageA(hwndMbox, WM_COMMAND, IDIGNORE, 0); /* For MB_ABORTRETRYIGNORE dialog. */
 +    PostMessageA(hwndMbox, WM_CLOSE, 0, 0);
 +
 +cleanup:
-+    ok(succeeded || non_english, "Failed to get string.\n");
 +
 +    return 0;
 +}
@@ -304,32 +282,32 @@ index a37c678..0bb7dca 100644
 +    non_english = (PRIMARYLANGID(GetUserDefaultLangID()) != LANG_ENGLISH);
 +    trace("non_english %d\n", non_english);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedOK, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedOK, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_OK);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedOkCancel, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedOkCancel, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_OKCANCEL);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedAbortRetryIgnore, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedAbortRetryIgnore, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_ABORTRETRYIGNORE);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedYesNo, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedYesNo, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_YESNO);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedYesNoCancel, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedYesNoCancel, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_YESNOCANCEL);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedRetryCancel, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedRetryCancel, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_RETRYCANCEL);
 +
-+    CreateThread(NULL, 0, WorkerThread, &expectedCancelTryContinue, 0, &tid);
++    CreateThread(NULL, 0, wm_copy_thread, &expectedCancelTryContinue, 0, &tid);
 +    MessageBoxA(NULL, "Message", msgbox_title, MB_CANCELTRYCONTINUE);
 +}
 +
  static void test_SaveRestoreFocus(void)
  {
      HWND hDlg;
-@@ -1534,9 +1716,12 @@ START_TEST(dialog)
+@@ -1534,9 +1693,12 @@ START_TEST(dialog)
      test_focus();
      test_GetDlgItem();
      test_GetDlgItemText();
