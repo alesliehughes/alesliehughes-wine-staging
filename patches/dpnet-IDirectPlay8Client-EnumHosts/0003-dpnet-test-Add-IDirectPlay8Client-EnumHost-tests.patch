@@ -1,7 +1,7 @@
-From 687c0ea39cb8f943bf93b9afe7036afcf422c3ad Mon Sep 17 00:00:00 2001
+From 7d77a462753b769ce1439d3209949f907b851f7a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 08:57:23 +1100
-Subject: [PATCH 3/8] dpnet/test: Add IDirectPlay8Client EnumHost tests
+Subject: [PATCH 03/12] dpnet/test: Add IDirectPlay8Client EnumHost tests
 
 ---
  dlls/dpnet/tests/client.c | 79 +++++++++++++++++++++++++++++++++++++++++++++--
@@ -132,5 +132,5 @@ index 4753d74..5dfead9 100644
  
  static void test_get_sp_caps(void)
 -- 
-1.9.1
+2.10.2
 

@@ -1,0 +1,249 @@
+From e4058bce838092e0280a9e3a2a1836b5a1693894 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 16 Nov 2016 16:31:20 +1100
+Subject: [PATCH 12/12] dpnet: EnumHost add Sync support
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 105 +++++++++++++++++++++++++++++++++++++++------
+ dlls/dpnet/dpnet_private.h |   2 +
+ dlls/dpnet/tests/client.c  |  10 +++--
+ 3 files changed, 99 insertions(+), 18 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 27a430e..ae3637e 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -139,6 +139,8 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+     {
+         closesocket(This->sock);
+ 
++        CloseHandle(This->cancelevent);
++
+         heap_free(This->username);
+         heap_free(This->data);
+         heap_free(This);
+@@ -227,8 +229,8 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
+     return err;
+ }
+ 
+-static void process_sync_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
+-        DWORD retrycnt, DWORD retrytime, DWORD timeout)
++static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
++        DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
+ {
+     char buffer[1024];
+     int buflen = sizeof(buffer);
+@@ -241,6 +243,15 @@ static void process_sync_enumhost(SOCKET sock, IDirectPlay8Address *device, PFND
+ 
+     while(TRUE)
+     {
++        if(cancelevent)
++        {
++            if(WaitForSingleObject(cancelevent, 500) != WAIT_TIMEOUT)
++            {
++                TRACE("Event Signaled.\n");
++                break;
++            }
++        }
++
+         if(retrycnt && (GetTickCount() - starttime) >= retrytime)
+         {
+             TRACE("Sending Request.\n");
+@@ -253,7 +264,8 @@ static void process_sync_enumhost(SOCKET sock, IDirectPlay8Address *device, PFND
+                 break;
+ 
+             starttime = GetTickCount();
+-            retrycnt--;
++            if(retrycnt != INFINITE)
++                retrycnt--;
+         }
+ 
+         /* Query Enumeration Packets */
+@@ -321,8 +333,11 @@ static void process_sync_enumhost(SOCKET sock, IDirectPlay8Address *device, PFND
+ 
+                             IDirectPlay8Address_Release(sender);
+ 
+-                            /* We have found a server, so exit now. */
+-                            retrycnt = 0;
++                            if(retrycnt != INFINITE)
++                            {
++                                /* We have found a server, so exit now. */
++                                retrycnt = 0;
++                            }
+                         }
+                         break;
+                     }
+@@ -339,11 +354,36 @@ static void process_sync_enumhost(SOCKET sock, IDirectPlay8Address *device, PFND
+             }
+         }
+ 
+-        if(retrycnt)
++        if(!retrycnt)
+             break;
+     }
+ }
+ 
++struct dpthread_data
++{
++    SOCKET sock;
++    IDirectPlay8Address *device;
++    DWORD retrycnt;
++    DWORD retrytime;
++    DWORD timeout;
++    GUID  app_guid;
++
++    HANDLE cancelevent;
++    PFNDPNMESSAGEHANDLER msghandler;
++};
++
++static DWORD WINAPI enumhost_thread(void *threaddata)
++{
++    struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
++
++    process_enumhost(tdata->sock, tdata->device, tdata->msghandler, tdata->app_guid,
++                        tdata->retrycnt, tdata->retrytime, tdata->timeout, tdata->cancelevent);
++
++    heap_free(threaddata);
++
++    return 0;
++}
++
+ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
+         PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
+         IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
+@@ -355,7 +395,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+     IDirectPlay8Address *device = NULL;
+     HRESULT hr;
+ 
+-    FIXME("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x) Semi-stub\n", This, pApplicationDesc, pAddrHost, pDeviceInfo,
++    TRACE("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo,
+         pUserEnumData, dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle,
+         dwFlags);
+ 
+@@ -390,15 +430,41 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+     {
+         DWORD retrycnt  = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
+         DWORD retrytime = dwRetryInterval == INFINITE ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
+-        DWORD timeout   = !dwTimeOut ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
++        DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
+ 
+-        process_sync_enumhost(This->sock, device, This->msghandler, pApplicationDesc->guidApplication,
+-                        retrycnt, retrytime, timeout);
++        process_enumhost(This->sock, device, This->msghandler, pApplicationDesc->guidApplication,
++                        retrycnt, retrytime, timeout, NULL);
+ 
+         IDirectPlay8Address_Release(device);
+     }
+     else
+-        FIXME("Async EnumHost currently not supported.\n");
++    {
++        struct dpthread_data *tdata;
++
++        if(This->enumthread)
++        {
++            FIXME("Only one EnumHost is currently supported\n");
++            return DPNERR_USERCANCEL;
++        }
++
++        tdata = heap_alloc(sizeof(struct dpthread_data));
++        if(!tdata)
++            return E_OUTOFMEMORY;
++
++        tdata->sock        = This->sock;
++        tdata->retrycnt    = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
++        tdata->retrytime   = dwRetryInterval == INFINITE ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
++        tdata->timeout     = dwTimeOut == INFINITE  ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
++        tdata->msghandler  = This->msghandler;
++        tdata->device      = device;
++        tdata->app_guid    = pApplicationDesc->guidApplication;
++        tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
++
++        This->enumthread = CreateThread(NULL, 0, &enumhost_thread, tdata, 0, 0);
++    }
++
++    if(pAsyncHandle)
++        *pAsyncHandle = PtrToUlong(This->cancelevent);
+ 
+     return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
+ }
+@@ -406,9 +472,19 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
+         const DPNHANDLE hAsyncHandle, const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%u,%x): Stub\n", This, hAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    FIXME("(%p):(%u,%x): Stub\n", This, hAsyncHandle, dwFlags);
++
++    if(hAsyncHandle == PtrToUlong(This->cancelevent))
++    {
++        SetEvent(This->cancelevent);
++        CloseHandle(This->cancelevent);
++
++        CloseHandle(This->enumthread);
++        This->enumthread = NULL;
++    }
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -638,6 +714,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+     client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
+     client->ref = 1;
+     client->sock = INVALID_SOCKET;
++    client->enumthread = NULL;
+ 
+     init_dpn_sp_caps(&client->spcaps);
+ 
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 48aceb6..c44ef62 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -66,6 +66,8 @@ struct IDirectPlay8ClientImpl
+     DPN_SP_CAPS spcaps;
+ 
+     SOCKET sock;
++    HANDLE enumthread;
++    HANDLE cancelevent;
+ };
+ 
+ /* ------------------- */
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index aff99d8..aa6d743 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -219,7 +219,7 @@ static void test_enum_hosts(void)
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize, INFINITE, 0, INFINITE,
+                                         NULL,  &async, 0);
+     ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
+-    todo_wine ok(async, "No Handle returned\n");
++    ok(async, "No Handle returned\n");
+ 
+     /* This CancelAsyncOperation doesn't generate a DPN_MSGID_ASYNC_OP_COMPLETE */
+     hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
+@@ -231,14 +231,16 @@ static void test_enum_hosts(void)
+     ok(hr == DPNERR_UNINITIALIZED, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
+ 
+     /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */
++    async = 0;
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
+     ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
+-    todo_wine ok(async, "No Handle returned\n");
++    ok(async, "No Handle returned\n");
+ 
++    async2 = 0;
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
+-    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
+     todo_wine ok(async2, "No Handle returned\n");
+-    todo_wine ok(async2 != async, "Same handle returned.\n");
++    ok(async2 != async, "Same handle returned.\n");
+ 
+     Sleep(500);
+ 
+-- 
+2.10.2
+

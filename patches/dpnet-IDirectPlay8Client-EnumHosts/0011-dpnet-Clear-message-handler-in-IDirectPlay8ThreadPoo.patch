@@ -1,0 +1,30 @@
+From fe51ce69ca91095990595fdca9d16c0d51f2a6ce Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 15 Nov 2016 09:12:50 +1100
+Subject: [PATCH 11/12] dpnet: Clear message handler in IDirectPlay8ThreadPool
+ Close
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/threadpool.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
+index 0f4e108..3c73756 100644
+--- a/dlls/dpnet/threadpool.c
++++ b/dlls/dpnet/threadpool.c
+@@ -94,6 +94,11 @@ static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_Initialize(IDirectPlay8ThreadPo
+ static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_Close(IDirectPlay8ThreadPool *iface,
+         const DWORD dwFlags)
+ {
++    IDirectPlay8ThreadPoolImpl *This = impl_from_IDirectPlay8ThreadPool(iface);
++    FIXME("(%p)->(%x): stub\n", iface, dwFlags);
++
++    This->msghandler = NULL;
++
+     return DPN_OK;
+ }
+ 
+-- 
+2.10.2
+

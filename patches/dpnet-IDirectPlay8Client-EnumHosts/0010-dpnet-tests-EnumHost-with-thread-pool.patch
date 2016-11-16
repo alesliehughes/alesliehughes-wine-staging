@@ -1,0 +1,134 @@
+From dd794dd85d47c21c7a791678ab72ed8995cd664a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 15 Nov 2016 08:49:40 +1100
+Subject: [PATCH 10/12] dpnet/tests: EnumHost with thread pool
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/tests/thread.c | 96 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 96 insertions(+)
+
+diff --git a/dlls/dpnet/tests/thread.c b/dlls/dpnet/tests/thread.c
+index 2e7e951..1c7fcf2 100644
+--- a/dlls/dpnet/tests/thread.c
++++ b/dlls/dpnet/tests/thread.c
+@@ -21,6 +21,8 @@
+ #include <dplay8.h>
+ #include "wine/test.h"
+ 
++static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x1d, 0x65, 0x48, 0xc5, 0xa5 } };
++
+ static int cnt_thread_create = 0;
+ static int cnt_thread_destroy = 0;
+ 
+@@ -99,6 +101,99 @@ static void create_threadpool(void)
+     IDirectPlay8ThreadPool_Release(pool2);
+ }
+ 
++static void test_enum_hosts(void)
++{
++    HRESULT hr;
++    IDirectPlay8Client* client = NULL;
++    IDirectPlay8Address *host = NULL;
++    IDirectPlay8Address *local = NULL;
++    IDirectPlay8ThreadPool *pool1 = NULL;
++    DPN_APPLICATION_DESC appdesc;
++    DPNHANDLE async = 0, async2 = 0;
++    static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
++    DWORD threadcnt;
++
++    memset( &appdesc, 0, sizeof(DPN_APPLICATION_DESC) );
++    appdesc.dwSize  = sizeof( DPN_APPLICATION_DESC );
++    appdesc.guidApplication  = appguid;
++
++    hr = CoCreateInstance( &CLSID_DirectPlay8ThreadPool, NULL, CLSCTX_ALL, &IID_IDirectPlay8ThreadPool, (void**)&pool1);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDirectPlay8ThreadPool_Initialize(pool1, NULL, &DirectPlayThreadHandler, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(threadcnt == 0, "got %d\n", threadcnt);
++
++    hr = CoCreateInstance(&CLSID_DirectPlay8Client, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Client, (void **)&client);
++    ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
++
++    hr = IDirectPlay8Client_Initialize(client, NULL, DirectPlayThreadHandler, 0);
++    ok(hr == S_OK, "IDirectPlay8Client_Initialize failed with %x\n", hr);
++
++    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(threadcnt == 1, "got %d\n", threadcnt);
++
++    hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&local);
++    ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Address_SetSP(local, &CLSID_DP8SP_TCPIP);
++    ok(hr == S_OK, "IDirectPlay8Address_SetSP failed with 0x%08x\n", hr);
++
++    hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&host);
++    ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Address_SetSP(host, &CLSID_DP8SP_TCPIP);
++    ok(hr == S_OK, "IDirectPlay8Address_SetSP failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Address_AddComponent(host, DPNA_KEY_HOSTNAME, localhost, sizeof(localhost),
++                                                         DPNA_DATATYPE_STRING);
++    ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    todo_wine ok(async, "No Handle returned\n");
++
++    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(threadcnt == 3, "got %d\n", threadcnt);
++
++    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++
++    Sleep(500);
++
++    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(threadcnt == 3, "got %d\n", threadcnt);
++
++    hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
++    ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(threadcnt == 3, "got %d\n", threadcnt);
++
++    hr = IDirectPlay8Client_CancelAsyncOperation(client, async2, 0);
++    ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
++
++    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(threadcnt == 3, "got %d\n", threadcnt);
++
++    IDirectPlay8Address_Release(local);
++    IDirectPlay8Address_Release(host);
++
++    hr = IDirectPlay8ThreadPool_Close(pool1, 0);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    IDirectPlay8Client_Release(client);
++    IDirectPlay8ThreadPool_Release(pool1);
++}
++
+ START_TEST(thread)
+ {
+     HRESULT hr;
+@@ -109,6 +204,7 @@ START_TEST(thread)
+         return;
+ 
+     create_threadpool();
++    test_enum_hosts();
+ 
+     CoUninitialize();
+ }
+-- 
+2.10.2
+
