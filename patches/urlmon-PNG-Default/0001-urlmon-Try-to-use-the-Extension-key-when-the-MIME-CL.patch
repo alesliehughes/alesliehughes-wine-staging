@@ -1,0 +1,91 @@
+From e90b274c90df81d7b48aab119c0d1bb05af005fb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 15 Nov 2016 12:14:53 +1100
+Subject: [PATCH] urlmon: Try to use the Extension key when the MIME CLSID
+ isn't available
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=25681
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/urlmon/binding.c | 55 +++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 45 insertions(+), 10 deletions(-)
+
+diff --git a/dlls/urlmon/binding.c b/dlls/urlmon/binding.c
+index 9b78582..300caf5 100644
+--- a/dlls/urlmon/binding.c
++++ b/dlls/urlmon/binding.c
+@@ -198,6 +198,7 @@ static LPWSTR get_mime_clsid(LPCWSTR mime, CLSID *clsid)
+         {'M','I','M','E','\\','D','a','t','a','b','a','s','e','\\',
+          'C','o','n','t','e','n','t',' ','T','y','p','e','\\'};
+     static const WCHAR clsidW[] = {'C','L','S','I','D',0};
++    static const WCHAR extensionW[] = {'E','x','t','e','n','s','i','o','n',0};
+ 
+     len = strlenW(mime)+1;
+     key_name = heap_alloc(sizeof(mime_keyW) + len*sizeof(WCHAR));
+@@ -214,18 +215,52 @@ static LPWSTR get_mime_clsid(LPCWSTR mime, CLSID *clsid)
+     size = 50*sizeof(WCHAR);
+     ret = heap_alloc(size);
+     res = RegQueryValueExW(hkey, clsidW, NULL, &type, (LPBYTE)ret, &size);
+-    RegCloseKey(hkey);
+-    if(res != ERROR_SUCCESS) {
+-        WARN("Could not get CLSID: %08x\n", res);
+-        heap_free(ret);
+-        return NULL;
++    if(res == ERROR_SUCCESS)
++    {
++        RegCloseKey(hkey);
++        hres = CLSIDFromString(ret, clsid);
++        if(FAILED(hres)) {
++            WARN("Could not parse CLSID: %08x\n", hres);
++            heap_free(ret);
++            return NULL;
++        }
+     }
++    else
++    {
++        res = RegQueryValueExW(hkey, extensionW, NULL, &type, (LPBYTE)ret, &size);
++        RegCloseKey(hkey);
++        if(res != ERROR_SUCCESS) {
++            WARN("Could not open extension key: %x\n", res);
++            heap_free(ret);
++            return NULL;
++        }
+ 
+-    hres = CLSIDFromString(ret, clsid);
+-    if(FAILED(hres)) {
+-        WARN("Could not parse CLSID: %08x\n", hres);
+-        heap_free(ret);
+-        return NULL;
++        res = RegOpenKeyW(HKEY_CLASSES_ROOT, ret, &hkey);
++        if(res != ERROR_SUCCESS) {
++            WARN("Could not open key (%s): %x\n", debugstr_w(ret), res);
++            heap_free(ret);
++            return NULL;
++        }
++
++        size = 50*sizeof(WCHAR);
++        res = RegQueryValueExW(hkey, NULL, NULL, &type, (LPBYTE)ret, &size);
++        if(res == ERROR_MORE_DATA) {
++            ret = heap_realloc(ret, size);
++            res = RegQueryValueExW(hkey, NULL, NULL, &type, (LPBYTE)ret, &size);
++        }
++        RegCloseKey(hkey);
++        if(res != ERROR_SUCCESS) {
++            WARN("Could not get default value: %x\n", res);
++            heap_free(ret);
++            return NULL;
++        }
++
++        hres = CLSIDFromProgID(ret, clsid);
++        if(FAILED(hres)) {
++            WARN("Could not parse ProgID: %08x\n", hres);
++            heap_free(ret);
++            return NULL;
++        }
+     }
+ 
+     return ret;
+-- 
+1.9.1
+
