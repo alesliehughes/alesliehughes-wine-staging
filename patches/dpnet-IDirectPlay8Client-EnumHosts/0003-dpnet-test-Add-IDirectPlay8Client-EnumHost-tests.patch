@@ -1,27 +1,23 @@
-From 7d77a462753b769ce1439d3209949f907b851f7a Mon Sep 17 00:00:00 2001
+From 26fca951cb81aa5b22b0d0c7baab7d975219d928 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 08:57:23 +1100
 Subject: [PATCH 03/12] dpnet/test: Add IDirectPlay8Client EnumHost tests
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/tests/client.c | 79 +++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 76 insertions(+), 3 deletions(-)
+ dlls/dpnet/tests/client.c | 80 +++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 77 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 4753d74..5dfead9 100644
+index 4753d74..a07258d7 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
-@@ -29,9 +29,29 @@ static IDirectPlay8Client* client = NULL;
+@@ -29,9 +29,24 @@ static IDirectPlay8Client* client = NULL;
  static IDirectPlay8LobbiedApplication* lobbied = NULL;
  static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x1d, 0x65, 0x48, 0xc5, 0xa5 } };
  
 +static HRESULT   lastAsyncCode   = E_FAIL;
 +static DPNHANDLE lastAsyncHandle = 0xdeadbeef;
-+
-+#define CHECK_LAST_ASYNC_OP(hr, handle) \
-+        ok(lastAsyncCode == hr, "got 0x%08x\n", lastAsyncCode); \
-+        ok(lastAsyncHandle == handle, "got 0x%08x\n", handle); \
-+        lastAsyncCode = E_FAIL; lastAsyncHandle = 0xdeadbeef;
 +
  static HRESULT WINAPI DirectPlayMessageHandler(PVOID context, DWORD message_id, PVOID buffer)
  {
@@ -42,7 +38,7 @@ index 4753d74..5dfead9 100644
      return S_OK;
  }
  
-@@ -144,16 +164,22 @@ static void test_enum_service_providers(void)
+@@ -144,16 +159,22 @@ static void test_enum_service_providers(void)
  static void test_enum_hosts(void)
  {
      HRESULT hr;
@@ -66,7 +62,7 @@ index 4753d74..5dfead9 100644
      hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&local);
      ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
  
-@@ -170,16 +196,63 @@ static void test_enum_hosts(void)
+@@ -170,16 +191,69 @@ static void test_enum_hosts(void)
                                                           DPNA_DATATYPE_STRING);
      ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
  
@@ -115,15 +111,21 @@ index 4753d74..5dfead9 100644
 +    todo_wine ok(async2, "No Handle returned\n");
 +    todo_wine ok(async2 != async, "Same handle returned.\n");
 +
-+    Sleep(500);
++    Sleep(1000);
 +
++    lastAsyncCode = E_FAIL;
++    lastAsyncHandle = 0xdeadbeef;
      hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
      ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
-+    todo_wine { CHECK_LAST_ASYNC_OP(DPNERR_USERCANCEL, async); }
++    todo_wine ok(lastAsyncCode == DPNERR_USERCANCEL, "got 0x%08x\n", lastAsyncCode);
++    todo_wine ok(lastAsyncHandle == async, "got 0x%08x\n", async);
 +
++    lastAsyncCode = E_FAIL;
++    lastAsyncHandle = 0xdeadbeef;
 +    hr = IDirectPlay8Client_CancelAsyncOperation(client, async2, 0);
 +    ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
-+    todo_wine { CHECK_LAST_ASYNC_OP(DPNERR_USERCANCEL, async2); }
++    todo_wine ok(lastAsyncCode == DPNERR_USERCANCEL, "got 0x%08x\n", lastAsyncCode);
++    todo_wine ok(lastAsyncHandle == async2, "got 0x%08x\n", async2);
  
      IDirectPlay8Address_Release(local);
      IDirectPlay8Address_Release(host);
@@ -132,5 +134,5 @@ index 4753d74..5dfead9 100644
  
  static void test_get_sp_caps(void)
 -- 
-2.10.2
+1.9.1
 

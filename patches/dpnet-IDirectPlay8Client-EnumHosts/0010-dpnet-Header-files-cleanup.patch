@@ -1,7 +1,7 @@
-From 8a038a4430107856273743655b1802fe64cb68c3 Mon Sep 17 00:00:00 2001
+From f856b53d2f8f6a1e010f9205416aeac80f3f9cb6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 14 Nov 2016 08:16:50 +1100
-Subject: [PATCH 09/12] dpnet: Header files cleanup
+Subject: [PATCH 10/12] dpnet: Header files cleanup
 
 Also stops error of SOCKADDR being redefined on older compiliers
 
@@ -29,7 +29,7 @@ index c5457eb..4d55caa 100644
  
  WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 4f272d6..27a430e 100644
+index 94bfa1d..8b2c9db 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -31,7 +31,6 @@
@@ -104,5 +104,5 @@ index 576caaf..d47dd26 100644
  /*****************************************************************************
   * DirectPlay8Addr defines
 -- 
-2.10.2
+1.9.1
 

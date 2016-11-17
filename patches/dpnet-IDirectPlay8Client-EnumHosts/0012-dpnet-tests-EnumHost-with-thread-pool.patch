@@ -1,7 +1,7 @@
-From dd794dd85d47c21c7a791678ab72ed8995cd664a Mon Sep 17 00:00:00 2001
+From 62381ce323f1aa46021c8cd3f3e5738e654d7575 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Nov 2016 08:49:40 +1100
-Subject: [PATCH 10/12] dpnet/tests: EnumHost with thread pool
+Subject: [PATCH 12/12] dpnet/tests: EnumHost with thread pool
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 96 insertions(+)
 
 diff --git a/dlls/dpnet/tests/thread.c b/dlls/dpnet/tests/thread.c
-index 2e7e951..1c7fcf2 100644
+index 2e7e951..009c5bd 100644
 --- a/dlls/dpnet/tests/thread.c
 +++ b/dlls/dpnet/tests/thread.c
 @@ -21,6 +21,8 @@
@@ -49,7 +49,7 @@ index 2e7e951..1c7fcf2 100644
 +
 +    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
-+    todo_wine ok(threadcnt == 0, "got %d\n", threadcnt);
++    ok(threadcnt == 0, "got %d\n", threadcnt);
 +
 +    hr = CoCreateInstance(&CLSID_DirectPlay8Client, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Client, (void **)&client);
 +    ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
@@ -79,14 +79,14 @@ index 2e7e951..1c7fcf2 100644
 +
 +    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
 +    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
-+    todo_wine ok(async, "No Handle returned\n");
++    ok(async, "No Handle returned\n");
 +
 +    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
 +    todo_wine ok(threadcnt == 3, "got %d\n", threadcnt);
 +
 +    hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
-+    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
 +
 +    Sleep(500);
 +
@@ -106,7 +106,7 @@ index 2e7e951..1c7fcf2 100644
 +
 +    hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
-+    ok(threadcnt == 3, "got %d\n", threadcnt);
++    todo_wine ok(threadcnt == 3, "got %d\n", threadcnt);
 +
 +    IDirectPlay8Address_Release(local);
 +    IDirectPlay8Address_Release(host);
@@ -130,5 +130,5 @@ index 2e7e951..1c7fcf2 100644
      CoUninitialize();
  }
 -- 
-2.10.2
+1.9.1
 

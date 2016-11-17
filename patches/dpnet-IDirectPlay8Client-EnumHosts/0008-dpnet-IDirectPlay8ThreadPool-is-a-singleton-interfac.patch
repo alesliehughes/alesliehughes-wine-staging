@@ -1,7 +1,7 @@
-From 2a558f254bba3947ddc608400e7e81afe8b3c4a1 Mon Sep 17 00:00:00 2001
+From 05b46fad11db1f7fd6b8332115e48b63a31f77f5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:00:16 +1100
-Subject: [PATCH 07/12] dpnet: IDirectPlay8ThreadPool is a singleto interface.
+Subject: [PATCH 08/12] dpnet: IDirectPlay8ThreadPool is a singleton interface.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -23,10 +23,10 @@ index cc80ebc..ffa7aae 100644
      }
      return TRUE;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index dee1654..41313d1 100644
+index eb27cb6..4aa3d70 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -124,8 +124,7 @@ struct IDirectPlay8LobbiedApplicationImpl
+@@ -126,8 +126,7 @@ struct IDirectPlay8LobbiedApplicationImpl
   */
  struct IDirectPlay8ThreadPoolImpl
  {
@@ -36,7 +36,7 @@ index dee1654..41313d1 100644
  };
  
  /**
-@@ -136,11 +135,12 @@ extern HRESULT DPNET_CreateDirectPlay8Server(LPCLASSFACTORY iface, LPUNKNOWN pun
+@@ -138,11 +137,12 @@ extern HRESULT DPNET_CreateDirectPlay8Server(LPCLASSFACTORY iface, LPUNKNOWN pun
  extern HRESULT DPNET_CreateDirectPlay8Peer(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
  extern HRESULT DPNET_CreateDirectPlay8Address(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
  extern HRESULT DPNET_CreateDirectPlay8LobbiedApp(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
@@ -142,5 +142,5 @@ index 274789d..3ce9731 100644
 +    return IDirectPlay8ThreadPool_QueryInterface(pool, riid, obj);
  }
 -- 
-2.10.2
+1.9.1
 
