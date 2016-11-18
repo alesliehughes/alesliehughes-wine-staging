@@ -1,7 +1,7 @@
-From 6484cb9e94d44344e144d54839fdc96adef09350 Mon Sep 17 00:00:00 2001
+From 69e701b1360c4ab7bfeef2b11db8f35ba1398ddb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 16:00:32 +1100
-Subject: [PATCH 05/12] dpnet: Implement IDirectPlay8Client Enumhost when
+Subject: [PATCH 05/14] dpnet: Implement IDirectPlay8Client Enumhost when
  called synchronously
 
 v2
@@ -23,10 +23,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/dpnet/dppacket.h
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 904161e..a8d46b1 100644
+index a53d1d0..446dea0 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -56,6 +56,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+@@ -55,6 +55,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
      return CONTAINING_RECORD(iface, IDirectPlay8ClientImpl, IDirectPlay8Client_iface);
  }
  
@@ -79,7 +79,7 @@ index 904161e..a8d46b1 100644
  /* IDirectPlay8Client IUnknown parts follow: */
  static HRESULT WINAPI IDirectPlay8ClientImpl_QueryInterface(IDirectPlay8Client *iface, REFIID riid,
          void **ppobj)
-@@ -92,6 +138,8 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+@@ -91,6 +137,8 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
  
      if (!ref)
      {
@@ -88,7 +88,7 @@ index 904161e..a8d46b1 100644
          heap_free(This->username);
          heap_free(This->data);
          heap_free(This);
-@@ -130,6 +178,175 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -129,6 +177,175 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
    return DPN_OK; 
  }
  
@@ -264,7 +264,7 @@ index 904161e..a8d46b1 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -138,9 +355,12 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -137,9 +354,12 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwFlags)
  {
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
@@ -279,7 +279,7 @@ index 904161e..a8d46b1 100644
  
      if(!This->msghandler)
          return DPNERR_UNINITIALIZED;
-@@ -151,6 +371,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -150,6 +370,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
      if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
          return DPNERR_ENUMQUERYTOOLARGE;
  
@@ -318,7 +318,7 @@ index 904161e..a8d46b1 100644
      return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
  }
  
-@@ -388,6 +640,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -387,6 +639,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
  
      client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
      client->ref = 1;

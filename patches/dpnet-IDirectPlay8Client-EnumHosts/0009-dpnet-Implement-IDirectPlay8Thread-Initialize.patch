@@ -1,7 +1,7 @@
-From 1d1e718b78d5a71f2172be3cc57d0ca080b91027 Mon Sep 17 00:00:00 2001
+From 50bcb01d4b0f0a365c326d7ba725d166e8044038 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:08:53 +1100
-Subject: [PATCH 09/12] dpnet: Implement IDirectPlay8Thread Initialize
+Subject: [PATCH 09/14] dpnet: Implement IDirectPlay8Thread Initialize
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -46,10 +46,10 @@ index 561178f..2e7e951 100644
      hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
      ok(hr == S_OK, "got 0x%08x\n", hr);
 diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
-index 3ce9731..01ad73d 100644
+index a495a2d..0f4e108 100644
 --- a/dlls/dpnet/threadpool.c
 +++ b/dlls/dpnet/threadpool.c
-@@ -76,7 +76,19 @@ static ULONG WINAPI IDirectPlay8ThreadPoolImpl_Release(IDirectPlay8ThreadPool *i
+@@ -75,7 +75,19 @@ static ULONG WINAPI IDirectPlay8ThreadPoolImpl_Release(IDirectPlay8ThreadPool *i
  static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_Initialize(IDirectPlay8ThreadPool *iface,
          void * const pvUserContext, const PFNDPNMESSAGEHANDLER pfn, const DWORD dwFlags)
  {
@@ -70,7 +70,7 @@ index 3ce9731..01ad73d 100644
      return DPN_OK;
  }
  
-@@ -137,6 +149,9 @@ static IDirectPlay8ThreadPool *get_threadpool(void)
+@@ -136,6 +148,9 @@ static IDirectPlay8ThreadPool *get_threadpool(void)
              return NULL;
  
          obj->IDirectPlay8ThreadPool_iface.lpVtbl = &DirectPlay8ThreadPool_Vtbl;

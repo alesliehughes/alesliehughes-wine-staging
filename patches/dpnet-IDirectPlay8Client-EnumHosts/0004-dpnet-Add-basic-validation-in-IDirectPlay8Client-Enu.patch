@@ -1,7 +1,7 @@
-From b37d8c7bfbdb5650dc73ab785be7d7cc2176f9ae Mon Sep 17 00:00:00 2001
+From 3a7b5b3126a93d839641f0878ad94d8e8916760a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 11:25:04 +1100
-Subject: [PATCH 04/12] dpnet: Add basic validation in IDirectPlay8Client
+Subject: [PATCH 04/14] dpnet: Add basic validation in IDirectPlay8Client
  EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,10 +11,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 22 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b92d940..904161e 100644
+index 25daeb8..a53d1d0 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -137,9 +137,21 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -136,9 +136,21 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
          const DWORD dwFlags)
  {
@@ -40,10 +40,10 @@ index b92d940..904161e 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index a07258d7..5f832f2 100644
+index 2b6bfb1..5fa0cde 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
-@@ -198,22 +198,22 @@ static void test_enum_hosts(void)
+@@ -254,22 +254,22 @@ static void test_enum_hosts(void)
      data = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, caps.dwMaxEnumPayloadSize + 1);
  
      hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, 2, 1000, 1000, NULL,  &async, DPNENUMHOSTS_SYNC);
@@ -70,7 +70,7 @@ index a07258d7..5f832f2 100644
      todo_wine ok(async, "No Handle returned\n");
  
      /* This CancelAsyncOperation doesn't generate a DPN_MSGID_ASYNC_OP_COMPLETE */
-@@ -223,15 +223,15 @@ static void test_enum_hosts(void)
+@@ -279,15 +279,15 @@ static void test_enum_hosts(void)
  
      /* No Initialize has been called on client2. */
      hr = IDirectPlay8Client_EnumHosts(client2, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);

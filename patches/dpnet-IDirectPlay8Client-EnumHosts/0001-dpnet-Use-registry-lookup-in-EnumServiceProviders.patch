@@ -1,7 +1,7 @@
-From 964c78150ca9cb17c3b663f7b88c7eedf9a08cbd Mon Sep 17 00:00:00 2001
+From 7d64320f7d4b31c259d9e92bfe0735cec9b8b62e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Feb 2014 15:11:16 +1100
-Subject: [PATCH 01/12] dpnet: Use registry lookup in EnumServiceProviders
+Subject: [PATCH 01/14] dpnet: Use registry lookup in EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 65 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index fe62d59..5b4cb4f 100644
+index d7144df..b12cfb9 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -132,23 +132,50 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+@@ -131,23 +131,50 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
          DPN_SERVICE_PROVIDER_INFO * const pSPInfoBuffer, DWORD * const pcbEnumData,
          DWORD * const pcReturned, const DWORD dwFlags)
  {
@@ -71,7 +71,7 @@ index fe62d59..5b4cb4f 100644
      }
      else if(IsEqualGUID(pguidServiceProvider, &CLSID_DP8SP_TCPIP))
      {
-@@ -157,30 +184,54 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+@@ -156,30 +183,54 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
      else
      {
          FIXME("Application requested a provider we don't handle (yet)\n");

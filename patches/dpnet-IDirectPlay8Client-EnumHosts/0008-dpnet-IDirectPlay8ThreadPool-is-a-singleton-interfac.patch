@@ -1,7 +1,7 @@
-From 05b46fad11db1f7fd6b8332115e48b63a31f77f5 Mon Sep 17 00:00:00 2001
+From ed5b3b94e5200ea585c233958c5dae4d1bdb71d4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:00:16 +1100
-Subject: [PATCH 08/12] dpnet: IDirectPlay8ThreadPool is a singleton interface.
+Subject: [PATCH 08/14] dpnet: IDirectPlay8ThreadPool is a singleton interface.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -51,10 +51,10 @@ index eb27cb6..4aa3d70 100644
  /* used for generic dumping (copied from ddraw) */
  typedef struct {
 diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
-index 274789d..3ce9731 100644
+index 9e13ffb..a495a2d 100644
 --- a/dlls/dpnet/threadpool.c
 +++ b/dlls/dpnet/threadpool.c
-@@ -37,6 +37,8 @@
+@@ -36,6 +36,8 @@
  
  WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
  
@@ -63,7 +63,7 @@ index 274789d..3ce9731 100644
  static inline IDirectPlay8ThreadPoolImpl *impl_from_IDirectPlay8ThreadPool(IDirectPlay8ThreadPool *iface)
  {
      return CONTAINING_RECORD(iface, IDirectPlay8ThreadPoolImpl, IDirectPlay8ThreadPool_iface);
-@@ -62,21 +64,12 @@ static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_QueryInterface(IDirectPlay8Thre
+@@ -61,21 +63,12 @@ static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_QueryInterface(IDirectPlay8Thre
  
  static ULONG WINAPI IDirectPlay8ThreadPoolImpl_AddRef(IDirectPlay8ThreadPool *iface)
  {
@@ -87,7 +87,7 @@ index 274789d..3ce9731 100644
  }
  
  /* IDirectPlay8ThreadPool interface follows */
-@@ -133,22 +126,41 @@ static const IDirectPlay8ThreadPoolVtbl DirectPlay8ThreadPool_Vtbl =
+@@ -132,22 +125,41 @@ static const IDirectPlay8ThreadPoolVtbl DirectPlay8ThreadPool_Vtbl =
      IDirectPlay8ThreadPoolImpl_DoWork
  };
  

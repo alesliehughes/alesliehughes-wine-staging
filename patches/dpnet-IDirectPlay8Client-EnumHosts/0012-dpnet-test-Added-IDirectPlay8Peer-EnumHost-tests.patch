@@ -1,0 +1,141 @@
+From 48b1a304aa1c0bf7683c3cfabb57f6be2bf17e39 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Nov 2016 16:30:31 +1100
+Subject: [PATCH 12/14] dpnet/test: Added IDirectPlay8Peer EnumHost tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/tests/peer.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 81 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/dpnet/tests/peer.c b/dlls/dpnet/tests/peer.c
+index 9d06c80..14b423f 100644
+--- a/dlls/dpnet/tests/peer.c
++++ b/dlls/dpnet/tests/peer.c
+@@ -27,9 +27,24 @@
+ static IDirectPlay8Peer* peer = NULL;
+ static IDirectPlay8LobbiedApplication* lobbied = NULL;
+ 
++static HRESULT   lastAsyncCode   = E_FAIL;
++static DPNHANDLE lastAsyncHandle = 0xdeadbeef;
++
+ static HRESULT WINAPI DirectPlayMessageHandler(PVOID context, DWORD message_id, PVOID buffer)
+ {
+-    trace("DirectPlayMessageHandler: 0x%08x\n", message_id);
++    switch(message_id)
++    {
++        case DPN_MSGID_ASYNC_OP_COMPLETE:
++        {
++            DPNMSG_ASYNC_OP_COMPLETE *async_msg = (DPNMSG_ASYNC_OP_COMPLETE*)buffer;
++            lastAsyncCode   = async_msg->hResultCode;
++            lastAsyncHandle = async_msg->hAsyncOp;
++            break;
++        }
++        default:
++            trace("DirectPlayMessageHandler: 0x%08x\n", message_id);
++
++    }
+     return S_OK;
+ }
+ 
+@@ -146,16 +161,22 @@ static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x
+ static void test_enum_hosts(void)
+ {
+     HRESULT hr;
++    IDirectPlay8Peer *peer2;
+     IDirectPlay8Address *host = NULL;
+     IDirectPlay8Address *local = NULL;
+     DPN_APPLICATION_DESC appdesc;
+-    DPNHANDLE async = 0;
++    DPNHANDLE async = 0, async2 = 0;
+     static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
++    DPN_SP_CAPS caps;
++    char *data;
+ 
+     memset( &appdesc, 0, sizeof(DPN_APPLICATION_DESC) );
+     appdesc.dwSize  = sizeof( DPN_APPLICATION_DESC );
+     appdesc.guidApplication  = appguid;
+ 
++    hr = CoCreateInstance(&CLSID_DirectPlay8Peer, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Peer, (void **)&peer2);
++    ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
++
+     hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&local);
+     ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
+ 
+@@ -172,15 +193,71 @@ static void test_enum_hosts(void)
+                                                          DPNA_DATATYPE_STRING);
+     ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
+ 
++    caps.dwSize = sizeof(DPN_SP_CAPS);
++
++    hr = IDirectPlay8Peer_GetSPCaps(peer, &CLSID_DP8SP_TCPIP, &caps, 0);
++    ok(hr == DPN_OK, "got %x\n", hr);
++    data = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, caps.dwMaxEnumPayloadSize + 1);
++
++    hr = IDirectPlay8Peer_EnumHosts(peer, &appdesc, host, local, NULL, 0, 2, 1000, 1000, NULL,  &async, DPNENUMHOSTS_SYNC);
++    todo_wine ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
++
++    hr = IDirectPlay8Peer_EnumHosts(peer, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize + 1,
++                                        INFINITE, 0, INFINITE, NULL,  &async, DPNENUMHOSTS_SYNC);
++    todo_wine ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
++
++    async = 0;
++    hr = IDirectPlay8Peer_EnumHosts(peer, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize + 1, INFINITE, 0,
++                                        INFINITE, NULL,  &async, 0);
++    todo_wine ok(hr == DPNERR_ENUMQUERYTOOLARGE, "got 0x%08x\n", hr);
++    ok(!async, "Handle returned\n");
++
++    async = 0;
++    hr = IDirectPlay8Peer_EnumHosts(peer, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize, INFINITE, 0, INFINITE,
++                                        NULL,  &async, 0);
++    todo_wine ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
++    todo_wine ok(async, "No Handle returned\n");
++
++    /* This CancelAsyncOperation doesn't generate a DPN_MSGID_ASYNC_OP_COMPLETE */
++    hr = IDirectPlay8Peer_CancelAsyncOperation(peer, async, 0);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    HeapFree(GetProcessHeap(), 0, data);
++
++    /* No Initialize has been called on peer2. */
++    hr = IDirectPlay8Peer_EnumHosts(peer2, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
++    todo_wine ok(hr == DPNERR_UNINITIALIZED, "got 0x%08x\n", hr);
++
++    /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */
++    async = 0;
+     hr = IDirectPlay8Peer_EnumHosts(peer, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
+-    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Peer_EnumServiceProviders failed with 0x%08x\n", hr);
++    todo_wine ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
+     todo_wine ok(async, "No Handle returned\n");
+ 
++    async2 = 0;
++    hr = IDirectPlay8Peer_EnumHosts(peer, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
++    todo_wine ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
++    todo_wine ok(async2, "No Handle returned\n");
++    todo_wine ok(async2 != async, "Same handle returned.\n");
++
++    Sleep(1000);
++
++    lastAsyncCode = E_FAIL;
++    lastAsyncHandle = 0xdeadbeef;
+     hr = IDirectPlay8Peer_CancelAsyncOperation(peer, async, 0);
+-    todo_wine ok(hr == S_OK, "IDirectPlay8Peer_CancelAsyncOperation failed with 0x%08x\n", hr);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(lastAsyncCode == DPNERR_USERCANCEL, "got 0x%08x\n", lastAsyncCode);
++    todo_wine ok(lastAsyncHandle == async, "got 0x%08x\n", async);
++
++    lastAsyncCode = E_FAIL;
++    lastAsyncHandle = 0xdeadbeef;
++    hr = IDirectPlay8Peer_CancelAsyncOperation(peer, async2, 0);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(lastAsyncCode == DPNERR_USERCANCEL, "got 0x%08x\n", lastAsyncCode);
++    todo_wine ok(lastAsyncHandle == async2, "got 0x%08x\n", async2);
+ 
+     IDirectPlay8Address_Release(local);
+     IDirectPlay8Address_Release(host);
++    IDirectPlay8Peer_Release(peer2);
+ }
+ 
+ static void test_get_sp_caps(void)
+-- 
+1.9.1
+
