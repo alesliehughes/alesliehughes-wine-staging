@@ -1,0 +1,43 @@
+From 52b84dbc98f5bb26728042166d0b2604afbf9230 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 28 Nov 2016 09:20:22 +1100
+Subject: [PATCH 4/4] d3d10core: Check parameter in ID3D10Device
+ CreateRenderTargetView
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3d10core/tests/device.c | 3 +++
+ dlls/d3d11/device.c           | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/dlls/d3d10core/tests/device.c b/dlls/d3d10core/tests/device.c
+index 260128f..18e6753 100644
+--- a/dlls/d3d10core/tests/device.c
++++ b/dlls/d3d10core/tests/device.c
+@@ -2219,6 +2219,9 @@ static void test_create_rendertarget_view(void)
+     U(rtv_desc).Buffer.ElementOffset = 0;
+     U(rtv_desc).Buffer.ElementWidth = 64;
+ 
++    hr = ID3D10Device_CreateRenderTargetView(device, NULL, &rtv_desc, &rtview);
++    ok(hr == E_INVALIDARG, "Got unexpected hr %#x.\n", hr);
++
+     expected_refcount = get_refcount((IUnknown *)device) + 1;
+     hr = ID3D10Device_CreateRenderTargetView(device, (ID3D10Resource *)buffer, &rtv_desc, &rtview);
+     ok(SUCCEEDED(hr), "Failed to create a rendertarget view, hr %#x.\n", hr);
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index 178b184..1765591 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -4590,6 +4590,9 @@ static HRESULT STDMETHODCALLTYPE d3d10_device_CreateRenderTargetView(ID3D10Devic
+ 
+     TRACE("iface %p, resource %p, desc %p, view %p.\n", iface, resource, desc, view);
+ 
++    if (!resource)
++        return E_INVALIDARG;
++
+     if (FAILED(hr = ID3D10Resource_QueryInterface(resource, &IID_ID3D11Resource, (void **)&d3d11_resource)))
+     {
+         ERR("Resource does not implement ID3D11Resource.\n");
+-- 
+1.9.1
+
