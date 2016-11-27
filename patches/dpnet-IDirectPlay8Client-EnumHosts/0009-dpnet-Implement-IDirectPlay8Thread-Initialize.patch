@@ -1,7 +1,7 @@
-From 50bcb01d4b0f0a365c326d7ba725d166e8044038 Mon Sep 17 00:00:00 2001
+From ddf3468868ee7b78c51c190628dbf520eab66269 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:08:53 +1100
-Subject: [PATCH 09/14] dpnet: Implement IDirectPlay8Thread Initialize
+Subject: [PATCH 09/15] dpnet: Implement IDirectPlay8Thread Initialize
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -81,5 +81,5 @@ index a495a2d..0f4e108 100644
          if (InterlockedCompareExchangePointer((void**)&threadpool, &obj->IDirectPlay8ThreadPool_iface, NULL))
              HeapFree(GetProcessHeap(), 0, obj);
 -- 
-1.9.1
+2.10.2
 

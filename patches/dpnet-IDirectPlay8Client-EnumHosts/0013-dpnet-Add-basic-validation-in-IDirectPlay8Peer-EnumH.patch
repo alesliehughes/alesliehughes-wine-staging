@@ -1,7 +1,7 @@
-From 6bf5dbce222ad835fdab670fba8ea66f5854e0a9 Mon Sep 17 00:00:00 2001
+From f22a2e176bee7c37d51cc351b45da55cca13d322 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:01:22 +1100
-Subject: [PATCH 13/14] dpnet: Add basic validation in IDirectPlay8Peer
+Subject: [PATCH 13/15] dpnet: Add basic validation in IDirectPlay8Peer
  EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -70,5 +70,5 @@ index 14b423f..5c2daa5 100644
      /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */
      async = 0;
 -- 
-1.9.1
+2.10.2
 

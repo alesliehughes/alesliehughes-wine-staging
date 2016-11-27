@@ -1,7 +1,7 @@
-From 56b46dc8ebd500da4c13463ae83ded9f252dfe49 Mon Sep 17 00:00:00 2001
+From c21c90095afe6ab16a6b1bd317092dcf7c9d8d54 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 15:34:54 +1100
-Subject: [PATCH 06/14] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 06/15] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -238,5 +238,5 @@ index 5fa0cde..fd8c5d7 100644
      WaitForSingleObject( enumevent, 1000);
  
 -- 
-1.9.1
+2.10.2
 
