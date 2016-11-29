@@ -1,0 +1,80 @@
+From d153800fd3d9e31b16a120b16c1eb80f217254db Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 29 Nov 2016 15:44:19 +1100
+Subject: [PATCH 2/2] hnetcfg/tests: Add INetFwAuthorizedApplication tests
+
+Since put_ProcessImageFileName appears to validate the image name that is
+supplied, the normal put/get/compare was excluded because it returned
+E_INVALIDARG even for a fully qualified filename. An investigation for another
+day.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/hnetcfg/tests/Makefile.in |  2 +-
+ dlls/hnetcfg/tests/policy.c    | 32 +++++++++++++++++++++++++++++++-
+ 2 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/hnetcfg/tests/Makefile.in b/dlls/hnetcfg/tests/Makefile.in
+index aa4062a..5e1ce91 100644
+--- a/dlls/hnetcfg/tests/Makefile.in
++++ b/dlls/hnetcfg/tests/Makefile.in
+@@ -1,5 +1,5 @@
+ TESTDLL   = hnetcfg.dll
+-IMPORTS   = ole32 uuid
++IMPORTS   = ole32 uuid oleaut32
+ 
+ C_SRCS = \
+ 	policy.c
+diff --git a/dlls/hnetcfg/tests/policy.c b/dlls/hnetcfg/tests/policy.c
+index a3ed4b2..a05b02e 100644
+--- a/dlls/hnetcfg/tests/policy.c
++++ b/dlls/hnetcfg/tests/policy.c
+@@ -65,6 +65,36 @@ static void test_interfaces(void)
+     INetFwMgr_Release(manager);
+ }
+ 
++static void test_NetFwAuthorizedApplication(void)
++{
++    INetFwAuthorizedApplication *app;
++    HRESULT hr;
++
++    hr = CoCreateInstance(&CLSID_NetFwAuthorizedApplication, NULL, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER,
++            &IID_INetFwAuthorizedApplication, (void**)&app);
++    ok(hr == S_OK, "got: %08x\n", hr);
++    if(hr == S_OK)
++    {
++        static WCHAR empty[] = {0};
++        BSTR bstr;
++
++        hr = INetFwAuthorizedApplication_get_ProcessImageFileName(app, NULL);
++        ok(hr == E_POINTER, "got: %08x\n", hr);
++
++        hr = INetFwAuthorizedApplication_get_ProcessImageFileName(app, &bstr);
++        ok(hr == S_OK, "got: %08x\n", hr);
++        ok(!bstr, "got: %s\n",  wine_dbgstr_w(bstr));
++
++        hr = INetFwAuthorizedApplication_put_ProcessImageFileName(app, NULL);
++        ok(hr == E_INVALIDARG, "got: %08x\n", hr);
++
++        hr = INetFwAuthorizedApplication_put_ProcessImageFileName(app, empty);
++        ok(hr == E_INVALIDARG, "got: %08x\n", hr);
++
++        INetFwAuthorizedApplication_Release(app);
++    }
++}
++
+ START_TEST(policy)
+ {
+     INetFwMgr *manager;
+@@ -84,7 +114,7 @@ START_TEST(policy)
+     INetFwMgr_Release(manager);
+ 
+     test_interfaces();
+-
++    test_NetFwAuthorizedApplication();
+ 
+     CoUninitialize();
+ }
+-- 
+1.9.1
+
