@@ -1,4 +1,4 @@
-From 05c4fd040e1bc0012d908ea1626672be32ef0b32 Mon Sep 17 00:00:00 2001
+From 51fda2ea38d591db0fa0bd1bbb28802e3da7f38a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Michael=20M=C3=BCller?= <michael@fds-team.de>
 Date: Sat, 31 Oct 2015 02:27:14 +0100
 Subject: [PATCH 1/2] hnetcfg: Improve
@@ -6,14 +6,17 @@ Subject: [PATCH 1/2] hnetcfg: Improve
 
 v2:
  Corrected error return values.
+v3:
+ Remove unneed if's
+ Free filename incase it's called twice.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/hnetcfg/apps.c | 23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
+ dlls/hnetcfg/apps.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/hnetcfg/apps.c b/dlls/hnetcfg/apps.c
-index 2b8d78c..a89e6a7 100644
+index 2b8d78c..add8b04 100644
 --- a/dlls/hnetcfg/apps.c
 +++ b/dlls/hnetcfg/apps.c
 @@ -38,6 +38,7 @@ typedef struct fw_app
@@ -28,11 +31,11 @@ index 2b8d78c..a89e6a7 100644
      if (!refs)
      {
          TRACE("destroying %p\n", fw_app);
-+        if (fw_app->filename) SysFreeString( fw_app->filename );
++        SysFreeString( fw_app->filename );
          HeapFree( GetProcessHeap(), 0, fw_app );
      }
      return refs;
-@@ -252,7 +254,18 @@ static HRESULT WINAPI fw_app_get_ProcessImageFileName(
+@@ -252,7 +254,13 @@ static HRESULT WINAPI fw_app_get_ProcessImageFileName(
      fw_app *This = impl_from_INetFwAuthorizedApplication( iface );
  
      FIXME("%p, %p\n", This, imageFileName);
@@ -41,18 +44,13 @@ index 2b8d78c..a89e6a7 100644
 +    if (!imageFileName)
 +        return E_POINTER;
 +
-+    if (!This->filename)
-+    {
-+        *imageFileName = NULL;
-+        return S_OK;
-+    }
-+
++    SysFreeString( This->filename );
 +    *imageFileName = SysAllocString( This->filename );
-+    return *imageFileName ? S_OK : E_OUTOFMEMORY;
++    return *imageFileName || !This->filename ? S_OK : E_OUTOFMEMORY;
  }
  
  static HRESULT WINAPI fw_app_put_ProcessImageFileName(
-@@ -262,7 +275,12 @@ static HRESULT WINAPI fw_app_put_ProcessImageFileName(
+@@ -262,7 +270,12 @@ static HRESULT WINAPI fw_app_put_ProcessImageFileName(
      fw_app *This = impl_from_INetFwAuthorizedApplication( iface );
  
      FIXME("%p, %s\n", This, debugstr_w(imageFileName));
@@ -66,7 +64,7 @@ index 2b8d78c..a89e6a7 100644
  }
  
  static HRESULT WINAPI fw_app_get_IpVersion(
-@@ -385,6 +403,7 @@ HRESULT NetFwAuthorizedApplication_create( IUnknown *pUnkOuter, LPVOID *ppObj )
+@@ -385,6 +398,7 @@ HRESULT NetFwAuthorizedApplication_create( IUnknown *pUnkOuter, LPVOID *ppObj )
  
      fa->INetFwAuthorizedApplication_iface.lpVtbl = &fw_app_vtbl;
      fa->refs = 1;
@@ -75,5 +73,5 @@ index 2b8d78c..a89e6a7 100644
      *ppObj = &fa->INetFwAuthorizedApplication_iface;
  
 -- 
-1.9.1
+2.10.2
 
