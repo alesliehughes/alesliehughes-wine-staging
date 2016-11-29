@@ -1,0 +1,104 @@
+From d0d6b53b2911ebb1638939fcc663677dcc59e723 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 29 Nov 2016 12:26:42 +1100
+Subject: [PATCH] urlmon/test: Test BindToObject for Custom Mime
+
+---
+ dlls/urlmon/tests/url.c | 49 +++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 39 insertions(+), 10 deletions(-)
+
+diff --git a/dlls/urlmon/tests/url.c b/dlls/urlmon/tests/url.c
+index 9ccd8ef..55b81b5 100644
+--- a/dlls/urlmon/tests/url.c
++++ b/dlls/urlmon/tests/url.c
+@@ -202,7 +202,9 @@ static enum {
+     HTTPS_TEST,
+     FTP_TEST,
+     WINETEST_TEST,
+-    WINETEST_SYNC_TEST
++    WINETEST_SYNC_TEST,
++    CUSTOM_MIME,
++    CUSTOM_MIME1
+ } test_protocol;
+ 
+ static enum {
+@@ -2865,6 +2867,12 @@ static void init_bind_test(int protocol, DWORD flags, DWORD t)
+     case FTP_TEST:
+         url_a = "ftp://ftp.winehq.org/welcome.msg";
+         break;
++    case CUSTOM_MIME:
++        url_a = "C:\\temp\\sample.wine";
++        break;
++    case CUSTOM_MIME1:
++        url_a = "C:\\temp\\sample.wine1";
++        break;
+     default:
+         url_a = "winetest:test";
+     }
+@@ -3893,7 +3901,7 @@ START_TEST(url)
+     create_cache_file();
+     register_protocols();
+ 
+-    test_create();
++/*    test_create();
+ 
+     trace("test CreateAsyncBindCtx...\n");
+     test_CreateAsyncBindCtx();
+@@ -3908,10 +3916,10 @@ START_TEST(url)
+ 
+         trace("synchronous http test (COM not initialised)...\n");
+         test_BindToStorage(HTTP_TEST, 0, TYMED_ISTREAM);
+-
++*/
+         CoInitialize(NULL);
+ 
+-        trace("test StdURLMoniker...\n");
++/*        trace("test StdURLMoniker...\n");
+         test_StdURLMoniker();
+ 
+         trace("synchronous http test...\n");
+@@ -4103,14 +4111,35 @@ START_TEST(url)
+         test_BindToStorage(FTP_TEST, 0, TYMED_ISTREAM);
+ 
+         trace("test failures...\n");
+-        test_BindToStorage_fail();
++        test_BindToStorage_fail();*/
+ 
+-        bindf = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE;
+-        only_check_prot_args = TRUE; /* Fail after checking arguments to Protocol_Start */
++        /*
++          Create File C:\temp\sample.wine.
+ 
+-        trace("check emulated http protocol arguments...\n");
+-        test_BindToStorage(HTTP_TEST, BINDTEST_EMULATE, TYMED_ISTREAM);
+-    }
++          Registry: 
++          HKEY_CLASSES_ROOT\.wine (default -> htmlfile)
++          HKEY_CLASSES_ROOT\MIME\Database\Content Type\text/wine
++             Extension .wine
++
++           BindToObject CUSTOM_MIME  - Passes
++           BindToObject CUSTOM_MIME1 - Fails
++
++           Once the above registry entries are added to windows, running cmd c:\temp\sample.wine
++            loads iexplore and displays the text file.
++         */
++
++        trace("about custom mime (to object)...\n");
++        test_BindToObject(CUSTOM_MIME, 0, S_OK);
++
++        trace("about custom mime (to object)...\n");
++        test_BindToObject(CUSTOM_MIME1, 0, S_OK);
++
++//        bindf = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE;
++//        only_check_prot_args = TRUE; /* Fail after checking arguments to Protocol_Start */
++
++//        trace("check emulated http protocol arguments...\n");
++//        test_BindToStorage(HTTP_TEST, BINDTEST_EMULATE, TYMED_ISTREAM);
++//    }
+ 
+     DeleteFileA(test_file);
+     DeleteFileA(test_txtA);
+-- 
+1.9.1
+
