@@ -1,7 +1,7 @@
-From 4668b119db66d90259d01d42d5504f2dd21e201e Mon Sep 17 00:00:00 2001
+From c1f639e5cfc8301c50691ec2947cb6904ccfa3e0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Nov 2016 09:12:50 +1100
-Subject: [PATCH 10/15] dpnet: Clear message handler in IDirectPlay8ThreadPool
+Subject: [PATCH 10/17] dpnet: Clear message handler in IDirectPlay8ThreadPool
  Close
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
