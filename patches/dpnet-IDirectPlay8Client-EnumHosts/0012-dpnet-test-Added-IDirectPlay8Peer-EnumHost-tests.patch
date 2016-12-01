@@ -1,7 +1,7 @@
-From 167906b33c378ee11ff325670b2d9a0a4eacea05 Mon Sep 17 00:00:00 2001
+From 541700f7ff04b2656cac979127b869338fe24936 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Nov 2016 16:30:31 +1100
-Subject: [PATCH 12/18] dpnet/test: Added IDirectPlay8Peer EnumHost tests
+Subject: [PATCH 12/17] dpnet/test: Added IDirectPlay8Peer EnumHost tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

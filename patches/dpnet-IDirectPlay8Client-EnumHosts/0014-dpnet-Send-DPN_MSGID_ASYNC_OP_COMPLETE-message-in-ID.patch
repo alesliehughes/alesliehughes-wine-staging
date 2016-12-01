@@ -1,7 +1,7 @@
-From 3a7391ea40b3dab006557768c74c47a25a1ae5f4 Mon Sep 17 00:00:00 2001
+From 67f958010eb2eac45fdde04a803252724417b15c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:41:28 +1100
-Subject: [PATCH 14/18] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
+Subject: [PATCH 14/17] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
  IDirectPlay8Client CancelAsyncOperation
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 8b2c9db..7947de5 100644
+index 79acd11..7bd5b81 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -101,6 +101,18 @@ static SOCKET find_free_socket(void)
@@ -33,9 +33,9 @@ index 8b2c9db..7947de5 100644
  /* IDirectPlay8Client IUnknown parts follow: */
  static HRESULT WINAPI IDirectPlay8ClientImpl_QueryInterface(IDirectPlay8Client *iface, REFIID riid,
          void **ppobj)
-@@ -478,6 +490,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -480,6 +492,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  
-     if(hAsyncHandle == PtrToUlong(This->cancelevent))
+     if(hAsyncHandle == PtrToUlong(This->enumthread))
      {
 +        send_async_complete_msg(This, DPNERR_USERCANCEL, hAsyncHandle);
 +
