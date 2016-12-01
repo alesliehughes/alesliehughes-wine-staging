@@ -1,0 +1,86 @@
+From 5073e71af4c81ecc7f98e4b287a0badec852bbfb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 1 Dec 2016 12:01:46 +1100
+Subject: [PATCH 18/18] dpnet: Implement IDirectPlay8Client Send
+
+WIP - server address needs to be stored when we implement Connect.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 40 +++++++++++++++++++++++++++++++++++++---
+ dlls/dpnet/dpnet_private.h |  1 +
+ 2 files changed, 38 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 8e7f4f1..80db173 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -1036,6 +1036,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+     heap_free(buffer);
+ //// ^^^^^ Make this into a function.
+ 
++    This->addr = addr;
++
+     hr = S_OK;
+ 
+     tdata = heap_alloc(sizeof(struct connect_data));
+@@ -1065,9 +1067,41 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
+         const DPN_BUFFER_DESC * const prgBufferDesc, const DWORD cBufferDesc, const DWORD dwTimeOut,
+         void * const pvAsyncContext, DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    struct DFRAME_PACKET_TYPE *packet;
++    int err;
++    int size;
++
++    FIXME("(%p):(%p,%p,%x): Stub\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
++
++    if(This->sock == INVALID_SOCKET)
++        return E_FAIL;
++
++    size = sizeof(*packet) + prgBufferDesc->dwBufferSize;
++    packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size);
++
++    if(!packet)
++        return E_OUTOFMEMORY;
++
++    if(cBufferDesc != 1)
++        FIXME("Currently only one DPN_BUFFER_DESC supported!\n.");
++
++    packet->command = PACKET_COMMAND_DATA | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
++                      PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG;
++    packet->control  = 0;
++    packet->seq      = 8;
++    packet->nseq     = 8;
++    packet->type     = 0x01; /* TRANS_USERDATA_SEND_MESSAGE */
++    memcpy( (char*)+sizeof(*packet), prgBufferDesc->pBufferData, prgBufferDesc->dwBufferSize);
++
++    /* TODO - Store the Server addr in Connect patch */
++    err = sendto(This->sock, (void *)&packet, size, 0, (struct sockaddr *)&This->addr, sizeof(struct sockaddr_in));
++    if(err == -1)
++        ERR("Sendto failed (%d).\n", WSAGetLastError());
++    else
++        FIXME("sack sent %d\n", err);
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_GetSendQueueInfo(IDirectPlay8Client *iface,
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index bd555f7..6b0e4a9 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -71,6 +71,7 @@ struct IDirectPlay8ClientImpl
+     DWORD session;
+ 
+     HANDLE connectthread;
++    struct sockaddr_in addr;
+ };
+ 
+ /* ------------------- */
+-- 
+1.9.1
+

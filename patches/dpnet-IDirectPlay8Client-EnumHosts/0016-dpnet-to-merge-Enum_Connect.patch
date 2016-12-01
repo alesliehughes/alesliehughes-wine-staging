@@ -1,7 +1,7 @@
-From 0b6a05e2592503f204f878c82ceeb805c03a0f69 Mon Sep 17 00:00:00 2001
+From 9c0906c2234f6a90941f03361c105e9493870dde Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 30 Nov 2016 12:12:52 +1100
-Subject: [PATCH 16/17] dpnet: to merge Enum_Connect
+Subject: [PATCH 16/18] dpnet: to merge Enum_Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 278 insertions(+), 142 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index c2a91a4..71d8bca 100644
+index 0d676aa..dd6ef20 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -542,6 +542,257 @@ static DWORD WINAPI enumhost_thread(void *threaddata)
@@ -62,7 +62,7 @@ index c2a91a4..71d8bca 100644
 +            if(packet->command & PACKET_COMMAND_DATA)
 +            {
 +                struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
-+                
++
 +                switch(dframe->type)
 +                {
 +                    case DN_MSG_INTERNAL_SEND_CONNECT_INFO:
@@ -152,7 +152,7 @@ index c2a91a4..71d8bca 100644
 +        sack.nrcv    = 4;
 +        sack.padding = 0;
 +        sack.timestamp = GetTickCount();
-+        
++
 +        err = sendto(tdata->sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)&tdata->addr, sizeof(struct sockaddr_in));
 +        if(err == -1)
 +            ERR("Sendto failed (%d).\n", WSAGetLastError());
@@ -189,7 +189,7 @@ index c2a91a4..71d8bca 100644
 +            if(packet->command & PACKET_COMMAND_DATA)
 +            {
 +                struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
-+                
++
 +                switch(dframe->type)
 +                {
 +                    default:
@@ -216,7 +216,7 @@ index c2a91a4..71d8bca 100644
 +                                sack.nrcv    = keepalive->seq;
 +                                sack.padding = 0;
 +                                sack.timestamp = GetTickCount();
-+                                
++
 +                                err = sendto(tdata->sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)&tdata->addr, sizeof(struct sockaddr_in));
 +                                if(err == -1)
 +                                    ERR("Sendto failed (%d).\n", WSAGetLastError());
@@ -350,7 +350,7 @@ index c2a91a4..71d8bca 100644
 -            if(packet->command & PACKET_COMMAND_DATA)
 -            {
 -                struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
--                
+-
 -                switch(dframe->type)
 -                {
 -                    case DN_MSG_INTERNAL_SEND_CONNECT_INFO:
@@ -452,7 +452,7 @@ index c2a91a4..71d8bca 100644
 -    sack.nrcv    = 4;
 -    sack.padding = 0;
 -    sack.timestamp = GetTickCount();
--    
+-
 -    err = sendto(This->sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 -    if(err == -1)
 -        ERR("Sendto failed (%d).\n", WSAGetLastError());
@@ -496,5 +496,5 @@ index bda253c..bd555f7 100644
  
  /* ------------------- */
 -- 
-2.10.2
+1.9.1
 

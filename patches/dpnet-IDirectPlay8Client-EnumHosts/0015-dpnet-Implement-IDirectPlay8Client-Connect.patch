@@ -1,7 +1,7 @@
-From 70da68146279a77131cede259188d22afc80d7f8 Mon Sep 17 00:00:00 2001
+From 02f9edeb3124e390fdc71f2d46931a94970573c8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 16:11:53 +1100
-Subject: [PATCH 15/17] dpnet: Implement IDirectPlay8Client Connect
+Subject: [PATCH 15/18] dpnet: Implement IDirectPlay8Client Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 546 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 7947de5..c2a91a4 100644
+index 7947de5..0d676aa 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -29,6 +29,7 @@
@@ -81,7 +81,7 @@ index 7947de5..c2a91a4 100644
 +    info->application = app_desc->guidApplication;
 +
 +    lstrcpyW( (WCHAR*)(((char*)info)+sizeof(*info)), name);
-+    
++
 +    err = sendto(sock, (void *)packet, size, 0, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
 +    if(err == -1)
 +        ERR("Sendto failed (%d).\n", WSAGetLastError());
@@ -328,7 +328,7 @@ index 7947de5..c2a91a4 100644
 +            if(packet->command & PACKET_COMMAND_DATA)
 +            {
 +                struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
-+                
++
 +                switch(dframe->type)
 +                {
 +                    case DN_MSG_INTERNAL_SEND_CONNECT_INFO:
@@ -420,7 +420,7 @@ index 7947de5..c2a91a4 100644
 +    sack.nrcv    = 4;
 +    sack.padding = 0;
 +    sack.timestamp = GetTickCount();
-+    
++
 +    err = sendto(This->sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 +    if(err == -1)
 +        ERR("Sendto failed (%d).\n", WSAGetLastError());
@@ -659,5 +659,5 @@ index f3ca955..c4ca738 100644
  
  #endif
 -- 
-2.10.2
+1.9.1
 
