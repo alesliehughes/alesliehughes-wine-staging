@@ -1,18 +1,32 @@
-From 9eccab5774fbd18632ca9f7b48007e9c2c17f4e4 Mon Sep 17 00:00:00 2001
+From ab67d0ab42305f30ed410aa230bdc27ce478015e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 1 Dec 2016 10:37:09 +1100
 Subject: [PATCH 2/2] urlmon/test: Test BindToObject for Custom Mime
 
+Still crashes under WINE. It doesn't appear to lookup the correct MIME
+type.  It defaults to "application/octect-stream", which comes from the
+fact nothing is in the file, and it guess as to the type.  If you
+add text to the file, then the crash doesn't occur but uses the MIME
+type "text/plain" which is wrong.
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/urlmon/tests/url.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ dlls/urlmon/tests/url.c | 43 +++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/urlmon/tests/url.c b/dlls/urlmon/tests/url.c
-index 9ccd8ef..8e3d91c 100644
+index 9ccd8ef..a4a7def 100644
 --- a/dlls/urlmon/tests/url.c
 +++ b/dlls/urlmon/tests/url.c
-@@ -235,6 +235,34 @@ static BOOL is_urlmon_protocol(int prot)
+@@ -190,6 +190,7 @@ static BOOL async_switch = FALSE;
+ static BOOL strict_bsc_qi;
+ static DWORD bindtest_flags;
+ static const char *test_file;
++static BOOL skip_mimetype_call = FALSE;
+ 
+ static WCHAR file_url[INTERNET_MAX_URL_LENGTH], current_url[INTERNET_MAX_URL_LENGTH];
+ 
+@@ -235,6 +236,34 @@ static BOOL is_urlmon_protocol(int prot)
      return prot == FILE_TEST || prot == HTTP_TEST || prot == HTTPS_TEST || prot == FTP_TEST || prot == MK_TEST;
  }
  
@@ -47,14 +61,50 @@ index 9ccd8ef..8e3d91c 100644
  static void test_CreateURLMoniker(LPCWSTR url1, LPCWSTR url2)
  {
      HRESULT hr;
-@@ -3944,6 +3972,12 @@ START_TEST(url)
+@@ -2821,6 +2850,7 @@ static BOOL test_RegisterBindStatusCallback(void)
+ #define BINDTEST_ABORT_PROGRESS     0x0800
+ #define BINDTEST_ASYNC_SWITCH       0x1000
+ #define BINDTEST_ALLOW_FINDINGRESOURCE  0x2000
++#define BINDTEST_NO_MIMETYPE_CHECK  0x4000
+ 
+ static void init_bind_test(int protocol, DWORD flags, DWORD t)
+ {
+@@ -2881,6 +2911,7 @@ static void init_bind_test(int protocol, DWORD flags, DWORD t)
+     abort_progress = (flags & BINDTEST_ABORT_PROGRESS) != 0;
+     async_switch = (flags & BINDTEST_ASYNC_SWITCH) != 0;
+     is_async_prot = protocol == HTTP_TEST || protocol == HTTPS_TEST || protocol == FTP_TEST || protocol == WINETEST_TEST;
++    skip_mimetype_call = (flags & BINDTEST_NO_MIMETYPE_CHECK) != 0;
+     prot_state = 0;
+     ResetEvent(complete_event);
+ 
+@@ -3292,7 +3323,8 @@ static void test_BindToObject(int protocol, DWORD flags, HRESULT exhres)
+             SET_EXPECT(QueryInterface_IHttpNegotiate);
+             SET_EXPECT(OnResponse);
+         }
+-        SET_EXPECT(Obj_OnProgress_MIMETYPEAVAILABLE);
++        if(!skip_mimetype_call)
++            SET_EXPECT(Obj_OnProgress_MIMETYPEAVAILABLE);
+         SET_EXPECT(Obj_OnProgress_BEGINDOWNLOADDATA);
+         if(test_protocol == FILE_TEST)
+             SET_EXPECT(Obj_OnProgress_CACHEFILENAMEAVAILABLE);
+@@ -3388,7 +3420,8 @@ static void test_BindToObject(int protocol, DWORD flags, HRESULT exhres)
+             CLEAR_CALLED(QueryInterface_IHttpNegotiate);
+             CHECK_CALLED(OnResponse);
+         }
+-        CHECK_CALLED(Obj_OnProgress_MIMETYPEAVAILABLE);
++        if(!skip_mimetype_call)
++            CHECK_CALLED(Obj_OnProgress_MIMETYPEAVAILABLE);
+         CHECK_CALLED(Obj_OnProgress_BEGINDOWNLOADDATA);
+         if(test_protocol == FILE_TEST)
+             CHECK_CALLED(Obj_OnProgress_CACHEFILENAMEAVAILABLE);
+@@ -3944,6 +3977,12 @@ START_TEST(url)
          trace("bind to an object of not registered MIME type...\n");
          create_file("test.winetest", "\x01\x02\x03xxxxxxxxxxxxxxxxxxxxxxxxx");
          test_BindToObject(FILE_TEST, 0, REGDB_E_CLASSNOTREG);
 +
 +        create_file("test.wine", "");
 +        init_registry(TRUE);
-+        test_BindToObject(FILE_TEST, 0, S_OK);
++        test_BindToObject(FILE_TEST, BINDTEST_NO_MIMETYPE_CHECK, S_OK);
 +        init_registry(FALSE);
 +
          create_html_file();
