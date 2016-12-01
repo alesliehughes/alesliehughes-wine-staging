@@ -1,104 +1,65 @@
-From d0d6b53b2911ebb1638939fcc663677dcc59e723 Mon Sep 17 00:00:00 2001
+From 9eccab5774fbd18632ca9f7b48007e9c2c17f4e4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 29 Nov 2016 12:26:42 +1100
-Subject: [PATCH] urlmon/test: Test BindToObject for Custom Mime
+Date: Thu, 1 Dec 2016 10:37:09 +1100
+Subject: [PATCH 2/2] urlmon/test: Test BindToObject for Custom Mime
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/urlmon/tests/url.c | 49 +++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 39 insertions(+), 10 deletions(-)
+ dlls/urlmon/tests/url.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
 diff --git a/dlls/urlmon/tests/url.c b/dlls/urlmon/tests/url.c
-index 9ccd8ef..55b81b5 100644
+index 9ccd8ef..8e3d91c 100644
 --- a/dlls/urlmon/tests/url.c
 +++ b/dlls/urlmon/tests/url.c
-@@ -202,7 +202,9 @@ static enum {
-     HTTPS_TEST,
-     FTP_TEST,
-     WINETEST_TEST,
--    WINETEST_SYNC_TEST
-+    WINETEST_SYNC_TEST,
-+    CUSTOM_MIME,
-+    CUSTOM_MIME1
- } test_protocol;
+@@ -235,6 +235,34 @@ static BOOL is_urlmon_protocol(int prot)
+     return prot == FILE_TEST || prot == HTTP_TEST || prot == HTTPS_TEST || prot == FTP_TEST || prot == MK_TEST;
+ }
  
- static enum {
-@@ -2865,6 +2867,12 @@ static void init_bind_test(int protocol, DWORD flags, DWORD t)
-     case FTP_TEST:
-         url_a = "ftp://ftp.winehq.org/welcome.msg";
-         break;
-+    case CUSTOM_MIME:
-+        url_a = "C:\\temp\\sample.wine";
-+        break;
-+    case CUSTOM_MIME1:
-+        url_a = "C:\\temp\\sample.wine1";
-+        break;
-     default:
-         url_a = "winetest:test";
-     }
-@@ -3893,7 +3901,7 @@ START_TEST(url)
-     create_cache_file();
-     register_protocols();
- 
--    test_create();
-+/*    test_create();
- 
-     trace("test CreateAsyncBindCtx...\n");
-     test_CreateAsyncBindCtx();
-@@ -3908,10 +3916,10 @@ START_TEST(url)
- 
-         trace("synchronous http test (COM not initialised)...\n");
-         test_BindToStorage(HTTP_TEST, 0, TYMED_ISTREAM);
--
-+*/
-         CoInitialize(NULL);
- 
--        trace("test StdURLMoniker...\n");
-+/*        trace("test StdURLMoniker...\n");
-         test_StdURLMoniker();
- 
-         trace("synchronous http test...\n");
-@@ -4103,14 +4111,35 @@ START_TEST(url)
-         test_BindToStorage(FTP_TEST, 0, TYMED_ISTREAM);
- 
-         trace("test failures...\n");
--        test_BindToStorage_fail();
-+        test_BindToStorage_fail();*/
- 
--        bindf = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE;
--        only_check_prot_args = TRUE; /* Fail after checking arguments to Protocol_Start */
-+        /*
-+          Create File C:\temp\sample.wine.
- 
--        trace("check emulated http protocol arguments...\n");
--        test_BindToStorage(HTTP_TEST, BINDTEST_EMULATE, TYMED_ISTREAM);
--    }
-+          Registry: 
-+          HKEY_CLASSES_ROOT\.wine (default -> htmlfile)
-+          HKEY_CLASSES_ROOT\MIME\Database\Content Type\text/wine
-+             Extension .wine
++static BOOL init_key(const char *key_name, const char *entry, const char *def_value, BOOL init)
++{
++    HKEY hkey;
++    DWORD res;
 +
-+           BindToObject CUSTOM_MIME  - Passes
-+           BindToObject CUSTOM_MIME1 - Fails
++    if(!init) {
++        RegDeleteKeyA(HKEY_CLASSES_ROOT, key_name);
++        return TRUE;
++    }
 +
-+           Once the above registry entries are added to windows, running cmd c:\temp\sample.wine
-+            loads iexplore and displays the text file.
-+         */
++    res = RegCreateKeyA(HKEY_CLASSES_ROOT, key_name, &hkey);
++    if(res != ERROR_SUCCESS)
++        return FALSE;
 +
-+        trace("about custom mime (to object)...\n");
-+        test_BindToObject(CUSTOM_MIME, 0, S_OK);
++    if(def_value)
++        res = RegSetValueExA(hkey, entry, 0, REG_SZ, (BYTE*)def_value, strlen(def_value));
 +
-+        trace("about custom mime (to object)...\n");
-+        test_BindToObject(CUSTOM_MIME1, 0, S_OK);
++    RegCloseKey(hkey);
 +
-+//        bindf = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE;
-+//        only_check_prot_args = TRUE; /* Fail after checking arguments to Protocol_Start */
++    return res == ERROR_SUCCESS;
++}
 +
-+//        trace("check emulated http protocol arguments...\n");
-+//        test_BindToStorage(HTTP_TEST, BINDTEST_EMULATE, TYMED_ISTREAM);
-+//    }
++static BOOL init_registry(BOOL init)
++{
++    return init_key(".wine", NULL, "htmlfile", init)
++        && init_key("MIME\\Database\\Content Type\\text/wine", "Extension", ".wine", init);
++}
++
+ static void test_CreateURLMoniker(LPCWSTR url1, LPCWSTR url2)
+ {
+     HRESULT hr;
+@@ -3944,6 +3972,12 @@ START_TEST(url)
+         trace("bind to an object of not registered MIME type...\n");
+         create_file("test.winetest", "\x01\x02\x03xxxxxxxxxxxxxxxxxxxxxxxxx");
+         test_BindToObject(FILE_TEST, 0, REGDB_E_CLASSNOTREG);
++
++        create_file("test.wine", "");
++        init_registry(TRUE);
++        test_BindToObject(FILE_TEST, 0, S_OK);
++        init_registry(FALSE);
++
+         create_html_file();
  
-     DeleteFileA(test_file);
-     DeleteFileA(test_txtA);
+         trace("file test (no callback)...\n");
 -- 
 1.9.1
 

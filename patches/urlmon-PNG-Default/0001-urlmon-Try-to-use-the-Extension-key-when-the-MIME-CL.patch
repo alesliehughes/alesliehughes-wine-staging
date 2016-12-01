@@ -1,7 +1,7 @@
-From e90b274c90df81d7b48aab119c0d1bb05af005fb Mon Sep 17 00:00:00 2001
+From 84dbddef36c0808b8e2edd779eb534dd7b761dce Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Nov 2016 12:14:53 +1100
-Subject: [PATCH] urlmon: Try to use the Extension key when the MIME CLSID
+Subject: [PATCH 1/2] urlmon: Try to use the Extension key when the MIME CLSID
  isn't available
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=25681
