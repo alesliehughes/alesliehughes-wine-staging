@@ -1,7 +1,7 @@
-From 67f958010eb2eac45fdde04a803252724417b15c Mon Sep 17 00:00:00 2001
+From 3fceae3bfa091daf068695fe39ef9b6af3ccd4ec Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:41:28 +1100
-Subject: [PATCH 14/17] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
+Subject: [PATCH 14/19] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
  IDirectPlay8Client CancelAsyncOperation
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 79acd11..7bd5b81 100644
+index a373530..940f983 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -101,6 +101,18 @@ static SOCKET find_free_socket(void)

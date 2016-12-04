@@ -1,7 +1,7 @@
-From c56f108a7b6890959a330c253604d31b4cf956eb Mon Sep 17 00:00:00 2001
+From 6b26a148c15a8b181488e75d7f172e8d362f81bc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 15:34:54 +1100
-Subject: [PATCH 06/17] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 06/19] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 106 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 446dea0..79acd11 100644
+index f2c5b02..a373530 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -139,6 +139,9 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
@@ -140,7 +140,7 @@ index 446dea0..79acd11 100644
 +
 +        tdata->sock        = This->sock;
 +        tdata->retrycnt    = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
-+        tdata->retrytime   = dwRetryInterval == INFINITE ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
++        tdata->retrytime   = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
 +        tdata->timeout     = dwTimeOut == INFINITE  ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
 +        tdata->msghandler  = This->msghandler;
 +        tdata->device      = device;

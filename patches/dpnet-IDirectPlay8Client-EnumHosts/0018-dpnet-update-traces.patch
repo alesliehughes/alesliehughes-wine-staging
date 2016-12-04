@@ -1,0 +1,44 @@
+From e4caa1636cca4a14d773d4f76c88a49aa5a281af Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 5 Dec 2016 08:46:18 +1100
+Subject: [PATCH 18/19] dpnet: update traces
+
+---
+ dlls/dpnet/client.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 990cc46..85a7c5a 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -841,15 +841,15 @@ static DWORD WINAPI connect_thread(void *threaddata)
+                             }
+                             else
+                             {
+-                                FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
++                                FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x, type %08x\n", packet->command, packet->control, packet->seq, packet->nseq, dframe->type);
+                             }
+ 
+                         }
+                 }
+             }
+             else if(n >= (int)sizeof(struct CFRAME_PACKET) &&
+-                    ((packet->control & PACKET_COMMAND_CFRAME) ||
+-                     (packet->control & (PACKET_COMMAND_CFRAME | PACKET_COMMAND_POLL))))
++                    ((packet->control == PACKET_COMMAND_CFRAME) ||
++                     (packet->control == (PACKET_COMMAND_CFRAME | PACKET_COMMAND_POLL))))
+             {
+                 FIXME("Processing CFRAME_PACKET(%d)\n", n);
+ 
+@@ -869,7 +869,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+             }
+             else
+             {
+-                FIXME("Packet not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
++                FIXME("Packet not support.... size(%d), command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", n, packet->command, packet->control, packet->seq, packet->nseq);
+             }
+ 
+             /*if( (starttime - GetTickCount()) >= 10000)
+-- 
+1.9.1
+

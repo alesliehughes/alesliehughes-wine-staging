@@ -1,7 +1,7 @@
-From 0fd82642fc2eb7c2f241dc282359bb1fd1455aef Mon Sep 17 00:00:00 2001
+From e68e31ba1037ed79c226416e748606f9347497fe Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Feb 2014 15:11:16 +1100
-Subject: [PATCH 01/17] dpnet: Use registry lookup in EnumServiceProviders
+Subject: [PATCH 01/19] dpnet: Use registry lookup in EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

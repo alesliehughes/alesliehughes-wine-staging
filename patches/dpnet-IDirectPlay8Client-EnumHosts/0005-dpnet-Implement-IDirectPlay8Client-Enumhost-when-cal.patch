@@ -1,7 +1,7 @@
-From d1655de7c75f740dcc21e5092fcc3a68aba3d958 Mon Sep 17 00:00:00 2001
+From f916c22b4ff08ae1e4cab81ff0172d56a08d7b28 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 16:00:32 +1100
-Subject: [PATCH 05/17] dpnet: Implement IDirectPlay8Client Enumhost when
+Subject: [PATCH 05/19] dpnet: Implement IDirectPlay8Client Enumhost when
  called synchronously
 
 v2
@@ -23,7 +23,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/dpnet/dppacket.h
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index a53d1d0..446dea0 100644
+index a53d1d0..f2c5b02 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -55,6 +55,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
@@ -304,7 +304,7 @@ index a53d1d0..446dea0 100644
 +    if(dwFlags & DPNENUMHOSTS_SYNC)
 +    {
 +        DWORD retrycnt  = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
-+        DWORD retrytime = dwRetryInterval == INFINITE ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
++        DWORD retrytime = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
 +        DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
 +
 +        process_enumhost(This->sock, device, This->msghandler, pApplicationDesc->guidApplication,

@@ -1,15 +1,14 @@
-From 92cfd06cb0e2fb19400cfce067e4c1541fdf4c13 Mon Sep 17 00:00:00 2001
+From d1865820944b41647d9368629d67f60deba34145 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 30 Nov 2016 16:33:29 +1100
-Subject: [PATCH 16/17] dpnet: Handler PACKET_CONTROL_END_STREAM message
+Date: Mon, 5 Dec 2016 08:35:39 +1100
+Subject: [PATCH 16/19] dpnet: Handle PACKET_CONTROL_END_STREAM message
 
-Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/client.c | 55 ++++++++++++++++++++++++++++++++++++++++++-----------
  1 file changed, 44 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 538184f..080f6bd 100644
+index b9a154c..4366a0d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -442,6 +442,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
@@ -51,7 +50,7 @@ index 538184f..080f6bd 100644
      {
          buflen = sizeof(temp);
          n = recvfrom(tdata->sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
-@@ -790,14 +813,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -791,14 +814,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
  
                                  FIXME("PACKET_CONTROL_KEEPALIVE_OR_CORRELATE\n");
  
@@ -67,7 +66,7 @@ index 538184f..080f6bd 100644
  
                                  err = sendto(tdata->sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)&tdata->addr, sizeof(struct sockaddr_in));
                                  if(err == -1)
-@@ -805,6 +821,23 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -806,6 +822,23 @@ static DWORD WINAPI connect_thread(void *threaddata)
                                  else
                                      FIXME("sack sent %d\n", err);
                              }
@@ -91,8 +90,8 @@ index 538184f..080f6bd 100644
                              else
                              {
                                  FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
-@@ -831,7 +864,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
- 
+@@ -839,7 +872,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+                 FIXME("Packet not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
              }
  
 -            if( (starttime - GetTickCount()) >= 10000)
@@ -100,7 +99,7 @@ index 538184f..080f6bd 100644
              {
                  FIXME("Sending Keepalive\n");
                  if(dframe_packet_keepalive(tdata->sock, tdata->session, &tdata->addr) == -1)
-@@ -841,7 +874,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -849,7 +882,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
                  }
  
                  starttime = GetTickCount();
