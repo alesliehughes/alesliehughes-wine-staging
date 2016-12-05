@@ -1,20 +1,27 @@
-From e68e31ba1037ed79c226416e748606f9347497fe Mon Sep 17 00:00:00 2001
+From f863d737c4d5e8cba35895ca0e59c4de30836c1b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Feb 2014 15:11:16 +1100
-Subject: [PATCH 01/19] dpnet: Use registry lookup in EnumServiceProviders
+Subject: [PATCH 01/20] dpnet: Use registry lookup in EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/peer.c | 79 +++++++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 65 insertions(+), 14 deletions(-)
+ dlls/dpnet/peer.c | 118 +++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 90 insertions(+), 28 deletions(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index d7144df..b12cfb9 100644
+index d7144df..461d610 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -131,23 +131,50 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
-         DPN_SERVICE_PROVIDER_INFO * const pSPInfoBuffer, DWORD * const pcbEnumData,
-         DWORD * const pcReturned, const DWORD dwFlags)
+@@ -126,63 +126,125 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Initialize(IDirectPlay8Peer *iface,
+     return DPN_OK;
+ }
+ 
+-static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer *iface,
+-        const GUID * const pguidServiceProvider, const GUID * const pguidApplication,
+-        DPN_SERVICE_PROVIDER_INFO * const pSPInfoBuffer, DWORD * const pcbEnumData,
+-        DWORD * const pcReturned, const DWORD dwFlags)
++static HRESULT enum_services_providers(const GUID * const service, DPN_SERVICE_PROVIDER_INFO * const info_buffer,
++        DWORD * const buf_size, DWORD * const returned)
  {
 -    static const WCHAR dp_providerW[] = {'D','i','r','e','c','t','P','l','a','y','8',' ','T','C','P','/','I','P',' ',
 -                                         'S','e','r','v','i','c','e',' ','P','r','o','v','i','d','e','r','\0'};
@@ -30,48 +37,51 @@ index d7144df..b12cfb9 100644
 -    DWORD req_size;
 -
 -    TRACE("(%p)->(%p,%p,%p,%p,%p,%x): stub\n", iface, pguidServiceProvider, pguidApplication, pSPInfoBuffer,
+-                                               pcbEnumData, pcReturned, dwFlags);
+-
+-    if(!pcReturned || !pcbEnumData)
 +    DWORD req_size = 0;
 +    LONG res;
 +    HKEY key = NULL;
-+    LONG nextKeyNameResult;
++    LONG next_key;
 +    DWORD index = 0;
 +    WCHAR provider[MAX_PATH];
 +    DWORD size;
 +
-+    TRACE("(%p)->(%p,%p,%p,%p,%p,%x)\n", iface, pguidServiceProvider, pguidApplication, pSPInfoBuffer,
-                                                pcbEnumData, pcReturned, dwFlags);
- 
-     if(!pcReturned || !pcbEnumData)
++    if(!returned || !buf_size)
          return E_POINTER;
  
-+    *pcReturned = 0;
+-    if(!pguidServiceProvider)
++    *returned = 0;
 +
-     if(!pguidServiceProvider)
++    if(!service)
      {
 -        req_size = sizeof(DPN_SERVICE_PROVIDER_INFO) + sizeof(dp_providerW);
 +        res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, serviceproviders, 0, KEY_READ, &key);
 +        if(res == ERROR_FILE_NOT_FOUND)
 +            return DPNERR_DOESNOTEXIST;
 +
-+        nextKeyNameResult = RegEnumKeyW( key, index, provider, MAX_PATH);
-+        while(nextKeyNameResult == ERROR_SUCCESS)
++        next_key = RegEnumKeyW( key, index, provider, MAX_PATH);
++        while(next_key == ERROR_SUCCESS)
 +        {
 +            res = RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, NULL, &size);
 +            if(res == ERROR_SUCCESS)
 +            {
 +                 req_size += sizeof(DPN_SERVICE_PROVIDER_INFO) + size;
 +
-+                 (*pcReturned)++;
++                 (*returned)++;
 +            }
 +
 +            index++;
-+            nextKeyNameResult = RegEnumKeyW( key, index, provider, MAX_PATH );
++            next_key = RegEnumKeyW( key, index, provider, MAX_PATH );
 +        }
 +
      }
-     else if(IsEqualGUID(pguidServiceProvider, &CLSID_DP8SP_TCPIP))
+-    else if(IsEqualGUID(pguidServiceProvider, &CLSID_DP8SP_TCPIP))
++    else if(IsEqualGUID(service, &CLSID_DP8SP_TCPIP))
      {
-@@ -156,30 +183,54 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+         req_size = sizeof(DPN_SERVICE_PROVIDER_INFO) + sizeof(dp_adapterW);
+     }
      else
      {
          FIXME("Application requested a provider we don't handle (yet)\n");
@@ -79,51 +89,55 @@ index d7144df..b12cfb9 100644
          return DPNERR_DOESNOTEXIST;
      }
  
-     if(*pcbEnumData < req_size)
+-    if(*pcbEnumData < req_size)
++    if(*buf_size < req_size)
      {
+-        *pcbEnumData = req_size;
 +        RegCloseKey(key);
 +
-         *pcbEnumData = req_size;
++        *buf_size = req_size;
          return DPNERR_BUFFERTOOSMALL;
      }
  
 -    pSPInfoBuffer->pwszName = (LPWSTR)(pSPInfoBuffer + 1);
 -
-     if(!pguidServiceProvider)
+-    if(!pguidServiceProvider)
++    if(!service)
      {
 -        lstrcpyW(pSPInfoBuffer->pwszName, dp_providerW);
 -        pSPInfoBuffer->guid = CLSID_DP8SP_TCPIP;
 +        int offset = 0;
 +        int count = 0;
-+        char *infoend = ((char *)pSPInfoBuffer + (sizeof(DPN_SERVICE_PROVIDER_INFO) * (*pcReturned)));
++        char *infoend = ((char *)info_buffer + (sizeof(DPN_SERVICE_PROVIDER_INFO) * (*returned)));
 +
 +        index = 0;
-+        nextKeyNameResult = RegEnumKeyW( key, index, provider, MAX_PATH);
-+        while(nextKeyNameResult == ERROR_SUCCESS)
++        next_key = RegEnumKeyW( key, index, provider, MAX_PATH);
++        while(next_key == ERROR_SUCCESS)
 +        {
 +            res = RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, NULL, &size);
 +            if(res == ERROR_SUCCESS)
 +            {
-+                pSPInfoBuffer[count].guid = CLSID_DP8SP_TCPIP;
-+                pSPInfoBuffer[count].pwszName = (LPWSTR)(infoend + offset);
++                info_buffer[count].guid = CLSID_DP8SP_TCPIP;
++                info_buffer[count].pwszName = (LPWSTR)(infoend + offset);
 +
-+                RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, pSPInfoBuffer[count].pwszName, &size);
++                RegGetValueW(key, provider, friendly, RRF_RT_REG_SZ, NULL, info_buffer[count].pwszName, &size);
 +
 +                offset += size;
 +                count++;
 +            }
 +
 +            index++;
-+            nextKeyNameResult = RegEnumKeyW(key, index, provider, MAX_PATH);
++            next_key = RegEnumKeyW(key, index, provider, MAX_PATH);
 +        }
-+
      }
      else
      {
-+        pSPInfoBuffer->pwszName = (LPWSTR)(pSPInfoBuffer + 1);
-         lstrcpyW(pSPInfoBuffer->pwszName, dp_adapterW);
-         pSPInfoBuffer->guid = adapter_guid;
-+        *pcReturned = 1;
+-        lstrcpyW(pSPInfoBuffer->pwszName, dp_adapterW);
+-        pSPInfoBuffer->guid = adapter_guid;
++        info_buffer->pwszName = (LPWSTR)(info_buffer + 1);
++        lstrcpyW(info_buffer->pwszName, dp_adapterW);
++        info_buffer->guid = adapter_guid;
++        *returned = 1;
      }
  
 -    *pcReturned = 1;
@@ -132,6 +146,26 @@ index d7144df..b12cfb9 100644
      return DPN_OK;
  }
  
++static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer *iface,
++        const GUID * const pguidServiceProvider, const GUID * const pguidApplication,
++        DPN_SERVICE_PROVIDER_INFO * const pSPInfoBuffer, DWORD * const pcbEnumData,
++        DWORD * const pcReturned, const DWORD dwFlags)
++{
++    TRACE("(%p)->(%s,%s,%p,%p,%p,%x)\n", iface, debugstr_guid(pguidServiceProvider), debugstr_guid(pguidApplication),
++                                             pSPInfoBuffer, pcbEnumData, pcReturned, dwFlags);
++
++    if(dwFlags)
++        FIXME("Unhandled flags %x\n", dwFlags);
++
++    if(pguidApplication)
++        FIXME("Application guid %s is currently being ignored\n", debugstr_guid(pguidApplication));
++
++    return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
++}
++
+ static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer *iface,
+         const DPNHANDLE hAsyncHandle, const DWORD dwFlags)
+ {
 -- 
 1.9.1
 

@@ -1,7 +1,7 @@
-From a948f0f6a55d51ea0455018a83f183e3735dc513 Mon Sep 17 00:00:00 2001
+From 79c1de33e6377645c7b3739a0c3291accaf0942a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Fri, 2 Dec 2016 10:46:32 +1100
-Subject: [PATCH 15/19] dpnet: Implement IDirectPlay8Client Connect
+Date: Mon, 5 Dec 2016 12:09:33 +1100
+Subject: [PATCH 16/20] dpnet: Implement IDirectPlay8Client Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 696 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 940f983..b9a154c 100644
+index b367c35..d5e2b6e 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -29,6 +29,7 @@
@@ -84,7 +84,7 @@ index 940f983..b9a154c 100644
  static void send_async_complete_msg(IDirectPlay8ClientImpl *This, HRESULT hr, DPNHANDLE handle)
  {
      DPNMSG_ASYNC_OP_COMPLETE complete;
-@@ -223,7 +279,72 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+@@ -231,7 +287,72 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
      return sender;
  }
  
@@ -158,7 +158,7 @@ index 940f983..b9a154c 100644
  {
      struct ENUM_QUERY query;
      static DWORD payloadvalue = 0;
-@@ -235,13 +356,92 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
+@@ -243,13 +364,92 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
      query.application = application;
      query.payload     = payloadvalue++;
  
@@ -252,7 +252,7 @@ index 940f983..b9a154c 100644
  static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
  {
-@@ -399,6 +599,265 @@ static DWORD WINAPI enumhost_thread(void *threaddata)
+@@ -407,6 +607,265 @@ static DWORD WINAPI enumhost_thread(void *threaddata)
      return 0;
  }
  
@@ -518,7 +518,7 @@ index 940f983..b9a154c 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -507,15 +966,71 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -515,15 +974,71 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
@@ -598,7 +598,7 @@ index 940f983..b9a154c 100644
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
-@@ -727,6 +1242,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -735,6 +1250,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
  {
      IDirectPlay8ClientImpl* client;
      HRESULT hr;
@@ -606,7 +606,7 @@ index 940f983..b9a154c 100644
  
      TRACE("(%p, %s, %p)\n", pUnkOuter, debugstr_guid(riid), ppv);
  
-@@ -735,6 +1251,9 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -743,6 +1259,9 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
      if(pUnkOuter)
          return CLASS_E_NOAGGREGATION;
  
@@ -616,7 +616,7 @@ index 940f983..b9a154c 100644
      client = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectPlay8ClientImpl));
      if (!client)
          return E_OUTOFMEMORY;
-@@ -742,6 +1261,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -750,6 +1269,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
      client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
      client->ref = 1;
      client->sock = INVALID_SOCKET;
@@ -625,7 +625,7 @@ index 940f983..b9a154c 100644
      init_dpn_sp_caps(&client->spcaps);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index c44ef62..78980fd 100644
+index ff4aaae..05f89f6 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -68,6 +68,10 @@ struct IDirectPlay8ClientImpl

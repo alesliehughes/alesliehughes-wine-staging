@@ -1,7 +1,7 @@
-From 1d98ddef18d9492d111e9fa2e5880f94dd0fe379 Mon Sep 17 00:00:00 2001
+From 3f624155dcd3b8cc880584eb4eec1e22dc525b01 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:08:53 +1100
-Subject: [PATCH 09/19] dpnet: Implement IDirectPlay8Thread Initialize
+Subject: [PATCH 10/20] dpnet: Implement IDirectPlay8Thread Initialize
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 4aa3d70..c44ef62 100644
+index b01063b..ff4aaae 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -127,6 +127,10 @@ struct IDirectPlay8LobbiedApplicationImpl

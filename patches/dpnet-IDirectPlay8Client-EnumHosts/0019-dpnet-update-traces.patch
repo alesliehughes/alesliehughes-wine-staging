@@ -1,17 +1,17 @@
-From e4caa1636cca4a14d773d4f76c88a49aa5a281af Mon Sep 17 00:00:00 2001
+From 1b6573c7994a6a56fde147fd5537274705d6b7ae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 08:46:18 +1100
-Subject: [PATCH 18/19] dpnet: update traces
+Subject: [PATCH 19/20] dpnet: update traces
 
 ---
  dlls/dpnet/client.c | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 990cc46..85a7c5a 100644
+index eb040b2..b8e9149 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -841,15 +841,15 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -849,15 +849,15 @@ static DWORD WINAPI connect_thread(void *threaddata)
                              }
                              else
                              {
@@ -30,7 +30,7 @@ index 990cc46..85a7c5a 100644
              {
                  FIXME("Processing CFRAME_PACKET(%d)\n", n);
  
-@@ -869,7 +869,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -877,7 +877,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
              }
              else
              {

@@ -1,7 +1,7 @@
-From 6b26a148c15a8b181488e75d7f172e8d362f81bc Mon Sep 17 00:00:00 2001
+From 65f3e2fc11b400f5b9c2e0e4f26161efe2e4a986 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 15:34:54 +1100
-Subject: [PATCH 06/19] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 07/20] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 106 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f2c5b02..a373530 100644
+index a233380..9424448 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -139,6 +139,9 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
@@ -24,7 +24,7 @@ index f2c5b02..a373530 100644
          heap_free(This->username);
          heap_free(This->data);
          heap_free(This);
-@@ -228,7 +231,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
+@@ -236,7 +239,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
  }
  
  static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
@@ -33,7 +33,7 @@ index f2c5b02..a373530 100644
  {
      char buffer[1024];
      int buflen = sizeof(buffer);
-@@ -242,6 +245,15 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+@@ -250,6 +253,15 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
  
      while(TRUE)
      {
@@ -49,7 +49,7 @@ index f2c5b02..a373530 100644
          if(retrycnt && (GetTickCount() - starttime) >= retrytime)
          {
              TRACE("Sending Request.\n");
-@@ -254,7 +266,8 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+@@ -262,7 +274,8 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
                  break;
  
              starttime = GetTickCount();
@@ -59,7 +59,7 @@ index f2c5b02..a373530 100644
          }
  
          /* Query Enumeration Packets */
-@@ -322,8 +335,11 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+@@ -330,8 +343,11 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
  
                              IDirectPlay8Address_Release(sender);
  
@@ -73,7 +73,7 @@ index f2c5b02..a373530 100644
                          }
                          break;
                      }
-@@ -346,6 +362,31 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+@@ -354,6 +370,31 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
      }
  }
  
@@ -105,7 +105,7 @@ index f2c5b02..a373530 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -357,7 +398,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -365,7 +406,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
      IDirectPlay8Address *device = NULL;
      HRESULT hr;
  
@@ -114,7 +114,7 @@ index f2c5b02..a373530 100644
          pUserEnumData, dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle,
          dwFlags);
  
-@@ -395,12 +436,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -403,12 +444,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
  
          process_enumhost(This->sock, device, This->msghandler, pApplicationDesc->guidApplication,
@@ -155,7 +155,7 @@ index f2c5b02..a373530 100644
  
      return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
  }
-@@ -408,9 +475,21 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -416,9 +483,21 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
  static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
          const DPNHANDLE hAsyncHandle, const DWORD dwFlags)
  {
@@ -180,7 +180,7 @@ index f2c5b02..a373530 100644
  }
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
-@@ -521,6 +600,15 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Close(IDirectPlay8Client *iface, co
+@@ -529,6 +608,15 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Close(IDirectPlay8Client *iface, co
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
      FIXME("(%p):(%x): Stub\n", This, dwFlags);
  
@@ -197,7 +197,7 @@ index f2c5b02..a373530 100644
  
      return DPN_OK;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index dee1654..eb27cb6 100644
+index c8e9411..33cc8c1 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -66,6 +66,8 @@ struct IDirectPlay8ClientImpl
@@ -210,7 +210,7 @@ index dee1654..eb27cb6 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 5fa0cde..fd8c5d7 100644
+index 75b22e4..e83c3cb 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -270,7 +270,7 @@ static void test_enum_hosts(void)

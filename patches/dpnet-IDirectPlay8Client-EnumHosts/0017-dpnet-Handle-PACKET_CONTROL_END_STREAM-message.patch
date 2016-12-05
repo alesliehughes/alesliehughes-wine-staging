@@ -1,17 +1,17 @@
-From d1865820944b41647d9368629d67f60deba34145 Mon Sep 17 00:00:00 2001
+From d3c9aa134a9214ffa8f0afd709b4d2b292f66f66 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 08:35:39 +1100
-Subject: [PATCH 16/19] dpnet: Handle PACKET_CONTROL_END_STREAM message
+Subject: [PATCH 17/20] dpnet: Handle PACKET_CONTROL_END_STREAM message
 
 ---
  dlls/dpnet/client.c | 55 ++++++++++++++++++++++++++++++++++++++++++-----------
  1 file changed, 44 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b9a154c..4366a0d 100644
+index d5e2b6e..4c92328 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -442,6 +442,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
+@@ -450,6 +450,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
      return err;
  }
  
@@ -41,7 +41,7 @@ index b9a154c..4366a0d 100644
  static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
  {
-@@ -758,7 +781,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -766,7 +789,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
      }
  
      starttime = GetTickCount();
@@ -50,7 +50,7 @@ index b9a154c..4366a0d 100644
      {
          buflen = sizeof(temp);
          n = recvfrom(tdata->sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
-@@ -791,14 +814,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -799,14 +822,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
  
                                  FIXME("PACKET_CONTROL_KEEPALIVE_OR_CORRELATE\n");
  
@@ -66,7 +66,7 @@ index b9a154c..4366a0d 100644
  
                                  err = sendto(tdata->sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)&tdata->addr, sizeof(struct sockaddr_in));
                                  if(err == -1)
-@@ -806,6 +822,23 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -814,6 +830,23 @@ static DWORD WINAPI connect_thread(void *threaddata)
                                  else
                                      FIXME("sack sent %d\n", err);
                              }
@@ -90,7 +90,7 @@ index b9a154c..4366a0d 100644
                              else
                              {
                                  FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
-@@ -839,7 +872,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -847,7 +880,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
                  FIXME("Packet not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
              }
  
@@ -99,7 +99,7 @@ index b9a154c..4366a0d 100644
              {
                  FIXME("Sending Keepalive\n");
                  if(dframe_packet_keepalive(tdata->sock, tdata->session, &tdata->addr) == -1)
-@@ -849,7 +882,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -857,7 +890,7 @@ static DWORD WINAPI connect_thread(void *threaddata)
                  }
  
                  starttime = GetTickCount();
