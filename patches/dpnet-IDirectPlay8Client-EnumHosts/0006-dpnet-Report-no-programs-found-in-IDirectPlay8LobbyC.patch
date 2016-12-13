@@ -1,7 +1,7 @@
-From a1ce7eab6300ff66cb9fbe8911f3c174798e5611 Mon Sep 17 00:00:00 2001
+From f445612fe6626117741e77bb0f1cb016dda6ec90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Oct 2016 11:35:42 +1100
-Subject: [PATCH 03/20] dpnet: Report no programs found in
+Subject: [PATCH 06/27] dpnet: Report no programs found in
  IDirectPlay8LobbyClient EnumLocalPrograms
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

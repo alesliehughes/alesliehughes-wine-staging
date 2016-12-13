@@ -1,0 +1,327 @@
+From 0e4e3b0a05d2454cc40d84d4465dd1f11da9c421 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Dec 2016 11:26:25 +1100
+Subject: [PATCH 01/27] dpnet/test: Share code between tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/tests/address.c       |  28 +-------
+ dlls/dpnet/tests/client.c        | 150 +--------------------------------------
+ dlls/dpnet/tests/dpnet_private.h |  33 +++++++++
+ dlls/dpnet/tests/server.c        |  16 ++---
+ 4 files changed, 43 insertions(+), 184 deletions(-)
+ create mode 100644 dlls/dpnet/tests/dpnet_private.h
+
+diff --git a/dlls/dpnet/tests/address.c b/dlls/dpnet/tests/address.c
+index 16ba6a7..3271f26 100644
+--- a/dlls/dpnet/tests/address.c
++++ b/dlls/dpnet/tests/address.c
+@@ -22,6 +22,8 @@
+ #include <dplay8.h>
+ #include "wine/test.h"
+ 
++#include "dpnet_private.h"
++
+ /* {6733C6E8-A0D6-450E-8C18-CEACF331DC27} */
+ static const GUID IID_Random = {0x6733c6e8, 0xa0d6, 0x450e, { 0x8c, 0x18, 0xce, 0xac, 0xf3, 0x31, 0xdc, 0x27 } };
+ static const WCHAR localhost[] = {'l','o','c','a','l','h','o','s','t',0};
+@@ -353,32 +355,6 @@ static void address_duplicate(void)
+     }
+ }
+ 
+-/* taken from programs/winetest/main.c */
+-static BOOL is_stub_dll(const char *filename)
+-{
+-    DWORD size, ver;
+-    BOOL isstub = FALSE;
+-    char *p, *data;
+-
+-    size = GetFileVersionInfoSizeA(filename, &ver);
+-    if (!size) return FALSE;
+-
+-    data = HeapAlloc(GetProcessHeap(), 0, size);
+-    if (!data) return FALSE;
+-
+-    if (GetFileVersionInfoA(filename, ver, size, data))
+-    {
+-        char buf[256];
+-
+-        sprintf(buf, "\\StringFileInfo\\%04x%04x\\OriginalFilename", MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), 1200);
+-        if (VerQueryValueA(data, buf, (void**)&p, &size))
+-            isstub = !lstrcmpiA("wcodstub.dll", p);
+-    }
+-    HeapFree(GetProcessHeap(), 0, data);
+-
+-    return isstub;
+-}
+-
+ START_TEST(address)
+ {
+     HRESULT hr;
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index a1817a4..5ee6087 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -24,9 +24,10 @@
+ #include <dplobby8.h>
+ #include <winver.h>
+ #define COBJMACROS
+-#include <netfw.h>
+ #include "wine/test.h"
+ 
++#include "dpnet_private.h"
++
+ static IDirectPlay8Peer* peer = NULL;
+ static IDirectPlay8Client* client = NULL;
+ static IDirectPlay8LobbiedApplication* lobbied = NULL;
+@@ -609,153 +610,6 @@ static void test_cleanup_dp_peer(void)
+     CoUninitialize();
+ }
+ 
+-static BOOL is_process_elevated(void)
+-{
+-    HANDLE token;
+-    if (OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &token ))
+-    {
+-        TOKEN_ELEVATION_TYPE type;
+-        DWORD size;
+-        BOOL ret;
+-
+-        ret = GetTokenInformation( token, TokenElevationType, &type, sizeof(type), &size );
+-        CloseHandle( token );
+-        return (ret && type == TokenElevationTypeFull);
+-    }
+-    return FALSE;
+-}
+-
+-static BOOL is_firewall_enabled(void)
+-{
+-    HRESULT hr, init;
+-    INetFwMgr *mgr = NULL;
+-    INetFwPolicy *policy = NULL;
+-    INetFwProfile *profile = NULL;
+-    VARIANT_BOOL enabled = VARIANT_FALSE;
+-
+-    init = CoInitializeEx( 0, COINIT_APARTMENTTHREADED );
+-
+-    hr = CoCreateInstance( &CLSID_NetFwMgr, NULL, CLSCTX_INPROC_SERVER, &IID_INetFwMgr,
+-                           (void **)&mgr );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    hr = INetFwMgr_get_LocalPolicy( mgr, &policy );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    hr = INetFwPolicy_get_CurrentProfile( policy, &profile );
+-    if (hr != S_OK) goto done;
+-
+-    hr = INetFwProfile_get_FirewallEnabled( profile, &enabled );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-
+-done:
+-    if (policy) INetFwPolicy_Release( policy );
+-    if (profile) INetFwProfile_Release( profile );
+-    if (mgr) INetFwMgr_Release( mgr );
+-    if (SUCCEEDED( init )) CoUninitialize();
+-    return (enabled == VARIANT_TRUE);
+-}
+-
+-enum firewall_op
+-{
+-    APP_ADD,
+-    APP_REMOVE
+-};
+-
+-static HRESULT set_firewall( enum firewall_op op )
+-{
+-    static const WCHAR testW[] = {'d','p','n','e','t','_','t','e','s','t',0};
+-    HRESULT hr, init;
+-    INetFwMgr *mgr = NULL;
+-    INetFwPolicy *policy = NULL;
+-    INetFwProfile *profile = NULL;
+-    INetFwAuthorizedApplication *app = NULL;
+-    INetFwAuthorizedApplications *apps = NULL;
+-    BSTR name, image = SysAllocStringLen( NULL, MAX_PATH );
+-
+-    if (!GetModuleFileNameW( NULL, image, MAX_PATH ))
+-    {
+-        SysFreeString( image );
+-        return E_FAIL;
+-    }
+-    init = CoInitializeEx( 0, COINIT_APARTMENTTHREADED );
+-
+-    hr = CoCreateInstance( &CLSID_NetFwMgr, NULL, CLSCTX_INPROC_SERVER, &IID_INetFwMgr,
+-                           (void **)&mgr );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    hr = INetFwMgr_get_LocalPolicy( mgr, &policy );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    hr = INetFwPolicy_get_CurrentProfile( policy, &profile );
+-    if (hr != S_OK) goto done;
+-
+-    INetFwProfile_get_AuthorizedApplications( profile, &apps );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    hr = CoCreateInstance( &CLSID_NetFwAuthorizedApplication, NULL, CLSCTX_INPROC_SERVER,
+-                           &IID_INetFwAuthorizedApplication, (void **)&app );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    hr = INetFwAuthorizedApplication_put_ProcessImageFileName( app, image );
+-    if (hr != S_OK) goto done;
+-
+-    name = SysAllocString( testW );
+-    hr = INetFwAuthorizedApplication_put_Name( app, name );
+-    SysFreeString( name );
+-    ok( hr == S_OK, "got %08x\n", hr );
+-    if (hr != S_OK) goto done;
+-
+-    if (op == APP_ADD)
+-        hr = INetFwAuthorizedApplications_Add( apps, app );
+-    else if (op == APP_REMOVE)
+-        hr = INetFwAuthorizedApplications_Remove( apps, image );
+-    else
+-        hr = E_INVALIDARG;
+-
+-done:
+-    if (app) INetFwAuthorizedApplication_Release( app );
+-    if (apps) INetFwAuthorizedApplications_Release( apps );
+-    if (policy) INetFwPolicy_Release( policy );
+-    if (profile) INetFwProfile_Release( profile );
+-    if (mgr) INetFwMgr_Release( mgr );
+-    if (SUCCEEDED( init )) CoUninitialize();
+-    SysFreeString( image );
+-    return hr;
+-}
+-
+-/* taken from programs/winetest/main.c */
+-static BOOL is_stub_dll(const char *filename)
+-{
+-    DWORD size, ver;
+-    BOOL isstub = FALSE;
+-    char *p, *data;
+-
+-    size = GetFileVersionInfoSizeA(filename, &ver);
+-    if (!size) return FALSE;
+-
+-    data = HeapAlloc(GetProcessHeap(), 0, size);
+-    if (!data) return FALSE;
+-
+-    if (GetFileVersionInfoA(filename, ver, size, data))
+-    {
+-        char buf[256];
+-
+-        sprintf(buf, "\\StringFileInfo\\%04x%04x\\OriginalFilename", MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), 1200);
+-        if (VerQueryValueA(data, buf, (void**)&p, &size))
+-            isstub = !lstrcmpiA("wcodstub.dll", p);
+-    }
+-    HeapFree(GetProcessHeap(), 0, data);
+-
+-    return isstub;
+-}
+-
+ START_TEST(client)
+ {
+     BOOL firewall_enabled;
+diff --git a/dlls/dpnet/tests/dpnet_private.h b/dlls/dpnet/tests/dpnet_private.h
+new file mode 100644
+index 0000000..d45b60e
+--- /dev/null
++++ b/dlls/dpnet/tests/dpnet_private.h
+@@ -0,0 +1,33 @@
++/*
++ * Copyright 2016 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef __DPNET_PRIVATE_H__
++#define __DPNET_PRIVATE_H__
++
++enum firewall_op
++{
++    APP_ADD,
++    APP_REMOVE
++};
++
++extern BOOL is_firewall_enabled(void) DECLSPEC_HIDDEN;
++extern BOOL is_process_elevated(void) DECLSPEC_HIDDEN;
++extern HRESULT set_firewall( enum firewall_op op ) DECLSPEC_HIDDEN;
++extern BOOL is_stub_dll(const char *filename) DECLSPEC_HIDDEN;
++
++#endif
++
+diff --git a/dlls/dpnet/tests/server.c b/dlls/dpnet/tests/server.c
+index bfc21b0..1cc7848 100644
+--- a/dlls/dpnet/tests/server.c
++++ b/dlls/dpnet/tests/server.c
+@@ -24,6 +24,8 @@
+ #include <netfw.h>
+ #include "wine/test.h"
+ 
++#include "dpnet_private.h"
++
+ /* {CD0C3D4B-E15E-4CF2-9EA8-6E1D6548C5A5} */
+ static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x1d, 0x65, 0x48, 0xc5, 0xa5 } };
+ static WCHAR sessionname[] = {'w','i','n','e','g','a','m','e','s','s','e','r','v','e','r',0};
+@@ -182,7 +184,7 @@ static void test_server_info(void)
+     }
+ }
+ 
+-static BOOL is_process_elevated(void)
++BOOL is_process_elevated(void)
+ {
+     HANDLE token;
+     if (OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &token ))
+@@ -198,7 +200,7 @@ static BOOL is_process_elevated(void)
+     return FALSE;
+ }
+ 
+-static BOOL is_firewall_enabled(void)
++BOOL is_firewall_enabled(void)
+ {
+     HRESULT hr, init;
+     INetFwMgr *mgr = NULL;
+@@ -231,13 +233,7 @@ done:
+     return (enabled == VARIANT_TRUE);
+ }
+ 
+-enum firewall_op
+-{
+-    APP_ADD,
+-    APP_REMOVE
+-};
+-
+-static HRESULT set_firewall( enum firewall_op op )
++HRESULT set_firewall( enum firewall_op op )
+ {
+     static const WCHAR dpnsvrW[] =
+         {'c',':','\\','w','i','n','d','o','w','s','\\','s','y','s','t','e','m','3','2','\\',
+@@ -341,7 +337,7 @@ done:
+ }
+ 
+ /* taken from programs/winetest/main.c */
+-static BOOL is_stub_dll(const char *filename)
++BOOL is_stub_dll(const char *filename)
+ {
+     DWORD size, ver;
+     BOOL isstub = FALSE;
+-- 
+1.9.1
+

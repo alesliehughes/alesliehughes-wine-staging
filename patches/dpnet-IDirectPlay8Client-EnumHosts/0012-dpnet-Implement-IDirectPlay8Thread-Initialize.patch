@@ -1,7 +1,7 @@
-From 3f624155dcd3b8cc880584eb4eec1e22dc525b01 Mon Sep 17 00:00:00 2001
+From 1ccf76a1e5eda855b3d6ebbc6b784cef32f3fa1e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:08:53 +1100
-Subject: [PATCH 10/20] dpnet: Implement IDirectPlay8Thread Initialize
+Subject: [PATCH 12/27] dpnet: Implement IDirectPlay8Thread Initialize
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

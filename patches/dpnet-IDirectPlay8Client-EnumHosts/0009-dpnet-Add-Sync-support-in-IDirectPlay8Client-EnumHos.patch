@@ -1,7 +1,7 @@
-From 65f3e2fc11b400f5b9c2e0e4f26161efe2e4a986 Mon Sep 17 00:00:00 2001
+From 9481d690eb420c9e0ec803c44fe698d63302c527 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 15:34:54 +1100
-Subject: [PATCH 07/20] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 09/27] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -210,7 +210,7 @@ index c8e9411..33cc8c1 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 75b22e4..e83c3cb 100644
+index b4cf958..1c92690 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -270,7 +270,7 @@ static void test_enum_hosts(void)

@@ -1,26 +1,28 @@
-From 878654234e142f89e87155bbee432e9ebd4185ab Mon Sep 17 00:00:00 2001
+From 51d64114933c92d5dd6448347b7c0f7f768ab6f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 10 Nov 2016 08:57:23 +1100
-Subject: [PATCH 04/20] dpnet/test: Add IDirectPlay8Client EnumHost tests
+Date: Mon, 12 Dec 2016 12:32:07 +1100
+Subject: [PATCH 03/27] dpnet/test: Add IDirectPlay8Client EnumHost tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/tests/client.c | 143 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 140 insertions(+), 3 deletions(-)
+ dlls/dpnet/tests/client.c | 165 +++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 149 insertions(+), 16 deletions(-)
 
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 844da40..b4c45cd 100644
+index a2be649..42b973d 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
-@@ -25,13 +25,49 @@
- #include "wine/test.h"
+@@ -28,14 +28,52 @@
  
+ #include "dpnet_private.h"
  
-+static IDirectPlay8Server *server = NULL;
++static IDirectPlay8Server* server = NULL;
+ static IDirectPlay8Peer* peer = NULL;
  static IDirectPlay8Client* client = NULL;
  static IDirectPlay8LobbiedApplication* lobbied = NULL;
  static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x1d, 0x65, 0x48, 0xc5, 0xa5 } };
- 
++static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
++
 +static HRESULT   lastAsyncCode   = E_FAIL;
 +static DPNHANDLE lastAsyncHandle = 0xdeadbeef;
 +static HANDLE    enumevent       = NULL;
@@ -39,7 +41,7 @@ index 844da40..b4c45cd 100644
 +    }
 +    return S_OK;
 +}
-+
+ 
  static HRESULT WINAPI DirectPlayMessageHandler(PVOID context, DWORD message_id, PVOID buffer)
  {
 -    trace("DirectPlayMessageHandler: 0x%08x\n", message_id);
@@ -60,10 +62,11 @@ index 844da40..b4c45cd 100644
 +        default:
 +            trace("DirectPlayMessageHandler: 0x%08x\n", message_id);
 +    }
++
      return S_OK;
  }
  
-@@ -47,6 +83,37 @@ static HRESULT WINAPI DirectPlayLobbyClientMessageHandler(void *context, DWORD m
+@@ -51,14 +89,44 @@ static HRESULT WINAPI DirectPlayLobbyClientMessageHandler(void *context, DWORD m
      return S_OK;
  }
  
@@ -101,18 +104,16 @@ index 844da40..b4c45cd 100644
  static BOOL test_init_dp(void)
  {
      HRESULT hr;
-@@ -56,6 +123,10 @@ static BOOL test_init_dp(void)
-     hr = CoInitialize(0);
-     ok(hr == S_OK, "CoInitialize failed with %x\n", hr);
+     DPN_SP_CAPS caps;
+     DPNHANDLE lobbyConnection;
  
+-    hr = CoInitialize(0);
+-    ok(hr == S_OK, "CoInitialize failed with %x\n", hr);
 +    enumevent = CreateEventA( NULL, TRUE, FALSE, NULL);
-+
-+    create_server();
-+
+ 
      hr = CoCreateInstance(&CLSID_DirectPlay8Client, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Client, (void **)&client);
      ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
- 
-@@ -144,16 +215,22 @@ static void test_enum_service_providers(void)
+@@ -148,16 +216,21 @@ static void test_enum_service_providers(void)
  static void test_enum_hosts(void)
  {
      HRESULT hr;
@@ -121,8 +122,8 @@ index 844da40..b4c45cd 100644
      IDirectPlay8Address *local = NULL;
      DPN_APPLICATION_DESC appdesc;
 -    DPNHANDLE async = 0;
+-    static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
 +    DPNHANDLE async = 0, async2 = 0;
-     static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
 +    DPN_SP_CAPS caps;
 +    char *data;
  
@@ -136,7 +137,7 @@ index 844da40..b4c45cd 100644
      hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&local);
      ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
  
-@@ -170,16 +247,69 @@ static void test_enum_hosts(void)
+@@ -174,16 +247,69 @@ static void test_enum_hosts(void)
                                                           DPNA_DATATYPE_STRING);
      ok(hr == S_OK, "IDirectPlay8Address failed with 0x%08x\n", hr);
  
@@ -207,20 +208,87 @@ index 844da40..b4c45cd 100644
  }
  
  static void test_get_sp_caps(void)
-@@ -316,6 +446,13 @@ static void test_cleanup_dp(void)
+@@ -319,8 +445,6 @@ static void test_cleanup_dp(void)
+     }
  
      IDirectPlay8Client_Release(client);
+-
+-    CoUninitialize();
+ }
+ 
+ static void test_close(void)
+@@ -356,9 +480,6 @@ static void test_init_dp_peer(void)
+     DPN_SP_CAPS caps;
+     DPNHANDLE lobbyConnection;
+ 
+-    hr = CoInitialize(0);
+-    ok(hr == S_OK, "CoInitialize failed with %x\n", hr);
+-
+     hr = CoCreateInstance(&CLSID_DirectPlay8Peer, NULL, CLSCTX_INPROC_SERVER, &IID_IDirectPlay8Peer, (void **)&peer);
+     ok(hr == S_OK, "CoCreateInstance failed with 0x%x\n", hr);
+ 
+@@ -459,7 +580,6 @@ static void test_enum_hosts_peer(void)
+     IDirectPlay8Address *local = NULL;
+     DPN_APPLICATION_DESC appdesc;
+     DPNHANDLE async = 0;
+-    static const WCHAR localhost[] = {'1','2','7','.','0','.','0','.','1',0};
+ 
+     memset( &appdesc, 0, sizeof(DPN_APPLICATION_DESC) );
+     appdesc.dwSize  = sizeof( DPN_APPLICATION_DESC );
+@@ -606,13 +726,12 @@ static void test_cleanup_dp_peer(void)
+     }
+ 
+     IDirectPlay8Peer_Release(peer);
+-
+-    CoUninitialize();
+ }
+ 
+ START_TEST(client)
+ {
+     BOOL firewall_enabled;
++    HRESULT hr;
+     char path[MAX_PATH];
+ 
+     if(!GetSystemDirectoryA(path, MAX_PATH))
+@@ -636,7 +755,7 @@ START_TEST(client)
+ 
+     if (firewall_enabled)
+     {
+-        HRESULT hr = set_firewall(APP_ADD);
++        hr = set_firewall(APP_ADD);
+         if (hr != S_OK)
+         {
+             skip("can't authorize app in firewall %08x\n", hr);
+@@ -644,7 +763,13 @@ START_TEST(client)
+         }
+     }
+ 
+-    if (!test_init_dp()) goto done;
++    hr = CoInitialize(0);
++    ok(hr == S_OK, "CoInitialize failed with %x\n", hr);
++
++    if (!test_init_dp())
++        goto done;
++
++    create_server();
+ 
+     test_enum_service_providers();
+     test_enum_hosts();
+@@ -661,6 +786,14 @@ START_TEST(client)
+     test_player_info_peer();
+     test_cleanup_dp_peer();
  
 +    hr = IDirectPlay8Server_Close(server, 0);
 +    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
-+
 +    IDirectPlay8Server_Release(server);
 +
 +    CloseHandle(enumevent);
 +
-     CoUninitialize();
+ done:
+     if (firewall_enabled) set_firewall(APP_REMOVE);
++
++    CoUninitialize();
  }
- 
 -- 
 1.9.1
 

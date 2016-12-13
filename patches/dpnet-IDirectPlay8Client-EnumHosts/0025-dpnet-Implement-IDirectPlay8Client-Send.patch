@@ -1,18 +1,18 @@
-From 9d8351726715c8dc483afc6cef404da228093fe8 Mon Sep 17 00:00:00 2001
+From eff663b13182a9f630e87645a655bee737eb83b1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Fri, 2 Dec 2016 11:22:06 +1100
-Subject: [PATCH 18/20] dpnet: Implement IDirectPlay8Client Send
+Date: Tue, 13 Dec 2016 12:37:51 +1100
+Subject: [PATCH 25/27] dpnet: Implement IDirectPlay8Client Send
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c | 39 ++++++++++++++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
+ dlls/dpnet/client.c | 40 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 37 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 4c92328..eb040b2 100644
+index 63d2a85..b45fd92 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -1078,9 +1078,42 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
+@@ -1083,9 +1083,43 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
          const DPN_BUFFER_DESC * const prgBufferDesc, const DWORD cBufferDesc, const DWORD dwTimeOut,
          void * const pvAsyncContext, DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -23,14 +23,15 @@ index 4c92328..eb040b2 100644
 +    struct DFRAME_PACKET_TYPE *packet;
 +    int err;
 +    int size;
++    static int sss = 3;
 +
 +    FIXME("(%p):(%p,%d,%u,%p,%p,%x): Semi-stub\n", This, prgBufferDesc, cBufferDesc, dwTimeOut, pvAsyncContext, phAsyncHandle, dwFlags);
 +
 +    if(This->sock == INVALID_SOCKET)
 +        return E_FAIL;
 +
-+    size = sizeof(*packet) + prgBufferDesc->dwBufferSize;
-+    packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size);
++    size = sizeof(struct DFRAME_PACKET) + prgBufferDesc->dwBufferSize;
++    packet = heap_alloc(size);
 +
 +    if(!packet)
 +        return E_OUTOFMEMORY;
@@ -41,18 +42,18 @@ index 4c92328..eb040b2 100644
 +    packet->command = PACKET_COMMAND_DATA | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
 +                      PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG;
 +    packet->control  = 0;
-+    packet->seq      = 8;  /* TODO */
-+    packet->nseq     = 8;  /* TODO */
-+    packet->type     = 0x01; /* TRANS_USERDATA_SEND_MESSAGE */
++    packet->seq      = sss++;  /* TODO */
++    packet->nseq     = sss;    /* TODO */
 +
-+    memcpy( ((char*)packet) + sizeof(struct DFRAME_PACKET_TYPE), prgBufferDesc->pBufferData, prgBufferDesc->dwBufferSize);
++    memcpy(&packet->type, prgBufferDesc->pBufferData, prgBufferDesc->dwBufferSize);
 +
-+    /* TODO - Store the Server addr in Connect patch */
-+    err = sendto(This->sock, (void *)&packet, size, 0, (struct sockaddr *)&This->serveraddr, sizeof(struct sockaddr_in));
++    err = sendto(This->sock, (void *)packet, size, 0, (struct sockaddr *)&This->serveraddr, sizeof(struct sockaddr_in));
 +    if(err == -1)
 +        ERR("Sendto failed (%d).\n", WSAGetLastError());
 +    else
-+        FIXME("sack sent %d\n", err);
++        FIXME("sent sent %d\n", err);
++
++    heap_free(packet);
 +
 +    return DPN_OK;
  }

@@ -1,0 +1,88 @@
+From 369ec99ae8fdd6a75c76cc9c4556ffb3ba05c24c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 9 Dec 2016 11:48:37 +1100
+Subject: [PATCH 19/27] dpnet: Support EnumHost requests to specific host
+
+---
+ dlls/dpnet/client.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 8642edb..283d852 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -428,7 +428,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
+     return err;
+ }
+ 
+-static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
++static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
+         DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
+ {
+     char buffer[1024];
+@@ -456,11 +456,7 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+         {
+             TRACE("Sending Request.\n");
+ 
+-            from.sin_family = AF_INET;
+-            from.sin_port = htons(DPNA_DPNSVR_PORT);
+-            from.sin_addr.s_addr = INADDR_BROADCAST;
+-
+-            if(send_packet_enum_query(sock, application, &from) == -1)
++            if(send_packet_enum_query(sock, application, &host) == -1)
+                 break;
+ 
+             starttime = GetTickCount();
+@@ -563,6 +559,7 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+ struct dpthread_data
+ {
+     SOCKET sock;
++    struct sockaddr_in host;
+     IDirectPlay8Address *device;
+     DWORD retrycnt;
+     DWORD retrytime;
+@@ -577,7 +574,7 @@ static DWORD WINAPI enumhost_thread(void *threaddata)
+ {
+     struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
+ 
+-    process_enumhost(tdata->sock, tdata->device, tdata->msghandler, tdata->app_guid,
++    process_enumhost(tdata->sock, tdata->host, tdata->device, tdata->msghandler, tdata->app_guid,
+                         tdata->retrycnt, tdata->retrytime, tdata->timeout, tdata->cancelevent);
+ 
+     heap_free(threaddata);
+@@ -595,6 +592,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+     IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+     IDirectPlay8Address *device = NULL;
+     HRESULT hr;
++    struct sockaddr_in host;
+ 
+     TRACE("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo,
+         pUserEnumData, dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle,
+@@ -627,13 +625,15 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+         return E_OUTOFMEMORY;
+     }
+ 
++    dpaddress_to_sockaddr(pAddrHost, &host);
++
+     if(dwFlags & DPNENUMHOSTS_SYNC)
+     {
+         DWORD retrycnt  = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
+         DWORD retrytime = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
+         DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
+ 
+-        process_enumhost(This->sock, device, This->msghandler, pApplicationDesc->guidApplication,
++        process_enumhost(This->sock, host, device, This->msghandler, pApplicationDesc->guidApplication,
+                         retrycnt, retrytime, timeout, NULL);
+ 
+         IDirectPlay8Address_Release(device);
+@@ -658,6 +658,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+         tdata->timeout     = dwTimeOut == INFINITE  ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
+         tdata->msghandler  = This->msghandler;
+         tdata->device      = device;
++        tdata->host        = host;
+         tdata->app_guid    = pApplicationDesc->guidApplication;
+         tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
+ 
+-- 
+1.9.1
+

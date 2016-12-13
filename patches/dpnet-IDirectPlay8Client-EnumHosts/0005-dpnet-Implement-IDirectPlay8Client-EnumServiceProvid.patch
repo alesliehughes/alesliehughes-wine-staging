@@ -1,7 +1,7 @@
-From 1745d3f12c3ace64ff56359d30c1e36352bceaa7 Mon Sep 17 00:00:00 2001
+From b288c5e039e38ce9f6646da160aba3b857d597fa Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:56:51 +1100
-Subject: [PATCH 02/20] dpnet: Implement IDirectPlay8Client
+Subject: [PATCH 05/27] dpnet: Implement IDirectPlay8Client
  EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -64,10 +64,10 @@ index 461d610..57f15ef 100644
  {
      static const WCHAR serviceproviders[] = {'S','O','F','T','W','A','R','E','\\','M','i','c','r','o','s','o','f','t','\\',
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 4753d74..844da40 100644
+index 42b973d..f67a4b6 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
-@@ -93,20 +93,20 @@ static void test_enum_service_providers(void)
+@@ -165,20 +165,20 @@ static void test_enum_service_providers(void)
      items = 0;
  
      hr = IDirectPlay8Client_EnumServiceProviders(client, NULL, NULL, NULL, &size, NULL, 0);
@@ -93,7 +93,7 @@ index 4753d74..844da40 100644
  
      trace("number of items found: %d\n", items);
  
-@@ -122,14 +122,14 @@ static void test_enum_service_providers(void)
+@@ -194,14 +194,14 @@ static void test_enum_service_providers(void)
      items = 0;
  
      hr = IDirectPlay8Client_EnumServiceProviders(client, &CLSID_DP8SP_TCPIP, NULL, NULL, &size, &items, 0);

@@ -1,7 +1,7 @@
-From 086c77e6e6b482e0285035786b5467db3d195a3b Mon Sep 17 00:00:00 2001
+From 3111864bc72f9eb84d64fe56ca6901ebf4eb2d7c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 11:25:04 +1100
-Subject: [PATCH 05/20] dpnet: Add basic validation in IDirectPlay8Client
+Subject: [PATCH 07/27] dpnet: Add basic validation in IDirectPlay8Client
  EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -40,7 +40,7 @@ index 01f56ee..a8050c5 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index b4c45cd..75b22e4 100644
+index f67a4b6..b4cf958 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -254,22 +254,22 @@ static void test_enum_hosts(void)

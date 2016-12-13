@@ -1,0 +1,29 @@
+From 486a7baa56a043979b79adf5693c0bdb70eaeed6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 13 Dec 2016 12:46:22 +1100
+Subject: [PATCH 27/27] dpnet: Only Send an ACK packet when requested
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 8e0cd4e..fd4fb46 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -984,6 +984,11 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+             {
+                 FIXME("Packet not support.... size(%d), command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", n, packet->command, packet->control, packet->seq, packet->nseq);
+             }
++
++            if(connected && (packet->command | PACKET_COMMAND_POLL))
++            {
++                dframe_packet_sack_ack(sock, serveraddr, packet->seq, packet->seq);
++            }
+         }
+     }
+ 
+-- 
+1.9.1
+

@@ -1,7 +1,7 @@
-From dbd4b33175c95758ecb0eed3bd711720a3e455d9 Mon Sep 17 00:00:00 2001
+From be7c867da0190bc12f706a46c283104ee797d3ed Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Nov 2016 08:49:40 +1100
-Subject: [PATCH 12/20] dpnet/tests: EnumHost with thread pool
+Subject: [PATCH 14/27] dpnet/tests: EnumHost with thread pool
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

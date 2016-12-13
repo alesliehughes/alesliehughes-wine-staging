@@ -1,7 +1,7 @@
-From fcbf0c80c355f04f25c38568e1ac8fa7f3340946 Mon Sep 17 00:00:00 2001
+From 617f257981fbe96ae7cfbceca3b5b296ff9d634a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:41:28 +1100
-Subject: [PATCH 15/20] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
+Subject: [PATCH 15/27] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
  IDirectPlay8Client CancelAsyncOperation
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -43,7 +43,7 @@ index 9424448..b367c35 100644
          CloseHandle(This->cancelevent);
  
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index e83c3cb..600e96a 100644
+index 1c92690..e2f65ec 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -299,8 +299,8 @@ static void test_enum_hosts(void)
