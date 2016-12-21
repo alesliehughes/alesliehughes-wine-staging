@@ -1,7 +1,7 @@
-From 51d64114933c92d5dd6448347b7c0f7f768ab6f6 Mon Sep 17 00:00:00 2001
+From ea90ed6db0f88885d2f50de15db1133ad018ab1f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 12:32:07 +1100
-Subject: [PATCH 03/27] dpnet/test: Add IDirectPlay8Client EnumHost tests
+Subject: [PATCH 03/28] dpnet/test: Add IDirectPlay8Client EnumHost tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 149 insertions(+), 16 deletions(-)
 
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index a2be649..42b973d 100644
+index a2be6492ef..42b973d4ad 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -28,14 +28,52 @@
@@ -290,5 +290,5 @@ index a2be649..42b973d 100644
 +    CoUninitialize();
  }
 -- 
-1.9.1
+2.11.0
 

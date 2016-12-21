@@ -1,7 +1,7 @@
-From 617f257981fbe96ae7cfbceca3b5b296ff9d634a Mon Sep 17 00:00:00 2001
+From b64abaa3fbbf4d5253d9ce7e98dce677802533fa Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:41:28 +1100
-Subject: [PATCH 15/27] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
+Subject: [PATCH 15/28] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
  IDirectPlay8Client CancelAsyncOperation
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 9424448..b367c35 100644
+index 942444881c..b367c35ef5 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -101,6 +101,18 @@ static SOCKET find_free_socket(void)
@@ -43,7 +43,7 @@ index 9424448..b367c35 100644
          CloseHandle(This->cancelevent);
  
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 1c92690..e2f65ec 100644
+index 1c92690a21..e2f65ec076 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -299,8 +299,8 @@ static void test_enum_hosts(void)
@@ -58,5 +58,5 @@ index 1c92690..e2f65ec 100644
      lastAsyncCode = E_FAIL;
      lastAsyncHandle = 0xdeadbeef;
 -- 
-1.9.1
+2.11.0
 
