@@ -1,7 +1,7 @@
-From 6f0767cb9999de5ef8ccd53a50a3ccdfb4437ccf Mon Sep 17 00:00:00 2001
+From 11721a5196756cbf0e1e75b05c22215533940a4c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:02:35 +1100
-Subject: [PATCH 21/28] dpnet: Implement IDirectPlay8Client Connect for async
+Subject: [PATCH 21/33] dpnet: Implement IDirectPlay8Client Connect for async
  connections
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

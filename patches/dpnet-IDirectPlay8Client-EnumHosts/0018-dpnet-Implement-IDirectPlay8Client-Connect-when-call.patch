@@ -1,7 +1,7 @@
-From b98f8146e245fcf1e4b3757d28fe18bd416410c3 Mon Sep 17 00:00:00 2001
+From 615f68c65c70b5cff378695d12d01aa9689846f9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:31:52 +1100
-Subject: [PATCH 18/28] dpnet: Implement IDirectPlay8Client Connect when called
+Subject: [PATCH 18/33] dpnet: Implement IDirectPlay8Client Connect when called
  synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

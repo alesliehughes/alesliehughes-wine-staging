@@ -1,7 +1,7 @@
-From 62ddbcaf8c9a0a079d391333bef8773711a5c568 Mon Sep 17 00:00:00 2001
+From 6b847215a21127cfaaf0989d8236695965bd4dfb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 10 Nov 2016 11:25:04 +1100
-Subject: [PATCH 07/28] dpnet: Add basic validation in IDirectPlay8Client
+Subject: [PATCH 07/33] dpnet: Add basic validation in IDirectPlay8Client
  EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

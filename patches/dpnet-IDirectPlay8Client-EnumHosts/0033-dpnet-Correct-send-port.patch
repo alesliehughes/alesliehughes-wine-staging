@@ -1,0 +1,25 @@
+From a4fa0cbc3ad1168d8de3b03c1afac2101a216d62 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 2 Jan 2017 16:19:22 +1100
+Subject: [PATCH 33/33] dpnet - Correct send port
+
+---
+ dlls/dpnet/client.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 6e3a71038f..5308c24750 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -521,7 +521,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+ 
+     memset (&addr, 0, sizeof(addr));
+     addr.sin6_family = AF_INET6;
+-    addr.sin6_port = htons (2302);
++    addr.sin6_port = htons (DPNA_DPNSVR_PORT);
+     inet_pton(AF_INET6, "ff02::130", &addr.sin6_addr);
+ 
+     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+-- 
+2.11.0
+

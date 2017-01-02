@@ -1,7 +1,7 @@
-From b35c23340d5c7ed26d653a23b59af1be73da1737 Mon Sep 17 00:00:00 2001
+From 20792488eed1eb331c729fbc51f23c8f8c40dc93 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:56:51 +1100
-Subject: [PATCH 05/28] dpnet: Implement IDirectPlay8Client
+Subject: [PATCH 05/33] dpnet: Implement IDirectPlay8Client
  EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
