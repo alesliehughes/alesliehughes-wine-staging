@@ -1,7 +1,7 @@
-From 45786216c32130369d49102e30364ef2c65195bc Mon Sep 17 00:00:00 2001
+From d5767ef53435c91936ac084798c4064eff18bd72 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:37:51 +1100
-Subject: [PATCH 25/33] dpnet: Implement IDirectPlay8Client Send
+Subject: [PATCH 25/30] dpnet: Implement IDirectPlay8Client Send
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 37 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 63d2a85c6c..b45fd92df8 100644
+index 4593ddf..fd1957c 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -1083,9 +1083,43 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
+@@ -1089,9 +1089,43 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
          const DPN_BUFFER_DESC * const prgBufferDesc, const DWORD cBufferDesc, const DWORD dwTimeOut,
          void * const pvAsyncContext, DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
  {
@@ -60,5 +60,5 @@ index 63d2a85c6c..b45fd92df8 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_GetSendQueueInfo(IDirectPlay8Client *iface,
 -- 
-2.11.0
+1.9.1
 

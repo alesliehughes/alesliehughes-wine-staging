@@ -1,7 +1,7 @@
-From 64543ebc0707e850a799c14c99caf9117f117562 Mon Sep 17 00:00:00 2001
+From 6eb6ff91033d8f0e32d924d259971885999defa2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:43:46 +1100
-Subject: [PATCH 26/33] dpnet: Handle User data packets
+Subject: [PATCH 26/30] dpnet: Handle User data packets
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b45fd92df8..8e0cd4e0e8 100644
+index fd1957c..ea09e97 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -940,7 +940,21 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -946,7 +946,21 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                              }
                              else
                              {
@@ -36,5 +36,5 @@ index b45fd92df8..8e0cd4e0e8 100644
  
                          }
 -- 
-2.11.0
+1.9.1
 

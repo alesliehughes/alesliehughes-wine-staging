@@ -1,19 +1,19 @@
-From c876418aabb6c23ce5f0235844971135373ff744 Mon Sep 17 00:00:00 2001
+From acb3195caa4f52f55e24c619fdd8d442d18ef902 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:59:01 +1100
-Subject: [PATCH 08/33] dpnet: Implement IDirectPlay8Client Enumhost when
+Subject: [PATCH 08/30] dpnet: Implement IDirectPlay8Client Enumhost when
  called synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 257 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c        | 263 ++++++++++++++++++++++++++++++++++++++++++++-
  dlls/dpnet/dpnet_private.h |   4 +
  dlls/dpnet/dppacket.h      |  80 ++++++++++++++
- 3 files changed, 339 insertions(+), 2 deletions(-)
+ 3 files changed, 345 insertions(+), 2 deletions(-)
  create mode 100644 dlls/dpnet/dppacket.h
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index a8050c51d7..a233380274 100644
+index a8050c5..b227e28 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -55,6 +55,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
@@ -78,7 +78,7 @@ index a8050c51d7..a233380274 100644
          heap_free(This->username);
          heap_free(This->data);
          heap_free(This);
-@@ -137,6 +185,175 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -137,6 +185,181 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
      return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
  }
  
@@ -215,6 +215,12 @@ index a8050c51d7..a233380274 100644
 +                            response.pApplicationDescription = &desc;
 +                            response.pAddressDevice          = device;
 +
++                            if(data->reply_offset < received)
++                            {
++                                response.pvResponseData = ((char*)data)+data->reply_offset+sizeof(struct ENUM_HEADER);
++                                response.dwResponseDataSize = data->response_size;
++                            }
++
 +                            desc.guidInstance     = data->instance;
 +                            desc.guidApplication  = data->application;
 +                            desc.dwCurrentPlayers = data->current_players;
@@ -254,7 +260,7 @@ index a8050c51d7..a233380274 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -145,9 +362,12 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -145,9 +368,12 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwFlags)
  {
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
@@ -269,7 +275,7 @@ index a8050c51d7..a233380274 100644
  
      if(!This->msghandler)
          return DPNERR_UNINITIALIZED;
-@@ -158,6 +378,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -158,6 +384,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
      if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
          return DPNERR_ENUMQUERYTOOLARGE;
  
@@ -308,7 +314,7 @@ index a8050c51d7..a233380274 100644
      return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
  }
  
-@@ -395,6 +647,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -395,6 +653,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
  
      client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
      client->ref = 1;
@@ -317,7 +323,7 @@ index a8050c51d7..a233380274 100644
      init_dpn_sp_caps(&client->spcaps);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 256e3f4051..c8e9411d16 100644
+index 256e3f4..c8e9411 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -27,10 +27,12 @@
@@ -344,7 +350,7 @@ index 256e3f4051..c8e9411d16 100644
  /* ------------------- */
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
 new file mode 100644
-index 0000000000..f3ca955f51
+index 0000000..f3ca955
 --- /dev/null
 +++ b/dlls/dpnet/dppacket.h
 @@ -0,0 +1,80 @@
@@ -429,5 +435,5 @@ index 0000000000..f3ca955f51
 +
 +#endif
 -- 
-2.11.0
+1.9.1
 

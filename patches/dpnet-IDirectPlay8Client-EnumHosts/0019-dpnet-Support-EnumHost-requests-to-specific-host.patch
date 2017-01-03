@@ -1,14 +1,14 @@
-From 731ff725449ebfccc6d78d7d16660687ab7e41f3 Mon Sep 17 00:00:00 2001
+From dba517766af32a355da98472b63a233bd687eb29 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 9 Dec 2016 11:48:37 +1100
-Subject: [PATCH 19/33] dpnet: Support EnumHost requests to specific host
+Subject: [PATCH 19/30] dpnet: Support EnumHost requests to specific host
 
 ---
  dlls/dpnet/client.c | 17 +++++++++--------
  1 file changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 8642edb80f..283d852c2a 100644
+index 676b245..623c064 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -428,7 +428,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
@@ -33,7 +33,7 @@ index 8642edb80f..283d852c2a 100644
                  break;
  
              starttime = GetTickCount();
-@@ -563,6 +559,7 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
+@@ -569,6 +565,7 @@ static void process_enumhost(SOCKET sock, IDirectPlay8Address *device, PFNDPNMES
  struct dpthread_data
  {
      SOCKET sock;
@@ -41,7 +41,7 @@ index 8642edb80f..283d852c2a 100644
      IDirectPlay8Address *device;
      DWORD retrycnt;
      DWORD retrytime;
-@@ -577,7 +574,7 @@ static DWORD WINAPI enumhost_thread(void *threaddata)
+@@ -583,7 +580,7 @@ static DWORD WINAPI enumhost_thread(void *threaddata)
  {
      struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
  
@@ -50,7 +50,7 @@ index 8642edb80f..283d852c2a 100644
                          tdata->retrycnt, tdata->retrytime, tdata->timeout, tdata->cancelevent);
  
      heap_free(threaddata);
-@@ -595,6 +592,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -601,6 +598,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
      IDirectPlay8Address *device = NULL;
      HRESULT hr;
@@ -58,7 +58,7 @@ index 8642edb80f..283d852c2a 100644
  
      TRACE("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo,
          pUserEnumData, dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle,
-@@ -627,13 +625,15 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -633,13 +631,15 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          return E_OUTOFMEMORY;
      }
  
@@ -75,7 +75,7 @@ index 8642edb80f..283d852c2a 100644
                          retrycnt, retrytime, timeout, NULL);
  
          IDirectPlay8Address_Release(device);
-@@ -658,6 +658,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -664,6 +664,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          tdata->timeout     = dwTimeOut == INFINITE  ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
          tdata->msghandler  = This->msghandler;
          tdata->device      = device;
@@ -84,5 +84,5 @@ index 8642edb80f..283d852c2a 100644
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
  
 -- 
-2.11.0
+1.9.1
 

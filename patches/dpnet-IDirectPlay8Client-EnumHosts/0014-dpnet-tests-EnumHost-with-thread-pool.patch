@@ -1,7 +1,7 @@
-From 5efaf0a1d808c8593f4a0c5a93171d05e10c96ff Mon Sep 17 00:00:00 2001
+From 69a2032c7047a0a5d7c5d65be6243441f1f0f9cf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Nov 2016 08:49:40 +1100
-Subject: [PATCH 14/33] dpnet/tests: EnumHost with thread pool
+Subject: [PATCH 14/30] dpnet/tests: EnumHost with thread pool
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 96 insertions(+)
 
 diff --git a/dlls/dpnet/tests/thread.c b/dlls/dpnet/tests/thread.c
-index 2e7e951b73..009c5bdbc4 100644
+index 2e7e951..009c5bd 100644
 --- a/dlls/dpnet/tests/thread.c
 +++ b/dlls/dpnet/tests/thread.c
 @@ -21,6 +21,8 @@
@@ -130,5 +130,5 @@ index 2e7e951b73..009c5bdbc4 100644
      CoUninitialize();
  }
 -- 
-2.11.0
+1.9.1
 

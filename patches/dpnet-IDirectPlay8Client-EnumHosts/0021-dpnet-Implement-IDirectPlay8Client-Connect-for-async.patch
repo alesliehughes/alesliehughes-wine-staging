@@ -1,7 +1,7 @@
-From 11721a5196756cbf0e1e75b05c22215533940a4c Mon Sep 17 00:00:00 2001
+From d1e4bddc770416769976e03b65664710074ef894 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:02:35 +1100
-Subject: [PATCH 21/33] dpnet: Implement IDirectPlay8Client Connect for async
+Subject: [PATCH 21/30] dpnet: Implement IDirectPlay8Client Connect for async
  connections
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,10 +11,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 68 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 58fd56dd0e..84a81ee460 100644
+index 8e14aac..951ea1c 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -712,7 +712,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -718,7 +718,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
  }
  
  static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session,
@@ -24,7 +24,7 @@ index 58fd56dd0e..84a81ee460 100644
  {
      HRESULT hr = DPN_OK;
      BOOL connected = FALSE;
-@@ -730,6 +731,14 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -736,6 +737,14 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
  
      while(!connected && hr == S_OK)
      {
@@ -39,7 +39,7 @@ index 58fd56dd0e..84a81ee460 100644
          buflen = sizeof(temp);
          n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
          if(n >= (int)sizeof(struct DFRAME_PACKET))
-@@ -755,6 +764,25 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -761,6 +770,25 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
                      /* TODO - Store info->dpnid */
                      connected = TRUE;
  
@@ -65,7 +65,7 @@ index 58fd56dd0e..84a81ee460 100644
                      TRACE("dpnid %08x\n", info->dpnid);
                  }
                  else
-@@ -796,6 +824,31 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -802,6 +830,31 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
      return hr;
  }
  
@@ -97,7 +97,7 @@ index 58fd56dd0e..84a81ee460 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          const DPN_APPLICATION_DESC * const app_desc, IDirectPlay8Address * const host_addr,
          IDirectPlay8Address * const device, const DPN_SECURITY_DESC * const security,
-@@ -844,11 +897,22 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -850,11 +903,22 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
  
      if(flags & DPNCONNECT_SYNC)
      {
@@ -123,7 +123,7 @@ index 58fd56dd0e..84a81ee460 100644
      }
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 245e20491d..6f0e269353 100644
+index 245e204..6f0e269 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -70,6 +70,7 @@ struct IDirectPlay8ClientImpl
@@ -135,5 +135,5 @@ index 245e20491d..6f0e269353 100644
  
  /* ------------------- */
 -- 
-2.11.0
+1.9.1
 

@@ -1,19 +1,19 @@
-From c3968762974c4f6bfc62fb33162c36a6c77cc0db Mon Sep 17 00:00:00 2001
+From 3290e932154b0425dcaace5b4d1a88139cf7ac51 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 11:26:25 +1100
-Subject: [PATCH 01/33] dpnet/test: Share code between tests
+Subject: [PATCH 01/30] dpnet/test: Share code between tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/tests/address.c       |  28 +-------
  dlls/dpnet/tests/client.c        | 150 +--------------------------------------
- dlls/dpnet/tests/dpnet_private.h |  33 +++++++++
+ dlls/dpnet/tests/dpnet_private.h |  32 +++++++++
  dlls/dpnet/tests/server.c        |  16 ++---
- 4 files changed, 43 insertions(+), 184 deletions(-)
+ 4 files changed, 42 insertions(+), 184 deletions(-)
  create mode 100644 dlls/dpnet/tests/dpnet_private.h
 
 diff --git a/dlls/dpnet/tests/address.c b/dlls/dpnet/tests/address.c
-index 16ba6a736f..3271f26daa 100644
+index 16ba6a7..3271f26 100644
 --- a/dlls/dpnet/tests/address.c
 +++ b/dlls/dpnet/tests/address.c
 @@ -22,6 +22,8 @@
@@ -59,7 +59,7 @@ index 16ba6a736f..3271f26daa 100644
  {
      HRESULT hr;
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index a1817a4a86..5ee608747e 100644
+index a1817a4..5ee6087 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -24,9 +24,10 @@
@@ -230,10 +230,10 @@ index a1817a4a86..5ee608747e 100644
      BOOL firewall_enabled;
 diff --git a/dlls/dpnet/tests/dpnet_private.h b/dlls/dpnet/tests/dpnet_private.h
 new file mode 100644
-index 0000000000..d45b60ed75
+index 0000000..1de2559
 --- /dev/null
 +++ b/dlls/dpnet/tests/dpnet_private.h
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,32 @@
 +/*
 + * Copyright 2016 Alistair Leslie-Hughes
 + *
@@ -266,9 +266,8 @@ index 0000000000..d45b60ed75
 +extern BOOL is_stub_dll(const char *filename) DECLSPEC_HIDDEN;
 +
 +#endif
-+
 diff --git a/dlls/dpnet/tests/server.c b/dlls/dpnet/tests/server.c
-index bfc21b0d05..1cc7848567 100644
+index bfc21b0..1cc7848 100644
 --- a/dlls/dpnet/tests/server.c
 +++ b/dlls/dpnet/tests/server.c
 @@ -24,6 +24,8 @@
@@ -323,5 +322,5 @@ index bfc21b0d05..1cc7848567 100644
      DWORD size, ver;
      BOOL isstub = FALSE;
 -- 
-2.11.0
+1.9.1
 

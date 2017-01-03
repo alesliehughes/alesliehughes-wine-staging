@@ -1,14 +1,14 @@
-From 87495dbbc2e0144e5b3e81034d4a372255778d57 Mon Sep 17 00:00:00 2001
+From 16a1b586d4bc323c47ef805302540eab27877136 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Dec 2016 11:17:55 +1100
-Subject: [PATCH 28/33] dpnet: Correction to connect to make examples work :)
+Subject: [PATCH 28/30] dpnet: Correction to connect to make examples work :)
 
 ---
  dlls/dpnet/client.c | 148 ++++++++++++++++++++++++++++++++++++++--------------
  1 file changed, 110 insertions(+), 38 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index fd4fb4628e..dcb21cdc39 100644
+index 16bf9bd..f38ec5d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -204,6 +204,28 @@ static int dn_packet_connected(SOCKET sock, DWORD session, DWORD msgid, struct s
@@ -40,7 +40,7 @@ index fd4fb4628e..dcb21cdc39 100644
  static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWORD msgid)
  {
      struct DFRAME_PACKET *packet;
-@@ -746,6 +768,7 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -752,6 +774,7 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
      DWORD buflen;
      struct sockaddr_in from;
      int fromlen = sizeof(from);
@@ -48,7 +48,7 @@ index fd4fb4628e..dcb21cdc39 100644
  
      if(init_packet_connect(sock, session, serveraddr) == -1)
      {
-@@ -755,6 +778,8 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -761,6 +784,8 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
  
      while(!connected && hr == S_OK)
      {
@@ -57,7 +57,7 @@ index fd4fb4628e..dcb21cdc39 100644
          if(cancelevent)
          {
              if(WaitForSingleObject(cancelevent, 0) != WAIT_TIMEOUT)
-@@ -764,6 +789,7 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -770,6 +795,7 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
              }
          }
          buflen = sizeof(temp);
@@ -65,7 +65,7 @@ index fd4fb4628e..dcb21cdc39 100644
          n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
          if(n >= (int)sizeof(struct DFRAME_PACKET))
          {
-@@ -775,46 +801,75 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -781,46 +807,75 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
              {
                  struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
  
@@ -172,7 +172,7 @@ index fd4fb4628e..dcb21cdc39 100644
              {
                  if(packet->control == FRAME_EXOPCODE_CONNECTED)
                  {
-@@ -822,6 +877,14 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -828,6 +883,14 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
  
                      dn_packet_connected(sock, session, connected->msgid, serveraddr);
  
@@ -187,7 +187,7 @@ index fd4fb4628e..dcb21cdc39 100644
                      if(dframe_packet_player_connect_info_ex(sock, session, app_desc, username, serveraddr) == -1)
                      {
                          ERR("dframe_packet_player_connect_info_ex\n");
-@@ -842,6 +905,11 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -848,6 +911,11 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
                      FIXME("CFRAME not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", packet->command, packet->control, packet->seq, packet->nseq);
                  }
              }
@@ -199,7 +199,7 @@ index fd4fb4628e..dcb21cdc39 100644
          }
      }
  
-@@ -859,9 +927,12 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -865,9 +933,12 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
      struct sockaddr_in from;
      int fromlen = sizeof(from);
      BOOL connected = TRUE;
@@ -212,7 +212,7 @@ index fd4fb4628e..dcb21cdc39 100644
          if(cancelevent)
          {
              if(WaitForSingleObject(cancelevent, 0) != WAIT_TIMEOUT)
-@@ -896,12 +967,12 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -902,12 +973,12 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                          {
                              if(packet->control & PACKET_CONTROL_KEEPALIVE_OR_CORRELATE)
                              {
@@ -228,7 +228,7 @@ index fd4fb4628e..dcb21cdc39 100644
                                  sack.command = 0x80;
                                  sack.opcode  = FRAME_EXOPCODE_SACK;
                                  sack.flags   = SACK_FLAGS_RESPONSE;
-@@ -916,6 +987,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -922,6 +993,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                                      ERR("Sendto failed (%d).\n", WSAGetLastError());
                                  else
                                      FIXME("sack sent %d\n", err);
@@ -236,7 +236,7 @@ index fd4fb4628e..dcb21cdc39 100644
                              }
                              else if(packet->control == PACKET_CONTROL_END_STREAM)
                              {
-@@ -942,7 +1014,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -948,7 +1020,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                              {
                                  DPNMSG_RECEIVE received;
  
@@ -245,7 +245,7 @@ index fd4fb4628e..dcb21cdc39 100644
  
                                  received.dwSize             = sizeof(received);
                                  received.dpnidSender        = 0;
-@@ -954,7 +1026,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -960,7 +1032,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
  
                                  hr = msghandler(NULL, DPN_MSGID_RECEIVE, &received);
                                  if(hr != S_OK)
@@ -254,7 +254,7 @@ index fd4fb4628e..dcb21cdc39 100644
                              }
  
                          }
-@@ -985,9 +1057,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -991,9 +1063,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                  FIXME("Packet not support.... size(%d), command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", n, packet->command, packet->control, packet->seq, packet->nseq);
              }
  
@@ -267,5 +267,5 @@ index fd4fb4628e..dcb21cdc39 100644
          }
      }
 -- 
-2.11.0
+1.9.1
 

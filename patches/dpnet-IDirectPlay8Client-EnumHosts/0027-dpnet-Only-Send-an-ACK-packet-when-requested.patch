@@ -1,7 +1,7 @@
-From 2886c3c980cb27cdb7eb5f7fa6247adf99d63cb7 Mon Sep 17 00:00:00 2001
+From b5009fcc84e410f89109247987224fd4e73ba936 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:46:22 +1100
-Subject: [PATCH 27/33] dpnet: Only Send an ACK packet when requested
+Subject: [PATCH 27/30] dpnet: Only Send an ACK packet when requested
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 8e0cd4e0e8..fd4fb4628e 100644
+index ea09e97..16bf9bd 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -984,6 +984,11 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -990,6 +990,11 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
              {
                  FIXME("Packet not support.... size(%d), command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x\n", n, packet->command, packet->control, packet->seq, packet->nseq);
              }
@@ -25,5 +25,5 @@ index 8e0cd4e0e8..fd4fb4628e 100644
      }
  
 -- 
-2.11.0
+1.9.1
 

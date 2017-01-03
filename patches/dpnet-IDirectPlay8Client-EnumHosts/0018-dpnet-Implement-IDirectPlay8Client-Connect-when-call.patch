@@ -1,7 +1,7 @@
-From 615f68c65c70b5cff378695d12d01aa9689846f9 Mon Sep 17 00:00:00 2001
+From 25f66f2dde9d4d4d358b22cb597a7207dc052176 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:31:52 +1100
-Subject: [PATCH 18/33] dpnet: Implement IDirectPlay8Client Connect when called
+Subject: [PATCH 18/30] dpnet: Implement IDirectPlay8Client Connect when called
  synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 339 insertions(+)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 0d7b3b5208..8642edb80f 100644
+index 7935fcc..676b245 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -159,6 +159,126 @@ static BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in
@@ -141,7 +141,7 @@ index 0d7b3b5208..8642edb80f 100644
  static void send_async_complete_msg(IDirectPlay8ClientImpl *This, HRESULT hr, DPNHANDLE handle)
  {
      DPNMSG_ASYNC_OP_COMPLETE complete;
-@@ -572,6 +692,91 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -578,6 +698,91 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
      return DPN_OK;
  }
  
@@ -233,7 +233,7 @@ index 0d7b3b5208..8642edb80f 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          const DPN_APPLICATION_DESC * const app_desc, IDirectPlay8Address * const host_addr,
          IDirectPlay8Address * const device, const DPN_SECURITY_DESC * const security,
-@@ -602,12 +807,32 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -608,12 +813,32 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          This->enumthread = NULL;
      }
  
@@ -267,7 +267,7 @@ index 0d7b3b5208..8642edb80f 100644
      IDirectPlay8Address_Release(host_addr);
  
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index f3ca955f51..2a11aaac6e 100644
+index f3ca955..2a11aaa 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -69,12 +69,126 @@ struct DFRAME_PACKET
@@ -398,5 +398,5 @@ index f3ca955f51..2a11aaac6e 100644
  
  #endif
 -- 
-2.11.0
+1.9.1
 

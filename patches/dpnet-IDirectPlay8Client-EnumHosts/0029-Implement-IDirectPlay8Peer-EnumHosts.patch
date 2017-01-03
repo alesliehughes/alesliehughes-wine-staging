@@ -1,7 +1,7 @@
-From 97ffb3f752efa3260187d6af117a8dec7f6911d3 Mon Sep 17 00:00:00 2001
+From 11a197ddaf3fadc3db664ee5bc66b8038667015b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 30 Dec 2016 20:53:32 +1100
-Subject: [PATCH 29/33] Implement IDirectPlay8Peer EnumHosts
+Subject: [PATCH 29/30] Implement IDirectPlay8Peer EnumHosts
 
 - Correction to dpaddress_to_sockaddr for NULL host
 
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 142 insertions(+), 22 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index dcb21cdc39..fd01cf5b76 100644
+index f38ec5d..f6048e7 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -60,7 +60,7 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
@@ -61,7 +61,7 @@ index dcb21cdc39..fd01cf5b76 100644
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
  {
      char buffer[1024];
-@@ -620,21 +626,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+@@ -626,21 +632,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
      }
  }
  
@@ -85,7 +85,7 @@ index dcb21cdc39..fd01cf5b76 100644
      struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 6a08d719df..a297574790 100644
+index 6a08d71..a297574 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -43,6 +43,27 @@ typedef struct IDirectPlay8AddressImpl IDirectPlay8AddressImpl;
@@ -117,7 +117,7 @@ index 6a08d719df..a297574790 100644
  /* IDirectPlay8Client */
  /* ------------------ */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 57f15efc6a..8d96246d1a 100644
+index 57f15ef..9dd748a 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -52,6 +52,10 @@ typedef struct IDirectPlay8PeerImpl
@@ -167,13 +167,13 @@ index 57f15efc6a..8d96246d1a 100644
  }
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
-@@ -446,7 +467,17 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetLocalHostAddresses(IDirectPlay8Pee
+@@ -446,8 +467,18 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetLocalHostAddresses(IDirectPlay8Pee
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_Close(IDirectPlay8Peer *iface, const DWORD dwFlags)
  {
 +    IDirectPlay8PeerImpl* This = impl_from_IDirectPlay8Peer(iface);
      FIXME("(%p)->(%x): stub\n", iface, dwFlags);
-+ 
+ 
 +    if(This->cancelevent)
 +    {
 +        SetEvent(This->cancelevent);
@@ -182,9 +182,10 @@ index 57f15efc6a..8d96246d1a 100644
 +        CloseHandle(This->enumthread);
 +        This->enumthread = NULL;
 +    }
- 
++
      return DPN_OK;
  }
+ 
 @@ -457,11 +488,86 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
          const DWORD dwUserEnumDataSize, const DWORD dwEnumCount, const DWORD dwRetryInterval,
          const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle, const DWORD dwFlags)
@@ -283,5 +284,5 @@ index 57f15efc6a..8d96246d1a 100644
      init_dpn_sp_caps(&Client->spcaps);
  
 -- 
-2.11.0
+1.9.1
 

@@ -1,7 +1,7 @@
-From 566c2fdd57dd00f90aa04a7d0e6e98e5eeb8e16b Mon Sep 17 00:00:00 2001
+From 2a96592e70ad0d1d18dd49b66ea1b5a151e0c859 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:29:09 +1100
-Subject: [PATCH 23/33] dpnet: Added Message Loop when connecting async
+Subject: [PATCH 23/30] dpnet: Added Message Loop when connecting async
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 151 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f3c38bf454..fc8f05bfa7 100644
+index 3c53067..29f8264 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -825,6 +825,112 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+@@ -831,6 +831,112 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
      return hr;
  }
  
@@ -126,7 +126,7 @@ index f3c38bf454..fc8f05bfa7 100644
  struct connect_data
  {
      SOCKET sock;
-@@ -842,8 +948,13 @@ static DWORD WINAPI connect_thread(void *threaddata)
+@@ -848,8 +954,13 @@ static DWORD WINAPI connect_thread(void *threaddata)
  {
      struct connect_data *tdata = (struct connect_data *)threaddata;
  
@@ -142,7 +142,7 @@ index f3c38bf454..fc8f05bfa7 100644
      heap_free(threaddata);
  
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index 3716be9538..e4cfa43e92 100644
+index 3716be9..e4cfa43 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -149,6 +149,39 @@ struct DN_ACK_CONNECT_INFO
@@ -199,5 +199,5 @@ index 3716be9538..e4cfa43e92 100644
  
  #endif
 -- 
-2.11.0
+1.9.1
 

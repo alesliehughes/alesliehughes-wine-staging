@@ -1,7 +1,7 @@
-From fbf794d848aae28243447e98a0db40c732370c66 Mon Sep 17 00:00:00 2001
+From 963a8d458826d7a99ff70e90349047b84f548ed9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 12:27:55 +1100
-Subject: [PATCH 02/33] dpnet/tests: Dont hard code paths
+Subject: [PATCH 02/30] dpnet/tests: Dont hard code paths
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 39 insertions(+), 17 deletions(-)
 
 diff --git a/dlls/dpnet/tests/address.c b/dlls/dpnet/tests/address.c
-index 3271f26daa..5c2f348b85 100644
+index 3271f26..5c2f348 100644
 --- a/dlls/dpnet/tests/address.c
 +++ b/dlls/dpnet/tests/address.c
 @@ -358,10 +358,16 @@ static void address_duplicate(void)
@@ -35,7 +35,7 @@ index 3271f26daa..5c2f348b85 100644
          win_skip("dpnet is a stub dll, skipping tests\n");
          return;
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 5ee608747e..a2be6492ef 100644
+index 5ee6087..a2be649 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -613,10 +613,16 @@ static void test_cleanup_dp_peer(void)
@@ -59,7 +59,7 @@ index 5ee608747e..a2be6492ef 100644
          win_skip("dpnet is a stub dll, skipping tests\n");
          return;
 diff --git a/dlls/dpnet/tests/server.c b/dlls/dpnet/tests/server.c
-index 1cc7848567..b37abb32b6 100644
+index 1cc7848..b37abb3 100644
 --- a/dlls/dpnet/tests/server.c
 +++ b/dlls/dpnet/tests/server.c
 @@ -236,11 +236,8 @@ done:
@@ -131,5 +131,5 @@ index 1cc7848567..b37abb32b6 100644
          win_skip("dpnet is a stub dll, skipping tests\n");
          return;
 -- 
-2.11.0
+1.9.1
 

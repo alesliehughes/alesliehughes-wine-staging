@@ -1,7 +1,7 @@
-From 8c140fbcc1bad0b206515160238991a61efb804e Mon Sep 17 00:00:00 2001
+From 830a7a38fcc1f1b0511ca3407838632983944801 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:36:29 +1100
-Subject: [PATCH 24/33] dpnet: Handle PACKET_CONTROL_END_STREAM message
+Subject: [PATCH 24/30] dpnet: Handle PACKET_CONTROL_END_STREAM message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 46 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index fc8f05bfa7..63d2a85c6c 100644
+index 29f8264..4593ddf 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -237,6 +237,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
@@ -42,7 +42,7 @@ index fc8f05bfa7..63d2a85c6c 100644
  /* 2.2.1.2 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX */
  static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, const DPN_APPLICATION_DESC * const app_desc,
                              WCHAR *name, struct sockaddr_in *addr)
-@@ -835,8 +858,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -841,8 +864,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
      DWORD buflen;
      struct sockaddr_in from;
      int fromlen = sizeof(from);
@@ -53,7 +53,7 @@ index fc8f05bfa7..63d2a85c6c 100644
      {
          if(cancelevent)
          {
-@@ -893,6 +917,27 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -899,6 +923,27 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                                  else
                                      FIXME("sack sent %d\n", err);
                              }
@@ -82,5 +82,5 @@ index fc8f05bfa7..63d2a85c6c 100644
                              {
                                  FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x, type %08x\n", packet->command, packet->control, packet->seq, packet->nseq, dframe->type);
 -- 
-2.11.0
+1.9.1
 

@@ -1,7 +1,7 @@
-From 6882217680755476068f26632159363df1dbc34a Mon Sep 17 00:00:00 2001
+From 678a35e481bf031ebcafb73846e1289e84899a0b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:20:58 +1100
-Subject: [PATCH 17/33] dpnet: Store server address in IDirectPlay8Client
+Subject: [PATCH 17/30] dpnet: Store server address in IDirectPlay8Client
  Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 69 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 6217da94f0..0d7b3b5208 100644
+index 8d2f2a8..7935fcc 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -101,6 +101,64 @@ static SOCKET find_free_socket(void)
@@ -79,7 +79,7 @@ index 6217da94f0..0d7b3b5208 100644
  static void send_async_complete_msg(IDirectPlay8ClientImpl *This, HRESULT hr, DPNHANDLE handle)
  {
      DPNMSG_ASYNC_OP_COMPLETE complete;
-@@ -522,6 +580,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -528,6 +586,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          DPNHANDLE * const async_handle, const DWORD flags)
  {
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
@@ -87,7 +87,7 @@ index 6217da94f0..0d7b3b5208 100644
  
      FIXME("(%p) : (%p, %p, %p, %p, %p, %p, %u, %p, %p, %x)\n", This, app_desc, host_addr,
          device, security, credentials, user_data, data_size, context, async_handle, flags);
-@@ -543,9 +602,16 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -549,9 +608,16 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          This->enumthread = NULL;
      }
  
@@ -106,7 +106,7 @@ index 6217da94f0..0d7b3b5208 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index ff4aaae280..245e20491d 100644
+index ff4aaae..245e204 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -68,6 +68,8 @@ struct IDirectPlay8ClientImpl
@@ -119,5 +119,5 @@ index ff4aaae280..245e20491d 100644
  
  /* ------------------- */
 -- 
-2.11.0
+1.9.1
 
