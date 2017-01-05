@@ -1,0 +1,28 @@
+From dcae660ef63ccb45c23e7a313c74bcf158f17861 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 5 Jan 2017 12:32:42 +1100
+Subject: [PATCH 2/2] include: Add UnlockResource prototype
+
+This function is obsolete and was only used in win16. However when trying
+to compile a project with winelib found this function was used.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/winbase.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/winbase.h b/include/winbase.h
+index 6a4705c..4e52156 100644
+--- a/include/winbase.h
++++ b/include/winbase.h
+@@ -2600,6 +2600,7 @@ WINBASEAPI BOOL        WINAPI TzSpecificLocalTimeToSystemTime(const TIME_ZONE_IN
+ WINBASEAPI LONG        WINAPI UnhandledExceptionFilter(PEXCEPTION_POINTERS);
+ WINBASEAPI BOOL        WINAPI UnlockFile(HANDLE,DWORD,DWORD,DWORD,DWORD);
+ WINBASEAPI BOOL        WINAPI UnlockFileEx(HANDLE,DWORD,DWORD,DWORD,LPOVERLAPPED);
++#define                       UnlockResource(handle) (handle, 0)
+ #define                       UnlockSegment(handle) GlobalUnfix((HANDLE)(handle))
+ WINBASEAPI BOOL        WINAPI UnmapViewOfFile(LPCVOID);
+ WINBASEAPI HRESULT     WINAPI UnregisterApplicationRestart(void);
+-- 
+1.9.1
+

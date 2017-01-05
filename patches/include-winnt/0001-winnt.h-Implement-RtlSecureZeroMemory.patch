@@ -1,0 +1,43 @@
+From e9a7c0166b830c164209337206acc796aaa1b716 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 5 Jan 2017 12:20:11 +1100
+Subject: [PATCH 1/2] include: Implement RtlSecureZeroMemory
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/winbase.h | 1 +
+ include/winnt.h   | 6 ++++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/include/winbase.h b/include/winbase.h
+index eff5972..6a4705c 100644
+--- a/include/winbase.h
++++ b/include/winbase.h
+@@ -2776,6 +2776,7 @@ WINBASEAPI UINT        WINAPI _lwrite(HFILE,LPCSTR,UINT);
+ #define     MoveMemory RtlMoveMemory
+ #define     ZeroMemory RtlZeroMemory
+ #define     CopyMemory RtlCopyMemory
++#define     SecureZeroMemory RtlSecureZeroMemory
+ 
+ /* Wine internal functions */
+ 
+diff --git a/include/winnt.h b/include/winnt.h
+index 72c399b..8197899 100644
+--- a/include/winnt.h
++++ b/include/winnt.h
+@@ -5436,6 +5436,12 @@ typedef enum _CM_ERROR_CONTROL_TYPE
+ #define RtlFillMemory(Destination, Length, Fill) memset((Destination),(Fill),(Length))
+ #define RtlZeroMemory(Destination, Length) memset((Destination),0,(Length))
+ 
++static FORCEINLINE void *RtlSecureZeroMemory(void *destination, SIZE_T length)
++{
++    memset(destination,0,length);
++    return destination;
++}
++
+ #include <guiddef.h>
+ 
+ typedef struct _OBJECT_TYPE_LIST {
+-- 
+1.9.1
+
