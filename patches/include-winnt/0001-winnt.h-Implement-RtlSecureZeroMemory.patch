@@ -1,7 +1,7 @@
-From e9a7c0166b830c164209337206acc796aaa1b716 Mon Sep 17 00:00:00 2001
+From 3dbb41bdb035e0fafdeb6ed1a672ce9cc36f55e0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 5 Jan 2017 12:20:11 +1100
-Subject: [PATCH 1/2] include: Implement RtlSecureZeroMemory
+Subject: [PATCH 1/6] winnt.h: Implement RtlSecureZeroMemory
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

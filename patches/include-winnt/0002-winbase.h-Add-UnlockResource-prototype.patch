@@ -1,10 +1,10 @@
-From dcae660ef63ccb45c23e7a313c74bcf158f17861 Mon Sep 17 00:00:00 2001
+From bac6541df397f9285435e94209966c7b82866acd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 5 Jan 2017 12:32:42 +1100
-Subject: [PATCH 2/2] include: Add UnlockResource prototype
+Subject: [PATCH 2/6] winbase.h: Add UnlockResource prototype
 
 This function is obsolete and was only used in win16. However when trying
-to compile a project with winelib found this function was used.
+to compile a project with winelib found this function was required.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

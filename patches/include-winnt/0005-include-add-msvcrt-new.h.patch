@@ -1,0 +1,43 @@
+From 5bc32953741cb30011d57458de7a4fead1c2998d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 6 Jan 2017 13:50:00 +1100
+Subject: [PATCH 5/6] include: add msvcrt/new.h
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/msvcrt/new.h | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 include/msvcrt/new.h
+
+diff --git a/include/msvcrt/new.h b/include/msvcrt/new.h
+new file mode 100644
+index 0000000..cafc770
+--- /dev/null
++++ b/include/msvcrt/new.h
+@@ -0,0 +1,23 @@
++/*
++ * Copyright (C) 2017 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#ifndef __WINE_NEW_H__
++#define __WINE_NEW_H__
++
++
++#endif
+-- 
+1.9.1
+
