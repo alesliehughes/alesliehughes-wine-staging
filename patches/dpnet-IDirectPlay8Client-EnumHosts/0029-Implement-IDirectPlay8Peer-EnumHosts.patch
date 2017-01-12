@@ -1,7 +1,7 @@
-From 11a197ddaf3fadc3db664ee5bc66b8038667015b Mon Sep 17 00:00:00 2001
+From a078001a51129671aa1d620687a4586e7494e11b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 30 Dec 2016 20:53:32 +1100
-Subject: [PATCH 29/30] Implement IDirectPlay8Peer EnumHosts
+Subject: [PATCH 29/33] Implement IDirectPlay8Peer EnumHosts
 
 - Correction to dpaddress_to_sockaddr for NULL host
 

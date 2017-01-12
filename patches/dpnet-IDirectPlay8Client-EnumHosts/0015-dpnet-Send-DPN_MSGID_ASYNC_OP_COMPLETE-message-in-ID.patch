@@ -1,7 +1,7 @@
-From 5fb33ac5724bb62efd494dc769aca7cf762de932 Mon Sep 17 00:00:00 2001
+From bbfc05f6cc3a524e9a75d37b811ecdf4f922af46 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:41:28 +1100
-Subject: [PATCH 15/30] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
+Subject: [PATCH 15/33] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
  IDirectPlay8Client CancelAsyncOperation
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

@@ -1,7 +1,7 @@
-From 678a35e481bf031ebcafb73846e1289e84899a0b Mon Sep 17 00:00:00 2001
+From e17bee540037ec0a845918bbcb91aa4e342965a2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:20:58 +1100
-Subject: [PATCH 17/30] dpnet: Store server address in IDirectPlay8Client
+Subject: [PATCH 17/33] dpnet: Store server address in IDirectPlay8Client
  Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

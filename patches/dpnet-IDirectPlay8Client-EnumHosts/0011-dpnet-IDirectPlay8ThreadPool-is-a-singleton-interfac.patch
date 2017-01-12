@@ -1,7 +1,7 @@
-From db04881b753aaa7e98a2342923c2b23971cb9fce Mon Sep 17 00:00:00 2001
+From 5e764eb644b87d642118b8091732a00219ee9e89 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 12:02:18 +1100
-Subject: [PATCH 11/30] dpnet: IDirectPlay8ThreadPool is a singleton interface.
+Subject: [PATCH 11/33] dpnet: IDirectPlay8ThreadPool is a singleton interface.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

@@ -1,7 +1,7 @@
-From 3290e932154b0425dcaace5b4d1a88139cf7ac51 Mon Sep 17 00:00:00 2001
+From 29c98c1f6f0db3cd2760260bf78c8b8927c74f91 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 11:26:25 +1100
-Subject: [PATCH 01/30] dpnet/test: Share code between tests
+Subject: [PATCH 01/33] dpnet/test: Share code between tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

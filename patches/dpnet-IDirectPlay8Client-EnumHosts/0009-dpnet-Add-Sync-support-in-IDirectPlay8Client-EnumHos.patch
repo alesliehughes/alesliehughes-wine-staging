@@ -1,7 +1,7 @@
-From 3594aa7466e8c9f894ab7b98929d79ccaf773f6b Mon Sep 17 00:00:00 2001
+From 5eacd44d716b16bad04dbe158252881251170172 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 15:34:54 +1100
-Subject: [PATCH 09/30] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 09/33] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
