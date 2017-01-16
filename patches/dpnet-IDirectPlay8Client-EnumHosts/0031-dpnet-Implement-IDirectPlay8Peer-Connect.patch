@@ -1,7 +1,7 @@
-From b2c1339465e53af183bdd4de2afc69927a4aa242 Mon Sep 17 00:00:00 2001
+From b55d861c87df7c776a4270c25e096066dfa9b424 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:19:58 +1100
-Subject: [PATCH 31/33] dpnet: Implement IDirectPlay8Peer Connect
+Subject: [PATCH 31/35] dpnet: Implement IDirectPlay8Peer Connect
 
 ---
  dlls/dpnet/client.c        | 17 ++--------

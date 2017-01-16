@@ -1,7 +1,7 @@
-From 9867c49b8fc363e97853ae920b1f949f5777bc36 Mon Sep 17 00:00:00 2001
+From b66701da973bc2d14d07dabe864d5f2bc5abce94 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:59:01 +1100
-Subject: [PATCH 08/33] dpnet: Implement IDirectPlay8Client Enumhost when
+Subject: [PATCH 08/35] dpnet: Implement IDirectPlay8Client Enumhost when
  called synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
