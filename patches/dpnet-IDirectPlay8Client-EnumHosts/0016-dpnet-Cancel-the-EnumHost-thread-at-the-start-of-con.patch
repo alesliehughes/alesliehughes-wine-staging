@@ -1,7 +1,7 @@
-From c8c873565a2c09258487d4f63155e5a1a3584214 Mon Sep 17 00:00:00 2001
+From 93f225ab30d70249dc4af66fe1cb6053a5ae4af0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:11:56 +1100
-Subject: [PATCH 16/35] dpnet: Cancel the EnumHost thread at the start of
+Subject: [PATCH 16/36] dpnet: Cancel the EnumHost thread at the start of
  connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

@@ -1,17 +1,17 @@
-From 10e5e1ed94a85e53ed10e7df4a4c4599c65a0444 Mon Sep 17 00:00:00 2001
+From 12162b747035001067ac7525c3a6299056319f70 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 09:42:29 +1100
-Subject: [PATCH 34/35] dpnet: IPeer support tcp4/6 in Connect
+Subject: [PATCH 34/36] dpnet: IPeer support tcp4/6 in Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/client.c        | 87 ++++++++++++++++++++++++++++++++++++++++++++++
  dlls/dpnet/dpnet_private.h |  1 +
- dlls/dpnet/peer.c          |  7 ++--
- 3 files changed, 92 insertions(+), 3 deletions(-)
+ dlls/dpnet/peer.c          |  9 ++---
+ 3 files changed, 93 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 828ca74..8955574 100644
+index 6c9ec27..193c8de 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,7 @@
@@ -128,10 +128,10 @@ index 3e925a5..100d865 100644
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 4dfc47a..24c8dc8 100644
+index 84c7d91..519fbca 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -57,7 +57,8 @@ typedef struct IDirectPlay8PeerImpl
+@@ -58,7 +58,8 @@ typedef struct IDirectPlay8PeerImpl
      HANDLE enumthread;
      HANDLE cancelevent;
  
@@ -141,7 +141,7 @@ index 4dfc47a..24c8dc8 100644
      HANDLE connectthread;
      DWORD session;
  } IDirectPlay8PeerImpl;
-@@ -318,7 +319,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -319,7 +320,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
          }
      }
  
@@ -150,7 +150,16 @@ index 4dfc47a..24c8dc8 100644
      {
          hr = DPNERR_INVALIDHOSTADDRESS;
          goto cleanup;
-@@ -337,7 +338,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -327,7 +328,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+ 
+     if(flags & DPNCONNECT_SYNC)
+     {
+-        hr = dplay_connect(This->sock, &This->serveraddr, sizeof(This->serveraddr), This->session, app_desc, This->username, NULL, This->msghandler);
++        hr = dplay_connect(This->sock, &This->serveraddr, This->addr_size, This->session, app_desc, This->username, NULL, This->msghandler);
+     }
+     else
+     {
+@@ -338,7 +339,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
          tdata->app_guid    = app_desc->guidApplication;
          tdata->session     = This->session;
          tdata->addr        = &This->serveraddr;

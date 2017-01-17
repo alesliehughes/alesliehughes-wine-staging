@@ -1,7 +1,7 @@
-From 6f422b270572321cb1418d5fa59ab2b2b6608800 Mon Sep 17 00:00:00 2001
+From e96977b86dd59564fc80aace8f73c7a9c58cd252 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 10:39:16 +1100
-Subject: [PATCH 10/35] dpnet/tests: Initial IDirectPlay8ThreadPool tests
+Subject: [PATCH 10/36] dpnet/tests: Initial IDirectPlay8ThreadPool tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

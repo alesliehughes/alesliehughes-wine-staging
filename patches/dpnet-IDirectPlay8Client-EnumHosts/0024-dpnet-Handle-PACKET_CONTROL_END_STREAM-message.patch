@@ -1,7 +1,7 @@
-From 6ed3b6be82a57a61b408ce92f5aac6de0a0aa2cd Mon Sep 17 00:00:00 2001
+From 5a54165211c82741b8b50a2df2267c702c66b6a0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:36:29 +1100
-Subject: [PATCH 24/35] dpnet: Handle PACKET_CONTROL_END_STREAM message
+Subject: [PATCH 24/36] dpnet: Handle PACKET_CONTROL_END_STREAM message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

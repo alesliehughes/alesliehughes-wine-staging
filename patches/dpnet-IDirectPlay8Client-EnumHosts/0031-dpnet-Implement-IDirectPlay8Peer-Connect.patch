@@ -1,13 +1,13 @@
-From b55d861c87df7c776a4270c25e096066dfa9b424 Mon Sep 17 00:00:00 2001
+From 339fbeefbee6cb55f2dcb8969d1c6079aca53502 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:19:58 +1100
-Subject: [PATCH 31/35] dpnet: Implement IDirectPlay8Peer Connect
+Subject: [PATCH 31/36] dpnet: Implement IDirectPlay8Peer Connect
 
 ---
- dlls/dpnet/client.c        | 17 ++--------
- dlls/dpnet/dpnet_private.h | 18 +++++++++++
- dlls/dpnet/peer.c          | 79 ++++++++++++++++++++++++++++++++++++++++++----
- 3 files changed, 92 insertions(+), 22 deletions(-)
+ dlls/dpnet/client.c        | 17 ++-------
+ dlls/dpnet/dpnet_private.h | 18 ++++++++++
+ dlls/dpnet/peer.c          | 86 ++++++++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 99 insertions(+), 22 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
 index 14244bc..003228b 100644
@@ -79,10 +79,18 @@ index a297574..e18c8c2 100644
  /* ------------------ */
  /* IDirectPlay8Client */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 9dd748a..520422d 100644
+index 9dd748a..7f187e7 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -56,6 +56,10 @@ typedef struct IDirectPlay8PeerImpl
+@@ -31,6 +31,7 @@
+ #include "wingdi.h"
+ #include "winuser.h"
+ #include "objbase.h"
++#include "ntsecapi.h"
+ #include "wine/debug.h"
+ 
+ #include "dpnet_private.h"
+@@ -56,6 +57,10 @@ typedef struct IDirectPlay8PeerImpl
      SOCKET sock;
      HANDLE enumthread;
      HANDLE cancelevent;
@@ -93,7 +101,7 @@ index 9dd748a..520422d 100644
  } IDirectPlay8PeerImpl;
  
  static inline IDirectPlay8PeerImpl *impl_from_IDirectPlay8Peer(IDirectPlay8Peer *iface)
-@@ -275,15 +279,76 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer
+@@ -275,15 +280,76 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer
  }
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
@@ -177,6 +185,19 @@ index 9dd748a..520422d 100644
  }
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_SendTo(IDirectPlay8Peer *iface, const DPNID dpnId,
+@@ -749,6 +815,12 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
+ 
+     init_dpn_sp_caps(&Client->spcaps);
+ 
++    if(!RtlGenRandom(&Client->session, sizeof(Client->session)))
++    {
++        heap_free(Client);
++        return E_FAIL;
++    }
++
+     ret = IDirectPlay8Peer_QueryInterface(&Client->IDirectPlay8Peer_iface, riid, ppobj);
+     IDirectPlay8Peer_Release(&Client->IDirectPlay8Peer_iface);
+ 
 -- 
 1.9.1
 

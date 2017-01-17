@@ -1,15 +1,15 @@
-From 8eb9325df190f15aacc9d8ef40ca35a765dc5e11 Mon Sep 17 00:00:00 2001
+From dc8436f225fcce1be704092562ad74b589e02a01 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 14:06:48 +1100
-Subject: [PATCH 33/35] dpnet: Support IP4/6 in create_sender_address
+Subject: [PATCH 33/36] dpnet: Support IP4/6 in create_sender_address
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ dlls/dpnet/client.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 1c58cb1..828ca74 100644
+index 5d56508..6c9ec27 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -435,7 +435,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
@@ -21,24 +21,29 @@ index 1c58cb1..828ca74 100644
  {
      IDirectPlay8Address *sender = NULL;
      char ip[INET6_ADDRSTRLEN] = {0};
-@@ -446,9 +446,13 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
+@@ -446,9 +446,18 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
      if(FAILED(hr))
          return sender;
  
 -    inet_ntop(addr->sin6_family, &addr->sin6_addr, ip, sizeof(ip));
 -    port = ntohs(addr->sin6_port);
 -    TRACE("Server IP address %s(%d)\n", ip, port);
-+    inet_ntop(addr->ss_family, (char*)addr + sizeof(addr->ss_family), ip, sizeof(ip));
 +    if(addr->ss_family == AF_INET6)
-+        port = ntohs( ((struct sockaddr_in6 *)addr)->sin6_port);
++    {
++        inet_ntop(addr->ss_family, &(((struct sockaddr_in6 *)addr)->sin6_addr), ip, sizeof(ip));
++         port = ntohs( ((struct sockaddr_in6 *)addr)->sin6_port);
++    }
 +    else
-+        port = ntohs( ((struct sockaddr_in *)addr)->sin_port);
++    {
++        inet_ntop(addr->ss_family, &(((struct sockaddr_in *)addr)->sin_addr), ip, sizeof(ip));
++         port = ntohs( ((struct sockaddr_in *)addr)->sin_port);
++    }
 +
 +    TRACE("Server IP address %s port (%d)\n", ip, port);
  
      if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip)+1, DPNA_DATATYPE_STRING_ANSI)))
      {
-@@ -508,7 +512,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -508,7 +517,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
      char buffer[1024];
      int buflen = sizeof(buffer);
      DWORD starttime = 0;

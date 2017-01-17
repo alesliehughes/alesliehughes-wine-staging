@@ -1,7 +1,7 @@
-From 444a34ee6c160fc86408282a6cf22874b6e03538 Mon Sep 17 00:00:00 2001
+From 63836d870b9755e4862c5747bbdb8aed902600d2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:43:46 +1100
-Subject: [PATCH 26/35] dpnet: Handle User data packets
+Subject: [PATCH 26/36] dpnet: Handle User data packets
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

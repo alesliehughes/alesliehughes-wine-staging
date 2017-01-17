@@ -1,7 +1,7 @@
-From 849466f0f306d3d281166faffcd53983fbf16c0c Mon Sep 17 00:00:00 2001
+From 2c923bb2ef7e0b8310273b59870a01e6d7fbcdc9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:49:18 +1100
-Subject: [PATCH 32/35] dpnet: Prep for ipv6 wrt connect
+Subject: [PATCH 32/36] dpnet: Prep for ipv6 wrt connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 34 insertions(+), 30 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 003228b..1c58cb1 100644
+index 003228b..5d56508 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -171,7 +171,7 @@ done:
@@ -211,12 +211,12 @@ index 003228b..1c58cb1 100644
      struct connect_data *tdata = (struct connect_data *)threaddata;
  
 -    if(dplay_connect(tdata->sock, &tdata->addr, tdata->session, tdata->app_desc, tdata->username,
-+    if(dplay_connect(tdata->sock, &tdata->addr, tdata->addr_size, tdata->session, tdata->app_desc, tdata->username,
++    if(dplay_connect(tdata->sock, tdata->addr, tdata->addr_size, tdata->session, tdata->app_desc, tdata->username,
              tdata->cancelevent, tdata->msghandler) == S_OK)
      {
          /* Main message loop */
 -        dplay_connected(tdata->sock, &tdata->addr, tdata->session, tdata->app_desc, tdata->username,
-+        dplay_connected(tdata->sock, &tdata->addr, tdata->addr_size, tdata->session, tdata->app_desc, tdata->username,
++        dplay_connected(tdata->sock, tdata->addr, tdata->addr_size, tdata->session, tdata->app_desc, tdata->username,
              tdata->cancelevent, tdata->msghandler);
      }
  
@@ -264,10 +264,10 @@ index e18c8c2..3e925a5 100644
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
  extern DWORD WINAPI connect_thread(void *threaddata) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 520422d..4dfc47a 100644
+index 7f187e7..84c7d91 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -326,7 +326,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -327,7 +327,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
  
      if(flags & DPNCONNECT_SYNC)
      {
@@ -276,7 +276,7 @@ index 520422d..4dfc47a 100644
      }
      else
      {
-@@ -336,7 +336,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -337,7 +337,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
          tdata->msghandler  = This->msghandler;
          tdata->app_guid    = app_desc->guidApplication;
          tdata->session     = This->session;

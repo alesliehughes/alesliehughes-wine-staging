@@ -1,7 +1,7 @@
-From 07cbfaf26c16c11ca022bd29f2e8dde8e866169d Mon Sep 17 00:00:00 2001
+From a5ae638d78469b62a9ca2f478dac79cd675837da Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 12:27:55 +1100
-Subject: [PATCH 02/35] dpnet/tests: Dont hard code paths
+Subject: [PATCH 02/36] dpnet/tests: Dont hard code paths
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
