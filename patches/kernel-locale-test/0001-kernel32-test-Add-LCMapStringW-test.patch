@@ -1,0 +1,43 @@
+From 9e0553e7db9edcc09edf2692b451959a51201e92 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 20 Jan 2017 10:52:52 +1100
+Subject: [PATCH] kernel32/test: Add LCMapStringW test
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/kernel32/tests/locale.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/dlls/kernel32/tests/locale.c b/dlls/kernel32/tests/locale.c
+index 4224c0a..ab3fddf 100644
+--- a/dlls/kernel32/tests/locale.c
++++ b/dlls/kernel32/tests/locale.c
+@@ -2611,6 +2611,10 @@ static INT LCMapStringW_wrapper(DWORD flags, LPCWSTR src, INT srclen, LPWSTR dst
+ 
+ static void test_LCMapStringW(void)
+ {
++    static const WCHAR id[] = {'i','d','2',0};
++    static const WCHAR result[] = { 0x320e, 0x1a0e, 0x1c0d, 0x0101, 0x0101, 0 };
++    WCHAR buffer[512];
++
+     int ret;
+     WCHAR buf[256];
+ 
+@@ -2624,6 +2628,14 @@ static void test_LCMapStringW(void)
+     }
+ 
+     test_lcmapstring_unicode(LCMapStringW_wrapper, "LCMapStringW:");
++
++    SetLastError(0);
++    ret = LCMapStringW (LOCALE_USER_DEFAULT, NORM_IGNOREKANATYPE | NORM_IGNOREWIDTH | LCMAP_SORTKEY | NORM_IGNORECASE,
++                 id, lstrlenW(id)+1, buffer, sizeof(buffer));
++todo_wine {
++    ok(ret == lstrlenW(buffer)*sizeof(WCHAR)+1, "ret = %d\n", ret);
++    ok(!lstrcmpW(buffer, result), "string compare mismatch\n");
++    }
+ }
+ 
+ static INT LCMapStringEx_wrapper(DWORD flags, LPCWSTR src, INT srclen, LPWSTR dst, INT dstlen)
+-- 
+1.9.1
+
