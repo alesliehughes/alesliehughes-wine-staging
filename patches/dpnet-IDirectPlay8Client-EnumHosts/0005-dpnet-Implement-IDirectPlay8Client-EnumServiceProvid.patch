@@ -1,7 +1,7 @@
-From 34b2eeaf8af30f16e2260baabd2f20791d6a27d6 Mon Sep 17 00:00:00 2001
+From 355db021fea370ee56b6edd2bd7acf20f45272fc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:56:51 +1100
-Subject: [PATCH 05/36] dpnet: Implement IDirectPlay8Client
+Subject: [PATCH 05/45] dpnet: Implement IDirectPlay8Client
  EnumServiceProviders
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  4 files changed, 22 insertions(+), 12 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 1fa825f..d1e6b3b 100644
+index 1fa825ffc6..d1e6b3ba57 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -124,9 +124,17 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
@@ -38,7 +38,7 @@ index 1fa825f..d1e6b3b 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 89e0777..256e3f4 100644
+index 89e07770be..256e3f4051 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -137,6 +137,8 @@ extern HRESULT DPNET_CreateDirectPlay8LobbyClient(IClassFactory *iface, IUnknown
@@ -51,7 +51,7 @@ index 89e0777..256e3f4 100644
  /* used for generic dumping (copied from ddraw) */
  typedef struct {
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 461d610..57f15ef 100644
+index 461d610b61..57f15efc6a 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -126,7 +126,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Initialize(IDirectPlay8Peer *iface,
@@ -64,7 +64,7 @@ index 461d610..57f15ef 100644
  {
      static const WCHAR serviceproviders[] = {'S','O','F','T','W','A','R','E','\\','M','i','c','r','o','s','o','f','t','\\',
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index 42b973d..f67a4b6 100644
+index 42b973d4ad..f67a4b6de4 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -165,20 +165,20 @@ static void test_enum_service_providers(void)
@@ -112,5 +112,5 @@ index 42b973d..f67a4b6 100644
  
      for (i=0;i<items;i++)
 -- 
-1.9.1
+2.11.0
 

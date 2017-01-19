@@ -1,0 +1,25 @@
+From 522a707d5ed29146a8afd8d04efd0e62b0e9dca7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 22 Jan 2017 08:23:12 +1100
+Subject: [PATCH 45/45] temp2
+
+---
+ dlls/dpnet/client.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index b749e926da..b2ab637659 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -1201,7 +1201,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+                                     received.pvPlayerContext    = NULL;
+                                     received.pReceiveData       = userdata;
+                                     received.dwReceiveDataSize  = userdatasize;
+-                                    received.hBufferHandle      = 0;
++                                    received.hBufferHandle      = 0xbeefdead;
+                                     received.dwReceiveFlags     = 0;
+ 
+                                     hr = msghandler(NULL, DPN_MSGID_RECEIVE, &received);
+-- 
+2.11.0
+

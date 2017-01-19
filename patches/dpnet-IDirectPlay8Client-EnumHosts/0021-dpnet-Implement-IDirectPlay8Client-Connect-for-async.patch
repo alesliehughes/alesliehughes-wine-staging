@@ -1,7 +1,7 @@
-From f1ea726872cf5b2678c0ddcd497b8967119aeee1 Mon Sep 17 00:00:00 2001
+From 4167b858f3a09afdc5b86f693a48f963dd68b3fe Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:02:35 +1100
-Subject: [PATCH 21/36] dpnet: Implement IDirectPlay8Client Connect for async
+Subject: [PATCH 21/45] dpnet: Implement IDirectPlay8Client Connect for async
  connections
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 68 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 8e14aac..951ea1c 100644
+index 8e14aacb0a..951ea1cb06 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -718,7 +718,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
@@ -123,7 +123,7 @@ index 8e14aac..951ea1c 100644
      }
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 245e204..6f0e269 100644
+index 245e20491d..6f0e269353 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -70,6 +70,7 @@ struct IDirectPlay8ClientImpl
@@ -135,5 +135,5 @@ index 245e204..6f0e269 100644
  
  /* ------------------- */
 -- 
-1.9.1
+2.11.0
 

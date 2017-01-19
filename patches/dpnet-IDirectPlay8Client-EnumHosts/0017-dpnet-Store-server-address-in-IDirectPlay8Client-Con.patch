@@ -1,7 +1,7 @@
-From e0ea536151946ed4df70a7b83e4c630b70a8c4f2 Mon Sep 17 00:00:00 2001
+From 145d33548f9bbcb1030745b2e6811ec61784cb5c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:20:58 +1100
-Subject: [PATCH 17/36] dpnet: Store server address in IDirectPlay8Client
+Subject: [PATCH 17/45] dpnet: Store server address in IDirectPlay8Client
  Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 69 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 8d2f2a8..7935fcc 100644
+index 8d2f2a86d2..7935fcc8f2 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -101,6 +101,64 @@ static SOCKET find_free_socket(void)
@@ -106,7 +106,7 @@ index 8d2f2a8..7935fcc 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index ff4aaae..245e204 100644
+index ff4aaae280..245e20491d 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -68,6 +68,8 @@ struct IDirectPlay8ClientImpl
@@ -119,5 +119,5 @@ index ff4aaae..245e204 100644
  
  /* ------------------- */
 -- 
-1.9.1
+2.11.0
 
