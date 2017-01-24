@@ -1,0 +1,25 @@
+From 0d0c9a9fc4cb3a0e448ffb65c5383b76cd26c548 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 24 Jan 2017 15:24:41 +1100
+Subject: [PATCH 4/6] uuid: Add comsvcs.h
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/uuid/uuid.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/uuid/uuid.c b/dlls/uuid/uuid.c
+index af96221..6add910 100644
+--- a/dlls/uuid/uuid.c
++++ b/dlls/uuid/uuid.c
+@@ -87,6 +87,7 @@ DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
+ #include "tlogstg.h"
+ #include "msdasc.h"
+ #include "netcfgx.h"
++#include "comsvcs.h"
+ 
+ /* FIXME: cguids declares GUIDs but does not define their values */
+ 
+-- 
+1.9.1
+

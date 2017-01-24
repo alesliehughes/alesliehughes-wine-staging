@@ -1,8 +1,9 @@
-From e61f815aa6fd8fdc10d1960cc0167229513d022e Mon Sep 17 00:00:00 2001
+From 8fa0a5ef484151d8a253620d69443eaffafcf8f1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 15:42:58 +1100
-Subject: [PATCH 3/3] include: Add mtxdm.h
+Subject: [PATCH 3/6] include: Add mtxdm.h
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  include/Makefile.in |  1 +
  include/mtxdm.h     | 35 +++++++++++++++++++++++++++++++++++
@@ -23,7 +24,7 @@ index fdd7512..88b0164 100644
  	ndrtypes.h \
 diff --git a/include/mtxdm.h b/include/mtxdm.h
 new file mode 100644
-index 0000000..0fdb2e3
+index 0000000..b4ae711
 --- /dev/null
 +++ b/include/mtxdm.h
 @@ -0,0 +1,35 @@

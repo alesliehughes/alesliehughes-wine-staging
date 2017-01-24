@@ -1,13 +1,13 @@
-From b3eb28418d1110e8a83d732d485197e7662759ce Mon Sep 17 00:00:00 2001
+From 981258ab2746a157a505e76d4dd6cb9b1021df2a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 15:33:37 +1100
-Subject: [PATCH 2/3] include: Add comsvcs.idl
+Subject: [PATCH 2/6] include: Add comsvcs.idl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  include/Makefile.in |  1 +
- include/comsvcs.idl | 78 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 79 insertions(+)
+ include/comsvcs.idl | 99 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 100 insertions(+)
  create mode 100644 include/comsvcs.idl
 
 diff --git a/include/Makefile.in b/include/Makefile.in
@@ -24,10 +24,10 @@ index 401b02b..fdd7512 100644
  	cordebug.idl \
 diff --git a/include/comsvcs.idl b/include/comsvcs.idl
 new file mode 100644
-index 0000000..1ab4224
+index 0000000..7020006
 --- /dev/null
 +++ b/include/comsvcs.idl
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,99 @@
 +/*
 + * Copyright (C) 2017 Alistair Leslie-Hughes
 + *
@@ -49,6 +49,10 @@ index 0000000..1ab4224
 +import "objidl.idl";
 +import "oaidl.idl";
 +
++#ifndef __WIDL__
++#define threading(model)
++#endif
++
 +typedef DWORD_PTR INSTID;
 +typedef DWORD_PTR RESID;
 +typedef DWORD     RESOURCERATING;
@@ -58,53 +62,70 @@ index 0000000..1ab4224
 +typedef DWORD_PTR TRANSID;
 +
 +[
-+    object,
-+    hidden,
-+    local,
-+    uuid(bf6a1850-2b45-11cf-be10-00aa00a2fa25),
-+    pointer_default(unique)
++    uuid(2A005C00-A5DE-11CF-9E66-00AA00A3F464),
++    version(1.0)
 +]
-+interface IHolder : IUnknown
++library COMSVCSLib
 +{
-+    HRESULT AllocResource([in] const RESTYPID typeid, [out] RESID *resid);
-+    HRESULT FreeResource([in] const RESID _resid);
-+    HRESULT TrackResource([in] const RESID resid);
-+    HRESULT TrackResourceS([in] const SRESID resid);
-+    HRESULT UntrackResource([in] const RESID resid, [in] const BOOL value);
-+    HRESULT UntrackResourceS([in] const SRESID resid, [in] const BOOL value);
-+    HRESULT Close(void);      
-+    HRESULT RequestDestroyResource([in] const RESID resid);
-+};
++    [
++        object,
++        hidden,
++        local,
++        uuid(bf6a1850-2b45-11cf-be10-00aa00a2fa25),
++        pointer_default(unique)
++    ]
++    interface IHolder : IUnknown
++    {
++        HRESULT AllocResource([in] const RESTYPID typeid, [out] RESID *resid);
++        HRESULT FreeResource([in] const RESID _resid);
++        HRESULT TrackResource([in] const RESID resid);
++        HRESULT TrackResourceS([in] const SRESID resid);
++        HRESULT UntrackResource([in] const RESID resid, [in] const BOOL value);
++        HRESULT UntrackResourceS([in] const SRESID resid, [in] const BOOL value);
++        HRESULT Close(void);
++        HRESULT RequestDestroyResource([in] const RESID resid);
++    };
 +
-+[
-+    object,
-+    hidden,
-+    local,
-+    uuid(208b3651-2b48-11cf-be10-00aa00a2fa25),
-+    pointer_default(unique)
-+]
-+interface IDispenserDriver : IUnknown
-+{
-+    HRESULT SCreateResource([in] const RESTYPID restypid, [out] RESID *resid, [out] TIMEINSECS *destroy);
-+    HRESULT SRateResource([in] const RESTYPID restypid, [in] const RESID resid,
-+            [in] const BOOL requires, [out] RESOURCERATING *rating);
-+    HRESULT SEnlistResource([in] const RESID resid, [in] const TRANSID transid);
-+    HRESULT SResetResource([in] const RESID resid);
-+    HRESULT SDestroyResource([in] const RESID resid);
-+    HRESULT SDestroyResourceS([in] const SRESID resid);
-+};
++    [
++        object,
++        hidden,
++        local,
++        uuid(208b3651-2b48-11cf-be10-00aa00a2fa25),
++        pointer_default(unique)
++    ]
++    interface IDispenserDriver : IUnknown
++    {
++        HRESULT CreateResource([in] const RESTYPID restypid, [out] RESID *resid, [out] TIMEINSECS *destroy);
++        HRESULT RateResource([in] const RESTYPID restypid, [in] const RESID resid,
++                [in] const BOOL requires, [out] RESOURCERATING *rating);
++        HRESULT EnlistResource([in] const RESID resid, [in] const TRANSID transid);
++        HRESULT ResetResource([in] const RESID resid);
++        HRESULT DestroyResource([in] const RESID resid);
++        HRESULT DestroyResourceS([in] const SRESID resid);
++    };
 +
-+[
-+    object,
-+    hidden,
-+    local,
-+    uuid(5cb31e10-2b5f-11cf-be10-00aa00a2fa25),
-+    pointer_default(unique)
-+]
-+interface IDispenserManager : IUnknown
-+{
-+     HRESULT RegisterDispenser([in] IDispenserDriver *driver, [in] LPCOLESTR name, [out] IHolder **dispenser);
-+     HRESULT GetContext([out] INSTID *id, [out] TRANSID *id2);
++    [
++        object,
++        hidden,
++        local,
++        uuid(5cb31e10-2b5f-11cf-be10-00aa00a2fa25),
++        pointer_default(unique)
++    ]
++    interface IDispenserManager : IUnknown
++    {
++         HRESULT RegisterDispenser([in] IDispenserDriver *driver, [in] LPCOLESTR name, [out] IHolder **dispenser);
++         HRESULT GetContext([out] INSTID *id, [out] TRANSID *transid);
++    };
++
++    [
++        uuid(ecabb0c0-7f19-11d2-978e-0000f8757e2a),
++        hidden,
++        threading(both)
++    ]
++    coclass DispenserManager
++    {
++        [default] interface IDispenserManager;
++    };
 +};
 -- 
 1.9.1

@@ -1,0 +1,109 @@
+From 8640ed9fdb71af859773d1fb9c9b956316347642 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 24 Jan 2017 16:28:07 +1100
+Subject: [PATCH 6/6] comsvcs: Add DispenserManage stubbed interface
+
+---
+ dlls/comsvcs/Makefile.in |  2 +-
+ dlls/comsvcs/main.c      | 61 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 60 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/comsvcs/Makefile.in b/dlls/comsvcs/Makefile.in
+index a5554c1..4a2d8c7 100644
+--- a/dlls/comsvcs/Makefile.in
++++ b/dlls/comsvcs/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = comsvcs.dll
+ IMPORTLIB = comsvcs
+-IMPORTS   = ole32
++IMPORTS   = ole32 uuid
+ 
+ C_SRCS = \
+ 	main.c
+diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
+index 3fc69de..2d05c47 100644
+--- a/dlls/comsvcs/main.c
++++ b/dlls/comsvcs/main.c
+@@ -28,6 +28,7 @@
+ #include "winbase.h"
+ #include "ole2.h"
+ #include "rpcproxy.h"
++#include "comsvcs.h"
+ 
+ #include "wine/debug.h"
+ 
+@@ -49,13 +50,69 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID lpv)
+     return TRUE;
+ }
+ 
++typedef HRESULT (*fnCreateInstance)(LPVOID *ppObj);
++
++static HRESULT WINAPI comsvcscf_QueryInterface(IClassFactory *iface, REFIID riid, LPVOID *ppv )
++{
++    *ppv = NULL;
++
++    if(IsEqualGUID(&IID_IUnknown, riid)) {
++        TRACE("(%p)->(IID_IUnknown %p)\n", iface, ppv);
++        *ppv = iface;
++    }else if(IsEqualGUID(&IID_IClassFactory, riid)) {
++        TRACE("(%p)->(IID_IClassFactory %p)\n", iface, ppv);
++        *ppv = iface;
++    }
++
++    if(*ppv) {
++        IUnknown_AddRef((IUnknown*)*ppv);
++        return S_OK;
++    }
++
++    WARN("(%p)->(%s %p)\n", iface, debugstr_guid(riid), ppv);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI comsvcscf_AddRef(IClassFactory *iface )
++{
++    TRACE("(%p)\n", iface);
++    return 2;
++}
++
++static ULONG WINAPI comsvcscf_Release(IClassFactory *iface )
++{
++    TRACE("(%p)\n", iface);
++    return 1;
++}
++
++static HRESULT WINAPI comsvcscf_LockServer(IClassFactory *iface, BOOL fLock)
++{
++    TRACE("(%p)->(%x)\n", iface, fLock);
++    return S_OK;
++}
++
++static const struct IClassFactoryVtbl comsvcscf_vtbl =
++{
++    comsvcscf_QueryInterface,
++    comsvcscf_AddRef,
++    comsvcscf_Release,
++    NULL,
++    comsvcscf_LockServer
++};
++
++static IClassFactory DispenserManageFactory = { &comsvcscf_vtbl };
++
+ /******************************************************************
+  * DllGetClassObject
+  */
+-HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID iid, LPVOID *ppv)
++HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
+ {
+-    FIXME("(%s,%s,%p) stub\n", debugstr_guid(rclsid), debugstr_guid(iid), ppv);
++    if(IsEqualGUID(&CLSID_DispenserManager, rclsid)) {
++        TRACE("(CLSID_DispenserManager %s %p)\n", debugstr_guid(riid), ppv);
++        return IClassFactory_QueryInterface(&DispenserManageFactory, riid, ppv);
++    }
+ 
++    FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
+     return CLASS_E_CLASSNOTAVAILABLE;
+ }
+ 
+-- 
+1.9.1
+
