@@ -1,7 +1,7 @@
-From 99275cf5f5d6dc933d8f1154fdcab69f285d2281 Mon Sep 17 00:00:00 2001
+From 6356fda084c1b9229979e06aaf4341790b3a0831 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 14:53:02 +1100
-Subject: [PATCH 1/6] mtxdm: New DLL
+Subject: [PATCH 1/7] mtxdm: New DLL
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -16,10 +16,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/mtxdm/mtxdm_main.c
 
 diff --git a/configure b/configure
-index 23df9f6..5639a9c 100755
+index 6368926..d330889 100755
 --- a/configure
 +++ b/configure
-@@ -1323,6 +1323,7 @@ enable_msxml2
+@@ -1324,6 +1324,7 @@ enable_msxml2
  enable_msxml3
  enable_msxml4
  enable_msxml6
@@ -27,7 +27,7 @@ index 23df9f6..5639a9c 100755
  enable_ncrypt
  enable_nddeapi
  enable_ndis_sys
-@@ -18169,6 +18170,7 @@ wine_fn_config_dll msxml3 enable_msxml3 clean
+@@ -18173,6 +18174,7 @@ wine_fn_config_dll msxml3 enable_msxml3 clean
  wine_fn_config_test dlls/msxml3/tests msxml3_test clean
  wine_fn_config_dll msxml4 enable_msxml4 clean
  wine_fn_config_dll msxml6 enable_msxml6 clean
@@ -36,10 +36,10 @@ index 23df9f6..5639a9c 100755
  wine_fn_config_dll nddeapi enable_nddeapi implib
  wine_fn_config_dll ndis.sys enable_ndis_sys
 diff --git a/configure.ac b/configure.ac
-index 353f271..50a9804 100644
+index d30dd9c..461ec73 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3230,6 +3230,7 @@ WINE_CONFIG_DLL(msxml3,,[clean])
+@@ -3232,6 +3232,7 @@ WINE_CONFIG_DLL(msxml3,,[clean])
  WINE_CONFIG_TEST(dlls/msxml3/tests,[clean])
  WINE_CONFIG_DLL(msxml4,,[clean])
  WINE_CONFIG_DLL(msxml6,,[clean])

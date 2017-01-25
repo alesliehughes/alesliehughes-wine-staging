@@ -1,12 +1,13 @@
-From 8640ed9fdb71af859773d1fb9c9b956316347642 Mon Sep 17 00:00:00 2001
+From 1662dcaa448dbbc7480862ed118eb4135b9a614a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 24 Jan 2017 16:28:07 +1100
-Subject: [PATCH 6/6] comsvcs: Add DispenserManage stubbed interface
+Subject: [PATCH 6/7] comsvcs: Add DispenserManage stubbed interface
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/comsvcs/Makefile.in |  2 +-
- dlls/comsvcs/main.c      | 61 ++++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 60 insertions(+), 3 deletions(-)
+ dlls/comsvcs/Makefile.in |   2 +-
+ dlls/comsvcs/main.c      | 167 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 166 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/comsvcs/Makefile.in b/dlls/comsvcs/Makefile.in
 index a5554c1..4a2d8c7 100644
@@ -21,7 +22,7 @@ index a5554c1..4a2d8c7 100644
  C_SRCS = \
  	main.c
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index 3fc69de..2d05c47 100644
+index 3fc69de..ca72688 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
 @@ -28,6 +28,7 @@
@@ -32,13 +33,126 @@ index 3fc69de..2d05c47 100644
  
  #include "wine/debug.h"
  
-@@ -49,13 +50,69 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID lpv)
+@@ -35,6 +36,112 @@ WINE_DEFAULT_DEBUG_CHANNEL(comsvcs);
+ 
+ static HINSTANCE COMSVCS_hInstance;
+ 
++typedef struct dispensermanager
++{
++    IDispenserManager IDispenserManager_iface;
++    LONG ref;
++
++} dispensermanager;
++
++static inline dispensermanager *impl_from_IDispenserManager(IDispenserManager *iface)
++{
++    return CONTAINING_RECORD(iface, dispensermanager, IDispenserManager_iface);
++}
++
++static HRESULT WINAPI dismanager_QueryInterface(IDispenserManager *iface, REFIID riid, void **object)
++{
++    dispensermanager *This = impl_from_IDispenserManager(iface);
++
++    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), object);
++
++    *object = NULL;
++
++    if (IsEqualGUID(riid, &IID_IUnknown) ||
++        IsEqualGUID(riid, &IID_IDispenserManager))
++    {
++        *object = &This->IDispenserManager_iface;
++        IUnknown_AddRef( (IUnknown*)*object);
++
++        return S_OK;
++    }
++
++    WARN("(%p)->(%s,%p),not found\n",This,debugstr_guid(riid),object);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI dismanager_AddRef(IDispenserManager *iface)
++{
++    dispensermanager *This = impl_from_IDispenserManager(iface);
++    ULONG ref = InterlockedIncrement(&This->ref);
++    TRACE("(%p)->(%d)\n", This, ref);
++    return ref;
++}
++
++static ULONG WINAPI dismanager_Release(IDispenserManager *iface)
++{
++    dispensermanager *This = impl_from_IDispenserManager(iface);
++    ULONG ref = InterlockedDecrement(&This->ref);
++    TRACE("(%p)->(%d)\n", This, ref);
++
++    if (!ref)
++    {
++       HeapFree(GetProcessHeap(), 0, This);
++    }
++
++    return ref;
++}
++
++static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDispenserDriver *driver,
++                        LPCOLESTR name, IHolder **dispenser)
++{
++    dispensermanager *This = impl_from_IDispenserManager(iface);
++
++    FIXME("(%p)->(%p, %s, %p) strub\n", This, driver, debugstr_w(name), dispenser);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI dismanager_GetContext(IDispenserManager *iface, INSTID *id, TRANSID *transid)
++{
++    dispensermanager *This = impl_from_IDispenserManager(iface);
++
++    FIXME("(%p)->(%p, %p) stub\n", This, id, transid);
++
++    return E_NOTIMPL;
++}
++
++struct IDispenserManagerVtbl dismanager_vtbl =
++{
++    dismanager_QueryInterface,
++    dismanager_AddRef,
++    dismanager_Release,
++    dismanager_RegisterDispenser,
++    dismanager_GetContext
++};
++
++static HRESULT WINAPI CreateDispenserManager(IClassFactory *cf,IUnknown* outer, REFIID riid,void **object)
++{
++    dispensermanager *dismanager;
++    HRESULT ret;
++
++    TRACE("(%p %s %p)\n", outer, debugstr_guid(riid), object);
++
++    dismanager = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*dismanager));
++    if (!dismanager)
++    {
++        *object = NULL;
++        return E_OUTOFMEMORY;
++    }
++
++    dismanager->IDispenserManager_iface.lpVtbl = &dismanager_vtbl;
++    dismanager->ref = 1;
++
++    ret = dismanager_QueryInterface(&dismanager->IDispenserManager_iface, riid, object);
++    dismanager_Release(&dismanager->IDispenserManager_iface);
++
++    return ret;
++}
++
+ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID lpv)
+ {
+     switch(reason)
+@@ -49,13 +156,69 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID lpv)
      return TRUE;
  }
  
-+typedef HRESULT (*fnCreateInstance)(LPVOID *ppObj);
++typedef HRESULT (*fnCreateInstance)(void **object);
 +
-+static HRESULT WINAPI comsvcscf_QueryInterface(IClassFactory *iface, REFIID riid, LPVOID *ppv )
++static HRESULT WINAPI comsvcscf_QueryInterface(IClassFactory *iface, REFIID riid, void **ppv )
 +{
 +    *ppv = NULL;
 +
@@ -82,7 +196,7 @@ index 3fc69de..2d05c47 100644
 +    comsvcscf_QueryInterface,
 +    comsvcscf_AddRef,
 +    comsvcscf_Release,
-+    NULL,
++    CreateDispenserManager,
 +    comsvcscf_LockServer
 +};
 +

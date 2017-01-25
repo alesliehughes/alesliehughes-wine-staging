@@ -1,7 +1,7 @@
-From 981258ab2746a157a505e76d4dd6cb9b1021df2a Mon Sep 17 00:00:00 2001
+From c770d47a34ebdfc30b2d42475f1f29e85d6421cd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 15:33:37 +1100
-Subject: [PATCH 2/6] include: Add comsvcs.idl
+Subject: [PATCH 2/7] include: Add comsvcs.idl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -24,7 +24,7 @@ index 401b02b..fdd7512 100644
  	cordebug.idl \
 diff --git a/include/comsvcs.idl b/include/comsvcs.idl
 new file mode 100644
-index 0000000..7020006
+index 0000000..2c510f8
 --- /dev/null
 +++ b/include/comsvcs.idl
 @@ -0,0 +1,99 @@
@@ -62,7 +62,7 @@ index 0000000..7020006
 +typedef DWORD_PTR TRANSID;
 +
 +[
-+    uuid(2A005C00-A5DE-11CF-9E66-00AA00A3F464),
++    uuid(2a005c00-a5de-11cf-9e66-00aa00a3f464),
 +    version(1.0)
 +]
 +library COMSVCSLib
