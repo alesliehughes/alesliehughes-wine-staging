@@ -1,0 +1,61 @@
+From 370afc222648112ab8eb861e0ad9fef64a2d6bfd Mon Sep 17 00:00:00 2001
+From: Austin English <austinenglish@gmail.com>
+Date: Thu, 2 Feb 2017 12:24:46 +1100
+Subject: [PATCH 2/2] dhcpsvc: Add DhcpRequestParams stub
+
+Fixes https://bugs.winehq.org/show_bug.cgi?id=38485
+
+Based on a patch by Mike Ellery
+Based on a patch by Austin English
+
+Split into two patches (include, stub)
+Corrected spec file
+Use standard debugstr_w function
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dhcpcsvc/dhcpcsvc.c    | 10 ++++++++++
+ dlls/dhcpcsvc/dhcpcsvc.spec |  2 +-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dhcpcsvc/dhcpcsvc.c b/dlls/dhcpcsvc/dhcpcsvc.c
+index 3600680..20ff589 100644
+--- a/dlls/dhcpcsvc/dhcpcsvc.c
++++ b/dlls/dhcpcsvc/dhcpcsvc.c
+@@ -19,6 +19,7 @@
+ #include <stdarg.h>
+ #include "windef.h"
+ #include "winbase.h"
++#include "dhcpcsdk.h"
+ #include "wine/debug.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dhcpcsvc);
+@@ -37,3 +38,12 @@ BOOL WINAPI DllMain( HINSTANCE hinst, DWORD reason, LPVOID reserved )
+     }
+     return TRUE;
+ }
++
++DWORD WINAPI DhcpRequestParams( DWORD flags, void *reserved, WCHAR *adaptername, DHCPCAPI_CLASSID *classid,
++                                DHCPCAPI_PARAMS_ARRAY sendparams, DHCPCAPI_PARAMS_ARRAY recdparams,
++                                BYTE *buffer, DWORD *size, WCHAR *requestidstr )
++{
++    FIXME("(%08x, %p, %s, %p, %u, %u, %p, %p, %s): stub\n", flags, reserved, debugstr_w(adaptername), classid,
++            sendparams.nParams, recdparams.nParams, buffer, size, debugstr_w(requestidstr));
++    return ERROR_SUCCESS;
++}
+diff --git a/dlls/dhcpcsvc/dhcpcsvc.spec b/dlls/dhcpcsvc/dhcpcsvc.spec
+index 97194a6..2466579 100644
+--- a/dlls/dhcpcsvc/dhcpcsvc.spec
++++ b/dlls/dhcpcsvc/dhcpcsvc.spec
+@@ -31,7 +31,7 @@
+ @ stub DhcpRenewIpAddressLeaseEx
+ @ stub DhcpRequestCachedParams
+ @ stub DhcpRequestOptions
+-@ stub DhcpRequestParams
++@ stdcall DhcpRequestParams(long ptr wstr ptr long long ptr ptr wstr)
+ @ stub DhcpSetMSFTVendorSpecificOptions
+ @ stub DhcpStaticRefreshParams
+ @ stub DhcpUndoRequestParams
+-- 
+1.9.1
+
