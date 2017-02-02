@@ -1,0 +1,40 @@
+From 6d138e31ded623d8571aebf7df5dca2888846326 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 2 Feb 2017 15:24:00 +1100
+Subject: [PATCH 2/2] mfreadwrite: Add MFCreateSourceReaderFromMediaSource stub
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/mfreadwrite/main.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
+index a72f634..0c10541 100644
+--- a/dlls/mfreadwrite/main.c
++++ b/dlls/mfreadwrite/main.c
+@@ -22,6 +22,11 @@
+ 
+ #include "windef.h"
+ #include "winbase.h"
++#include "mfreadwrite.h"
++
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(mfreadwrite);
+ 
+ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+ {
+@@ -36,3 +41,10 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+ 
+     return TRUE;
+ }
++
++HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAttributes *attributes, IMFSourceReader **reader)
++{
++    FIXME("%p %p %p stub.\n");
++
++    return E_NOTIMPL;
++}
+-- 
+1.9.1
+
