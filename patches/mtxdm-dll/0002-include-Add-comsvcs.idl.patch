@@ -1,4 +1,4 @@
-From c770d47a34ebdfc30b2d42475f1f29e85d6421cd Mon Sep 17 00:00:00 2001
+From 49514d94d6dfb4ca4772cc862c71da884f8d191f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 15:33:37 +1100
 Subject: [PATCH 2/7] include: Add comsvcs.idl

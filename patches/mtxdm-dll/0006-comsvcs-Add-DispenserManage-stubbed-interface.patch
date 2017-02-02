@@ -1,4 +1,4 @@
-From 1662dcaa448dbbc7480862ed118eb4135b9a614a Mon Sep 17 00:00:00 2001
+From 8eea49e87807f811e8782f1ae8193cc6deeba103 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 24 Jan 2017 16:28:07 +1100
 Subject: [PATCH 6/7] comsvcs: Add DispenserManage stubbed interface
@@ -22,7 +22,7 @@ index a5554c1..4a2d8c7 100644
  C_SRCS = \
  	main.c
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index 3fc69de..ca72688 100644
+index 3fc69de..7b06041 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
 @@ -28,6 +28,7 @@
@@ -97,7 +97,7 @@ index 3fc69de..ca72688 100644
 +{
 +    dispensermanager *This = impl_from_IDispenserManager(iface);
 +
-+    FIXME("(%p)->(%p, %s, %p) strub\n", This, driver, debugstr_w(name), dispenser);
++    FIXME("(%p)->(%p, %s, %p) stub\n", This, driver, debugstr_w(name), dispenser);
 +
 +    return E_NOTIMPL;
 +}

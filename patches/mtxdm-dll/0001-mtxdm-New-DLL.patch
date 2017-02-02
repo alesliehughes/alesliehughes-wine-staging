@@ -1,4 +1,4 @@
-From 6356fda084c1b9229979e06aaf4341790b3a0831 Mon Sep 17 00:00:00 2001
+From 274a8118aeec676bccb5e5721e893c542782f1d6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 14:53:02 +1100
 Subject: [PATCH 1/7] mtxdm: New DLL
@@ -16,7 +16,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/mtxdm/mtxdm_main.c
 
 diff --git a/configure b/configure
-index 6368926..d330889 100755
+index 68a79c0..7734189 100755
 --- a/configure
 +++ b/configure
 @@ -1324,6 +1324,7 @@ enable_msxml2
@@ -36,7 +36,7 @@ index 6368926..d330889 100755
  wine_fn_config_dll nddeapi enable_nddeapi implib
  wine_fn_config_dll ndis.sys enable_ndis_sys
 diff --git a/configure.ac b/configure.ac
-index d30dd9c..461ec73 100644
+index 6e4cd8b..bdc81d2 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -3232,6 +3232,7 @@ WINE_CONFIG_DLL(msxml3,,[clean])

@@ -1,4 +1,4 @@
-From 5016daa6bceebc57e31db6dd645804e81ffb54cf Mon Sep 17 00:00:00 2001
+From de603770fbb7889751fbc417d6bd0d9aa9a34ff0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 15:42:58 +1100
 Subject: [PATCH 3/7] include: Add mtxdm.h

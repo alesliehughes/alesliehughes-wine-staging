@@ -1,4 +1,4 @@
-From f3d5d44061cfa5ef50a70bf0f9fc75b9ffb21c19 Mon Sep 17 00:00:00 2001
+From 7c0da56cff257eddaf7dc29e9d9ab6c59eb8c5d6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 24 Jan 2017 16:11:05 +1100
 Subject: [PATCH 5/7] comsvcs: Register typelib

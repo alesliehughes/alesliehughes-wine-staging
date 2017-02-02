@@ -1,4 +1,4 @@
-From 43ea10a04c37090979f23b2dcd68d04dfb75504e Mon Sep 17 00:00:00 2001
+From 2cff522c7d7c09fc717c743051989c206759989b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 25 Jan 2017 11:08:33 +1100
 Subject: [PATCH 7/7] comsvcs: Add initial tests
@@ -14,7 +14,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/comsvcs/tests/dispenser.c
 
 diff --git a/configure b/configure
-index d330889..fa2fa29 100755
+index 7734189..96703d2 100755
 --- a/configure
 +++ b/configure
 @@ -17798,7 +17798,8 @@ wine_fn_config_dll comm.drv16 enable_win16
@@ -28,7 +28,7 @@ index d330889..fa2fa29 100755
  wine_fn_config_dll connect enable_connect
  wine_fn_config_dll credui enable_credui clean,implib
 diff --git a/configure.ac b/configure.ac
-index 461ec73..5bdcb36 100644
+index bdc81d2..fa51830 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -2856,7 +2856,8 @@ WINE_CONFIG_DLL(comm.drv16,enable_win16)
