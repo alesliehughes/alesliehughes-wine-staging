@@ -1,7 +1,7 @@
-From 4a906135853093efff525c1f8ac3cce59ec15c6c Mon Sep 17 00:00:00 2001
+From e665feb30cda88469dc9d3f5f36bac2fa40cadc5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 24 Jan 2017 15:24:41 +1100
-Subject: [PATCH 4/7] uuid: Add comsvcs.h
+Subject: [PATCH 4/8] uuid: Add comsvcs.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

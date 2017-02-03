@@ -1,7 +1,7 @@
-From 7c0da56cff257eddaf7dc29e9d9ab6c59eb8c5d6 Mon Sep 17 00:00:00 2001
+From 745c87d9596534cfa826ca4c211afc1c257c1f54 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 24 Jan 2017 16:11:05 +1100
-Subject: [PATCH 5/7] comsvcs: Register typelib
+Subject: [PATCH 5/8] comsvcs: Register typelib
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

@@ -1,7 +1,7 @@
-From de603770fbb7889751fbc417d6bd0d9aa9a34ff0 Mon Sep 17 00:00:00 2001
+From f9a311c9a6baa5c7340ab81df3f72c255fc43333 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 15:42:58 +1100
-Subject: [PATCH 3/7] include: Add mtxdm.h
+Subject: [PATCH 3/8] include: Add mtxdm.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
