@@ -1,7 +1,7 @@
-From 5e487cad59dc578562c0165dc0f72617f2291865 Mon Sep 17 00:00:00 2001
+From 00704fab21bc6e4be913c90b7716c7eaacb3c3d3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 09:38:04 +1100
-Subject: [PATCH 36/45] dpnet: Send connect data when sending
+Subject: [PATCH 36/47] dpnet: Send connect data when sending
  DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -12,7 +12,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 57 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 193c8de1e8..49167f60dc 100644
+index 193c8de..49167f6 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -382,14 +382,14 @@ static int dframe_packet_sack_ack(SOCKET sock, void *addr, size_t addrsize, int
@@ -121,7 +121,7 @@ index 193c8de1e8..49167f60dc 100644
          This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
          hr = DPNSUCCESS_PENDING;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 100d865768..cdc7360364 100644
+index 100d865..cdc7360 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -70,6 +70,9 @@ struct connect_data
@@ -154,7 +154,7 @@ index 100d865768..cdc7360364 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 7a3cf60b65..3255c6db2f 100644
+index 7a3cf60..3255c6d 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -62,6 +62,9 @@ typedef struct IDirectPlay8PeerImpl
@@ -201,5 +201,5 @@ index 7a3cf60b65..3255c6db2f 100644
          This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
          hr = DPNSUCCESS_PENDING;
 -- 
-2.11.0
+1.9.1
 

@@ -1,7 +1,7 @@
-From 69b3b12f96f22d5e354e395f41dcf69b55b49677 Mon Sep 17 00:00:00 2001
+From e5234804ece9d60380fda233b7e429e2b54a6ac5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:29:09 +1100
-Subject: [PATCH 23/45] dpnet: Added Message Loop when connecting async
+Subject: [PATCH 23/47] dpnet: Added Message Loop when connecting async
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 151 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 3c53067f66..29f8264f9d 100644
+index 3c53067..29f8264 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -831,6 +831,112 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
@@ -142,7 +142,7 @@ index 3c53067f66..29f8264f9d 100644
      heap_free(threaddata);
  
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index 3716be9538..e4cfa43e92 100644
+index 3716be9..e4cfa43 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -149,6 +149,39 @@ struct DN_ACK_CONNECT_INFO
@@ -199,5 +199,5 @@ index 3716be9538..e4cfa43e92 100644
  
  #endif
 -- 
-2.11.0
+1.9.1
 

@@ -1,7 +1,7 @@
-From 38844b889a1148fb4da7ce8f1794672466922406 Mon Sep 17 00:00:00 2001
+From 61b22a3f5441a561ced25ecdf73b7374e2091272 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 15:34:54 +1100
-Subject: [PATCH 09/45] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 09/47] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 106 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b227e2860c..3b047ffc0b 100644
+index b227e28..3b047ff 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -139,6 +139,9 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
@@ -197,7 +197,7 @@ index b227e2860c..3b047ffc0b 100644
  
      return DPN_OK;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index c8e9411d16..33cc8c119d 100644
+index c8e9411..33cc8c1 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -66,6 +66,8 @@ struct IDirectPlay8ClientImpl
@@ -210,7 +210,7 @@ index c8e9411d16..33cc8c119d 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index b4cf9580f4..1c92690a21 100644
+index b4cf958..1c92690 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -270,7 +270,7 @@ static void test_enum_hosts(void)
@@ -243,5 +243,5 @@ index b4cf9580f4..1c92690a21 100644
      WaitForSingleObject( enumevent, 1000);
  
 -- 
-2.11.0
+1.9.1
 

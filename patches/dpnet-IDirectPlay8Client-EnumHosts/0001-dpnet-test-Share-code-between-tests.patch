@@ -1,7 +1,7 @@
-From 5732331fb411f7f7731580bd7c813ea47164e315 Mon Sep 17 00:00:00 2001
+From 4e3354258bc3997f63f672d92f07f8fafe32fbf6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 11:26:25 +1100
-Subject: [PATCH 01/45] dpnet/test: Share code between tests
+Subject: [PATCH 01/47] dpnet/test: Share code between tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/dpnet/tests/dpnet_private.h
 
 diff --git a/dlls/dpnet/tests/address.c b/dlls/dpnet/tests/address.c
-index 16ba6a736f..3271f26daa 100644
+index 16ba6a7..3271f26 100644
 --- a/dlls/dpnet/tests/address.c
 +++ b/dlls/dpnet/tests/address.c
 @@ -22,6 +22,8 @@
@@ -59,7 +59,7 @@ index 16ba6a736f..3271f26daa 100644
  {
      HRESULT hr;
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index a1817a4a86..5ee608747e 100644
+index a1817a4..5ee6087 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -24,9 +24,10 @@
@@ -230,7 +230,7 @@ index a1817a4a86..5ee608747e 100644
      BOOL firewall_enabled;
 diff --git a/dlls/dpnet/tests/dpnet_private.h b/dlls/dpnet/tests/dpnet_private.h
 new file mode 100644
-index 0000000000..1de25590bd
+index 0000000..1de2559
 --- /dev/null
 +++ b/dlls/dpnet/tests/dpnet_private.h
 @@ -0,0 +1,32 @@
@@ -267,7 +267,7 @@ index 0000000000..1de25590bd
 +
 +#endif
 diff --git a/dlls/dpnet/tests/server.c b/dlls/dpnet/tests/server.c
-index bfc21b0d05..1cc7848567 100644
+index bfc21b0..1cc7848 100644
 --- a/dlls/dpnet/tests/server.c
 +++ b/dlls/dpnet/tests/server.c
 @@ -24,6 +24,8 @@
@@ -322,5 +322,5 @@ index bfc21b0d05..1cc7848567 100644
      DWORD size, ver;
      BOOL isstub = FALSE;
 -- 
-2.11.0
+1.9.1
 

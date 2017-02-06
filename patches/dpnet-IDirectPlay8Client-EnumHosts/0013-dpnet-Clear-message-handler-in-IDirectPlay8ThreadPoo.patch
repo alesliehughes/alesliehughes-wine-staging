@@ -1,7 +1,7 @@
-From ff9140fa772980951688675f0e5808a7592fa92e Mon Sep 17 00:00:00 2001
+From 376620fe74a6539606412e2185e400ad00a53e57 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Nov 2016 09:12:50 +1100
-Subject: [PATCH 13/45] dpnet: Clear message handler in IDirectPlay8ThreadPool
+Subject: [PATCH 13/47] dpnet: Clear message handler in IDirectPlay8ThreadPool
  Close
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
-index 0f4e108a02..3c73756b38 100644
+index 0f4e108..3c73756 100644
 --- a/dlls/dpnet/threadpool.c
 +++ b/dlls/dpnet/threadpool.c
 @@ -94,6 +94,11 @@ static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_Initialize(IDirectPlay8ThreadPo
@@ -26,5 +26,5 @@ index 0f4e108a02..3c73756b38 100644
  }
  
 -- 
-2.11.0
+1.9.1
 

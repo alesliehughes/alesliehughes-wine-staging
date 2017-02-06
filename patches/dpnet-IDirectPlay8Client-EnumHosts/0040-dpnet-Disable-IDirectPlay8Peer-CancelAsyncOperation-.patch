@@ -1,7 +1,7 @@
-From eaaa61a092b3a232f7067e5d08804b40159667a5 Mon Sep 17 00:00:00 2001
+From 7d5b26fb607bb0c9ba76b6133fbe707e3ef7849d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 20:08:15 +1100
-Subject: [PATCH 40/45] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
+Subject: [PATCH 40/47] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
  for now
 
 (Was causing the connected event to occur)
@@ -11,7 +11,7 @@ Subject: [PATCH 40/45] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 81c4c983e7..9908066c8b 100644
+index 81c4c98..9908066 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -1096,7 +1096,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
@@ -24,7 +24,7 @@ index 81c4c983e7..9908066c8b 100644
                  switch(dframe->type)
                  {
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index f26fa070d4..52bd6c9981 100644
+index f26fa07..52bd6c9 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -265,11 +265,11 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
@@ -51,5 +51,5 @@ index f26fa070d4..52bd6c9981 100644
      return DPN_OK;
  }
 -- 
-2.11.0
+1.9.1
 

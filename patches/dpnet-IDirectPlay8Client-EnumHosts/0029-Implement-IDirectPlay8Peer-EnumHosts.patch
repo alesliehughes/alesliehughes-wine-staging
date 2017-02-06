@@ -1,7 +1,7 @@
-From 29996f76d9398b0d8ab2bc8304644d4d1f2fc362 Mon Sep 17 00:00:00 2001
+From 3595482fdb3581aa14b8377f13c23ad178b5239a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 30 Dec 2016 20:53:32 +1100
-Subject: [PATCH 29/45] Implement IDirectPlay8Peer EnumHosts
+Subject: [PATCH 29/47] Implement IDirectPlay8Peer EnumHosts
 
 - Correction to dpaddress_to_sockaddr for NULL host
 
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 142 insertions(+), 22 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f38ec5d833..f6048e7e68 100644
+index f38ec5d..f6048e7 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -60,7 +60,7 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
@@ -85,7 +85,7 @@ index f38ec5d833..f6048e7e68 100644
      struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 6a08d719df..a297574790 100644
+index 6a08d71..a297574 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -43,6 +43,27 @@ typedef struct IDirectPlay8AddressImpl IDirectPlay8AddressImpl;
@@ -117,7 +117,7 @@ index 6a08d719df..a297574790 100644
  /* IDirectPlay8Client */
  /* ------------------ */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 57f15efc6a..9dd748a7d4 100644
+index 57f15ef..9dd748a 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -52,6 +52,10 @@ typedef struct IDirectPlay8PeerImpl
@@ -284,5 +284,5 @@ index 57f15efc6a..9dd748a7d4 100644
      init_dpn_sp_caps(&Client->spcaps);
  
 -- 
-2.11.0
+1.9.1
 

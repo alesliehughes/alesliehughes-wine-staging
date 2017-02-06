@@ -1,7 +1,7 @@
-From fc98fab34fef95ed4e32a47df6b157da3e67e8f7 Mon Sep 17 00:00:00 2001
+From e4da766445a6fb6463db5ecd4a74fec86d809854 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 14:06:48 +1100
-Subject: [PATCH 33/45] dpnet: Support IP4/6 in create_sender_address
+Subject: [PATCH 33/47] dpnet: Support IP4/6 in create_sender_address
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 14 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 5d56508c42..6c9ec276c3 100644
+index 5d56508..6c9ec27 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -435,7 +435,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
@@ -53,5 +53,5 @@ index 5d56508c42..6c9ec276c3 100644
      int received = 0;
      HRESULT hr = DPN_OK;
 -- 
-2.11.0
+1.9.1
 
