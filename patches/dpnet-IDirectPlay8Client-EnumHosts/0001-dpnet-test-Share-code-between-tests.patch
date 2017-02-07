@@ -1,26 +1,28 @@
-From 4e3354258bc3997f63f672d92f07f8fafe32fbf6 Mon Sep 17 00:00:00 2001
+From 01b6f6fff100e4492e0e6b1c91c59840ad56cfaf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 11:26:25 +1100
 Subject: [PATCH 01/47] dpnet/test: Share code between tests
 
+rename header to dpnet_test.h
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/tests/address.c       |  28 +-------
- dlls/dpnet/tests/client.c        | 150 +--------------------------------------
- dlls/dpnet/tests/dpnet_private.h |  32 +++++++++
- dlls/dpnet/tests/server.c        |  16 ++---
+ dlls/dpnet/tests/address.c    |  28 +-------
+ dlls/dpnet/tests/client.c     | 150 +-----------------------------------------
+ dlls/dpnet/tests/dpnet_test.h |  32 +++++++++
+ dlls/dpnet/tests/server.c     |  16 ++---
  4 files changed, 42 insertions(+), 184 deletions(-)
- create mode 100644 dlls/dpnet/tests/dpnet_private.h
+ create mode 100644 dlls/dpnet/tests/dpnet_test.h
 
 diff --git a/dlls/dpnet/tests/address.c b/dlls/dpnet/tests/address.c
-index 16ba6a7..3271f26 100644
+index 16ba6a736f..4aed626ad8 100644
 --- a/dlls/dpnet/tests/address.c
 +++ b/dlls/dpnet/tests/address.c
 @@ -22,6 +22,8 @@
  #include <dplay8.h>
  #include "wine/test.h"
  
-+#include "dpnet_private.h"
++#include "dpnet_test.h"
 +
  /* {6733C6E8-A0D6-450E-8C18-CEACF331DC27} */
  static const GUID IID_Random = {0x6733c6e8, 0xa0d6, 0x450e, { 0x8c, 0x18, 0xce, 0xac, 0xf3, 0x31, 0xdc, 0x27 } };
@@ -59,7 +61,7 @@ index 16ba6a7..3271f26 100644
  {
      HRESULT hr;
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index a1817a4..5ee6087 100644
+index a1817a4a86..d2edcbef90 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
 @@ -24,9 +24,10 @@
@@ -69,7 +71,7 @@ index a1817a4..5ee6087 100644
 -#include <netfw.h>
  #include "wine/test.h"
  
-+#include "dpnet_private.h"
++#include "dpnet_test.h"
 +
  static IDirectPlay8Peer* peer = NULL;
  static IDirectPlay8Client* client = NULL;
@@ -228,11 +230,11 @@ index a1817a4..5ee6087 100644
  START_TEST(client)
  {
      BOOL firewall_enabled;
-diff --git a/dlls/dpnet/tests/dpnet_private.h b/dlls/dpnet/tests/dpnet_private.h
+diff --git a/dlls/dpnet/tests/dpnet_test.h b/dlls/dpnet/tests/dpnet_test.h
 new file mode 100644
-index 0000000..1de2559
+index 0000000000..1de25590bd
 --- /dev/null
-+++ b/dlls/dpnet/tests/dpnet_private.h
++++ b/dlls/dpnet/tests/dpnet_test.h
 @@ -0,0 +1,32 @@
 +/*
 + * Copyright 2016 Alistair Leslie-Hughes
@@ -267,14 +269,14 @@ index 0000000..1de2559
 +
 +#endif
 diff --git a/dlls/dpnet/tests/server.c b/dlls/dpnet/tests/server.c
-index bfc21b0..1cc7848 100644
+index bfc21b0d05..2f52c588a6 100644
 --- a/dlls/dpnet/tests/server.c
 +++ b/dlls/dpnet/tests/server.c
 @@ -24,6 +24,8 @@
  #include <netfw.h>
  #include "wine/test.h"
  
-+#include "dpnet_private.h"
++#include "dpnet_test.h"
 +
  /* {CD0C3D4B-E15E-4CF2-9EA8-6E1D6548C5A5} */
  static const GUID appguid = { 0xcd0c3d4b, 0xe15e, 0x4cf2, { 0x9e, 0xa8, 0x6e, 0x1d, 0x65, 0x48, 0xc5, 0xa5 } };
@@ -322,5 +324,5 @@ index bfc21b0..1cc7848 100644
      DWORD size, ver;
      BOOL isstub = FALSE;
 -- 
-1.9.1
+2.11.0
 
