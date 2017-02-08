@@ -1,7 +1,7 @@
-From aada7a16baef2a3259bddfaa50d053105e4602ad Mon Sep 17 00:00:00 2001
+From ca5a0683aa9bf937159103fbcd851d629517cbd3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 10:39:16 +1100
-Subject: [PATCH 10/47] dpnet/tests: Initial IDirectPlay8ThreadPool tests
+Subject: [PATCH 10/48] dpnet/tests: Initial IDirectPlay8ThreadPool tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/dpnet/tests/thread.c
 
 diff --git a/dlls/dpnet/tests/Makefile.in b/dlls/dpnet/tests/Makefile.in
-index 4b8cacd..62ef3f7 100644
+index 4b8cacd693..62ef3f7c47 100644
 --- a/dlls/dpnet/tests/Makefile.in
 +++ b/dlls/dpnet/tests/Makefile.in
 @@ -4,4 +4,5 @@ IMPORTS   = dxguid uuid dpnet ole32 oleaut32 version advapi32
@@ -23,7 +23,7 @@ index 4b8cacd..62ef3f7 100644
 +	thread.c
 diff --git a/dlls/dpnet/tests/thread.c b/dlls/dpnet/tests/thread.c
 new file mode 100644
-index 0000000..561178f
+index 0000000000..561178f90a
 --- /dev/null
 +++ b/dlls/dpnet/tests/thread.c
 @@ -0,0 +1,114 @@
@@ -142,5 +142,5 @@ index 0000000..561178f
 +    CoUninitialize();
 +}
 -- 
-1.9.1
+2.11.0
 

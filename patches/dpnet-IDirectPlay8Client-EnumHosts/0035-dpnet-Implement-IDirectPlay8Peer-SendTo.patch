@@ -1,14 +1,14 @@
-From b8fd29521a1fda42f75c371b6906c784723d68d3 Mon Sep 17 00:00:00 2001
+From 7c7e3b5c1fc51e874f2c064734c4f9263d7b9b00 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 10:05:11 +1100
-Subject: [PATCH 35/47] dpnet: Implement IDirectPlay8Peer SendTo
+Subject: [PATCH 35/48] dpnet: Implement IDirectPlay8Peer SendTo
 
 ---
  dlls/dpnet/peer.c | 36 +++++++++++++++++++++++++++++++++++-
  1 file changed, 35 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 519fbca..7a3cf60 100644
+index 519fbca1ca..7a3cf60b65 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -358,9 +358,43 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SendTo(IDirectPlay8Peer *iface, const
@@ -57,5 +57,5 @@ index 519fbca..7a3cf60 100644
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_GetSendQueueInfo(IDirectPlay8Peer *iface,
 -- 
-1.9.1
+2.11.0
 

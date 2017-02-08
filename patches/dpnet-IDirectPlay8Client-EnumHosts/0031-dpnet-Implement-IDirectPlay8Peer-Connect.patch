@@ -1,7 +1,7 @@
-From fc14b2c9b1e8cd153770717a8e2636a5f8edade9 Mon Sep 17 00:00:00 2001
+From d62be700fba32bb625bfee49f9663f9d178e9070 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:19:58 +1100
-Subject: [PATCH 31/47] dpnet: Implement IDirectPlay8Peer Connect
+Subject: [PATCH 31/48] dpnet: Implement IDirectPlay8Peer Connect
 
 ---
  dlls/dpnet/client.c        | 17 ++-------
@@ -10,7 +10,7 @@ Subject: [PATCH 31/47] dpnet: Implement IDirectPlay8Peer Connect
  3 files changed, 99 insertions(+), 22 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 14244bc..003228b 100644
+index 14244bca7e..003228bb9d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -768,7 +768,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
@@ -45,7 +45,7 @@ index 14244bc..003228b 100644
      struct connect_data *tdata = (struct connect_data *)threaddata;
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index a297574..e18c8c2 100644
+index a297574790..e18c8c21ab 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -58,11 +58,29 @@ struct dpthread_data
@@ -79,7 +79,7 @@ index a297574..e18c8c2 100644
  /* ------------------ */
  /* IDirectPlay8Client */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 9dd748a..7f187e7 100644
+index 9dd748a7d4..7f187e7ec4 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -31,6 +31,7 @@
@@ -199,5 +199,5 @@ index 9dd748a..7f187e7 100644
      IDirectPlay8Peer_Release(&Client->IDirectPlay8Peer_iface);
  
 -- 
-1.9.1
+2.11.0
 

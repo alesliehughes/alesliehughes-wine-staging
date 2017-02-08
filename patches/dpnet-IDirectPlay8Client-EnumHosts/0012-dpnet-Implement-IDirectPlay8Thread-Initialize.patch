@@ -1,7 +1,7 @@
-From a55ad0d6f17229a832f85fedd96c3a03c038afec Mon Sep 17 00:00:00 2001
+From 5419d8554a884546361a2cc448edc27dcbbc2254 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 11 Nov 2016 16:08:53 +1100
-Subject: [PATCH 12/47] dpnet: Implement IDirectPlay8Thread Initialize
+Subject: [PATCH 12/48] dpnet: Implement IDirectPlay8Thread Initialize
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index b01063b..ff4aaae 100644
+index b01063bd03..ff4aaae280 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -127,6 +127,10 @@ struct IDirectPlay8LobbiedApplicationImpl
@@ -26,7 +26,7 @@ index b01063b..ff4aaae 100644
  
  /**
 diff --git a/dlls/dpnet/tests/thread.c b/dlls/dpnet/tests/thread.c
-index 561178f..2e7e951 100644
+index 561178f90a..2e7e951b73 100644
 --- a/dlls/dpnet/tests/thread.c
 +++ b/dlls/dpnet/tests/thread.c
 @@ -54,13 +54,13 @@ static void create_threadpool(void)
@@ -46,7 +46,7 @@ index 561178f..2e7e951 100644
      hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
      ok(hr == S_OK, "got 0x%08x\n", hr);
 diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
-index a495a2d..0f4e108 100644
+index a495a2dcd5..0f4e108a02 100644
 --- a/dlls/dpnet/threadpool.c
 +++ b/dlls/dpnet/threadpool.c
 @@ -75,7 +75,19 @@ static ULONG WINAPI IDirectPlay8ThreadPoolImpl_Release(IDirectPlay8ThreadPool *i
@@ -81,5 +81,5 @@ index a495a2d..0f4e108 100644
          if (InterlockedCompareExchangePointer((void**)&threadpool, &obj->IDirectPlay8ThreadPool_iface, NULL))
              HeapFree(GetProcessHeap(), 0, obj);
 -- 
-1.9.1
+2.11.0
 

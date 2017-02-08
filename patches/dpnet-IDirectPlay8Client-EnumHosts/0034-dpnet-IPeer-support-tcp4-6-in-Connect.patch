@@ -1,7 +1,7 @@
-From 916a62c50325591140050d7b79c668fe4d305fe0 Mon Sep 17 00:00:00 2001
+From cfb9b3bd2168c119b62ec9572075374bcbadfdd5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 09:42:29 +1100
-Subject: [PATCH 34/47] dpnet: IPeer support tcp4/6 in Connect
+Subject: [PATCH 34/48] dpnet: IPeer support tcp4/6 in Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 93 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 6c9ec27..193c8de 100644
+index 6c9ec276c3..193c8de1e8 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -22,6 +22,7 @@
@@ -116,7 +116,7 @@ index 6c9ec27..193c8de 100644
  {
      struct DN_MESSAGE_CONNECT packet;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 3e925a5..100d865 100644
+index 3e925a5325..100d865768 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -77,6 +77,7 @@ extern void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
@@ -128,7 +128,7 @@ index 3e925a5..100d865 100644
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 84c7d91..519fbca 100644
+index 84c7d91744..519fbca1ca 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -58,7 +58,8 @@ typedef struct IDirectPlay8PeerImpl
@@ -169,5 +169,5 @@ index 84c7d91..519fbca 100644
          tdata->username    = This->username;
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
 -- 
-1.9.1
+2.11.0
 

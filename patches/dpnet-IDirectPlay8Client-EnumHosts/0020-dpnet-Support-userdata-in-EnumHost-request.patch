@@ -1,7 +1,7 @@
-From 167807f416355bd2e4de91b0cfed5be0e095267d Mon Sep 17 00:00:00 2001
+From 07dcf30e9f4e8be16aa5856a4d3c1acc86d186d3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 9 Dec 2016 14:55:29 +1100
-Subject: [PATCH 20/47] dpnet: Support userdata in EnumHost request
+Subject: [PATCH 20/48] dpnet: Support userdata in EnumHost request
 
 ---
  dlls/dpnet/client.c   | 36 +++++++++++++++++++++++++++---------
@@ -9,7 +9,7 @@ Subject: [PATCH 20/47] dpnet: Support userdata in EnumHost request
  2 files changed, 35 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 623c064..8e14aac 100644
+index 623c0641cb..8e14aacb0a 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -409,22 +409,40 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
@@ -71,7 +71,7 @@ index 623c064..8e14aac 100644
  
              starttime = GetTickCount();
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index 2a11aaa..3716be9 100644
+index 2a11aaac6e..3716be9538 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -35,6 +35,14 @@ struct ENUM_QUERY
@@ -90,5 +90,5 @@ index 2a11aaa..3716be9 100644
  };
  
 -- 
-1.9.1
+2.11.0
 

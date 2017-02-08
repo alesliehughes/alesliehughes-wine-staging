@@ -1,7 +1,7 @@
-From 70b68c9ce1a8177ea231de671df780ca3cb5ffea Mon Sep 17 00:00:00 2001
+From 046ee33724478b59a596bd2be6af92d0d1d974e4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 12:02:18 +1100
-Subject: [PATCH 11/47] dpnet: IDirectPlay8ThreadPool is a singleton interface.
+Subject: [PATCH 11/48] dpnet: IDirectPlay8ThreadPool is a singleton interface.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 39 insertions(+), 25 deletions(-)
 
 diff --git a/dlls/dpnet/dpnet_main.c b/dlls/dpnet/dpnet_main.c
-index cc80ebc..ffa7aae 100644
+index cc80ebc07a..ffa7aae9f5 100644
 --- a/dlls/dpnet/dpnet_main.c
 +++ b/dlls/dpnet/dpnet_main.c
 @@ -77,6 +77,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -23,7 +23,7 @@ index cc80ebc..ffa7aae 100644
      }
      return TRUE;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 33cc8c1..b01063b 100644
+index 33cc8c119d..b01063bd03 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -126,8 +126,7 @@ struct IDirectPlay8LobbiedApplicationImpl
@@ -52,7 +52,7 @@ index 33cc8c1..b01063b 100644
  /* used for generic dumping (copied from ddraw) */
  typedef struct {
 diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
-index 9e13ffb..a495a2d 100644
+index 9e13ffb537..a495a2dcd5 100644
 --- a/dlls/dpnet/threadpool.c
 +++ b/dlls/dpnet/threadpool.c
 @@ -36,6 +36,8 @@
@@ -143,5 +143,5 @@ index 9e13ffb..a495a2d 100644
 +    return IDirectPlay8ThreadPool_QueryInterface(pool, riid, obj);
  }
 -- 
-1.9.1
+2.11.0
 

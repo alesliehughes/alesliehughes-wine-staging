@@ -1,7 +1,7 @@
-From 01b6f6fff100e4492e0e6b1c91c59840ad56cfaf Mon Sep 17 00:00:00 2001
+From bb12e648b6fa5453f4c14d74427e7c5ab7a15155 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Dec 2016 11:26:25 +1100
-Subject: [PATCH 01/47] dpnet/test: Share code between tests
+Subject: [PATCH 01/48] dpnet/test: Share code between tests
 
 rename header to dpnet_test.h
 
