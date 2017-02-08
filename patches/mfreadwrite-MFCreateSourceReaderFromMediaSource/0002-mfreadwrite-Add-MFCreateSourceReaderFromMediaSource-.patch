@@ -1,15 +1,16 @@
-From 6d138e31ded623d8571aebf7df5dca2888846326 Mon Sep 17 00:00:00 2001
+From 8f7d6eca5044d491a08c2f2d5c5558e8ae0cfcc9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Feb 2017 15:24:00 +1100
 Subject: [PATCH 2/2] mfreadwrite: Add MFCreateSourceReaderFromMediaSource stub
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/mfreadwrite/main.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ dlls/mfreadwrite/main.c           | 14 ++++++++++++++
+ dlls/mfreadwrite/mfreadwrite.spec |  2 +-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
-index a72f634..0c10541 100644
+index a72f634..9c59002 100644
 --- a/dlls/mfreadwrite/main.c
 +++ b/dlls/mfreadwrite/main.c
 @@ -22,6 +22,11 @@
@@ -24,17 +25,30 @@ index a72f634..0c10541 100644
  
  BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  {
-@@ -36,3 +41,10 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+@@ -36,3 +41,12 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  
      return TRUE;
  }
 +
-+HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAttributes *attributes, IMFSourceReader **reader)
++
++HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source,
++                                       IMFAttributes *attributes, IMFSourceReader **reader)
 +{
-+    FIXME("%p %p %p stub.\n");
++    FIXME("%p %p %p stub.\n", source, attributes, reader);
 +
 +    return E_NOTIMPL;
 +}
+diff --git a/dlls/mfreadwrite/mfreadwrite.spec b/dlls/mfreadwrite/mfreadwrite.spec
+index 1f9f30f..70b95a8 100644
+--- a/dlls/mfreadwrite/mfreadwrite.spec
++++ b/dlls/mfreadwrite/mfreadwrite.spec
+@@ -3,5 +3,5 @@
+ @ stub MFCreateSinkWriterFromMediaSink
+ @ stub MFCreateSinkWriterFromURL
+ @ stub MFCreateSourceReaderFromByteStream
+-@ stub MFCreateSourceReaderFromMediaSource
++@ stdcall MFCreateSourceReaderFromMediaSource(ptr ptr ptr)
+ @ stub MFCreateSourceReaderFromURL
 -- 
 1.9.1
 

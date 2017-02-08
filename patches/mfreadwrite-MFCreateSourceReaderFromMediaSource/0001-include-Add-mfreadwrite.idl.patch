@@ -1,4 +1,4 @@
-From 8cd62634ca0e4c8d81df7cde58b60134e407adad Mon Sep 17 00:00:00 2001
+From b7e4a4926f8f2c735d423a19f82e1c467aac1a05 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Feb 2017 14:50:40 +1100
 Subject: [PATCH 1/2] include: Add mfreadwrite.idl
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 include/mfreadwrite.idl
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 88b0164..c72ef2f 100644
+index 80fa362..4fbfd16 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -89,6 +89,7 @@ IDL_SRCS = \
