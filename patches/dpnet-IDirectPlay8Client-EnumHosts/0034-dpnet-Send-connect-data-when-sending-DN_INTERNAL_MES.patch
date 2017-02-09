@@ -1,0 +1,205 @@
+From 9113b96c4fcb52deac151571c0d8b93bd0b1fe11 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 18 Jan 2017 09:38:04 +1100
+Subject: [PATCH 34/46] dpnet: Send connect data when sending
+ DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 39 +++++++++++++++++++++++++++++++--------
+ dlls/dpnet/dpnet_private.h |  8 +++++++-
+ dlls/dpnet/peer.c          | 20 +++++++++++++++++++-
+ 3 files changed, 57 insertions(+), 10 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 193c8de..49167f6 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -382,14 +382,14 @@ static int dframe_packet_sack_ack(SOCKET sock, void *addr, size_t addrsize, int
+ 
+ /* 2.2.1.2 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX */
+ static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, const DPN_APPLICATION_DESC * const app_desc,
+-                            WCHAR *name, void *addr, size_t addrsize)
++                            WCHAR *name, void *addr, size_t addrsize, void *connect_data, DWORD connect_size)
+ {
+     struct DFRAME_PACKET *packet;
+     struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX *info;
+     int err;
+     int size;
+ 
+-    size = sizeof(struct DFRAME_PACKET) + sizeof(*info) + ((lstrlenW(name)+1) * sizeof(WCHAR));
++    size = sizeof(struct DFRAME_PACKET) + sizeof(*info) + ((lstrlenW(name)+1) * sizeof(WCHAR)) + connect_size;
+     packet = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size);
+ 
+     if(!packet)
+@@ -406,12 +406,20 @@ static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, cons
+     info->type    = DN_MSG_INTERNAL_PLAYER_CONNECT_INFO;
+     info->flags   = DP_OBECT_TYPE_CLIENT;
+     info->version = DP_OBECT_NET_VER_9_0;
+-    info->name_offset = sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX) - sizeof(DWORD);
+     info->name_size = (lstrlenW(name) + 1) * sizeof(WCHAR);
+     info->instance    = app_desc->guidInstance;
+     info->application = app_desc->guidApplication;
+ 
+-    lstrcpyW( (WCHAR*)(((char*)info)+sizeof(*info)), name);
++    if(connect_data && connect_size)
++    {
++        info->connect_offset = sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX) - sizeof(DWORD);
++        info->connect_size = connect_size;
++        memcpy( (char*)info + sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX), connect_data, connect_size);
++    }
++
++    info->name_offset = sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX) - sizeof(DWORD) + connect_size;
++    lstrcpyW( (WCHAR*)(((char*)info)+
++        sizeof(struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX) + connect_size), name);
+ 
+     err = sendto(sock, (void *)packet, size, 0, (struct sockaddr *)addr, addrsize);
+     if(err == -1)
+@@ -866,7 +874,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+ 
+ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD session,
+         const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
+-        PFNDPNMESSAGEHANDLER msghandler)
++        PFNDPNMESSAGEHANDLER msghandler, void *connect_data, DWORD connect_size)
+ {
+     HRESULT hr = DPN_OK;
+     BOOL connected = FALSE;
+@@ -992,7 +1000,8 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+                         hr = DPNERR_USERCANCEL;
+                     }
+ 
+-                    if(dframe_packet_player_connect_info_ex(sock, session, app_desc, username, serveraddr, addrsize) == -1)
++                    if(dframe_packet_player_connect_info_ex(sock, session, app_desc, username, serveraddr, addrsize,
++                            connect_data, connect_size) == -1)
+                     {
+                         ERR("dframe_packet_player_connect_info_ex\n");
+                         hr = DPNERR_USERCANCEL;
+@@ -1179,7 +1188,7 @@ DWORD WINAPI connect_thread(void *threaddata)
+     struct connect_data *tdata = (struct connect_data *)threaddata;
+ 
+     if(dplay_connect(tdata->sock, tdata->addr, tdata->addr_size, tdata->session, tdata->app_desc, tdata->username,
+-            tdata->cancelevent, tdata->msghandler) == S_OK)
++            tdata->cancelevent, tdata->msghandler, tdata->connect_data, tdata->connect_size) == S_OK)
+     {
+         /* Main message loop */
+         dplay_connected(tdata->sock, tdata->addr, tdata->addr_size, tdata->session, tdata->app_desc, tdata->username,
+@@ -1231,6 +1240,18 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+         }
+     }
+ 
++    if(user_data && data_size)
++    {
++        This->connect_data = heap_alloc(data_size);
++        if(!This->connect_data)
++        {
++            hr = DPNERR_OUTOFMEMORY;
++            goto cleanup;
++        }
++        memcpy(This->connect_data, user_data, data_size);
++        This->connect_size = data_size;
++    }
++
+     if(!dpaddress_to_sockaddr(host_addr, &This->serveraddr))
+     {
+         hr = DPNERR_INVALIDHOSTADDRESS;
+@@ -1240,7 +1261,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+     if(flags & DPNCONNECT_SYNC)
+     {
+         hr = dplay_connect(This->sock, &This->serveraddr, sizeof(This->serveraddr), This->session, app_desc,
+-                            This->username, NULL, This->msghandler);
++                            This->username, NULL, This->msghandler, This->connect_data, This->connect_size);
+     }
+     else
+     {
+@@ -1255,6 +1276,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+         tdata->app_desc    = app_desc;
+         tdata->username    = This->username;
+         tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
++        tdata->connect_data = This->connect_data;
++        tdata->connect_size = This->connect_size;
+ 
+         This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
+         hr = DPNSUCCESS_PENDING;
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 100d865..cdc7360 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -70,6 +70,9 @@ struct connect_data
+ 
+     HANDLE cancelevent;
+     PFNDPNMESSAGEHANDLER msghandler;
++
++    void *connect_data;
++    DWORD connect_size;
+ };
+ 
+ extern DWORD WINAPI enumhost_thread(void *threaddata) DECLSPEC_HIDDEN;
+@@ -80,7 +83,7 @@ extern BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in
+ extern BOOL dpaddress_to_sockstorage(IDirectPlay8Address *host, SOCKADDR_STORAGE *addr, size_t *size) DECLSPEC_HIDDEN;
+ extern HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addr_size, DWORD session,
+         const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
+-        PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
++        PFNDPNMESSAGEHANDLER msghandler, void *connect_data, DWORD connect_size) DECLSPEC_HIDDEN;
+ extern DWORD WINAPI connect_thread(void *threaddata) DECLSPEC_HIDDEN;
+ 
+ 
+@@ -113,6 +116,9 @@ struct IDirectPlay8ClientImpl
+     struct sockaddr_in serveraddr;
+     HANDLE connectthread;
+     DWORD session;
++
++    void *connect_data;
++    DWORD connect_size;
+ };
+ 
+ /* ------------------- */
+diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
+index 7a3cf60..3255c6d 100644
+--- a/dlls/dpnet/peer.c
++++ b/dlls/dpnet/peer.c
+@@ -62,6 +62,9 @@ typedef struct IDirectPlay8PeerImpl
+     size_t addr_size;
+     HANDLE connectthread;
+     DWORD session;
++
++    void *connect_data;
++    DWORD connect_size;
+ } IDirectPlay8PeerImpl;
+ 
+ static inline IDirectPlay8PeerImpl *impl_from_IDirectPlay8Peer(IDirectPlay8Peer *iface)
+@@ -326,9 +329,22 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+         goto cleanup;
+     }
+ 
++    if(user_data && data_size)
++    {
++        This->connect_data = heap_alloc(data_size);
++        if(!This->connect_data)
++        {
++            hr = DPNERR_OUTOFMEMORY;
++            goto cleanup;
++        }
++        memcpy(This->connect_data, user_data, data_size);
++        This->connect_size = data_size;
++    }
++
+     if(flags & DPNCONNECT_SYNC)
+     {
+-        hr = dplay_connect(This->sock, &This->serveraddr, This->addr_size, This->session, app_desc, This->username, NULL, This->msghandler);
++        hr = dplay_connect(This->sock, &This->serveraddr, This->addr_size, This->session, app_desc, This->username, NULL, This->msghandler,
++                        This->connect_data, This->connect_size);
+     }
+     else
+     {
+@@ -343,6 +359,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+         tdata->app_desc    = app_desc;
+         tdata->username    = This->username;
+         tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
++        tdata->connect_data = This->connect_data;
++        tdata->connect_size = This->connect_size;
+ 
+         This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
+         hr = DPNSUCCESS_PENDING;
+-- 
+1.9.1
+

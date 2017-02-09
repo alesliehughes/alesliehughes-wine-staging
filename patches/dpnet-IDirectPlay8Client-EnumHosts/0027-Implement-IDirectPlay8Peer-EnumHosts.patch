@@ -1,0 +1,288 @@
+From 58314763da8ddf19a9029b20f8d0e439b37e0c81 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 30 Dec 2016 20:53:32 +1100
+Subject: [PATCH 27/46] Implement IDirectPlay8Peer EnumHosts
+
+- Correction to dpaddress_to_sockaddr for NULL host
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        |  28 ++++-------
+ dlls/dpnet/dpnet_private.h |  21 +++++++++
+ dlls/dpnet/peer.c          | 115 +++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 142 insertions(+), 22 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index f38ec5d..f6048e7 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -60,7 +60,7 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+  * Direct Play clients bind to a port between 2300-2400.  Even though it's not a requirement,
+  *  Network Analysers fail to detect them as directplay packets when not in this range.
+  */
+-static SOCKET find_free_socket(void)
++SOCKET find_free_socket(void)
+ {
+     SOCKET sock;
+     struct sockaddr_in addr;
+@@ -102,12 +102,17 @@ static SOCKET find_free_socket(void)
+     return sock;
+ }
+ 
+-static BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
++BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
+ {
+     DWORD size, type, port = DPNA_DPNSVR_PORT;
+     char *buffer = NULL;
+     HRESULT hr;
+ 
++    TRACE("%p %p\n", host, addr);
++
++    if(!host)
++        goto done;
++
+     size = sizeof(port);
+     hr = IDirectPlay8Address_GetComponentByName(host, DPNA_KEY_PORT, &port, &size, &type);
+     if(FAILED(hr) && hr != DPNERR_DOESNOTEXIST)
+@@ -148,6 +153,7 @@ static BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in
+ 
+     TRACE("Found %s:%d\n", debugstr_a(buffer), port);
+ 
++done:
+     memset(addr, 0, sizeof(*addr));
+ 
+     addr->sin_family = AF_INET;
+@@ -492,7 +498,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+     return err;
+ }
+ 
+-static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
++void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
+         DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
+ {
+     char buffer[1024];
+@@ -626,21 +632,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+     }
+ }
+ 
+-struct dpthread_data
+-{
+-    SOCKET sock;
+-    struct sockaddr_in host;
+-    IDirectPlay8Address *device;
+-    DWORD retrycnt;
+-    DWORD retrytime;
+-    DWORD timeout;
+-    GUID  app_guid;
+-
+-    HANDLE cancelevent;
+-    PFNDPNMESSAGEHANDLER msghandler;
+-};
+-
+-static DWORD WINAPI enumhost_thread(void *threaddata)
++DWORD WINAPI enumhost_thread(void *threaddata)
+ {
+     struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
+ 
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 6a08d71..a297574 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -43,6 +43,27 @@ typedef struct IDirectPlay8AddressImpl IDirectPlay8AddressImpl;
+ typedef struct IDirectPlay8LobbiedApplicationImpl IDirectPlay8LobbiedApplicationImpl;
+ typedef struct IDirectPlay8ThreadPoolImpl IDirectPlay8ThreadPoolImpl;
+ 
++
++struct dpthread_data
++{
++    SOCKET sock;
++    struct sockaddr_in host;
++    IDirectPlay8Address *device;
++    DWORD retrycnt;
++    DWORD retrytime;
++    DWORD timeout;
++    GUID  app_guid;
++
++    HANDLE cancelevent;
++    PFNDPNMESSAGEHANDLER msghandler;
++};
++
++extern DWORD WINAPI enumhost_thread(void *threaddata) DECLSPEC_HIDDEN;
++extern void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
++        DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent) DECLSPEC_HIDDEN;
++extern SOCKET find_free_socket(void) DECLSPEC_HIDDEN;
++extern BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr) DECLSPEC_HIDDEN;
++
+ /* ------------------ */
+ /* IDirectPlay8Client */
+ /* ------------------ */
+diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
+index 57f15ef..9dd748a 100644
+--- a/dlls/dpnet/peer.c
++++ b/dlls/dpnet/peer.c
+@@ -52,6 +52,10 @@ typedef struct IDirectPlay8PeerImpl
+     DWORD datasize;
+ 
+     DPN_SP_CAPS spcaps;
++
++    SOCKET sock;
++    HANDLE enumthread;
++    HANDLE cancelevent;
+ } IDirectPlay8PeerImpl;
+ 
+ static inline IDirectPlay8PeerImpl *impl_from_IDirectPlay8Peer(IDirectPlay8Peer *iface)
+@@ -96,6 +100,10 @@ static ULONG WINAPI IDirectPlay8PeerImpl_Release(IDirectPlay8Peer *iface)
+ 
+     if(!RefCount)
+     {
++        closesocket(This->sock);
++        CloseHandle(This->cancelevent);
++        CloseHandle(This->enumthread);
++
+         heap_free(This->username);
+         heap_free(This->data);
+ 
+@@ -248,9 +256,22 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+ static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer *iface,
+         const DPNHANDLE hAsyncHandle, const DWORD dwFlags)
+ {
+-    FIXME("(%p)->(%x,%x): stub\n", iface, hAsyncHandle, dwFlags);
++    IDirectPlay8PeerImpl* This = impl_from_IDirectPlay8Peer(iface);
+ 
+-    return DPNERR_GENERIC;
++    FIXME("(%p)->(%x,%x): Semi-stub\n", iface, hAsyncHandle, dwFlags);
++
++    if(hAsyncHandle == PtrToUlong(This->enumthread))
++    {
++        SetEvent(This->cancelevent);
++        CloseHandle(This->cancelevent);
++
++        WaitForSingleObject(This->enumthread, INFINITE);
++
++        CloseHandle(This->enumthread);
++        This->enumthread = NULL;
++    }
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -446,8 +467,18 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetLocalHostAddresses(IDirectPlay8Pee
+ 
+ static HRESULT WINAPI IDirectPlay8PeerImpl_Close(IDirectPlay8Peer *iface, const DWORD dwFlags)
+ {
++    IDirectPlay8PeerImpl* This = impl_from_IDirectPlay8Peer(iface);
+     FIXME("(%p)->(%x): stub\n", iface, dwFlags);
+ 
++    if(This->cancelevent)
++    {
++        SetEvent(This->cancelevent);
++        CloseHandle(This->cancelevent);
++
++        CloseHandle(This->enumthread);
++        This->enumthread = NULL;
++    }
++
+     return DPN_OK;
+ }
+ 
+@@ -457,11 +488,86 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+         const DWORD dwUserEnumDataSize, const DWORD dwEnumCount, const DWORD dwRetryInterval,
+         const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle, const DWORD dwFlags)
+ {
+-    FIXME("(%p)->(%p,%p,%p,%p,%x,%x,%x,%x,%p,%p,%x): stub\n",
++    IDirectPlay8PeerImpl* This = impl_from_IDirectPlay8Peer(iface);
++    IDirectPlay8Address *device = NULL;
++    HRESULT hr;
++    struct sockaddr_in host;
++
++    TRACE("(%p)->(%p,%p,%p,%p,%x,%x,%x,%x,%p,%p,%x)\n",
+             iface, pApplicationDesc, pAddrHost, pDeviceInfo, pUserEnumData, dwUserEnumDataSize, dwEnumCount,
+             dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle, dwFlags);
+ 
+-    return DPNERR_GENERIC;
++    if(!This->msghandler)
++        return DPNERR_UNINITIALIZED;
++
++    if((dwFlags & DPNENUMHOSTS_SYNC) && pAsyncHandle)
++        return DPNERR_INVALIDPARAM;
++
++    if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
++        return DPNERR_ENUMQUERYTOOLARGE;
++
++    if(This->sock == INVALID_SOCKET)
++    {
++        This->sock = find_free_socket();
++        if(This->sock == INVALID_SOCKET)
++            return DPNERR_USERCANCEL; /* Pretend the user cancalled this operation. */
++    }
++
++    hr = IDirectPlay8Address_Duplicate(pDeviceInfo, &device);
++    if(FAILED(hr))
++    {
++        ERR("Failed to duplicate Device address (0x%08x).\n", hr);
++
++        closesocket(This->sock);
++        This->sock = INVALID_SOCKET;
++
++        return E_OUTOFMEMORY;
++    }
++
++    dpaddress_to_sockaddr(pAddrHost, &host);
++
++    if(dwFlags & DPNENUMHOSTS_SYNC)
++    {
++        DWORD retrycnt  = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
++        DWORD retrytime = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
++        DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
++
++        process_enumhost(This->sock, host, device, This->msghandler, pApplicationDesc->guidApplication,
++                        retrycnt, retrytime, timeout, NULL);
++
++        IDirectPlay8Address_Release(device);
++    }
++    else
++    {
++        struct dpthread_data *tdata;
++
++        if(This->enumthread)
++        {
++            FIXME("Only one EnumHost is currently supported\n");
++            return DPNERR_USERCANCEL;
++        }
++
++        tdata = heap_alloc(sizeof(struct dpthread_data));
++        if(!tdata)
++            return E_OUTOFMEMORY;
++
++        tdata->sock        = This->sock;
++        tdata->retrycnt    = !dwEnumCount ? This->spcaps.dwDefaultEnumCount : dwEnumCount;
++        tdata->retrytime   = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
++        tdata->timeout     = dwTimeOut == INFINITE  ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
++        tdata->msghandler  = This->msghandler;
++        tdata->device      = device;
++        tdata->host        = host;
++        tdata->app_guid    = pApplicationDesc->guidApplication;
++        tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
++
++        This->enumthread = CreateThread(NULL, 0, &enumhost_thread, tdata, 0, 0);
++    }
++
++    if(pAsyncHandle)
++        *pAsyncHandle = PtrToUlong(This->enumthread);
++
++    return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8PeerImpl_DestroyPeer(IDirectPlay8Peer *iface, const DPNID dpnidClient,
+@@ -639,6 +745,7 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
+     Client->usercontext = NULL;
+     Client->msghandler = NULL;
+     Client->flags = 0;
++    Client->sock = INVALID_SOCKET;
+ 
+     init_dpn_sp_caps(&Client->spcaps);
+ 
+-- 
+1.9.1
+

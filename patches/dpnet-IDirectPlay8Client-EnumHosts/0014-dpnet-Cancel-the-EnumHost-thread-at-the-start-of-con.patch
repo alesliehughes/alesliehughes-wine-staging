@@ -1,0 +1,64 @@
+From c55a77a18569013f796e1f8ccc8f7606503b1b14 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 7 Dec 2016 11:11:56 +1100
+Subject: [PATCH 14/46] dpnet: Cancel the EnumHost thread at the start of
+ connect
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 38 ++++++++++++++++++++++++++++++--------
+ 1 file changed, 30 insertions(+), 8 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 5296e98..8d2f2a8 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -521,15 +521,37 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+-        const DPN_APPLICATION_DESC * const pdnAppDesc, IDirectPlay8Address * const pHostAddr,
+-        IDirectPlay8Address * const pDeviceInfo, const DPN_SECURITY_DESC * const pdnSecurity,
+-        const DPN_SECURITY_CREDENTIALS * const pdnCredentials, const void * const pvUserConnectData,
+-        const DWORD dwUserConnectDataSize, void * const pvAsyncContext,
+-        DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
++        const DPN_APPLICATION_DESC * const app_desc, IDirectPlay8Address * const host_addr,
++        IDirectPlay8Address * const device, const DPN_SECURITY_DESC * const security,
++        const DPN_SECURITY_CREDENTIALS * const credentials, const void * const user_data,
++        const DWORD data_size, void * const context,
++        DPNHANDLE * const async_handle, const DWORD flags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++
++    FIXME("(%p) : (%p, %p, %p, %p, %p, %p, %u, %p, %p, %x)\n", This, app_desc, host_addr,
++        device, security, credentials, user_data, data_size, context, async_handle, flags);
++
++    if(!This->msghandler)
++        return DPNERR_UNINITIALIZED;
++
++    /* Keep a Reference to the host object, since it was created in EnumHost */
++    IDirectPlay8Address_AddRef(host_addr);
++
++    if(This->enumthread)
++    {
++        SetEvent(This->cancelevent);
++        CloseHandle(This->cancelevent);
++
++        WaitForSingleObject(This->enumthread, INFINITE);
++
++        CloseHandle(This->enumthread);
++        This->enumthread = NULL;
++    }
++
++    IDirectPlay8Address_Release(host_addr);
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
+-- 
+1.9.1
+

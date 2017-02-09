@@ -1,0 +1,116 @@
+From 317e2129ef64d2f303fdbef0f4f1366dc590cf81 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 5 Dec 2016 11:56:51 +1100
+Subject: [PATCH 03/46] dpnet: Implement IDirectPlay8Client
+ EnumServiceProviders
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 14 +++++++++++---
+ dlls/dpnet/dpnet_private.h |  2 ++
+ dlls/dpnet/peer.c          |  2 +-
+ dlls/dpnet/tests/client.c  | 16 ++++++++--------
+ 4 files changed, 22 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 1fa825f..d1e6b3b 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -124,9 +124,17 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+         DPN_SERVICE_PROVIDER_INFO * const pSPInfoBuffer, PDWORD const pcbEnumData,
+         PDWORD const pcReturned, const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%x): Stub\n", This, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    TRACE("(%p)->(%s,%s,%p,%p,%p,%x)\n", This, debugstr_guid(pguidServiceProvider), debugstr_guid(pguidApplication),
++                                             pSPInfoBuffer, pcbEnumData, pcReturned, dwFlags);
++
++    if(dwFlags)
++        FIXME("Unhandled flags %x\n", dwFlags);
++
++    if(pguidApplication)
++        FIXME("Application guid %s is currently being ignored\n", debugstr_guid(pguidApplication));
++
++    return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 89e0777..256e3f4 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -137,6 +137,8 @@ extern HRESULT DPNET_CreateDirectPlay8LobbyClient(IClassFactory *iface, IUnknown
+ 
+ extern void init_dpn_sp_caps(DPN_SP_CAPS *dpnspcaps) DECLSPEC_HIDDEN;
+ extern void init_winsock(void) DECLSPEC_HIDDEN;
++extern HRESULT enum_services_providers(const GUID * const service, DPN_SERVICE_PROVIDER_INFO * const info_buffer,
++        DWORD * const buf_size, DWORD * const returned) DECLSPEC_HIDDEN;
+ 
+ /* used for generic dumping (copied from ddraw) */
+ typedef struct {
+diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
+index 461d610..57f15ef 100644
+--- a/dlls/dpnet/peer.c
++++ b/dlls/dpnet/peer.c
+@@ -126,7 +126,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Initialize(IDirectPlay8Peer *iface,
+     return DPN_OK;
+ }
+ 
+-static HRESULT enum_services_providers(const GUID * const service, DPN_SERVICE_PROVIDER_INFO * const info_buffer,
++HRESULT enum_services_providers(const GUID * const service, DPN_SERVICE_PROVIDER_INFO * const info_buffer,
+         DWORD * const buf_size, DWORD * const returned)
+ {
+     static const WCHAR serviceproviders[] = {'S','O','F','T','W','A','R','E','\\','M','i','c','r','o','s','o','f','t','\\',
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 9f63107..692d3ef 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -165,20 +165,20 @@ static void test_enum_service_providers(void)
+     items = 0;
+ 
+     hr = IDirectPlay8Client_EnumServiceProviders(client, NULL, NULL, NULL, &size, NULL, 0);
+-    todo_wine ok(hr == E_POINTER, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
++    ok(hr == E_POINTER, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
+ 
+     hr = IDirectPlay8Client_EnumServiceProviders(client, NULL, NULL, NULL, NULL, &items, 0);
+-    todo_wine ok(hr == E_POINTER, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
++    ok(hr == E_POINTER, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
+ 
+     hr = IDirectPlay8Client_EnumServiceProviders(client, NULL, NULL, NULL, &size, &items, 0);
+-    todo_wine ok(hr == DPNERR_BUFFERTOOSMALL, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
+-    todo_wine ok(size != 0, "size is unexpectedly 0\n");
++    ok(hr == DPNERR_BUFFERTOOSMALL, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
++    ok(size != 0, "size is unexpectedly 0\n");
+ 
+     serv_prov_info = HeapAlloc(GetProcessHeap(), 0, size);
+ 
+     hr = IDirectPlay8Client_EnumServiceProviders(client, NULL, NULL, serv_prov_info, &size, &items, 0);
+     ok(hr == S_OK, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
+-    todo_wine ok(items != 0, "Found unexpectedly no service providers\n");
++    ok(items != 0, "Found unexpectedly no service providers\n");
+ 
+     trace("number of items found: %d\n", items);
+ 
+@@ -194,14 +194,14 @@ static void test_enum_service_providers(void)
+     items = 0;
+ 
+     hr = IDirectPlay8Client_EnumServiceProviders(client, &CLSID_DP8SP_TCPIP, NULL, NULL, &size, &items, 0);
+-    todo_wine ok(hr == DPNERR_BUFFERTOOSMALL, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
+-    todo_wine ok(size != 0, "size is unexpectedly 0\n");
++    ok(hr == DPNERR_BUFFERTOOSMALL, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
++    ok(size != 0, "size is unexpectedly 0\n");
+ 
+     serv_prov_info = HeapAlloc(GetProcessHeap(), 0, size);
+ 
+     hr = IDirectPlay8Client_EnumServiceProviders(client, &CLSID_DP8SP_TCPIP, NULL, serv_prov_info, &size, &items, 0);
+     ok(hr == S_OK, "IDirectPlay8Client_EnumServiceProviders failed with %x\n", hr);
+-    todo_wine ok(items != 0, "Found unexpectedly no adapter\n");
++    ok(items != 0, "Found unexpectedly no adapter\n");
+ 
+ 
+     for (i=0;i<items;i++)
+-- 
+1.9.1
+

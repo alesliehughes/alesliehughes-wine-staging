@@ -1,0 +1,94 @@
+From 5014b687a84dfd6cdce5c11b75782cf0ecf76a92 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 10 Nov 2016 11:25:04 +1100
+Subject: [PATCH 05/46] dpnet: Add basic validation in IDirectPlay8Client
+ EnumHosts
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c       | 18 +++++++++++++++---
+ dlls/dpnet/tests/client.c | 14 +++++++-------
+ 2 files changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 01f56ee..a8050c5 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -144,9 +144,21 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+         const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle,
+         const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvUserContext, pAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++
++    FIXME("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo, pUserEnumData,
++        dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle, dwFlags);
++
++    if(!This->msghandler)
++        return DPNERR_UNINITIALIZED;
++
++    if((dwFlags & DPNENUMHOSTS_SYNC) && pAsyncHandle)
++        return DPNERR_INVALIDPARAM;
++
++    if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
++        return DPNERR_ENUMQUERYTOOLARGE;
++
++    return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Client *iface,
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 692d3ef..0c3a20f 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -254,22 +254,22 @@ static void test_enum_hosts(void)
+     data = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, caps.dwMaxEnumPayloadSize + 1);
+ 
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, 2, 1000, 1000, NULL,  &async, DPNENUMHOSTS_SYNC);
+-    todo_wine ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
++    ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
+ 
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize + 1,
+                                         INFINITE, 0, INFINITE, NULL,  &async, DPNENUMHOSTS_SYNC);
+-    todo_wine ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
++    ok(hr == DPNERR_INVALIDPARAM, "got 0x%08x\n", hr);
+ 
+     async = 0;
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize + 1, INFINITE, 0,
+                                         INFINITE, NULL,  &async, 0);
+-    todo_wine ok(hr == DPNERR_ENUMQUERYTOOLARGE, "got 0x%08x\n", hr);
++    ok(hr == DPNERR_ENUMQUERYTOOLARGE, "got 0x%08x\n", hr);
+     ok(!async, "Handle returned\n");
+ 
+     async = 0;
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize, INFINITE, 0, INFINITE,
+                                         NULL,  &async, 0);
+-    todo_wine ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
++    ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
+     todo_wine ok(async, "No Handle returned\n");
+ 
+     /* This CancelAsyncOperation doesn't generate a DPN_MSGID_ASYNC_OP_COMPLETE */
+@@ -279,15 +279,15 @@ static void test_enum_hosts(void)
+ 
+     /* No Initialize has been called on client2. */
+     hr = IDirectPlay8Client_EnumHosts(client2, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
+-    todo_wine ok(hr == DPNERR_UNINITIALIZED, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    ok(hr == DPNERR_UNINITIALIZED, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
+ 
+     /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async, 0);
+-    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
+     todo_wine ok(async, "No Handle returned\n");
+ 
+     hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, NULL, 0, INFINITE, 0, INFINITE, NULL,  &async2, 0);
+-    todo_wine ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
++    ok(hr == DPNSUCCESS_PENDING, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
+     todo_wine ok(async2, "No Handle returned\n");
+     todo_wine ok(async2 != async, "Same handle returned.\n");
+ 
+-- 
+1.9.1
+

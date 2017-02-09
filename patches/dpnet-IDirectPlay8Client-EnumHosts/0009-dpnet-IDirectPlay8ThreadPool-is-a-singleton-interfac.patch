@@ -1,0 +1,147 @@
+From 909fdeef66234ee1c751381547b214876200d8cb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 5 Dec 2016 12:02:18 +1100
+Subject: [PATCH 09/46] dpnet: IDirectPlay8ThreadPool is a singleton interface.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/dpnet_main.c    |  1 +
+ dlls/dpnet/dpnet_private.h |  5 ++--
+ dlls/dpnet/threadpool.c    | 58 ++++++++++++++++++++++++++++------------------
+ 3 files changed, 39 insertions(+), 25 deletions(-)
+
+diff --git a/dlls/dpnet/dpnet_main.c b/dlls/dpnet/dpnet_main.c
+index cc80ebc..ffa7aae 100644
+--- a/dlls/dpnet/dpnet_main.c
++++ b/dlls/dpnet/dpnet_main.c
+@@ -77,6 +77,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpvReserved)
+             if (lpvReserved) break;
+             if(winsock_loaded)
+                 WSACleanup();
++            release_threadpool();
+             break;
+     }
+     return TRUE;
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 33cc8c1..b01063b 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -126,8 +126,7 @@ struct IDirectPlay8LobbiedApplicationImpl
+  */
+ struct IDirectPlay8ThreadPoolImpl
+ {
+-  IDirectPlay8ThreadPool IDirectPlay8ThreadPool_iface;
+-  LONG ref;
++    IDirectPlay8ThreadPool IDirectPlay8ThreadPool_iface;
+ };
+ 
+ /**
+@@ -139,12 +138,14 @@ extern HRESULT DPNET_CreateDirectPlay8Peer(LPCLASSFACTORY iface, LPUNKNOWN punkO
+ extern HRESULT DPNET_CreateDirectPlay8Address(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
+ extern HRESULT DPNET_CreateDirectPlay8LobbiedApp(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
+ extern HRESULT DPNET_CreateDirectPlay8ThreadPool(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
++extern HRESULT DPNET_CreateDirectPlay8ThreadPool(IClassFactory *iface, LPUNKNOWN punkOuter, REFIID riid, void **ppobj) DECLSPEC_HIDDEN;
+ extern HRESULT DPNET_CreateDirectPlay8LobbyClient(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, void **ppobj) DECLSPEC_HIDDEN;
+ 
+ extern void init_dpn_sp_caps(DPN_SP_CAPS *dpnspcaps) DECLSPEC_HIDDEN;
+ extern void init_winsock(void) DECLSPEC_HIDDEN;
+ extern HRESULT enum_services_providers(const GUID * const service, DPN_SERVICE_PROVIDER_INFO * const info_buffer,
+         DWORD * const buf_size, DWORD * const returned) DECLSPEC_HIDDEN;
++extern void release_threadpool(void) DECLSPEC_HIDDEN;
+ 
+ /* used for generic dumping (copied from ddraw) */
+ typedef struct {
+diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
+index 9e13ffb..a495a2d 100644
+--- a/dlls/dpnet/threadpool.c
++++ b/dlls/dpnet/threadpool.c
+@@ -36,6 +36,8 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
+ 
++static IDirectPlay8ThreadPool *threadpool = NULL;
++
+ static inline IDirectPlay8ThreadPoolImpl *impl_from_IDirectPlay8ThreadPool(IDirectPlay8ThreadPool *iface)
+ {
+     return CONTAINING_RECORD(iface, IDirectPlay8ThreadPoolImpl, IDirectPlay8ThreadPool_iface);
+@@ -61,21 +63,12 @@ static HRESULT WINAPI IDirectPlay8ThreadPoolImpl_QueryInterface(IDirectPlay8Thre
+ 
+ static ULONG WINAPI IDirectPlay8ThreadPoolImpl_AddRef(IDirectPlay8ThreadPool *iface)
+ {
+-    IDirectPlay8ThreadPoolImpl* This = impl_from_IDirectPlay8ThreadPool(iface);
+-    ULONG RefCount = InterlockedIncrement(&This->ref);
+-
+-    return RefCount;
++    return 1;
+ }
+ 
+ static ULONG WINAPI IDirectPlay8ThreadPoolImpl_Release(IDirectPlay8ThreadPool *iface)
+ {
+-    IDirectPlay8ThreadPoolImpl* This = impl_from_IDirectPlay8ThreadPool(iface);
+-    ULONG RefCount = InterlockedDecrement(&This->ref);
+-
+-    if(!RefCount)
+-        HeapFree(GetProcessHeap(), 0, This);
+-
+-    return RefCount;
++    return 2;
+ }
+ 
+ /* IDirectPlay8ThreadPool interface follows */
+@@ -132,22 +125,41 @@ static const IDirectPlay8ThreadPoolVtbl DirectPlay8ThreadPool_Vtbl =
+     IDirectPlay8ThreadPoolImpl_DoWork
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8ThreadPool(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj)
++static IDirectPlay8ThreadPool *get_threadpool(void)
+ {
+-    IDirectPlay8ThreadPoolImpl* Client;
++    if (!threadpool)
++    {
++        IDirectPlay8ThreadPoolImpl *obj;
+ 
+-    Client = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectPlay8ThreadPoolImpl));
++        obj = heap_alloc(sizeof(IDirectPlay8ThreadPoolImpl));
++        if (!obj)
++            return NULL;
+ 
+-    if(Client == NULL)
+-    {
+-        *ppobj = NULL;
+-        WARN("Not enough memory\n");
+-        return E_OUTOFMEMORY;
++        obj->IDirectPlay8ThreadPool_iface.lpVtbl = &DirectPlay8ThreadPool_Vtbl;
++
++        if (InterlockedCompareExchangePointer((void**)&threadpool, &obj->IDirectPlay8ThreadPool_iface, NULL))
++            HeapFree(GetProcessHeap(), 0, obj);
++        else
++            TRACE("Created the threadpool at %p\n", obj);
+     }
+ 
+-    Client->IDirectPlay8ThreadPool_iface.lpVtbl = &DirectPlay8ThreadPool_Vtbl;
+-    Client->ref = 0;
++    return threadpool;
++}
+ 
+-    return IDirectPlay8ThreadPoolImpl_QueryInterface(&Client->IDirectPlay8ThreadPool_iface, riid,
+-            ppobj);
++void release_threadpool(void)
++{
++    IDirectPlay8ThreadPoolImpl *pool;
++
++    if (!threadpool)
++        return;
++
++    pool = impl_from_IDirectPlay8ThreadPool(threadpool);
++
++    heap_free(pool);
++}
++
++HRESULT DPNET_CreateDirectPlay8ThreadPool(IClassFactory *iface, LPUNKNOWN punkOuter, REFIID riid, void **obj)
++{
++    IDirectPlay8ThreadPool *pool = get_threadpool();
++    return IDirectPlay8ThreadPool_QueryInterface(pool, riid, obj);
+ }
+-- 
+1.9.1
+
