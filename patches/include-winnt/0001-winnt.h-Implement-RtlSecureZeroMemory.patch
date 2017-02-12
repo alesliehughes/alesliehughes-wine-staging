@@ -1,19 +1,19 @@
-From 3dbb41bdb035e0fafdeb6ed1a672ce9cc36f55e0 Mon Sep 17 00:00:00 2001
+From e520e5e70925b0f4bfbef5a1f5a1bf8ff046f392 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 5 Jan 2017 12:20:11 +1100
-Subject: [PATCH 1/6] winnt.h: Implement RtlSecureZeroMemory
+Subject: [PATCH] winnt.h: Implement RtlSecureZeroMemory
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/winbase.h | 1 +
- include/winnt.h   | 6 ++++++
- 2 files changed, 7 insertions(+)
+ include/winbase.h |  1 +
+ include/winnt.h   | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+)
 
 diff --git a/include/winbase.h b/include/winbase.h
-index eff5972..6a4705c 100644
+index b07d4df..4ec6f9a 100644
 --- a/include/winbase.h
 +++ b/include/winbase.h
-@@ -2776,6 +2776,7 @@ WINBASEAPI UINT        WINAPI _lwrite(HFILE,LPCSTR,UINT);
+@@ -2778,6 +2778,7 @@ WINBASEAPI UINT        WINAPI _lwrite(HFILE,LPCSTR,UINT);
  #define     MoveMemory RtlMoveMemory
  #define     ZeroMemory RtlZeroMemory
  #define     CopyMemory RtlCopyMemory
@@ -22,17 +22,25 @@ index eff5972..6a4705c 100644
  /* Wine internal functions */
  
 diff --git a/include/winnt.h b/include/winnt.h
-index 72c399b..8197899 100644
+index 72c399b..7e78e41 100644
 --- a/include/winnt.h
 +++ b/include/winnt.h
-@@ -5436,6 +5436,12 @@ typedef enum _CM_ERROR_CONTROL_TYPE
+@@ -5436,6 +5436,20 @@ typedef enum _CM_ERROR_CONTROL_TYPE
  #define RtlFillMemory(Destination, Length, Fill) memset((Destination),(Fill),(Length))
  #define RtlZeroMemory(Destination, Length) memset((Destination),0,(Length))
  
-+static FORCEINLINE void *RtlSecureZeroMemory(void *destination, SIZE_T length)
++static FORCEINLINE void *RtlSecureZeroMemory(void *buffer, SIZE_T length)
 +{
-+    memset(destination,0,length);
-+    return destination;
++    volatile char *ptr = (volatile char *)buffer;
++
++    while (length)
++    {
++        *ptr = 0;
++        ptr++;
++        length--;
++    }
++
++    return buffer;
 +}
 +
  #include <guiddef.h>
