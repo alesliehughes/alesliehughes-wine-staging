@@ -1,0 +1,93 @@
+From 01a3051f4a0e76184c752a350b0106e5d6a62c02 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 14 Feb 2017 11:09:39 +1100
+Subject: [PATCH 2/3] dplayx/tests: IPX support was removed in Vista
+
+Also moves a few test calls to run which dont take too much time.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/tests/dplayx.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
+
+diff --git a/dlls/dplayx/tests/dplayx.c b/dlls/dplayx/tests/dplayx.c
+index a1ec276..2e1b62a 100644
+--- a/dlls/dplayx/tests/dplayx.c
++++ b/dlls/dplayx/tests/dplayx.c
+@@ -890,7 +890,11 @@ static BOOL CALLBACK EnumAddress_cb2( REFGUID guidDataType,
+     }
+     else if ( IsEqualGUID( types[1], guidDataType ) )
+     {
+-        todo_wine checkGuid( sps[ callbackData->dwCounter1 ], lpData );
++        BOOL found = FALSE;
++        int i;
++        for( i=0; i < sizeof(sps) / sizeof(sps[0]) && !found; i++ )
++            found = IsEqualGUID( sps[i], lpData );
++        ok( found, "Unknown Address type found %s\n", wine_dbgstr_guid(lpData) );
+     }
+ 
+     callbackData->dwCounter2++;
+@@ -954,14 +958,14 @@ static void test_EnumConnections(void)
+     hr = IDirectPlayX_EnumConnections( pDP, &appGuid, EnumConnections_cb,
+                                        &callbackData, callbackData.dwFlags );
+     checkHR( DP_OK, hr );
+-    check( 4, callbackData.dwCounter1 );
++    ok( callbackData.dwCounter1 == 4 || callbackData.dwCounter1 == 3, "got=%d\n", callbackData.dwCounter1 );
+ 
+     callbackData.dwCounter1 = 0;
+     callbackData.dwFlags = 0;
+     hr = IDirectPlayX_EnumConnections( pDP, NULL, EnumConnections_cb,
+                                        &callbackData, callbackData.dwFlags );
+     checkHR( DP_OK, hr );
+-    check( 4, callbackData.dwCounter1 );
++    ok( callbackData.dwCounter1 == 4 || callbackData.dwCounter1 == 3, "got=%d\n", callbackData.dwCounter1 );
+ 
+     callbackData.dwCounter1 = 0;
+     callbackData.dwFlags = 0;
+@@ -977,7 +981,7 @@ static void test_EnumConnections(void)
+     hr = IDirectPlayX_EnumConnections( pDP, &appGuid, EnumConnections_cb,
+                                        &callbackData, callbackData.dwFlags );
+     checkHR( DP_OK, hr );
+-    check( 4, callbackData.dwCounter1 );
++    ok( callbackData.dwCounter1 == 4 || callbackData.dwCounter1 == 3, "got=%d\n", callbackData.dwCounter1 );
+ 
+     callbackData.dwCounter1 = 0;
+     callbackData.dwFlags = DPCONNECTION_DIRECTPLAYLOBBY;
+@@ -992,7 +996,7 @@ static void test_EnumConnections(void)
+     hr = IDirectPlayX_EnumConnections( pDP, &appGuid, EnumConnections_cb,
+                                        &callbackData, callbackData.dwFlags );
+     checkHR( DP_OK, hr );
+-    check( 4, callbackData.dwCounter1 );
++    ok( callbackData.dwCounter1 == 4 || callbackData.dwCounter1 == 3, "got=%d\n", callbackData.dwCounter1 );
+ 
+     callbackData.dwCounter1 = 0;
+     callbackData.dwFlags = ~( DPCONNECTION_DIRECTPLAY |
+@@ -6880,20 +6884,19 @@ START_TEST(dplayx)
+     test_COM();
+     test_COM_dplobby();
+     test_EnumerateProviders();
++    test_DirectPlayCreate();
++    test_EnumConnections();
++    test_InitializeConnection();
++    test_GetCaps();
+ 
+     if (!winetest_interactive)
+     {
+-        skip("Run in interactive mode to run dplayx tests.\n");
++        skip("Run in interactive mode to run all dplayx tests.\n");
+         return;
+     }
+ 
+     trace("Running in interactive mode, tests will take a while\n");
+ 
+-    test_DirectPlayCreate();
+-    test_EnumConnections();
+-    test_InitializeConnection();
+-
+-    test_GetCaps();
+     /* test_Open() takes almost a minute, */
+     test_Open();
+     /* test_EnumSession takes three minutes */
+-- 
+1.9.1
+
