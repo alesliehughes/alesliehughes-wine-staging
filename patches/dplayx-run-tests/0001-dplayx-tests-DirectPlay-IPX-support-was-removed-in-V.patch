@@ -1,20 +1,20 @@
-From 01a3051f4a0e76184c752a350b0106e5d6a62c02 Mon Sep 17 00:00:00 2001
+From 46a0a63a64072203b857acf8e067d40ae91318f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 14 Feb 2017 11:09:39 +1100
-Subject: [PATCH 2/3] dplayx/tests: IPX support was removed in Vista
+Subject: [PATCH 1/3] dplayx/tests: DirectPlay IPX support was removed in Vista
 
 Also moves a few test calls to run which dont take too much time.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dplayx/tests/dplayx.c | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
+ dlls/dplayx/tests/dplayx.c | 27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
 
 diff --git a/dlls/dplayx/tests/dplayx.c b/dlls/dplayx/tests/dplayx.c
-index a1ec276..2e1b62a 100644
+index f394768..de392aa 100644
 --- a/dlls/dplayx/tests/dplayx.c
 +++ b/dlls/dplayx/tests/dplayx.c
-@@ -890,7 +890,11 @@ static BOOL CALLBACK EnumAddress_cb2( REFGUID guidDataType,
+@@ -893,7 +893,11 @@ static BOOL CALLBACK EnumAddress_cb2( REFGUID guidDataType,
      }
      else if ( IsEqualGUID( types[1], guidDataType ) )
      {
@@ -27,7 +27,7 @@ index a1ec276..2e1b62a 100644
      }
  
      callbackData->dwCounter2++;
-@@ -954,14 +958,14 @@ static void test_EnumConnections(void)
+@@ -957,14 +961,14 @@ static void test_EnumConnections(void)
      hr = IDirectPlayX_EnumConnections( pDP, &appGuid, EnumConnections_cb,
                                         &callbackData, callbackData.dwFlags );
      checkHR( DP_OK, hr );
@@ -44,7 +44,7 @@ index a1ec276..2e1b62a 100644
  
      callbackData.dwCounter1 = 0;
      callbackData.dwFlags = 0;
-@@ -977,7 +981,7 @@ static void test_EnumConnections(void)
+@@ -980,7 +984,7 @@ static void test_EnumConnections(void)
      hr = IDirectPlayX_EnumConnections( pDP, &appGuid, EnumConnections_cb,
                                         &callbackData, callbackData.dwFlags );
      checkHR( DP_OK, hr );
@@ -53,7 +53,7 @@ index a1ec276..2e1b62a 100644
  
      callbackData.dwCounter1 = 0;
      callbackData.dwFlags = DPCONNECTION_DIRECTPLAYLOBBY;
-@@ -992,7 +996,7 @@ static void test_EnumConnections(void)
+@@ -995,7 +999,7 @@ static void test_EnumConnections(void)
      hr = IDirectPlayX_EnumConnections( pDP, &appGuid, EnumConnections_cb,
                                         &callbackData, callbackData.dwFlags );
      checkHR( DP_OK, hr );
@@ -62,7 +62,16 @@ index a1ec276..2e1b62a 100644
  
      callbackData.dwCounter1 = 0;
      callbackData.dwFlags = ~( DPCONNECTION_DIRECTPLAY |
-@@ -6880,20 +6884,19 @@ START_TEST(dplayx)
+@@ -1094,7 +1098,7 @@ static void test_GetCaps(void)
+     {
+ 
+         hr = IDirectPlayX_GetCaps( pDP, &dpcaps, dwFlags );
+-        checkHR( DP_OK, hr );
++        todo_wine checkHR( DP_OK, hr );
+ 
+ 
+         if ( hr == DP_OK )
+@@ -6890,20 +6894,19 @@ START_TEST(dplayx)
      test_COM();
      test_COM_dplobby();
      test_EnumerateProviders();

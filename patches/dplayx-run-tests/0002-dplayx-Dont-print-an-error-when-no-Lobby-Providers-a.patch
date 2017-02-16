@@ -1,0 +1,28 @@
+From c0bc4b41a7a6dd103198fae335b1c3eeb2076a13 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 17 Feb 2017 09:54:30 +1100
+Subject: [PATCH 2/3] dplayx: Dont print an error when no Lobby Providers are
+ found
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/dplay.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/dlls/dplayx/dplay.c b/dlls/dplayx/dplay.c
+index 92062d3..cf6bd4a 100644
+--- a/dlls/dplayx/dplay.c
++++ b/dlls/dplayx/dplay.c
+@@ -4379,8 +4379,7 @@ static HRESULT WINAPI IDirectPlay4AImpl_EnumConnections( IDirectPlay4A *iface,
+     if( RegOpenKeyExA( HKEY_LOCAL_MACHINE, searchSubKey,
+                          0, KEY_READ, &hkResult ) != ERROR_SUCCESS )
+     {
+-      /* Hmmm. Does this mean that there are no service providers? */
+-      ERR(": no service providers?\n");
++      TRACE("No Lobby Providers have been registered.\n");
+       return DP_OK;
+     }
+ 
+-- 
+1.9.1
+
