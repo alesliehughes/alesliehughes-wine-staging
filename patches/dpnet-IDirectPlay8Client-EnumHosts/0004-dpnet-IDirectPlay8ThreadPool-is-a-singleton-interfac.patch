@@ -1,4 +1,4 @@
-From b87f482383e9bab4b99f61bbeffa7f5a2041a9a7 Mon Sep 17 00:00:00 2001
+From 79195e5c9d293a47e9dcf8c4744cee9f7bfd2f7e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 16 Feb 2017 09:50:29 +1100
 Subject: [PATCH 04/31] dpnet: IDirectPlay8ThreadPool is a singleton interface.
@@ -6,9 +6,10 @@ Subject: [PATCH 04/31] dpnet: IDirectPlay8ThreadPool is a singleton interface.
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dpnet/dpnet_main.c    |  1 +
- dlls/dpnet/dpnet_private.h |  3 ++-
- dlls/dpnet/threadpool.c    | 58 ++++++++++++++++++++++++++++------------------
- 3 files changed, 38 insertions(+), 24 deletions(-)
+ dlls/dpnet/dpnet_private.h |  2 +-
+ dlls/dpnet/tests/thread.c  |  6 ++---
+ dlls/dpnet/threadpool.c    | 61 +++++++++++++++++++++++++++++-----------------
+ 4 files changed, 43 insertions(+), 27 deletions(-)
 
 diff --git a/dlls/dpnet/dpnet_main.c b/dlls/dpnet/dpnet_main.c
 index cc80ebc..ffa7aae 100644
@@ -23,10 +24,10 @@ index cc80ebc..ffa7aae 100644
      }
      return TRUE;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 5e7f565..02e8be5 100644
+index 7b6de4a..013bca7 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -127,7 +127,6 @@ struct IDirectPlay8LobbiedApplicationImpl
+@@ -121,7 +121,6 @@ struct IDirectPlay8LobbiedApplicationImpl
  struct IDirectPlay8ThreadPoolImpl
  {
      IDirectPlay8ThreadPool IDirectPlay8ThreadPool_iface;
@@ -34,14 +35,7 @@ index 5e7f565..02e8be5 100644
  
      PFNDPNMESSAGEHANDLER msghandler;
      DWORD flags;
-@@ -143,12 +142,14 @@ extern HRESULT DPNET_CreateDirectPlay8Peer(LPCLASSFACTORY iface, LPUNKNOWN punkO
- extern HRESULT DPNET_CreateDirectPlay8Address(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
- extern HRESULT DPNET_CreateDirectPlay8LobbiedApp(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
- extern HRESULT DPNET_CreateDirectPlay8ThreadPool(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) DECLSPEC_HIDDEN;
-+extern HRESULT DPNET_CreateDirectPlay8ThreadPool(IClassFactory *iface, LPUNKNOWN punkOuter, REFIID riid, void **ppobj) DECLSPEC_HIDDEN;
- extern HRESULT DPNET_CreateDirectPlay8LobbyClient(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, void **ppobj) DECLSPEC_HIDDEN;
- 
- extern void init_dpn_sp_caps(DPN_SP_CAPS *dpnspcaps) DECLSPEC_HIDDEN;
+@@ -143,6 +142,7 @@ extern void init_dpn_sp_caps(DPN_SP_CAPS *dpnspcaps) DECLSPEC_HIDDEN;
  extern void init_winsock(void) DECLSPEC_HIDDEN;
  extern HRESULT enum_services_providers(const GUID * const service, DPN_SERVICE_PROVIDER_INFO * const info_buffer,
          DWORD * const buf_size, DWORD * const returned) DECLSPEC_HIDDEN;
@@ -49,8 +43,37 @@ index 5e7f565..02e8be5 100644
  
  /* used for generic dumping (copied from ddraw) */
  typedef struct {
+diff --git a/dlls/dpnet/tests/thread.c b/dlls/dpnet/tests/thread.c
+index 7129739..80a7ce5 100644
+--- a/dlls/dpnet/tests/thread.c
++++ b/dlls/dpnet/tests/thread.c
+@@ -70,7 +70,7 @@ static void create_threadpool(void)
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+     hr = IDirectPlay8ThreadPool_Initialize(pool2, NULL, &DirectPlayThreadHandler, 0);
+-    todo_wine ok(hr == DPNERR_ALREADYINITIALIZED, "got 0x%08x\n", hr);
++    ok(hr == DPNERR_ALREADYINITIALIZED, "got 0x%08x\n", hr);
+ 
+     hr = IDirectPlay8ThreadPool_GetThreadCount(pool1, -1, &threadcnt, 0);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+@@ -219,13 +219,13 @@ static void test_singleton(void)
+ 
+     hr = CoCreateInstance( &CLSID_DirectPlay8ThreadPool, NULL, CLSCTX_ALL, &IID_IDirectPlay8ThreadPool, (void**)&pool2);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+-    ok(pool1 != pool2, "same pointer returned.\n");
++    todo_wine ok(pool1 != pool2, "same pointer returned.\n");
+ 
+     hr = IDirectPlay8ThreadPool_Initialize(pool1, NULL, &DirectPlayThreadHandler, 0);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+     hr = IDirectPlay8ThreadPool_Initialize(pool2, NULL, &DirectPlayThreadHandler, 0);
+-    todo_wine ok(hr == DPNERR_ALREADYINITIALIZED, "got 0x%08x\n", hr);
++    ok(hr == DPNERR_ALREADYINITIALIZED, "got 0x%08x\n", hr);
+ 
+     hr = IDirectPlay8ThreadPool_Close(pool1, 0);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
 diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
-index 37a05e2..69aa8e6 100644
+index 37a05e2..c6b59f4 100644
 --- a/dlls/dpnet/threadpool.c
 +++ b/dlls/dpnet/threadpool.c
 @@ -36,6 +36,8 @@
@@ -70,7 +93,7 @@ index 37a05e2..69aa8e6 100644
 -    ULONG RefCount = InterlockedIncrement(&This->ref);
 -
 -    return RefCount;
-+    return 1;
++    return 2;
  }
  
  static ULONG WINAPI IDirectPlay8ThreadPoolImpl_Release(IDirectPlay8ThreadPool *iface)
@@ -82,11 +105,11 @@ index 37a05e2..69aa8e6 100644
 -        HeapFree(GetProcessHeap(), 0, This);
 -
 -    return RefCount;
-+    return 2;
++    return 1;
  }
  
  /* IDirectPlay8ThreadPool interface follows */
-@@ -151,22 +144,41 @@ static const IDirectPlay8ThreadPoolVtbl DirectPlay8ThreadPool_Vtbl =
+@@ -151,22 +144,44 @@ static const IDirectPlay8ThreadPoolVtbl DirectPlay8ThreadPool_Vtbl =
      IDirectPlay8ThreadPoolImpl_DoWork
  };
  
@@ -109,6 +132,9 @@ index 37a05e2..69aa8e6 100644
 -        WARN("Not enough memory\n");
 -        return E_OUTOFMEMORY;
 +        obj->IDirectPlay8ThreadPool_iface.lpVtbl = &DirectPlay8ThreadPool_Vtbl;
++        obj->msghandler  = NULL;
++        obj->flags       = 0;
++        obj->usercontext = NULL;
 +
 +        if (InterlockedCompareExchangePointer((void**)&threadpool, &obj->IDirectPlay8ThreadPool_iface, NULL))
 +            HeapFree(GetProcessHeap(), 0, obj);
