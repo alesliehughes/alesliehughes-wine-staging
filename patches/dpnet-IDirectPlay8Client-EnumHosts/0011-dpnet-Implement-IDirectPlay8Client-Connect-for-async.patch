@@ -1,0 +1,139 @@
+From 88e3319b5925fe697ddb967c591e2622dda13fbc Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 13 Dec 2016 12:02:35 +1100
+Subject: [PATCH 11/31] dpnet: Implement IDirectPlay8Client Connect for async
+ connections
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c        | 70 ++++++++++++++++++++++++++++++++++++++++++++--
+ dlls/dpnet/dpnet_private.h |  1 +
+ 2 files changed, 68 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 8e14aac..951ea1c 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -718,7 +718,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+ }
+ 
+ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session,
+-        const DPN_APPLICATION_DESC * const app_desc, WCHAR *username)
++        const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
++        PFNDPNMESSAGEHANDLER msghandler)
+ {
+     HRESULT hr = DPN_OK;
+     BOOL connected = FALSE;
+@@ -736,6 +737,14 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+ 
+     while(!connected && hr == S_OK)
+     {
++        if(cancelevent)
++        {
++            if(WaitForSingleObject(cancelevent, 0) != WAIT_TIMEOUT)
++            {
++                TRACE("Event Signaled.\n");
++                break;
++            }
++        }
+         buflen = sizeof(temp);
+         n = recvfrom(sock, temp, buflen, 0, (struct sockaddr *)&from, &fromlen);
+         if(n >= (int)sizeof(struct DFRAME_PACKET))
+@@ -761,6 +770,25 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+                     /* TODO - Store info->dpnid */
+                     connected = TRUE;
+ 
++                    if(cancelevent && msghandler)
++                    {
++                        DPNMSG_CONNECT_COMPLETE complete;
++
++                        complete.dwSize = sizeof(complete);
++                        complete.hAsyncOp = 0;
++                        complete.pvUserContext = NULL; //This->usercontext;
++                        complete.hResultCode = hr;
++                        complete.pvApplicationReplyData = NULL;
++                        complete.dwApplicationReplyDataSize = 0;
++                        complete.dpnidLocal = info->dpnid;
++
++                        hr = msghandler(NULL, DPN_MSGID_CONNECT_COMPLETE, &complete);
++                        if(FAILED(hr))
++                        {
++                            ERR("Message Handle for CONNECT_COMPELTE failed (0x%08x).\n", hr);
++                        }
++                    }
++
+                     TRACE("dpnid %08x\n", info->dpnid);
+                 }
+                 else
+@@ -802,6 +830,31 @@ static HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD
+     return hr;
+ }
+ 
++struct connect_data
++{
++    SOCKET sock;
++    GUID   app_guid;
++    DWORD  session;
++    struct sockaddr_in addr;
++    const DPN_APPLICATION_DESC *app_desc;
++    WCHAR *username;
++
++    HANDLE cancelevent;
++    PFNDPNMESSAGEHANDLER msghandler;
++};
++
++static DWORD WINAPI connect_thread(void *threaddata)
++{
++    struct connect_data *tdata = (struct connect_data *)threaddata;
++
++    dplay_connect(tdata->sock, &tdata->addr, tdata->session, tdata->app_desc, tdata->username,
++            tdata->cancelevent, tdata->msghandler);
++
++    heap_free(threaddata);
++
++    return 0;
++}
++
+ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+         const DPN_APPLICATION_DESC * const app_desc, IDirectPlay8Address * const host_addr,
+         IDirectPlay8Address * const device, const DPN_SECURITY_DESC * const security,
+@@ -850,11 +903,22 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+ 
+     if(flags & DPNCONNECT_SYNC)
+     {
+-        hr = dplay_connect(This->sock, &This->serveraddr, 0xdeadbeef, app_desc, This->username);
++        hr = dplay_connect(This->sock, &This->serveraddr, 0xdeadbeef, app_desc, This->username, NULL, This->msghandler);
+     }
+     else
+     {
+-        FIXME("Async Connect currently not supported\n");
++        struct connect_data *tdata;
++        tdata = heap_alloc(sizeof(struct connect_data));
++        tdata->sock        = This->sock;
++        tdata->msghandler  = This->msghandler;
++        tdata->app_guid    = app_desc->guidApplication;
++        tdata->session     = 0xdeadbeef;
++        tdata->addr        = This->serveraddr;
++        tdata->app_desc    = app_desc;
++        tdata->username    = This->username;
++        tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
++
++        This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
+         hr = DPNSUCCESS_PENDING;
+     }
+ 
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index cd89b3c..b3ab518 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -70,6 +70,7 @@ struct IDirectPlay8ClientImpl
+     HANDLE cancelevent;
+ 
+     struct sockaddr_in serveraddr;
++    HANDLE connectthread;
+ };
+ 
+ /* ------------------- */
+-- 
+1.9.1
+

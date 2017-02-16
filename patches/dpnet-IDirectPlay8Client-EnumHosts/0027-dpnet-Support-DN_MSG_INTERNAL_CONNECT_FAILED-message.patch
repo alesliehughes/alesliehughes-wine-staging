@@ -1,0 +1,87 @@
+From 4628464b7de033a680cd2eac174f941cc3217b16 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 19 Jan 2017 12:47:47 +1100
+Subject: [PATCH 27/31] dpnet: Support DN_MSG_INTERNAL_CONNECT_FAILED message
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c   | 27 ++++++++++++++++++++++++++-
+ dlls/dpnet/dppacket.h | 10 ++++++++++
+ 2 files changed, 36 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 49167f6..3762edc 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -955,6 +955,31 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+                         TRACE("dpnid %08x\n", info->dpnid);
+                         break;
+                     }
++                    case DN_MSG_INTERNAL_CONNECT_FAILED:
++                    {
++                        struct DN_CONNCET_FAILED *failed = (struct DN_CONNCET_FAILED *)temp;
++
++                        WARN("DN_MSG_INTERNAL_CONNECT_FAILED (0x%08x)\n", failed->hres);
++
++                        hr = failed->hres;
++
++                        if(cancelevent && msghandler)
++                        {
++                            DPNMSG_CONNECT_COMPLETE complete;
++
++                            complete.dwSize = sizeof(complete);
++                            complete.hAsyncOp = 0;
++                            complete.pvUserContext = NULL; //This->usercontext;
++                            complete.hResultCode = failed->hres;
++                            complete.pvApplicationReplyData = NULL;
++                            complete.dwApplicationReplyDataSize = 0;
++                            /*complete.dpnidLocal = info->dpnid;*/
++
++                            msghandler(NULL, DPN_MSGID_CONNECT_COMPLETE, &complete);
++                        }
++
++                        break;
++                    }
+                     default:
+                     {
+                         if(packet->control & PACKET_CONTROL_KEEPALIVE_OR_CORRELATE)
+@@ -977,7 +1002,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+ 
+                             hr = msghandler(NULL, DPN_MSGID_RECEIVE, &received);
+                             if(hr != S_OK)
+-                                ERR("Message Handle for DPN_MSGID_TERMINATE_SESSION failed (0x%08x).\n", hr);
++                                ERR("Message Handle for DPN_MSGID_RECEIVE failed (0x%08x).\n", hr);
+                         }
+                     }
+                 }
+diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
+index e4cfa43..cd61e1f 100644
+--- a/dlls/dpnet/dppacket.h
++++ b/dlls/dpnet/dppacket.h
+@@ -149,6 +149,14 @@ struct DN_ACK_CONNECT_INFO
+     DWORD type;                   /* DN_MSG_INTERNAL_ACK_CONNECT_INFO */
+ };
+ 
++struct DN_CONNCET_FAILED
++{
++    DWORD type;                   /* DN_MSG_INTERNAL_CONNECT_FAILED */
++    DWORD hres;
++    DWORD reply_offset;
++    DWORD reply_size;
++};
++
+ struct DFRAME_PACKET_KEEPALIVE
+ {
+     BYTE command;
+@@ -219,6 +227,8 @@ struct CFRAME_PACKET
+ #define DN_MSG_INTERNAL_SEND_CONNECT_INFO   0x000000c2
+ #define DN_MSG_INTERNAL_ACK_CONNECT_INFO    0x000000c3
+ 
++#define DN_MSG_INTERNAL_CONNECT_FAILED      0x000000c5
++
+ #define DP_OBECT_TYPE_CLIENT      0x00000002
+ #define DP_OBECT_TYPE_PEER        0x00000004
+ 
+-- 
+1.9.1
+

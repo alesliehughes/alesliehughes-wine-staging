@@ -1,0 +1,94 @@
+From 48a9c24994ffc04323ae544d4f68c58028f05079 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 9 Dec 2016 14:55:29 +1100
+Subject: [PATCH 10/31] dpnet: Support userdata in EnumHost request
+
+---
+ dlls/dpnet/client.c   | 36 +++++++++++++++++++++++++++---------
+ dlls/dpnet/dppacket.h |  8 ++++++++
+ 2 files changed, 35 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 623c064..8e14aac 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -409,22 +409,40 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+     return sender;
+ }
+ 
+-static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr_in *from)
++static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWORD data_size, struct sockaddr_in *from)
+ {
+-    struct ENUM_QUERY query;
++    char *packet;
++
++    struct ENUM_QUERY_GUID *query;
+     static DWORD payloadvalue = 0;
++    BOOL has_guid = !IsEqualGUID(&application, &IID_NULL);
+     int err;
++    int size = sizeof(struct ENUM_QUERY) + data_size;
++    int offset = sizeof(struct ENUM_QUERY);
++    if(has_guid)
++    {
++        offset += sizeof(GUID);
++        size += sizeof(GUID);
++    }
+ 
+-    query.lead        = 0x00;
+-    query.command     = PACKET_ENUM_QUERY;
+-    query.type        = PACKET_QUERY_GUID;
+-    query.application = application;
+-    query.payload     = payloadvalue++;
++    packet = heap_alloc(size);
+ 
+-    err = sendto(sock, (void *)&query, sizeof(query), 0, (struct sockaddr *)from, sizeof(struct sockaddr_in));
++    query = (struct ENUM_QUERY_GUID*)packet;
++    query->lead        = 0x00;
++    query->command     = PACKET_ENUM_QUERY;
++    query->payload     = payloadvalue++;
++    query->type        = has_guid ? PACKET_QUERY_GUID : PACKET_QUERY_NO_GUID;
++    if(has_guid)
++        query->application = application;
++    if(data_size)
++        memcpy( packet + offset, data, data_size);
++
++    err = sendto(sock, (void *)packet, size, 0, (struct sockaddr *)from, sizeof(struct sockaddr_in));
+     if(err == -1)
+         ERR("Sendto failed (%d).\n", WSAGetLastError());
+ 
++    heap_free(packet);
++
+     return err;
+ }
+ 
+@@ -456,7 +474,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+         {
+             TRACE("Sending Request.\n");
+ 
+-            if(send_packet_enum_query(sock, application, &host) == -1)
++            if(send_packet_enum_query(sock, application, NULL, 0, &host) == -1)
+                 break;
+ 
+             starttime = GetTickCount();
+diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
+index 2a11aaa..3716be9 100644
+--- a/dlls/dpnet/dppacket.h
++++ b/dlls/dpnet/dppacket.h
+@@ -35,6 +35,14 @@ struct ENUM_QUERY
+     BYTE command;
+     WORD payload;
+     BYTE type;
++};
++
++struct ENUM_QUERY_GUID
++{
++    BYTE lead;
++    BYTE command;
++    WORD payload;
++    BYTE type;
+     GUID application;
+ };
+ 
+-- 
+1.9.1
+

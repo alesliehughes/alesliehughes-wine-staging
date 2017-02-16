@@ -1,0 +1,64 @@
+From f81c020dfae3b65e56b5fd4a9686fe60936bae3a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 13 Dec 2016 12:37:51 +1100
+Subject: [PATCH 15/31] dpnet: Implement IDirectPlay8Client Send
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 40 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 37 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 4593ddf..fd1957c 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -1089,9 +1089,43 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
+         const DPN_BUFFER_DESC * const prgBufferDesc, const DWORD cBufferDesc, const DWORD dwTimeOut,
+         void * const pvAsyncContext, DPNHANDLE * const phAsyncHandle, const DWORD dwFlags)
+ {
+-  IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
+-  FIXME("(%p):(%p,%p,%x): Stub\n", This, pvAsyncContext, phAsyncHandle, dwFlags);
+-  return DPN_OK; 
++    IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
++    struct DFRAME_PACKET_TYPE *packet;
++    int err;
++    int size;
++    static int sss = 3;
++
++    FIXME("(%p):(%p,%d,%u,%p,%p,%x): Semi-stub\n", This, prgBufferDesc, cBufferDesc, dwTimeOut, pvAsyncContext, phAsyncHandle, dwFlags);
++
++    if(This->sock == INVALID_SOCKET)
++        return E_FAIL;
++
++    size = sizeof(struct DFRAME_PACKET) + prgBufferDesc->dwBufferSize;
++    packet = heap_alloc(size);
++
++    if(!packet)
++        return E_OUTOFMEMORY;
++
++    if(cBufferDesc != 1)
++        FIXME("Currently only one DPN_BUFFER_DESC supported!\n.");
++
++    packet->command = PACKET_COMMAND_DATA | PACKET_COMMAND_SEQUENTIAL | PACKET_COMMAND_POLL |
++                      PACKET_COMMAND_NEW_MSG | PACKET_COMMAND_END_MSG;
++    packet->control  = 0;
++    packet->seq      = sss++;  /* TODO */
++    packet->nseq     = sss;    /* TODO */
++
++    memcpy(&packet->type, prgBufferDesc->pBufferData, prgBufferDesc->dwBufferSize);
++
++    err = sendto(This->sock, (void *)packet, size, 0, (struct sockaddr *)&This->serveraddr, sizeof(struct sockaddr_in));
++    if(err == -1)
++        ERR("Sendto failed (%d).\n", WSAGetLastError());
++    else
++        FIXME("sent sent %d\n", err);
++
++    heap_free(packet);
++
++    return DPN_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectPlay8ClientImpl_GetSendQueueInfo(IDirectPlay8Client *iface,
+-- 
+1.9.1
+

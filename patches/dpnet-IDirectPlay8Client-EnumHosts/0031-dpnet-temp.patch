@@ -1,0 +1,25 @@
+From 15829feec3d1aea0941af09751b41561c00b1af2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 19 Jan 2017 22:22:15 +1100
+Subject: [PATCH 31/31] dpnet: temp
+
+---
+ dlls/dpnet/client.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 9908066..b9411da 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -1096,7 +1096,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+             {
+                 struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
+ 
+-                FIXME("Processing DFRAME_PACKET(%d) type = %d\n", n, dframe->type);
++                FIXME("Processing DFRAME_PACKET(%d) type = 0x%08x\n", n, dframe->type);
+ 
+                 switch(dframe->type)
+                 {
+-- 
+1.9.1
+
