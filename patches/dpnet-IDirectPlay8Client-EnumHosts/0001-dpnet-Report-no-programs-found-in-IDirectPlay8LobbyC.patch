@@ -1,7 +1,7 @@
-From ff45c5ae18244b1f8e3363cbd15c202e6d74b346 Mon Sep 17 00:00:00 2001
+From bded372bf76c928144acf96ba4c81d868b09d056 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Oct 2016 11:35:42 +1100
-Subject: [PATCH 01/31] dpnet: Report no programs found in
+Subject: [PATCH 01/39] dpnet: Report no programs found in
  IDirectPlay8LobbyClient EnumLocalPrograms
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 3b3361f..a8050c5 100644
+index 3b3361fe72..a8050c51d7 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -476,7 +476,10 @@ static HRESULT WINAPI lobbyclient_EnumLocalPrograms(IDirectPlay8LobbyClient *ifa
@@ -26,5 +26,5 @@ index 3b3361f..a8050c5 100644
  
  static HRESULT WINAPI lobbyclient_ConnectApplication(IDirectPlay8LobbyClient *iface, DPL_CONNECT_INFO *connectioninfo,
 -- 
-1.9.1
+2.11.0
 

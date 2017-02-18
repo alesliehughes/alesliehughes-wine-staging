@@ -1,7 +1,7 @@
-From 9f67a40316341af0af612766f81568efce9ee554 Mon Sep 17 00:00:00 2001
+From 53b018951dd7f5357894dd6d4dd313f4dc55807b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:59:01 +1100
-Subject: [PATCH 02/31] dpnet: Implement IDirectPlay8Client Enumhost when
+Subject: [PATCH 02/39] dpnet: Implement IDirectPlay8Client Enumhost when
  called synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -13,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/dpnet/dppacket.h
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index a8050c5..b227e28 100644
+index a8050c51d7..b227e2860c 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -55,6 +55,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
@@ -323,7 +323,7 @@ index a8050c5..b227e28 100644
      init_dpn_sp_caps(&client->spcaps);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 7b6de4a..1712bba 100644
+index 7b6de4a861..1712bba6c6 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -27,10 +27,12 @@
@@ -350,7 +350,7 @@ index 7b6de4a..1712bba 100644
  /* ------------------- */
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
 new file mode 100644
-index 0000000..f3ca955
+index 0000000000..f3ca955f51
 --- /dev/null
 +++ b/dlls/dpnet/dppacket.h
 @@ -0,0 +1,80 @@
@@ -435,5 +435,5 @@ index 0000000..f3ca955
 +
 +#endif
 -- 
-1.9.1
+2.11.0
 

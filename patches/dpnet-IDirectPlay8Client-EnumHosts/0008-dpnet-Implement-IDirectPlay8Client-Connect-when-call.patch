@@ -1,7 +1,7 @@
-From 82c7cf8def784dd12ab99dc46becf3b908a6bfdf Mon Sep 17 00:00:00 2001
+From 6c7a491941e709985e494814b1fe70b49f1db908 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:31:52 +1100
-Subject: [PATCH 08/31] dpnet: Implement IDirectPlay8Client Connect when called
+Subject: [PATCH 08/39] dpnet: Implement IDirectPlay8Client Connect when called
  synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 339 insertions(+)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 7935fcc..676b245 100644
+index 7935fcc8f2..676b245f40 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -159,6 +159,126 @@ static BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in
@@ -267,7 +267,7 @@ index 7935fcc..676b245 100644
      IDirectPlay8Address_Release(host_addr);
  
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index f3ca955..2a11aaa 100644
+index f3ca955f51..2a11aaac6e 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -69,12 +69,126 @@ struct DFRAME_PACKET
@@ -398,5 +398,5 @@ index f3ca955..2a11aaa 100644
  
  #endif
 -- 
-1.9.1
+2.11.0
 

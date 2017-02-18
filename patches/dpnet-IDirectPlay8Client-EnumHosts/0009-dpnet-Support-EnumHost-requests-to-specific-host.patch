@@ -1,14 +1,14 @@
-From e6538e82462bbfbf082ae60c7a1831deb573532f Mon Sep 17 00:00:00 2001
+From 2580de843eac2139e31c921d694d806d05f22425 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 9 Dec 2016 11:48:37 +1100
-Subject: [PATCH 09/31] dpnet: Support EnumHost requests to specific host
+Subject: [PATCH 09/39] dpnet: Support EnumHost requests to specific host
 
 ---
  dlls/dpnet/client.c | 17 +++++++++--------
  1 file changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 676b245..623c064 100644
+index 676b245f40..623c0641cb 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -428,7 +428,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, struct sockaddr
@@ -84,5 +84,5 @@ index 676b245..623c064 100644
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
  
 -- 
-1.9.1
+2.11.0
 

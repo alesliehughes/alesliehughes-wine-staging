@@ -1,7 +1,7 @@
-From 3d59b7859c668ae74a985a0720663ece0b4d92d2 Mon Sep 17 00:00:00 2001
+From 9210b201c938c983eca561dba4db0ba4cc07522c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:17:02 +1100
-Subject: [PATCH 12/31] dpnet: Store a session key for connection.
+Subject: [PATCH 12/39] dpnet: Store a session key for connection.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 951ea1c..3c53067 100644
+index 951ea1cb06..3c53067f66 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -29,6 +29,7 @@
@@ -50,7 +50,7 @@ index 951ea1c..3c53067 100644
      IDirectPlay8ClientImpl_Release(&client->IDirectPlay8Client_iface);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index b3ab518..8423376 100644
+index b3ab5182dd..842337652d 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -71,6 +71,7 @@ struct IDirectPlay8ClientImpl
@@ -62,5 +62,5 @@ index b3ab518..8423376 100644
  
  /* ------------------- */
 -- 
-1.9.1
+2.11.0
 

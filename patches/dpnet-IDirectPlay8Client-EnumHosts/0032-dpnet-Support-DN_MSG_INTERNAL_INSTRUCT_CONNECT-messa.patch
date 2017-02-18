@@ -1,0 +1,60 @@
+From bf0a9f3498c63f2b23f970ecd03d074e75e6927b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 20 Jan 2017 08:36:53 +1100
+Subject: [PATCH 32/39] dpnet: Support DN_MSG_INTERNAL_INSTRUCT_CONNECT message
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c   |  7 +++++++
+ dlls/dpnet/dppacket.h | 10 ++++++++++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index b9411da14e..d69561e0a7 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -1100,6 +1100,13 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+ 
+                 switch(dframe->type)
+                 {
++                    case DN_MSG_INTERNAL_INSTRUCT_CONNECT:
++                    {
++                        struct DN_INSTRUCT_CONNECT *instruct = (struct DN_INSTRUCT_CONNECT *)temp;
++
++                        FIXME("DN_MSG_INTERNAL_INSTRUCT_CONNECT dpnid 0x%08x, version 0x%08x\n", instruct->dpnid, instruct->version);
++                        break;
++                    }
+                     default:
+                         /* System Messages */
+                         if(packet->command & PACKET_COMMAND_USER_1)
+diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
+index cd61e1f1bf..525d75b544 100644
+--- a/dlls/dpnet/dppacket.h
++++ b/dlls/dpnet/dppacket.h
+@@ -157,6 +157,15 @@ struct DN_CONNCET_FAILED
+     DWORD reply_size;
+ };
+ 
++/* 2.2.1.9 DN_MSG_INTERNAL_INSTRUCT_CONNECT */
++struct DN_INSTRUCT_CONNECT
++{
++    DWORD type;                   /* DN_MSG_INTERNAL_INSTRUCT_CONNECT */
++    DWORD dpnid;
++    DWORD version;
++    DWORD unused;
++};
++
+ struct DFRAME_PACKET_KEEPALIVE
+ {
+     BYTE command;
+@@ -228,6 +237,7 @@ struct CFRAME_PACKET
+ #define DN_MSG_INTERNAL_ACK_CONNECT_INFO    0x000000c3
+ 
+ #define DN_MSG_INTERNAL_CONNECT_FAILED      0x000000c5
++#define DN_MSG_INTERNAL_INSTRUCT_CONNECT    0x000000c6
+ 
+ #define DP_OBECT_TYPE_CLIENT      0x00000002
+ #define DP_OBECT_TYPE_PEER        0x00000004
+-- 
+2.11.0
+

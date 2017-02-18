@@ -1,7 +1,7 @@
-From cd329291744e002d87d05af7ea1f879729a27af3 Mon Sep 17 00:00:00 2001
+From 0aaa30763dd20b4859ab3ec731898d70a3e7bad9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 13:40:04 +1100
-Subject: [PATCH 28/31] dpnet: Adjust player_connect_info_ex packet based off
+Subject: [PATCH 28/39] dpnet: Adjust player_connect_info_ex packet based off
  being client/peer
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -12,7 +12,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 15 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 3762edc..81c4c98 100644
+index 3762edc488..81c4c983e7 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -382,7 +382,8 @@ static int dframe_packet_sack_ack(SOCKET sock, void *addr, size_t addrsize, int
@@ -82,7 +82,7 @@ index 3762edc..81c4c98 100644
          This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
          hr = DPNSUCCESS_PENDING;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index e926241..71b3c25 100644
+index e926241fc9..71b3c25719 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -73,6 +73,7 @@ struct connect_data
@@ -103,7 +103,7 @@ index e926241..71b3c25 100644
  
  
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 438ce8c..c705437 100644
+index 438ce8cf76..c7054371da 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -344,7 +344,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
@@ -124,5 +124,5 @@ index 438ce8c..c705437 100644
          This->connectthread = CreateThread(NULL, 0, &connect_thread, tdata, 0, 0);
          hr = DPNSUCCESS_PENDING;
 -- 
-1.9.1
+2.11.0
 

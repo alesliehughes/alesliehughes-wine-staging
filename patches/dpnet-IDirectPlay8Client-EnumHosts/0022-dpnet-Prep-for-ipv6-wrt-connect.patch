@@ -1,7 +1,7 @@
-From 4395a16f6ae65b39920caefc07480ac631e5ac9f Mon Sep 17 00:00:00 2001
+From 045fc58490d9e97f68bb079cc3ddc4055a0b9838 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:49:18 +1100
-Subject: [PATCH 22/31] dpnet: Prep for ipv6 wrt connect
+Subject: [PATCH 22/39] dpnet: Prep for ipv6 wrt connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 34 insertions(+), 30 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 003228b..5d56508 100644
+index 003228bb9d..5d56508c42 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -171,7 +171,7 @@ done:
@@ -241,7 +241,7 @@ index 003228b..5d56508 100644
          tdata->username    = This->username;
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 2e2a242..b01f7b4 100644
+index 2e2a24215b..b01f7b48dc 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -63,7 +63,8 @@ struct connect_data
@@ -264,7 +264,7 @@ index 2e2a242..b01f7b4 100644
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
  extern DWORD WINAPI connect_thread(void *threaddata) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index eefd545..427b2bf 100644
+index eefd5450c1..427b2bf72d 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -327,7 +327,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
@@ -287,5 +287,5 @@ index eefd545..427b2bf 100644
          tdata->username    = This->username;
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
 -- 
-1.9.1
+2.11.0
 

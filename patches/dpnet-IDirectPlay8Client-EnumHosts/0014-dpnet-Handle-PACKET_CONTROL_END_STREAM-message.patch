@@ -1,7 +1,7 @@
-From 7bf6332a6c615351cae1b54bb72464cd854db870 Mon Sep 17 00:00:00 2001
+From 0fa1f3288da30b3a1402349e9bf471801828a1e1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:36:29 +1100
-Subject: [PATCH 14/31] dpnet: Handle PACKET_CONTROL_END_STREAM message
+Subject: [PATCH 14/39] dpnet: Handle PACKET_CONTROL_END_STREAM message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 46 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 29f8264..4593ddf 100644
+index 29f8264f9d..4593ddf193 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -237,6 +237,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
@@ -82,5 +82,5 @@ index 29f8264..4593ddf 100644
                              {
                                  FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x, type %08x\n", packet->command, packet->control, packet->seq, packet->nseq, dframe->type);
 -- 
-1.9.1
+2.11.0
 
