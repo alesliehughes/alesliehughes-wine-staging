@@ -1,0 +1,49 @@
+From c7eed73e52a427c3d720f6e0defb22af10835500 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 23 Feb 2017 09:42:30 +1100
+Subject: [PATCH] oledb32: Correct length calculation in DataConvert for
+ DBTYPE_STR
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/convert.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index ac462f2..7030eb5 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -816,23 +816,23 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+     case DBTYPE_STR:
+     {
+         BSTR b;
+-        DBLENGTH bstr_len;
++        DBLENGTH length;
+         INT bytes_to_copy;
+-        hr = IDataConvert_DataConvert(iface, src_type, DBTYPE_BSTR, src_len, &bstr_len,
++        hr = IDataConvert_DataConvert(iface, src_type, DBTYPE_BSTR, src_len, &length,
+                                       src, &b, sizeof(BSTR), src_status, dst_status,
+                                       precision, scale, flags);
+         if(hr != S_OK) return hr;
+-        bstr_len = SysStringLen(b);
+-        *dst_len = bstr_len * sizeof(char); /* Doesn't include size for '\0' */
++        length = WideCharToMultiByte(CP_ACP, 0, b, -1, NULL, 0, NULL, NULL);
++        *dst_len = length - 1; /* Doesn't include size for '\0' */
+         *dst_status = DBSTATUS_S_OK;
+-        bytes_to_copy = min(*dst_len + sizeof(char), dst_max_len);
++        bytes_to_copy = min(length, dst_max_len);
+         if(dst)
+         {
+             if(bytes_to_copy >= sizeof(char))
+             {
+-                WideCharToMultiByte(CP_ACP, 0, b, bytes_to_copy - sizeof(char), dst, dst_max_len, NULL, NULL);
++                WideCharToMultiByte(CP_ACP, 0, b, -1, dst, dst_max_len, NULL, NULL);
+                 *((char *)dst + bytes_to_copy / sizeof(char) - 1) = 0;
+-                if(bytes_to_copy < *dst_len + sizeof(char))
++                if(bytes_to_copy < length)
+                     *dst_status = DBSTATUS_S_TRUNCATED;
+             }
+             else
+-- 
+1.9.1
+
