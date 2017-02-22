@@ -1,16 +1,16 @@
-From 14c7b3f567f7228942b958cc581ed1e6289b2440 Mon Sep 17 00:00:00 2001
+From a8e4e4a56f5b4fba0c724b3661b681d46eab09e9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Feb 2017 15:24:00 +1100
 Subject: [PATCH 2/2] mfreadwrite: Add MFCreateSourceReaderFromMediaSource stub
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/mfreadwrite/main.c           | 14 ++++++++++++++
+ dlls/mfreadwrite/main.c           | 13 +++++++++++++
  dlls/mfreadwrite/mfreadwrite.spec |  2 +-
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
-index a72f634..ec9d122 100644
+index a72f634..c792d98 100644
 --- a/dlls/mfreadwrite/main.c
 +++ b/dlls/mfreadwrite/main.c
 @@ -22,6 +22,11 @@
@@ -21,18 +21,17 @@ index a72f634..ec9d122 100644
 +
 +#include "wine/debug.h"
 +
-+WINE_DEFAULT_DEBUG_CHANNEL(mfplat);
++WINE_DEFAULT_DEBUG_CHANNEL(mfreadwrite);
  
  BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  {
-@@ -36,3 +41,12 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+@@ -36,3 +41,11 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  
      return TRUE;
  }
 +
 +
-+HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source,
-+                                       IMFAttributes *attributes, IMFSourceReader **reader)
++HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAttributes *attributes, IMFSourceReader **reader)
 +{
 +    FIXME("%p %p %p stub.\n", source, attributes, reader);
 +
