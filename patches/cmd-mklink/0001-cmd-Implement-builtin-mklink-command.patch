@@ -1,18 +1,18 @@
-From 2e7e0bcf1068830cbf83a33172ccd00c022a2153 Mon Sep 17 00:00:00 2001
+From c43076b4ac01dd88ebdf596d9e4e4e1d935d7d34 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 10 Jan 2017 11:46:15 +1100
 Subject: [PATCH] cmd: Implement builtin mklink command
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- programs/cmd/builtins.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ programs/cmd/builtins.c | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
  programs/cmd/cmd.rc     | 11 ++++++++++-
  programs/cmd/wcmd.h     |  4 +++-
  programs/cmd/wcmdmain.c |  3 +++
- 4 files changed, 65 insertions(+), 2 deletions(-)
+ 4 files changed, 64 insertions(+), 2 deletions(-)
 
 diff --git a/programs/cmd/builtins.c b/programs/cmd/builtins.c
-index f3dbe3a2ed..c0fc095383 100644
+index 7301f54..33c38c6 100644
 --- a/programs/cmd/builtins.c
 +++ b/programs/cmd/builtins.c
 @@ -94,6 +94,7 @@ const WCHAR inbuilt[][10] = {
@@ -23,7 +23,7 @@ index f3dbe3a2ed..c0fc095383 100644
          {'E','X','I','T','\0'}
  };
  static const WCHAR externals[][10] = {
-@@ -4874,3 +4875,51 @@ void WCMD_color (void) {
+@@ -4874,3 +4875,50 @@ void WCMD_color (void) {
        SetConsoleTextAttribute(hStdOut, color);
    }
  }
@@ -53,30 +53,29 @@ index f3dbe3a2ed..c0fc095383 100644
 +
 +    WINE_TRACE("mklink: Processing arg '%s'\n", wine_dbgstr_w(thisArg));
 +
-+  if(lstrcmpiW(thisArg, optD) == 0)
-+    isdir = TRUE;
-+  else if(lstrcmpiW(thisArg, optH) == 0)
-+    hard = TRUE;
-+  else if(lstrcmpiW(thisArg, optJ) == 0)
++    if(lstrcmpiW(thisArg, optD) == 0)
++      isdir = TRUE;
++    else if(lstrcmpiW(thisArg, optH) == 0)
++      hard = TRUE;
++    else if(lstrcmpiW(thisArg, optJ) == 0)
 +      junction = TRUE;
-+  else
-+  {
-+    if(!file1[0])
-+      lstrcpyW(file1, thisArg);
-+    else
-+      lstrcpyW(file2, thisArg);
-+  }
++    else {
++      if(!file1[0])
++        lstrcpyW(file1, thisArg);
++      else
++        lstrcpyW(file2, thisArg);
++    }
 +  }
 +
 +  if(hard && !CreateHardLinkW(file1, file2, NULL))
 +    WCMD_output_stderr(WCMD_LoadMessage(WCMD_READFAIL), file1);
 +  else if(!junction && !CreateSymbolicLinkW(file1, file2, isdir))
-+      WCMD_output_stderr(WCMD_LoadMessage(WCMD_READFAIL), file1);
++    WCMD_output_stderr(WCMD_LoadMessage(WCMD_READFAIL), file1);
 +  else if(junction)
-+     WINE_TRACE("Juction links currently not supported.\n");
++    WINE_TRACE("Juction links currently not supported.\n");
 +}
 diff --git a/programs/cmd/cmd.rc b/programs/cmd/cmd.rc
-index 03388de43d..3ebae5a144 100644
+index 03388de..3ebae5a 100644
 --- a/programs/cmd/cmd.rc
 +++ b/programs/cmd/cmd.rc
 @@ -310,6 +310,15 @@ CHOICE is mainly used to build a menu selection in a batch file.\n"
@@ -112,7 +111,7 @@ index 03388de43d..3ebae5a144 100644
    WCMD_YES, "#msgctxt#Yes key#Y"
    WCMD_NO, "#msgctxt#No key#N"
 diff --git a/programs/cmd/wcmd.h b/programs/cmd/wcmd.h
-index c135621dd3..c299f3a195 100644
+index c135621..c299f3a 100644
 --- a/programs/cmd/wcmd.h
 +++ b/programs/cmd/wcmd.h
 @@ -101,6 +101,7 @@ void WCMD_type (WCHAR *);
@@ -136,7 +135,7 @@ index c135621dd3..c299f3a195 100644
  /* Some standard messages */
  extern const WCHAR newlineW[];
 diff --git a/programs/cmd/wcmdmain.c b/programs/cmd/wcmdmain.c
-index 87f53877d3..5072a3ba29 100644
+index 1aa3c1c..2a6bb1c 100644
 --- a/programs/cmd/wcmdmain.c
 +++ b/programs/cmd/wcmdmain.c
 @@ -1597,6 +1597,9 @@ void WCMD_execute (const WCHAR *command, const WCHAR *redirects,
@@ -150,5 +149,5 @@ index 87f53877d3..5072a3ba29 100644
          WCMD_exit (cmdList);
          break;
 -- 
-2.11.0
+1.9.1
 
