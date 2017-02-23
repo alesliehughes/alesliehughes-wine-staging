@@ -1,8 +1,10 @@
-From c7eed73e52a427c3d720f6e0defb22af10835500 Mon Sep 17 00:00:00 2001
+From 882d6249ebfc1268ce7ea29bfb3597e9543312d5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 23 Feb 2017 09:42:30 +1100
 Subject: [PATCH] oledb32: Correct length calculation in DataConvert for
  DBTYPE_STR
+
+v2 - Correct failing test under wine
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +12,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
-index ac462f2..7030eb5 100644
+index ac462f2..20ef917 100644
 --- a/dlls/oledb32/convert.c
 +++ b/dlls/oledb32/convert.c
 @@ -816,23 +816,23 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
@@ -28,7 +30,7 @@ index ac462f2..7030eb5 100644
 -        bstr_len = SysStringLen(b);
 -        *dst_len = bstr_len * sizeof(char); /* Doesn't include size for '\0' */
 +        length = WideCharToMultiByte(CP_ACP, 0, b, -1, NULL, 0, NULL, NULL);
-+        *dst_len = length - 1; /* Doesn't include size for '\0' */
++        *dst_len =  SysStringLen(b); /* Doesn't include size for '\0' */
          *dst_status = DBSTATUS_S_OK;
 -        bytes_to_copy = min(*dst_len + sizeof(char), dst_max_len);
 +        bytes_to_copy = min(length, dst_max_len);
