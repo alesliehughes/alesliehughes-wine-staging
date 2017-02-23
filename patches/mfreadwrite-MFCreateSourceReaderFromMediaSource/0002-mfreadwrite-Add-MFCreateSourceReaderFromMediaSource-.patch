@@ -21,7 +21,7 @@ index a72f634..c792d98 100644
 +
 +#include "wine/debug.h"
 +
-+WINE_DEFAULT_DEBUG_CHANNEL(mfreadwrite);
++WINE_DEFAULT_DEBUG_CHANNEL(mfplat);
  
  BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
  {
