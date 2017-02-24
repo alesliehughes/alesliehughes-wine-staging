@@ -1,7 +1,7 @@
-From 7536b7c3a9d15e36bfd5370eb35fea5212bdf9d2 Mon Sep 17 00:00:00 2001
+From 7c527bcff061eeb5233fbcf4ceb1de6fe9228297 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Feb 2017 12:36:51 +1100
-Subject: [PATCH 38/39] dpnet: Support Alternate Addresses
+Subject: [PATCH 38/42] dpnet: Support Alternate Addresses
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 18 insertions(+)
 
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index 16d2013d16..c4f8e90850 100644
+index 16d2013..c4f8e90 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -201,6 +201,24 @@ struct DN_NAMETABLE_VERSION
@@ -38,5 +38,5 @@ index 16d2013d16..c4f8e90850 100644
  {
      BYTE command;
 -- 
-2.11.0
+1.9.1
 

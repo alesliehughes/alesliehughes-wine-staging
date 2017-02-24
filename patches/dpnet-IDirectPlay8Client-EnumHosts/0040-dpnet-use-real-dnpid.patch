@@ -1,7 +1,7 @@
-From b824773d26d37569a814102752ef630a2028f8ed Mon Sep 17 00:00:00 2001
+From 61bddaf5cea929bb4ab7ab91ea7c6a1f814401c9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 19 Feb 2017 11:14:33 +1100
-Subject: [PATCH 53/53] dpnet: use real dnpid
+Subject: [PATCH 40/42] dpnet: use real dnpid
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f56212e86d..681c904be8 100644
+index f56212e..681c904 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -47,6 +47,8 @@ typedef struct IDirectPlay8LobbyClientImpl
@@ -33,7 +33,7 @@ index f56212e86d..681c904be8 100644
  
                          if(dframe_packet_session_ack(sock, serveraddr, addrsize, packet->nseq) == -1)
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 8ecb8d9466..c8a20a6bfc 100644
+index 8ecb8d9..c8a20a6 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -504,6 +504,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetGroupInfo(IDirectPlay8Peer *iface,
@@ -54,5 +54,5 @@ index 8ecb8d9466..c8a20a6bfc 100644
  
      }
 -- 
-2.11.0
+1.9.1
 

@@ -1,7 +1,7 @@
-From b6cbabdd0b2b8c7726e2e646fd8c374a341d2efd Mon Sep 17 00:00:00 2001
+From 89d4622cfa9224dc0ba6d192bb20338cfa4cfd38 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 7 Dec 2016 11:11:56 +1100
-Subject: [PATCH 06/39] dpnet: Cancel the EnumHost thread at the start of
+Subject: [PATCH 06/42] dpnet: Cancel the EnumHost thread at the start of
  connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 30 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 5296e98323..8d2f2a86d2 100644
+index 5296e98..8d2f2a8 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -521,15 +521,37 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
@@ -60,5 +60,5 @@ index 5296e98323..8d2f2a86d2 100644
  
  static HRESULT WINAPI IDirectPlay8ClientImpl_Send(IDirectPlay8Client *iface,
 -- 
-2.11.0
+1.9.1
 

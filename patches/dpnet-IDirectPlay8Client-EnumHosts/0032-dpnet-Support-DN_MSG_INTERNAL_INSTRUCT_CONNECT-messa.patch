@@ -1,7 +1,7 @@
-From bf0a9f3498c63f2b23f970ecd03d074e75e6927b Mon Sep 17 00:00:00 2001
+From 5e0353fa032c4060266bfb57bf029076c8bbf6ba Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Jan 2017 08:36:53 +1100
-Subject: [PATCH 32/39] dpnet: Support DN_MSG_INTERNAL_INSTRUCT_CONNECT message
+Subject: [PATCH 32/42] dpnet: Support DN_MSG_INTERNAL_INSTRUCT_CONNECT message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 17 insertions(+)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b9411da14e..d69561e0a7 100644
+index b9411da..d69561e 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -1100,6 +1100,13 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
@@ -28,7 +28,7 @@ index b9411da14e..d69561e0a7 100644
                          /* System Messages */
                          if(packet->command & PACKET_COMMAND_USER_1)
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index cd61e1f1bf..525d75b544 100644
+index cd61e1f..525d75b 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -157,6 +157,15 @@ struct DN_CONNCET_FAILED
@@ -56,5 +56,5 @@ index cd61e1f1bf..525d75b544 100644
  #define DP_OBECT_TYPE_CLIENT      0x00000002
  #define DP_OBECT_TYPE_PEER        0x00000004
 -- 
-2.11.0
+1.9.1
 

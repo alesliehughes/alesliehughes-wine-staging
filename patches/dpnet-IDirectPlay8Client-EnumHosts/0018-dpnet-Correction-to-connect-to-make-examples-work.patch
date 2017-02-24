@@ -1,14 +1,14 @@
-From 7260d5e34275badf9e804f92b667de1c4326d31a Mon Sep 17 00:00:00 2001
+From d4bb4ffb557465b82d8b95240ee10f98fc5aaf30 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Dec 2016 11:17:55 +1100
-Subject: [PATCH 18/39] dpnet: Correction to connect to make examples work :)
+Subject: [PATCH 18/42] dpnet: Correction to connect to make examples work :)
 
 ---
  dlls/dpnet/client.c | 148 ++++++++++++++++++++++++++++++++++++++--------------
  1 file changed, 110 insertions(+), 38 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 16bf9bd7b3..f38ec5d833 100644
+index 16bf9bd..f38ec5d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -204,6 +204,28 @@ static int dn_packet_connected(SOCKET sock, DWORD session, DWORD msgid, struct s
@@ -267,5 +267,5 @@ index 16bf9bd7b3..f38ec5d833 100644
          }
      }
 -- 
-2.11.0
+1.9.1
 

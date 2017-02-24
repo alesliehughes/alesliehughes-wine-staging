@@ -1,7 +1,7 @@
-From e4a07aa47f7ce2a4c0c6b3bcbcf52308473aa419 Mon Sep 17 00:00:00 2001
+From aee8dea1f11af2806778636e6cba1365a999e158 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Feb 2017 09:06:53 +1100
-Subject: [PATCH 36/39] dpnet: Support Name Table Enteries in ConnectInfo
+Subject: [PATCH 36/42] dpnet: Support Name Table Enteries in ConnectInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 45 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b2ab637659..01fad5b613 100644
+index b2ab637..01fad5b 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -924,9 +924,20 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
@@ -36,7 +36,7 @@ index b2ab637659..01fad5b613 100644
                          {
                              ERR("dframe_packet_session_ack\n");
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index 525d75b544..c01960ae52 100644
+index 525d75b..c01960a 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -175,6 +175,23 @@ struct DFRAME_PACKET_KEEPALIVE
@@ -87,5 +87,5 @@ index 525d75b544..c01960ae52 100644
  
  #endif
 -- 
-2.11.0
+1.9.1
 

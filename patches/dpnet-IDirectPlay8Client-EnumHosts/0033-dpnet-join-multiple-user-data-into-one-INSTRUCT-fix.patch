@@ -1,14 +1,14 @@
-From a60bb4fd0f4cd8b59e57e2b619dead5e8087ed69 Mon Sep 17 00:00:00 2001
+From de91cd07e4f3e00d9c7a039b199c6f0c76aef13e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 21 Jan 2017 07:46:12 +1100
-Subject: [PATCH 33/39] dpnet: join multiple user data into one + INSTRUCT fix
+Subject: [PATCH 33/42] dpnet: join multiple user data into one + INSTRUCT fix
 
 ---
  dlls/dpnet/client.c | 90 +++++++++++++++++++++++++++++++++++++----------------
  1 file changed, 64 insertions(+), 26 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index d69561e0a7..31e0c56f4e 100644
+index d69561e..31e0c56 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -959,7 +959,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
@@ -136,5 +136,5 @@ index d69561e0a7..31e0c56f4e 100644
  
                          }
 -- 
-2.11.0
+1.9.1
 

@@ -1,14 +1,14 @@
-From 94b649ac9a4d4f37547f6ac4ad000f48f94e03e0 Mon Sep 17 00:00:00 2001
+From 6d46e8ae86fedc214d07f615614077f49f05e841 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 18 Feb 2017 21:21:31 +1100
-Subject: [PATCH 39/39] dpnet: temp3 - Update trace
+Subject: [PATCH 39/42] dpnet: temp3 - Update trace
 
 ---
  dlls/dpnet/client.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 0ecf4050ca..f56212e86d 100644
+index 0ecf405..f56212e 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -965,7 +965,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
@@ -21,5 +21,5 @@ index 0ecf4050ca..f56212e86d 100644
                      }
                      case DN_MSG_INTERNAL_CONNECT_FAILED:
 -- 
-2.11.0
+1.9.1
 

@@ -1,14 +1,14 @@
-From 9ab8255c738726dc46aa555763b6af40f9f07bd9 Mon Sep 17 00:00:00 2001
+From e3752b6b486e0c8c8272eb63f80f03f77676a43c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 22 Jan 2017 08:23:12 +1100
-Subject: [PATCH 35/39] temp2
+Subject: [PATCH 35/42] temp2
 
 ---
  dlls/dpnet/client.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b749e926da..b2ab637659 100644
+index b749e92..b2ab637 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -1201,7 +1201,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
@@ -21,5 +21,5 @@ index b749e926da..b2ab637659 100644
  
                                      hr = msghandler(NULL, DPN_MSGID_RECEIVE, &received);
 -- 
-2.11.0
+1.9.1
 

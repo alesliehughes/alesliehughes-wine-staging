@@ -1,14 +1,14 @@
-From 98f6063ad38c03e5b834f927330ba05e936e5e77 Mon Sep 17 00:00:00 2001
+From 4801b5ead40a8c408286958ec6927eabdbb272ae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Jan 2017 14:09:06 +1100
-Subject: [PATCH 20/39] dpnet: hack for broadcast ipv6
+Subject: [PATCH 20/42] dpnet: hack for broadcast ipv6
 
 ---
  dlls/dpnet/client.c | 41 +++++++++++++++++++++++++++--------------
  1 file changed, 27 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f6048e7e68..14244bca7e 100644
+index f6048e7..14244bc 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -63,11 +63,12 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
@@ -141,5 +141,5 @@ index f6048e7e68..14244bca7e 100644
                              response.pAddressSender          = sender;
                              response.pApplicationDescription = &desc;
 -- 
-2.11.0
+1.9.1
 
