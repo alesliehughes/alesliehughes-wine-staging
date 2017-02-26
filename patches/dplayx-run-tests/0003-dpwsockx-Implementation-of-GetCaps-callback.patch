@@ -1,0 +1,198 @@
+From bc94bcee5f15b7b4d854cb01f5c70173594d6ad1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 24 Feb 2017 16:00:45 +1100
+Subject: [v2 PATCH] dpwsockx: Implementation of GetCaps callback
+
+Based on patch by Ismael Barros
+
+Changes
+- Removed todo_wine from tests
+- Adjusted the DPWS_GUARANTEED_MAXBUFFERSIZE and DPWS_MAXBUFFERSIZE
+   to be the correct values
+- Remove unused defines.
+- Remove Adjustment of dwMaxBufferSize by sizeof(DPSP_MSG_HEADER)
+- Added check for structure size.
+
+v2.
+- Added NULL pointer test
+- Minor code changes. (removed if(hr == DP_OK))
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/dplay.c           |  6 +++++
+ dlls/dplayx/tests/dplayx.c    | 56 ++++++++++++++++++++-----------------------
+ dlls/dpwsockx/dpwsockx_dll.h  |  9 +++++++
+ dlls/dpwsockx/dpwsockx_main.c | 27 +++++++++++++++++++--
+ 4 files changed, 66 insertions(+), 32 deletions(-)
+
+diff --git a/dlls/dplayx/dplay.c b/dlls/dplayx/dplay.c
+index f4d934f..4a80f1c 100644
+--- a/dlls/dplayx/dplay.c
++++ b/dlls/dplayx/dplay.c
+@@ -2891,9 +2891,15 @@ static HRESULT WINAPI IDirectPlay4Impl_GetPlayerCaps( IDirectPlay4 *iface, DPID
+ 
+     TRACE( "(%p)->(0x%08x,%p,0x%08x)\n", This, player, caps, flags);
+ 
++    if ( !caps )
++        return DPERR_INVALIDPARAMS;
++
+     if ( This->dp2->connectionInitialized == NO_PROVIDER )
+         return DPERR_UNINITIALIZED;
+ 
++    if( caps->dwSize != sizeof(DPCAPS) )
++        return DPERR_INVALIDPARAMS;
++
+     /* Query the service provider */
+     data.idPlayer = player;
+     data.dwFlags = flags;
+diff --git a/dlls/dplayx/tests/dplayx.c b/dlls/dplayx/tests/dplayx.c
+index de392aa..4c68873 100644
+--- a/dlls/dplayx/tests/dplayx.c
++++ b/dlls/dplayx/tests/dplayx.c
+@@ -1088,7 +1088,7 @@ static void test_GetCaps(void)
+ 
+     /* dpcaps not ininitialized */
+     hr = IDirectPlayX_GetCaps( pDP, &dpcaps, 0 );
+-    todo_wine checkHR( DPERR_INVALIDPARAMS, hr );
++    checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+     dpcaps.dwSize = sizeof(DPCAPS);
+ 
+@@ -1098,35 +1098,30 @@ static void test_GetCaps(void)
+     {
+ 
+         hr = IDirectPlayX_GetCaps( pDP, &dpcaps, dwFlags );
+-        todo_wine checkHR( DP_OK, hr );
+-
+-
+-        if ( hr == DP_OK )
++        checkHR( DP_OK, hr );
++        check( sizeof(DPCAPS), dpcaps.dwSize );
++        check( DPCAPS_ASYNCSUPPORTED |
++               DPCAPS_GUARANTEEDOPTIMIZED |
++               DPCAPS_GUARANTEEDSUPPORTED,
++               dpcaps.dwFlags );
++        check( 0,     dpcaps.dwMaxQueueSize );
++        check( 0,     dpcaps.dwHundredBaud );
++        check( 500,   dpcaps.dwLatency );
++        check( 65536, dpcaps.dwMaxLocalPlayers );
++        check( 20,    dpcaps.dwHeaderLength );
++        check( 5000,  dpcaps.dwTimeout );
++
++        switch (dwFlags)
+         {
+-            check( sizeof(DPCAPS), dpcaps.dwSize );
+-            check( DPCAPS_ASYNCSUPPORTED |
+-                   DPCAPS_GUARANTEEDOPTIMIZED |
+-                   DPCAPS_GUARANTEEDSUPPORTED,
+-                   dpcaps.dwFlags );
+-            check( 0,     dpcaps.dwMaxQueueSize );
+-            check( 0,     dpcaps.dwHundredBaud );
+-            check( 500,   dpcaps.dwLatency );
+-            check( 65536, dpcaps.dwMaxLocalPlayers );
+-            check( 20,    dpcaps.dwHeaderLength );
+-            check( 5000,  dpcaps.dwTimeout );
+-
+-            switch (dwFlags)
+-            {
+-            case 0:
+-                check( 65479,   dpcaps.dwMaxBufferSize );
+-                check( 65536,   dpcaps.dwMaxPlayers );
+-                break;
+-            case DPGETCAPS_GUARANTEED:
+-                check( 1048547, dpcaps.dwMaxBufferSize );
+-                check( 64,      dpcaps.dwMaxPlayers );
+-                break;
+-            default: break;
+-            }
++        case 0:
++            check( 65479,   dpcaps.dwMaxBufferSize );
++            check( 65536,   dpcaps.dwMaxPlayers );
++            break;
++        case DPGETCAPS_GUARANTEED:
++            check( 1048547, dpcaps.dwMaxBufferSize );
++            check( 64,      dpcaps.dwMaxPlayers );
++            break;
++        default: break;
+         }
+     }
+ 
+@@ -2189,7 +2184,6 @@ static void test_GetPlayerCaps(void)
+     hr = IDirectPlayX_GetPlayerCaps( pDP[0], dpid[0], &playerCaps, 0 );
+     checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+-
+     /* Invalid player */
+     playerCaps.dwSize = sizeof(DPCAPS);
+ 
+@@ -2202,6 +2196,8 @@ static void test_GetPlayerCaps(void)
+     hr = IDirectPlayX_GetPlayerCaps( pDP[0], dpid[0], &playerCaps, 0 );
+     checkHR( DP_OK, hr );
+ 
++    hr = IDirectPlayX_GetPlayerCaps( pDP[0], dpid[0], NULL, 0 );
++    checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+     /* Regular parameters */
+     for (i=0; i<2; i++)
+diff --git a/dlls/dpwsockx/dpwsockx_dll.h b/dlls/dpwsockx/dpwsockx_dll.h
+index 1a6ad6c..ea3780f 100644
+--- a/dlls/dpwsockx/dpwsockx_dll.h
++++ b/dlls/dpwsockx/dpwsockx_dll.h
+@@ -25,6 +25,15 @@
+ #include "winnt.h"
+ #include "wine/dplaysp.h"
+ 
++#define DPWS_MAXQUEUESIZE             0
++#define DPWS_HUNDREDBAUD              0
++#define DPWS_LATENCY                  500
++#define DPWS_MAXLOCALPLAYERS          65536
++#define DPWS_TIMEOUT                  5000
++#define DPWS_MAXBUFFERSIZE            65479
++#define DPWS_MAXPLAYERS               65536
++#define DPWS_GUARANTEED_MAXBUFFERSIZE 1048547
++#define DPWS_GUARANTEED_MAXPLAYERS    64
+ 
+ typedef struct tagDPWS_THREADDATA
+ {
+diff --git a/dlls/dpwsockx/dpwsockx_main.c b/dlls/dpwsockx/dpwsockx_main.c
+index 548f37e..9606d73 100644
+--- a/dlls/dpwsockx/dpwsockx_main.c
++++ b/dlls/dpwsockx/dpwsockx_main.c
+@@ -100,9 +100,32 @@ static HRESULT WINAPI DPWSCB_GetAddress( LPDPSP_GETADDRESSDATA data )
+ 
+ static HRESULT WINAPI DPWSCB_GetCaps( LPDPSP_GETCAPSDATA data )
+ {
+-    FIXME( "(%d,%p,0x%08x,%p)\n",
++    TRACE( "(%d,%p,0x%08x,%p)\n",
+            data->idPlayer, data->lpCaps, data->dwFlags, data->lpISP );
+-    return DPERR_UNSUPPORTED;
++
++    data->lpCaps->dwFlags = ( DPCAPS_ASYNCSUPPORTED |
++                              DPCAPS_GUARANTEEDOPTIMIZED |
++                              DPCAPS_GUARANTEEDSUPPORTED );
++
++    data->lpCaps->dwMaxQueueSize    = DPWS_MAXQUEUESIZE;
++    data->lpCaps->dwHundredBaud     = DPWS_HUNDREDBAUD;
++    data->lpCaps->dwLatency         = DPWS_LATENCY;
++    data->lpCaps->dwMaxLocalPlayers = DPWS_MAXLOCALPLAYERS;
++    data->lpCaps->dwHeaderLength    = sizeof(DPSP_MSG_HEADER);
++    data->lpCaps->dwTimeout         = DPWS_TIMEOUT;
++
++    if ( data->dwFlags & DPGETCAPS_GUARANTEED )
++    {
++        data->lpCaps->dwMaxBufferSize = DPWS_GUARANTEED_MAXBUFFERSIZE;
++        data->lpCaps->dwMaxPlayers    = DPWS_GUARANTEED_MAXPLAYERS;
++    }
++    else
++    {
++        data->lpCaps->dwMaxBufferSize = DPWS_MAXBUFFERSIZE;
++        data->lpCaps->dwMaxPlayers    = DPWS_MAXPLAYERS;
++    }
++
++    return DP_OK;
+ }
+ 
+ static HRESULT WINAPI DPWSCB_Open( LPDPSP_OPENDATA data )
+-- 
+1.9.1
+

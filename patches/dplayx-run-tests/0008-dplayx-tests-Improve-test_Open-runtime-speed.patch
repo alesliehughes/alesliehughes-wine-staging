@@ -1,0 +1,129 @@
+From f03cb44c73765688e04efc0061ef29d5883110d5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 14 Feb 2017 12:02:55 +1100
+Subject: [PATCH 3/3] dplayx/tests: Improve test_Open runtime speed
+
+The problem with this test is that for every EnumSession
+call, it was attempting to Open/Close a connection and the
+only way to stop the Enum was to get a timeout.
+
+For this test, we will only Enumaturate one sesssion, then
+make a connection after the EnumSession call has finished.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/tests/dplayx.c | 61 ++++++++++++++++++++--------------------------
+ 1 file changed, 27 insertions(+), 34 deletions(-)
+
+diff --git a/dlls/dplayx/tests/dplayx.c b/dlls/dplayx/tests/dplayx.c
+index 2e1b62a..eb2b909 100644
+--- a/dlls/dplayx/tests/dplayx.c
++++ b/dlls/dplayx/tests/dplayx.c
+@@ -1131,47 +1131,18 @@ static void test_GetCaps(void)
+ }
+ 
+ /* Open */
+-
++static GUID enumsessions_cb2_guid;
+ static BOOL CALLBACK EnumSessions_cb2( LPCDPSESSIONDESC2 lpThisSD,
+                                        LPDWORD lpdwTimeOut,
+                                        DWORD dwFlags,
+                                        LPVOID lpContext )
+ {
+-    IDirectPlay4 *pDP = lpContext;
+-    DPSESSIONDESC2 dpsd;
+-    HRESULT hr;
+-
+     if (dwFlags & DPESC_TIMEDOUT)
+         return FALSE;
+ 
++    enumsessions_cb2_guid = lpThisSD->guidInstance;
+ 
+-    ZeroMemory( &dpsd, sizeof(DPSESSIONDESC2) );
+-    dpsd.dwSize = sizeof(DPSESSIONDESC2);
+-    dpsd.guidApplication = appGuid;
+-    dpsd.guidInstance = lpThisSD->guidInstance;
+-
+-    if ( lpThisSD->dwFlags & DPSESSION_PASSWORDREQUIRED )
+-    {
+-        /* Incorrect password */
+-        U2(dpsd).lpszPasswordA = (LPSTR) "sonic boom";
+-        hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+-        checkHR( DPERR_INVALIDPASSWORD, hr );
+-
+-        /* Correct password */
+-        U2(dpsd).lpszPasswordA = (LPSTR) "hadouken";
+-        hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+-        checkHR( DP_OK, hr );
+-    }
+-    else
+-    {
+-        hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+-        checkHR( DP_OK, hr );
+-    }
+-
+-    hr = IDirectPlayX_Close( pDP );
+-    checkHR( DP_OK, hr );
+-
+-    return TRUE;
++    return FALSE;
+ }
+ 
+ static void test_Open(void)
+@@ -1273,6 +1244,16 @@ static void test_Open(void)
+ 
+     IDirectPlayX_EnumSessions( pDP, &dpsd, 0, EnumSessions_cb2, pDP, 0 );
+ 
++    ZeroMemory( &dpsd, sizeof(DPSESSIONDESC2) );
++    dpsd.dwSize = sizeof(DPSESSIONDESC2);
++    dpsd.guidApplication = appGuid;
++    dpsd.guidInstance = enumsessions_cb2_guid;
++
++    hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
++    checkHR( DP_OK, hr );
++
++    hr = IDirectPlayX_Close( pDP );
++    checkHR( DP_OK, hr );
+ 
+     /* Already initialized session */
+     hr = IDirectPlayX_Open( pDP_server, &dpsd_server, DPOPEN_CREATE );
+@@ -1297,6 +1278,19 @@ static void test_Open(void)
+     IDirectPlayX_EnumSessions( pDP, &dpsd, 0, EnumSessions_cb2,
+                                pDP, DPENUMSESSIONS_PASSWORDREQUIRED );
+ 
++     /* Incorrect password */
++    ZeroMemory( &dpsd, sizeof(DPSESSIONDESC2) );
++    dpsd.dwSize = sizeof(DPSESSIONDESC2);
++    dpsd.guidApplication = appGuid;
++    dpsd.guidInstance = enumsessions_cb2_guid;
++    dpsd.lpszPasswordA = (LPSTR) "sonic boom";
++    hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
++    checkHR( DPERR_INVALIDPASSWORD, hr );
++
++    /* Correct password */
++    dpsd.lpszPasswordA = (LPSTR) "hadouken";
++    hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
++    checkHR( DP_OK, hr );
+ 
+     IDirectPlayX_Release( pDP );
+     IDirectPlayX_Release( pDP_server );
+@@ -6888,6 +6882,7 @@ START_TEST(dplayx)
+     test_EnumConnections();
+     test_InitializeConnection();
+     test_GetCaps();
++    test_Open();
+ 
+     if (!winetest_interactive)
+     {
+@@ -6897,8 +6892,6 @@ START_TEST(dplayx)
+ 
+     trace("Running in interactive mode, tests will take a while\n");
+ 
+-    /* test_Open() takes almost a minute, */
+-    test_Open();
+     /* test_EnumSession takes three minutes */
+     test_EnumSessions();
+     test_SessionDesc();
+-- 
+1.9.1
+
