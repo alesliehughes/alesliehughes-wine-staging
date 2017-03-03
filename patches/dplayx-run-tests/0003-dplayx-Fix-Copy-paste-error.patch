@@ -1,0 +1,32 @@
+From b74b63c86077894f10605e5183cdacee4809e14a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Jun 2015 14:41:20 +1000
+Subject: [PATCH] dplayx: Fix copy/paste error.
+
+DP_IF_GetPlayerName needs to support the IDirectPlay4/A interfaces
+as well, so unicode can be supported. Then this copy paste error
+should be fixed.
+The tests for this fail under windows.  Need to 
+deal with the timeout issue (EnumSessions), so it runs at a good speed.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/dplay.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/dplayx/dplay.c b/dlls/dplayx/dplay.c
+index 4a80f1c..8ee58d8 100644
+--- a/dlls/dplayx/dplay.c
++++ b/dlls/dplayx/dplay.c
+@@ -3036,7 +3036,7 @@ static HRESULT DP_IF_GetPlayerName( IDirectPlayImpl *This, DPID idPlayer, void *
+     lpName->u1.lpszShortNameA = NULL;
+   }
+ 
+-  if( lpPList->lpPData->name.u1.lpszShortNameA )
++  if( lpPList->lpPData->name.u2.lpszLongNameA )
+   {
+     strcpy( ((char*)lpName)+lpPList->lpPData->name.dwSize,
+             lpPList->lpPData->name.u2.lpszLongNameA );
+-- 
+1.9.1
+
