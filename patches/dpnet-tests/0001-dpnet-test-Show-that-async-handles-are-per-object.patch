@@ -1,0 +1,31 @@
+From 127e02b03309f235cbc486190d8252fd683e8ae6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 Mar 2017 08:05:21 +1100
+Subject: [PATCH 1/2] dpnet/test: Show that async handles are per object
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/tests/client.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
+index 6503bc3..4415503 100644
+--- a/dlls/dpnet/tests/client.c
++++ b/dlls/dpnet/tests/client.c
+@@ -306,6 +306,13 @@ static void test_enum_hosts(void)
+     todo_wine ok(lastAsyncCode == DPNERR_USERCANCEL, "got 0x%08x\n", lastAsyncCode);
+     todo_wine ok(lastAsyncHandle == async, "got 0x%08x\n", async);
+ 
++    hr = IDirectPlay8Client_Initialize(client2, NULL, DirectPlayMessageHandler, 0);
++    ok(hr == S_OK, "got %x\n", hr);
++
++    /* Show that handlers are per object. */
++    hr = IDirectPlay8Client_CancelAsyncOperation(client2, async2, 0);
++    todo_wine ok(hr == DPNERR_INVALIDHANDLE, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
++
+     lastAsyncCode = E_FAIL;
+     lastAsyncHandle = 0xdeadbeef;
+     hr = IDirectPlay8Client_CancelAsyncOperation(client, async2, 0);
+-- 
+2.7.4
+
