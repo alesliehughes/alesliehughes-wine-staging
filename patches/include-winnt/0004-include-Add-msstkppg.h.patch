@@ -1,14 +1,27 @@
-From e64f84cf2b8b1bb44459bb1629d7e574a023890b Mon Sep 17 00:00:00 2001
+From 57230c7055ba8da5429e61154eb86b97ae57e421 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 6 Jan 2017 12:03:53 +1100
-Subject: [PATCH 4/6] include: Add msstkppg.h
+Subject: [PATCH] include: Add msstkppg.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/msstkppg.h | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ include/Makefile.in |  1 +
+ include/msstkppg.h  | 26 ++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+)
  create mode 100644 include/msstkppg.h
 
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 4fbfd16..9ee3d52 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -464,6 +464,7 @@ HEADER_SRCS = \
+ 	msidefs.h \
+ 	msiquery.h \
+ 	mssip.h \
++	msstkppg.h \
+ 	mstcpip.h \
+ 	msvcrt/assert.h \
+ 	msvcrt/conio.h \
 diff --git a/include/msstkppg.h b/include/msstkppg.h
 new file mode 100644
 index 0000000..bf53aaa
