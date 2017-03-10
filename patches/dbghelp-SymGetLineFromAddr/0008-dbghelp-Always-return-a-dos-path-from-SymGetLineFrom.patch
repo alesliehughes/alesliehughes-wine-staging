@@ -1,0 +1,49 @@
+From 5522e2c85de58b63b12476a41810ece7ad974128 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 Jan 2017 16:27:09 +1100
+Subject: [PATCH] dbghelp: Always return a dos path from SymGetLineFromAddr
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=34687
+
+Bases off the information in MSDN. 
+
+https://msdn.microsoft.com/en-us/library/windows/desktop/ms681330%28v=vs.85%29.aspx
+"This function returns a pointer to a buffer that may be reused by another function. 
+Therefore, be sure to copy the data returned to another buffer immediately."
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dbghelp/symbol.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dbghelp/symbol.c b/dlls/dbghelp/symbol.c
+index 08ea834..1638a1e 100644
+--- a/dlls/dbghelp/symbol.c
++++ b/dlls/dbghelp/symbol.c
+@@ -1435,9 +1435,11 @@ BOOL WINAPI SymGetSymFromName(HANDLE hProcess, PCSTR Name, PIMAGEHLP_SYMBOL Symb
+ BOOL symt_fill_func_line_info(const struct module* module, const struct symt_function* func,
+                               DWORD64 addr, IMAGEHLP_LINE64* line)
+ {
++    static char path[MAX_PATH];
+     struct line_info*   dli = NULL;
+     BOOL                found = FALSE;
+     int                 i;
++    WCHAR *dos_path;
+ 
+     assert(func->symt.tag == SymTagFunction);
+ 
+@@ -1455,7 +1457,10 @@ BOOL symt_fill_func_line_info(const struct module* module, const struct symt_fun
+         }
+         if (found)
+         {
+-            line->FileName = (char*)source_get(module, dli->u.source_file);
++            dos_path = wine_get_dos_file_name((char*)source_get(module, dli->u.source_file));
++            WideCharToMultiByte(CP_ACP, 0, dos_path, -1, path, MAX_PATH, NULL, NULL);
++            HeapFree( GetProcessHeap(), 0, dos_path );
++            line->FileName = path;
+             return TRUE;
+         }
+     }
+-- 
+1.9.1
+
