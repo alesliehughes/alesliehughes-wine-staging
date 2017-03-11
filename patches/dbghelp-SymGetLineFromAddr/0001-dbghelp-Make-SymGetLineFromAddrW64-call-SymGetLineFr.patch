@@ -1,7 +1,7 @@
 From 440b3a60c1eac7a99756b5592edcca9f97bac2cf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 10 Mar 2017 13:42:05 +1100
-Subject: [PATCH] dbghelp: Make SymGetLineFromAddrW64 call
+Subject: [PATCH] dbghelp: Make SymGetLineFromAddr64 call
  SymGetLineFromAddrW64
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
