@@ -1,19 +1,21 @@
-From bce94a4bb597bf3bc0d7565d5f0b87d2154e0c4e Mon Sep 17 00:00:00 2001
+From 660dbb036c9252612df059cca54d23c78655186c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 22 Dec 2015 09:59:09 +1100
-Subject: [PATCH 2/4] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
+Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
+
+v2 - Support Usage Count.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 44 +++++++++++++++++++++++++++++++++++++-------
- dlls/odbccp32/tests/misc.c |  4 ++--
- 2 files changed, 39 insertions(+), 9 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 62 ++++++++++++++++++++++++++++++++++++++++------
+ dlls/odbccp32/tests/misc.c |  4 +--
+ 2 files changed, 57 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index d9c691a..4af7378 100644
+index 037a2a9..8aa9936 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1105,22 +1105,52 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
+@@ -1132,22 +1132,70 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
      return FALSE;
  }
  
@@ -22,6 +24,7 @@ index d9c691a..4af7378 100644
 +BOOL WINAPI SQLRemoveDriverW(LPCWSTR drivername, BOOL remove_dsn, LPDWORD usage_count)
  {
 +    HKEY hkey;
++    DWORD usagecount = 1;
 +
      clear_errors();
 -    FIXME("%s %d %p\n", debugstr_w(lpszDriver), fRemoveDSN, lpdwUsageCount);
@@ -32,22 +35,39 @@ index d9c691a..4af7378 100644
 +    {
 +        HKEY hkeydriver;
 +
-+        if(RegDeleteKeyW(hkey, drivername) != ERROR_SUCCESS)
-+            ERR("Failed to delete registry key: %s\n", debugstr_w(drivername));
-+
-+        if (RegOpenKeyW(hkey, odbcdrivers, &hkeydriver) == ERROR_SUCCESS)
++        if (RegOpenKeyW(hkey, drivername, &hkeydriver) == ERROR_SUCCESS)
 +        {
-+            if(RegDeleteValueW(hkeydriver, drivername) != ERROR_SUCCESS)
-+                ERR("Failed to delete registry value: %s\n", debugstr_w(drivername));
++            DWORD size, type;
 +
-+            RegCloseKey(hkeydriver);
++            size = sizeof(usagecount);
++            RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, &type, &usagecount, &size);
++            TRACE("Usage count %d\n", usagecount);
 +        }
 +
-+        RegCloseKey(hkey);
++        if (usagecount)
++            usagecount--;
++
++        if (!usagecount)
++        {
++            HKEY hkeydriver;
++
++            if (RegDeleteKeyW(hkey, drivername) != ERROR_SUCCESS)
++                ERR("Failed to delete registry key: %s\n", debugstr_w(drivername));
++
++            if (RegOpenKeyW(hkey, odbcdrivers, &hkeydriver) == ERROR_SUCCESS)
++            {
++                if (RegDeleteValueW(hkeydriver, drivername) != ERROR_SUCCESS)
++                    ERR("Failed to delete registry value: %s\n", debugstr_w(drivername));
++
++                RegCloseKey(hkeydriver);
++            }
++
++            RegCloseKey(hkey);
++        }
 +    }
 +
 +    if (usage_count)
-+        *usage_count = 0;
++        *usage_count = usagecount;
 +
      return TRUE;
  }
@@ -74,7 +94,7 @@ index d9c691a..4af7378 100644
  
  BOOL WINAPI SQLRemoveDriverManager(LPDWORD pdwUsageCount)
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index 3ae1fd3..e3adffd 100644
+index bc765b8..5384c30 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
 @@ -462,12 +462,12 @@ void test_SQLInstallDriverEx(void)
