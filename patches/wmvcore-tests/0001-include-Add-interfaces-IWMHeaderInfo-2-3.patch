@@ -1,7 +1,7 @@
-From 8437e221ed7b419eaa3d279f111b5ffe60e6d971 Mon Sep 17 00:00:00 2001
+From abc1c59736aefb933dad6958517e0d670ddc93d8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 14 Mar 2017 15:50:28 +1100
-Subject: [PATCH] include: Add interfaces IWMHeaderInfo/2/3
+Subject: [PATCH 1/2] include: Add interfaces IWMHeaderInfo/2/3
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

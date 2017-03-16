@@ -1,24 +1,24 @@
-From 1362a3ace1ed37752c639c654d016caf3dc210a8 Mon Sep 17 00:00:00 2001
+From c1542f7f1ab23bf3d0157938530fb69adb695c8f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 14 Mar 2017 14:47:02 +1100
-Subject: [PATCH] wmvcore/tests: Add initial tests
+Subject: [PATCH 2/2] wmvcore/tests: Add initial tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- configure                      | 17 ++------
+ configure                      |  3 +-
  configure.ac                   |  3 +-
  dlls/wmvcore/Makefile.in       |  1 +
  dlls/wmvcore/tests/Makefile.in |  5 +++
  dlls/wmvcore/tests/wmvcore.c   | 95 ++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 106 insertions(+), 15 deletions(-)
+ 5 files changed, 105 insertions(+), 2 deletions(-)
  create mode 100644 dlls/wmvcore/tests/Makefile.in
  create mode 100644 dlls/wmvcore/tests/wmvcore.c
 
 diff --git a/configure b/configure
-index 734a21a..646b13e 100755
+index 734a21a..9704585 100755
 --- a/configure
 +++ b/configure
-@@ -18455,7 +18443,8 @@ wine_fn_config_dll wmiutils enable_wmiutils clean
+@@ -18455,7 +18455,8 @@ wine_fn_config_dll wmiutils enable_wmiutils clean
  wine_fn_config_test dlls/wmiutils/tests wmiutils_test
  wine_fn_config_dll wmp enable_wmp clean
  wine_fn_config_test dlls/wmp/tests wmp_test
@@ -65,7 +65,7 @@ index 0000000..8054ddd
 +	wmvcore.c
 diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
 new file mode 100644
-index 0000000..832977c
+index 0000000..6936406
 --- /dev/null
 +++ b/dlls/wmvcore/tests/wmvcore.c
 @@ -0,0 +1,95 @@
@@ -97,7 +97,7 @@ index 0000000..832977c
 +{
 +    HRESULT hr;
 +    IWMWriter   *writer;
-+    /*IWMHeaderInfo     *header = NULL;*/
++    IWMHeaderInfo     *header = NULL;
 +
 +    hr = WMCreateWriter( NULL, &writer );
 +    ok(hr == S_OK, "WMCreateWriter failed 0x%08x\n", hr);
@@ -107,11 +107,11 @@ index 0000000..832977c
 +        return;
 +    }
 +
-+    /*hr = IWMReader_QueryInterface(reader, &IID_IWMHeaderInfo, (void **)&header);
-+    ok(hr == S_OK, "Failed 0x%08x\n", hr);
-+    if(hr == S_OK)
-+        IWMHeaderInfo_Release(header);*/
++    hr = IWMWriter_QueryInterface(writer, &IID_IWMHeaderInfo, (void **)&header);
++    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
++    if(header)
++        IWMHeaderInfo_Release(header);
 +    IWMWriter_Release(writer);
 +}
 +
@@ -120,7 +120,7 @@ index 0000000..832977c
 +    HRESULT hr;
 +    IWMReader         *reader = NULL;
 +    IWMReaderAdvanced *advanced = NULL;
-+    /*IWMHeaderInfo     *header = NULL;*/
++    IWMHeaderInfo     *header = NULL;
 +    IWMProfile        *profile = NULL;
 +
 +    hr = WMCreateReader( NULL, 0, &reader );
@@ -134,8 +134,8 @@ index 0000000..832977c
 +    hr = IWMReader_QueryInterface(reader, &IID_IWMReaderAdvanced, (void **)&advanced);
 +    ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
-+    /*hr = IWMReader_QueryInterface(reader, &IID_IWMHeaderInfo, (void **)&header);
-+    ok(hr == S_OK, "Failed 0x%08x\n", hr); */
++    hr = IWMReader_QueryInterface(reader, &IID_IWMHeaderInfo, (void **)&header);
++    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
 +    hr = IWMReader_QueryInterface(reader, &IID_IWMProfile, (void **)&profile);
 +    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
@@ -144,8 +144,8 @@ index 0000000..832977c
 +        IWMReaderAdvanced_Release(advanced);
 +    if(profile)
 +        IWMProfile_Release(profile);
-+    /*if(header)
-+        IWMHeaderInfo_Release(header);*/
++    if(header)
++        IWMHeaderInfo_Release(header);
 +
 +    IWMReader_Release(reader);
 +}
