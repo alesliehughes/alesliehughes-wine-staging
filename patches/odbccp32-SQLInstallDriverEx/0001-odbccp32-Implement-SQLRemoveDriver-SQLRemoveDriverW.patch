@@ -1,22 +1,23 @@
-From 1deb8449479f2c8465085c9f9ba93f2f047ef94f Mon Sep 17 00:00:00 2001
+From ef815ae756a73c958e4768f69db80a8dbc42ec7c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 22 Dec 2015 09:59:09 +1100
-Subject: [v3 PATCH] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
+Subject: [v4 PATCH] odbccp32: Implement SQLRemoveDriver/SQLRemoveDriverW
 
 v2 - Support Usage Count.
 v3 - Write key when not zero.
+v4 - Only Close key when it was successfully opened.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 66 +++++++++++++++++++++++++++++++++++++++++-----
+ dlls/odbccp32/odbccp32.c   | 69 +++++++++++++++++++++++++++++++++++++++++-----
  dlls/odbccp32/tests/misc.c |  4 +--
- 2 files changed, 61 insertions(+), 9 deletions(-)
+ 2 files changed, 64 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 037a2a9..ace801f 100644
+index 037a2a9..5e70a9d 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1132,22 +1132,74 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
+@@ -1132,22 +1132,77 @@ BOOL WINAPI SQLRemoveDefaultDataSource(void)
      return FALSE;
  }
  
@@ -43,6 +44,7 @@ index 037a2a9..ace801f 100644
 +            size = sizeof(usagecount);
 +            RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, &type, &usagecount, &size);
 +            TRACE("Usage count %d\n", usagecount);
++            RegCloseKey(hkeydriver);
 +        }
 +
 +        if (usagecount)
@@ -50,8 +52,6 @@ index 037a2a9..ace801f 100644
 +
 +        if (!usagecount)
 +        {
-+            RegCloseKey(hkeydriver);
-+
 +            if (RegDeleteKeyW(hkey, drivername) != ERROR_SUCCESS)
 +                ERR("Failed to delete registry key: %s\n", debugstr_w(drivername));
 +
@@ -59,14 +59,18 @@ index 037a2a9..ace801f 100644
 +            {
 +                if(RegDeleteValueW(hkeydriver, drivername) != ERROR_SUCCESS)
 +                    ERR("Failed to delete registry value: %s\n", debugstr_w(drivername));
++                RegCloseKey(hkeydriver);
 +            }
 +        }
 +        else
 +        {
-+            if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
-+                ERR("Failed to write registry UsageCount key\n");
++            if (RegOpenKeyW(hkey, drivername, &hkeydriver) == ERROR_SUCCESS)
++            {
++                if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
++                    ERR("Failed to write registry UsageCount key\n");
++                RegCloseKey(hkeydriver);
++            }
 +        }
-+        RegCloseKey(hkeydriver);
 +
 +        RegCloseKey(hkey);
 +    }

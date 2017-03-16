@@ -1,19 +1,19 @@
-From d79363f495287a1e3412f3aceed7b1629179b347 Mon Sep 17 00:00:00 2001
+From 504493f6cc1f4efd49fbfd5ba6e28bdbfaa47a98 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
-Subject: [PATCH 4/4] odbccp32: Implement SQLRemoveTranslator/W
+Subject: [PATCH] odbccp32: Implement SQLRemoveTranslator/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 44 +++++++++++++++++++++++++++++++++++++-------
- dlls/odbccp32/tests/misc.c |  8 ++++----
- 2 files changed, 41 insertions(+), 11 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 70 +++++++++++++++++++++++++++++++++++++++++-----
+ dlls/odbccp32/tests/misc.c |  8 +++---
+ 2 files changed, 67 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 8e8e663..aaa488b 100644
+index ee7b31f..3117597 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1181,20 +1181,50 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+@@ -1230,20 +1230,76 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
      return FALSE;
  }
  
@@ -21,6 +21,7 @@ index 8e8e663..aaa488b 100644
 +BOOL WINAPI SQLRemoveTranslatorW(const WCHAR *translator, DWORD *usage_count)
  {
 +    HKEY hkey;
++    DWORD usagecount = 1;
 +
      clear_errors();
 -    FIXME("%s %p\n", debugstr_w(lpszTranslator), lpdwUsageCount);
@@ -32,15 +33,40 @@ index 8e8e663..aaa488b 100644
 +    {
 +        HKEY hkeydriver;
 +
-+        if(RegDeleteKeyW(hkey, translator) != ERROR_SUCCESS)
-+            ERR("Failed to delete registry key: %s\n", debugstr_w(translator));
-+
-+        if (RegOpenKeyW(hkey, odbctranslators, &hkeydriver) == ERROR_SUCCESS)
++        if (RegOpenKeyW(hkey, translator, &hkeydriver) == ERROR_SUCCESS)
 +        {
-+            if(RegDeleteValueW(hkeydriver, translator) != ERROR_SUCCESS)
-+                ERR("Failed to delete registry value: %s\n", debugstr_w(translator));
++            DWORD size, type;
 +
++            size = sizeof(usagecount);
++            RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, &type, &usagecount, &size);
++            TRACE("Usage count %d\n", usagecount);
 +            RegCloseKey(hkeydriver);
++        }
++
++        if (usagecount)
++            usagecount--;
++
++        if (!usagecount)
++        {
++            if(RegDeleteKeyW(hkey, translator) != ERROR_SUCCESS)
++                ERR("Failed to delete registry key: %s\n", debugstr_w(translator));
++
++            if (RegOpenKeyW(hkey, odbctranslators, &hkeydriver) == ERROR_SUCCESS)
++            {
++                if(RegDeleteValueW(hkeydriver, translator) != ERROR_SUCCESS)
++                    ERR("Failed to delete registry value: %s\n", debugstr_w(translator));
++
++                RegCloseKey(hkeydriver);
++            }
++        }
++        else
++        {
++            if (RegOpenKeyW(hkey, translator, &hkeydriver) == ERROR_SUCCESS)
++            {
++               if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
++                    ERR("Failed to write registry UsageCount key\n");
++                RegCloseKey(hkeydriver);
++            }
 +        }
 +
 +        RegCloseKey(hkey);
@@ -72,7 +98,7 @@ index 8e8e663..aaa488b 100644
  
  BOOL WINAPI SQLSetConfigMode(UWORD wConfigMode)
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index e374ad4..e76f28c 100644
+index 95cb8a7..328437e 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
 @@ -519,13 +519,13 @@ void test_SQLInstallTranslatorEx(void)

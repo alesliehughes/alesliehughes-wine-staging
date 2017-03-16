@@ -1,16 +1,16 @@
-From 618d9af9295639aaadc40ac24eaaf7ea102f74ca Mon Sep 17 00:00:00 2001
+From 5014ad50b3d7fce8dbd66f24822b37b81f6e538f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 22 Dec 2015 10:07:30 +1100
-Subject: [PATCH 3/4] odbccp32: Implement SQLInstallTranslator
+Date: Fri, 17 Mar 2017 09:48:50 +1100
+Subject: [PATCH] odbccp32: Implement SQLInstallTranslator
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 16 ++++++++-----
+ dlls/odbccp32/odbccp32.c   | 13 +++++-----
  dlls/odbccp32/tests/misc.c | 59 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 69 insertions(+), 6 deletions(-)
+ 2 files changed, 66 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 4af7378..8e8e663 100644
+index 5e70a9d..ee7b31f 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -41,6 +41,7 @@ static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D'
@@ -21,7 +21,7 @@ index 4af7378..8e8e663 100644
  
  /* This config mode is known to be process-wide.
   * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
-@@ -635,6 +636,7 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
+@@ -636,6 +637,7 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
      static const WCHAR slash[] = {'\\', 0};
      static const WCHAR driverW[] = {'D','r','i','v','e','r',0};
      static const WCHAR setupW[] = {'S','e','t','u','p',0};
@@ -29,7 +29,7 @@ index 4af7378..8e8e663 100644
      HKEY hkey, hkeydriver;
  
      if (RegCreateKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey) == ERROR_SUCCESS)
-@@ -675,8 +677,9 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
+@@ -684,8 +686,9 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
                      divider++;
                      TRACE("Writing pair %s,%s\n", debugstr_w(entry), debugstr_w(divider));
  
@@ -39,9 +39,9 @@ index 4af7378..8e8e663 100644
 +                    if(lstrcmpiW(driverW, entry) == 0 || lstrcmpiW(setupW, entry) == 0 ||
 +                       lstrcmpiW(translator, entry) == 0)
                      {
-                         lstrcpyW(value, path);
-                         lstrcatW(value, slash);
-@@ -949,7 +952,6 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
+                         len = lstrlenW(path) + lstrlenW(slash) + lstrlenW(divider) + 1;
+                         value = heap_alloc(len * sizeof(WCHAR));
+@@ -976,7 +979,6 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
                 WORD fRequest, LPDWORD lpdwUsageCount)
  {
      UINT len;
@@ -49,28 +49,21 @@ index 4af7378..8e8e663 100644
      WCHAR path[MAX_PATH];
  
      clear_errors();
-@@ -957,14 +959,16 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
+@@ -984,10 +986,9 @@ BOOL WINAPI SQLInstallTranslatorExW(LPCWSTR lpszTranslator, LPCWSTR lpszPathIn,
            debugstr_w(lpszPathIn), lpszPathOut, cbPathOutMax, pcbPathOut,
            fRequest, lpdwUsageCount);
  
 -    for (p = lpszTranslator; *p; p += lstrlenW(p) + 1)
 -        TRACE("%s\n", debugstr_w(p));
-+    write_registry_values(odbctranslators, lpszTranslator, lpszPathIn, path);
++    write_registry_values(odbctranslators, lpszTranslator, lpszPathIn, path, lpdwUsageCount);
  
 -    len = GetSystemDirectoryW(path, MAX_PATH);
 +    len = lstrlenW(path);
  
      if (pcbPathOut)
          *pcbPathOut = len;
- 
-+    if(lpdwUsageCount)
-+        *lpdwUsageCount = 1;
-+
-     if (lpszPathOut && cbPathOutMax > len)
-     {
-         lstrcpyW(lpszPathOut, path);
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index e3adffd..e374ad4 100644
+index 905468c..95cb8a7 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
 @@ -470,6 +470,64 @@ void test_SQLInstallDriverEx(void)
