@@ -1,0 +1,42 @@
+From 61af95e617feb5c86201cb3309dfbf5e823c54f3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 16 Mar 2017 15:37:51 +1100
+Subject: [PATCH] oledb32: Support DBTYPE_NUMERIC in IDataConvert
+ GetConversionSize
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/convert.c       | 2 ++
+ dlls/oledb32/tests/convert.c | 3 +++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index eadac76..0d45ef0 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -139,6 +139,8 @@ static int get_length(DBTYPE type)
+         return sizeof(FILETIME);
+     case DBTYPE_GUID:
+         return sizeof(GUID);
++    case DBTYPE_NUMERIC:
++        return sizeof(DB_NUMERIC);
+     case DBTYPE_BYTES:
+     case DBTYPE_WSTR:
+     case DBTYPE_STR:
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index 28f15e8..b8b3c6f 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -2857,6 +2857,9 @@ static void test_getconversionsize(void)
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+     VariantClear(&var);
+ 
++    hr = IDataConvert_GetConversionSize(convert, DBTYPE_NUMERIC, DBTYPE_NUMERIC, NULL, &dst_len, NULL);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(dst_len == sizeof(DB_NUMERIC), "%ld\n", dst_len);
+ }
+ 
+ static void test_converttobytes(void)
+-- 
+1.9.1
+
