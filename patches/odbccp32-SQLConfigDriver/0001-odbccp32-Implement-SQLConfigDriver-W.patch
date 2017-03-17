@@ -1,15 +1,15 @@
-From e4b7d98dc554bdf588ab5bee48de218afa90a561 Mon Sep 17 00:00:00 2001
+From fa21708436ea8b858f8411613ce97f9ae85f65ff Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 8 Nov 2016 16:26:03 +1100
 Subject: [PATCH] odbccp32: Implement SQLConfigDriver/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 124 +++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 114 insertions(+), 10 deletions(-)
+ dlls/odbccp32/odbccp32.c | 125 +++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 115 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index aaa488b..934b9d4 100644
+index 3117597..d85fa01 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -63,6 +63,9 @@ static const WCHAR odbc_error_out_of_mem[] = {'O','u','t',' ','o','f',' ','m','e
@@ -22,7 +22,7 @@ index aaa488b..934b9d4 100644
  /* Push an error onto the error stack, taking care of ranges etc. */
  static void push_error(int code, LPCWSTR msg)
  {
-@@ -248,22 +251,123 @@ BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
+@@ -248,22 +251,124 @@ BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
      return TRUE;
  }
  
@@ -48,25 +48,27 @@ index aaa488b..934b9d4 100644
 +
 +    if ((ret = RegOpenKeyW(HKEY_CURRENT_USER, odbcini, &hkey)) == ERROR_SUCCESS)
 +    {
-+         HKEY hkeydriver;
++        HKEY hkeydriver;
 +
-+         if ((ret = RegOpenKeyW(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
-+         {
-+              ret = RegGetValueW(hkeydriver, NULL, reg_driver, RRF_RT_REG_SZ, &type, NULL, &size);
-+              if(ret == ERROR_MORE_DATA)
-+              {
-+                  filename = HeapAlloc(GetProcessHeap(), 0, size);
-+                  if(!filename)
-+                  {
-+                       return ODBC_ERROR_OUT_OF_MEM;
-+                  }
-+                  ret = RegGetValueW(hkeydriver, NULL, driver, RRF_RT_REG_SZ, &type, filename, &size);
-+              }
++        if ((ret = RegOpenKeyW(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
++        {
++            ret = RegGetValueW(hkeydriver, NULL, reg_driver, RRF_RT_REG_SZ, &type, NULL, &size);
++            if(ret == ERROR_MORE_DATA)
++            {
++                filename = HeapAlloc(GetProcessHeap(), 0, size);
++                if(!filename)
++                {
++                    RegCloseKey(hkeydriver);
++                    RegCloseKey(hkey);
++                    return ODBC_ERROR_OUT_OF_MEM;
++                }
++                ret = RegGetValueW(hkeydriver, NULL, driver, RRF_RT_REG_SZ, &type, filename, &size);
++            }
 +
-+              RegCloseKey(hkeydriver);
-+         }
++            RegCloseKey(hkeydriver);
++        }
 +
-+         RegCloseKey(hkey);
++        RegCloseKey(hkey);
 +    }
 +
 +    if(ret != ERROR_SUCCESS)
@@ -82,9 +84,7 @@ index aaa488b..934b9d4 100644
 +
 +    pConfigDriverW = (void*) GetProcAddress(hmod, "ConfigDriverW");
 +    if(pConfigDriverW)
-+    {
 +        funcret = pConfigDriverW(hwnd, request, driver, args, msg, msgmax, msgout);
-+    }
 +
 +    FreeLibrary(hmod);
 +
@@ -112,25 +112,28 @@ index aaa488b..934b9d4 100644
 +
 +    if ((ret = RegOpenKeyW(HKEY_CURRENT_USER, odbcini, &hkey)) == ERROR_SUCCESS)
 +    {
-+         HKEY hkeydriver;
++        HKEY hkeydriver;
 +
-+         if ((ret = RegOpenKeyA(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
-+         {
-+              ret = RegGetValueA(hkeydriver, NULL, "Driver", RRF_RT_REG_SZ, &type, NULL, &size);
-+              if(ret == ERROR_MORE_DATA)
-+              {
-+                  filename = HeapAlloc(GetProcessHeap(), 0, size);
-+                  if(!filename)
-+                  {
-+                       return ODBC_ERROR_OUT_OF_MEM;
-+                  }
-+                  ret = RegGetValueA(hkeydriver, NULL, driver, RRF_RT_REG_SZ, &type, filename, &size);
-+              }
++        if ((ret = RegOpenKeyA(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
++        {
++            ret = RegGetValueA(hkeydriver, NULL, "Driver", RRF_RT_REG_SZ, &type, NULL, &size);
++            if(ret == ERROR_MORE_DATA)
++            {
++                filename = HeapAlloc(GetProcessHeap(), 0, size);
++                if(!filename)
++                {
++                    RegCloseKey(hkeydriver);
++                    RegCloseKey(hkey);
++                    return ODBC_ERROR_OUT_OF_MEM;
++                }
 +
-+              RegCloseKey(hkeydriver);
-+         }
++                ret = RegGetValueA(hkeydriver, NULL, driver, RRF_RT_REG_SZ, &type, filename, &size);
++            }
 +
-+         RegCloseKey(hkey);
++            RegCloseKey(hkeydriver);
++        }
++
++        RegCloseKey(hkey);
 +    }
 +
 +    if(ret != ERROR_SUCCESS)
@@ -146,9 +149,7 @@ index aaa488b..934b9d4 100644
 +
 +    pConfigDriverA = (void*) GetProcAddress(hmod, "ConfigDriver");
 +    if(pConfigDriverA)
-+    {
 +        funcret = pConfigDriverA(hwnd, request, driver, args, msg, msgmax, msgout);
-+    }
 +
 +    FreeLibrary(hmod);
 +
