@@ -1,0 +1,118 @@
+From 96384d1fbeff2c42a91de5a5d2a9e92da6eeb704 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 17 Mar 2017 14:02:31 +1100
+Subject: [PATCH] oledb32/tests: Add convert to DBTYPE_NUMERIC tests
+
+WIP - Check value.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/tests/convert.c | 85 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 85 insertions(+)
+
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index b8b3c6f..5af9f46 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -3264,6 +3264,90 @@ static void test_converttoiunknown(void)
+     ok(dst_len == 44, "got %ld\n", dst_len);
+ }
+ 
++static void test_converttonumeric(void)
++{
++    HRESULT hr;
++    DBSTATUS dst_status;
++    DBLENGTH dst_len;
++    DB_NUMERIC dst;
++    BYTE src[20];
++    static WCHAR strW[] = {'1','2','3','.','4','5',0};
++    BSTR bstr;
++    FLOAT fvalue = 543.21f;
++    VARIANT_BOOL boolean = VARIANT_TRUE;
++    LARGE_INTEGER i8;
++
++    *(INT *)src = 4098;
++    dst_len = 0x1234;
++    dst.scale = 30;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_I4, DBTYPE_NUMERIC, 0, &dst_len, src, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
++    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
++    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
++
++    i8.QuadPart = 12345;
++    dst_len = 0x1234;
++    dst.scale = 30;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_I8, DBTYPE_NUMERIC, sizeof(i8), &dst_len, &i8, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
++    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
++    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
++
++    dst_len = 0x1234;
++    dst.scale = 30;
++    dst.sign = 1;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BOOL, DBTYPE_NUMERIC, sizeof(boolean), &dst_len, &boolean, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
++    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
++    todo_wine ok(dst.sign == 0, "returned %d\n", dst.sign);
++
++    dst_len = 0x1234;
++    dst.scale = 30;
++    dst.sign = 0;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_R4, DBTYPE_NUMERIC, sizeof(fvalue), &dst_len, &fvalue, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
++    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
++    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
++
++    dst_len = 0x1234;
++    dst.scale = 30;
++    dst.sign = 0;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_WSTR, DBTYPE_NUMERIC, sizeof(strW), &dst_len, strW, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
++    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
++    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
++
++    bstr = SysAllocString(strW);
++    *(BSTR *)src = bstr;
++    dst_status = 0;
++    dst.scale = 30;
++    dst.sign = 0;
++    dst_len = sizeof(strW);
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_NUMERIC, 0, &dst_len, src, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
++    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
++    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
++    SysFreeString(bstr);
++}
++
+ START_TEST(convert)
+ {
+     HRESULT hr;
+@@ -3304,6 +3388,7 @@ START_TEST(convert)
+     test_getconversionsize();
+     test_converttotimestamp();
+     test_converttoiunknown();
++    test_converttonumeric();
+ 
+     IDataConvert_Release(convert);
+ 
+-- 
+1.9.1
+
