@@ -1,7 +1,7 @@
-From 994ed467b591dab9758a8af426fd3e09bf6f56a7 Mon Sep 17 00:00:00 2001
+From 395d6a30afec04824aa0f6424488519ec70ed207 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 14:53:02 +1100
-Subject: [PATCH 1/8] mtxdm: New DLL
+Subject: [PATCH 1/2] mtxdm: New DLL
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -16,7 +16,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 dlls/mtxdm/mtxdm_main.c
 
 diff --git a/configure b/configure
-index 56904e9..f387763 100755
+index ec5783a..4d0eeff 100755
 --- a/configure
 +++ b/configure
 @@ -1324,6 +1324,7 @@ enable_msxml2
@@ -27,7 +27,7 @@ index 56904e9..f387763 100755
  enable_ncrypt
  enable_nddeapi
  enable_ndis_sys
-@@ -18174,6 +18175,7 @@ wine_fn_config_dll msxml3 enable_msxml3 clean
+@@ -18185,6 +18186,7 @@ wine_fn_config_dll msxml3 enable_msxml3 clean
  wine_fn_config_test dlls/msxml3/tests msxml3_test clean
  wine_fn_config_dll msxml4 enable_msxml4 clean
  wine_fn_config_dll msxml6 enable_msxml6 clean
@@ -36,10 +36,10 @@ index 56904e9..f387763 100755
  wine_fn_config_dll nddeapi enable_nddeapi implib
  wine_fn_config_dll ndis.sys enable_ndis_sys
 diff --git a/configure.ac b/configure.ac
-index c6d63b2..e96cf01 100644
+index cdef9e6..7dd1830 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3232,6 +3232,7 @@ WINE_CONFIG_DLL(msxml3,,[clean])
+@@ -3241,6 +3241,7 @@ WINE_CONFIG_DLL(msxml3,,[clean])
  WINE_CONFIG_TEST(dlls/msxml3/tests,[clean])
  WINE_CONFIG_DLL(msxml4,,[clean])
  WINE_CONFIG_DLL(msxml6,,[clean])
@@ -67,7 +67,7 @@ index 0000000..9cff0d9
 +@ stub GetDispenserManager
 diff --git a/dlls/mtxdm/mtxdm_main.c b/dlls/mtxdm/mtxdm_main.c
 new file mode 100644
-index 0000000..ef7444f
+index 0000000..d859571
 --- /dev/null
 +++ b/dlls/mtxdm/mtxdm_main.c
 @@ -0,0 +1,43 @@
@@ -97,7 +97,7 @@ index 0000000..ef7444f
 +#include "winbase.h"
 +#include "wine/debug.h"
 +
-+WINE_DEFAULT_DEBUG_CHANNEL(mtxdm);
++WINE_DEFAULT_DEBUG_CHANNEL(comsvcs);
 +
 +BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
 +{
