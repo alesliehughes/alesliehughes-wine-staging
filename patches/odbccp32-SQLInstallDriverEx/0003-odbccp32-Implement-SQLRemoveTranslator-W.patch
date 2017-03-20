@@ -1,19 +1,19 @@
-From 504493f6cc1f4efd49fbfd5ba6e28bdbfaa47a98 Mon Sep 17 00:00:00 2001
+From 08112ddd29d82f4e5e344a2fa49a564ef432bf41 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
 Subject: [PATCH] odbccp32: Implement SQLRemoveTranslator/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 70 +++++++++++++++++++++++++++++++++++++++++-----
+ dlls/odbccp32/odbccp32.c   | 69 +++++++++++++++++++++++++++++++++++++++++-----
  dlls/odbccp32/tests/misc.c |  8 +++---
- 2 files changed, 67 insertions(+), 11 deletions(-)
+ 2 files changed, 66 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index ee7b31f..3117597 100644
+index 885d9e0..e78c1e1 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1230,20 +1230,76 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+@@ -1229,20 +1229,75 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
      return FALSE;
  }
  
@@ -36,10 +36,18 @@ index ee7b31f..3117597 100644
 +        if (RegOpenKeyW(hkey, translator, &hkeydriver) == ERROR_SUCCESS)
 +        {
 +            DWORD size, type;
++            DWORD count;
 +
 +            size = sizeof(usagecount);
 +            RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, &type, &usagecount, &size);
-+            TRACE("Usage count %d\n", usagecount);
++            TRACE("Usage count %d\n", count);
++            count = usagecount - 1;
++            if (count)
++            {
++                 if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&count, sizeof(count)) != ERROR_SUCCESS)
++                    ERR("Failed to write registry UsageCount key\n");
++            }
++
 +            RegCloseKey(hkeydriver);
 +        }
 +
@@ -56,15 +64,6 @@ index ee7b31f..3117597 100644
 +                if(RegDeleteValueW(hkeydriver, translator) != ERROR_SUCCESS)
 +                    ERR("Failed to delete registry value: %s\n", debugstr_w(translator));
 +
-+                RegCloseKey(hkeydriver);
-+            }
-+        }
-+        else
-+        {
-+            if (RegOpenKeyW(hkey, translator, &hkeydriver) == ERROR_SUCCESS)
-+            {
-+               if (RegSetValueExA(hkeydriver, "UsageCount", 0, REG_DWORD, (BYTE*)&usagecount, sizeof(usagecount)) != ERROR_SUCCESS)
-+                    ERR("Failed to write registry UsageCount key\n");
 +                RegCloseKey(hkeydriver);
 +            }
 +        }

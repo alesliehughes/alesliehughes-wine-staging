@@ -1,4 +1,4 @@
-From 5014ad50b3d7fce8dbd66f24822b37b81f6e538f Mon Sep 17 00:00:00 2001
+From eafeb1c9bcc98b740d838f5108281419007d0571 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 17 Mar 2017 09:48:50 +1100
 Subject: [PATCH] odbccp32: Implement SQLInstallTranslator
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 66 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 5e70a9d..ee7b31f 100644
+index bfca59e..885d9e0 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -41,6 +41,7 @@ static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D'
