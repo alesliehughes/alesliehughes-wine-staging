@@ -1,4 +1,4 @@
-From 08112ddd29d82f4e5e344a2fa49a564ef432bf41 Mon Sep 17 00:00:00 2001
+From aaa45f1687b1623ce88ef0a55ec0cde9b7ab7f67 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
 Subject: [PATCH] odbccp32: Implement SQLRemoveTranslator/W
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 66 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 885d9e0..e78c1e1 100644
+index 7b2f020..d95a110 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -1229,20 +1229,75 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
@@ -97,10 +97,10 @@ index 885d9e0..e78c1e1 100644
  
  BOOL WINAPI SQLSetConfigMode(UWORD wConfigMode)
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index 95cb8a7..328437e 100644
+index e977e91..036bcf9 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
-@@ -519,13 +519,13 @@ void test_SQLInstallTranslatorEx(void)
+@@ -525,13 +525,13 @@ void test_SQLInstallTranslatorEx(void)
  
      cnt = 100;
      ret = SQLRemoveTranslator("WINE ODBC Translator", &cnt);
