@@ -1,43 +1,36 @@
-From 40a08f2476dab01ca237215ac6f5144df3a3bbb8 Mon Sep 17 00:00:00 2001
+From a08dce77ca7ce5e4a8573be1b79d62c6fe0a7114 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 17 Mar 2017 14:02:31 +1100
 Subject: [PATCH] oledb32/tests: Add convert to DBTYPE_NUMERIC tests
 
+v2
+- Added VT_NULL test
+- Use result variables for each test.
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/oledb32/tests/convert.c | 147 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 147 insertions(+)
+ dlls/oledb32/tests/convert.c | 123 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 123 insertions(+)
 
 diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
-index b8b3c6f..4e49058 100644
+index b8b3c6f..2583fd1 100644
 --- a/dlls/oledb32/tests/convert.c
 +++ b/dlls/oledb32/tests/convert.c
-@@ -3264,6 +3264,152 @@ static void test_converttoiunknown(void)
+@@ -3264,6 +3264,128 @@ static void test_converttoiunknown(void)
      ok(dst_len == 44, "got %ld\n", dst_len);
  }
  
-+#define test_numberic_val(dst, array) _test_numberic_val(__LINE__, dst, array);
-+static inline void _test_numberic_val(unsigned line, DB_NUMERIC *dst, BYTE *array)
++#define test_numberic_val(current, expected) _test_numberic_val(__LINE__, current, expected);
++static inline void _test_numberic_val(unsigned line, DB_NUMERIC *current, DB_NUMERIC *expected)
 +{
-+    int same = !memcmp(dst->val, array, sizeof(dst->val));
++    int same = !memcmp(current, expected, sizeof(DB_NUMERIC));
 +    ok_(__FILE__,line) (same, "Invalid byte array\n");
 +    if(!same)
 +    {
 +        int i;
-+        for(i=0; i < sizeof(dst->val); i++)
-+            ok_(__FILE__,line) (dst->val[i] == array[i], " byte %d got 0x%02x\n", i, dst->val[i]);
++        for(i=0; i < sizeof(current->val); i++)
++            ok_(__FILE__,line) (current->val[i] == expected->val[i], " byte %d got 0x%02x Expected 0x%02x\n", i, current->val[i], expected->val[i]);
 +    }
-+}
-+
-+static inline void set_numberic_array(BYTE *dst,
-+                                 BYTE x0, BYTE x1, BYTE x2,  BYTE x3,  BYTE x4,  BYTE x5,  BYTE x6,
-+                                 BYTE x7, BYTE x8, BYTE x9,  BYTE x10, BYTE x11, BYTE x12, BYTE x13,
-+                                 BYTE x14, BYTE x15)
-+{
-+    dst[0]  = x0;  dst[1]  = x1;  dst[2]  = x2;  dst[3]  = x3;
-+    dst[4]  = x4;  dst[5]  = x5;  dst[6]  = x6;  dst[7]  = x7;
-+    dst[8]  = x8;  dst[9]  = x9;  dst[10] = x10; dst[11] = x11;
-+    dst[12] = x12; dst[13] = x13; dst[14] = x14; dst[15] = x15;
 +}
 +
 +static void test_converttonumeric(void)
@@ -52,8 +45,16 @@ index b8b3c6f..4e49058 100644
 +    BSTR bstr;
 +    FLOAT fvalue = 543.21f;
 +    VARIANT_BOOL boolean = VARIANT_TRUE;
++    VARIANT var;
 +    LARGE_INTEGER i8;
-+    BYTE array[16];
++    DB_NUMERIC result1 = { 10, 0, 1, {0x02, 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };       /*  4098      */
++    DB_NUMERIC result2 = { 10, 0, 1, {0x39, 0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };       /*  12345     */
++    DB_NUMERIC result3 = { 10, 0, 0, {0x01, 0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };       /* -1         */
++    DB_NUMERIC result4 = { 10, 0, 1, {0x1f, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };       /*  543.21    */
++    DB_NUMERIC result5 = { 10, 0, 1, {0x7b, 0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };       /*  123.45    */
++    DB_NUMERIC result6 = { 10, 0, 1, {0xd2, 0x02, 0x96, 0x49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} }; /*  123456789 */
++
++    VariantInit(&var);
 +
 +    *(INT *)src = 4098;
 +    dst_len = 0x1234;
@@ -63,11 +64,7 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
-+    set_numberic_array(array, 0x02, 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result1);
 +
 +    i8.QuadPart = 12345;
 +    dst_len = 0x1234;
@@ -77,11 +74,7 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
-+    set_numberic_array(array, 0x39, 0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result2);
 +
 +    dst_len = 0x1234;
 +    dst.scale = 30;
@@ -91,11 +84,7 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 0, "returned %d\n", dst.sign);
-+    set_numberic_array(array, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result3);
 +
 +    dst_len = 0x1234;
 +    dst.scale = 30;
@@ -105,11 +94,16 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
-+    set_numberic_array(array, 0x1f, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result4);
++
++    dst_len = 0x1234;
++    dst.scale = 30;
++    dst.sign = 0;
++    memset(dst.val, 0xfe, sizeof(dst.val));
++    V_VT(&var) = VT_NULL;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_VARIANT, DBTYPE_NUMERIC, sizeof(var), &dst_len, &var, &dst, sizeof(dst), 0, &dst_status, 10, 0, 0);
++    todo_wine ok(hr == S_OK, "got %08x\n", hr);
++    todo_wine ok(dst_status == DBSTATUS_S_ISNULL, "got %08x\n", dst_status);
 +
 +    dst_len = 0x1234;
 +    dst.scale = 30;
@@ -119,11 +113,7 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
-+    set_numberic_array(array, 0x7b, 0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result5);
 +
 +    bstr = SysAllocString(strW);
 +    *(BSTR *)src = bstr;
@@ -136,12 +126,7 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
-+    SysFreeString(bstr);
-+    set_numberic_array(array, 0x7b, 0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result5);
 +
 +    bstr = SysAllocString(largeW);
 +    *(BSTR *)src = bstr;
@@ -154,18 +139,13 @@ index b8b3c6f..4e49058 100644
 +    todo_wine ok(hr == S_OK, "got %08x\n", hr);
 +    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
-+    todo_wine ok(dst.precision == 10, "returned %d\n", dst.precision);
-+    todo_wine ok(dst.scale == 0, "returned %d\n", dst.scale);
-+    todo_wine ok(dst.sign == 1, "returned %d\n", dst.sign);
-+    SysFreeString(bstr);
-+    set_numberic_array(array, 0xd2, 0x02, 0x96, 0x49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
-+    todo_wine test_numberic_val(&dst, array);
++    todo_wine test_numberic_val(&dst, &result6);
 +}
 +
  START_TEST(convert)
  {
      HRESULT hr;
-@@ -3304,6 +3450,7 @@ START_TEST(convert)
+@@ -3304,6 +3426,7 @@ START_TEST(convert)
      test_getconversionsize();
      test_converttotimestamp();
      test_converttoiunknown();
