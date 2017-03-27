@@ -1,7 +1,7 @@
-From 8399adec360a63dd25d2c867ac912c326858dd36 Mon Sep 17 00:00:00 2001
+From e13b0573e31732d851457e395c0922d84dda4106 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 09:42:29 +1100
-Subject: [PATCH 24/42] dpnet: IPeer support tcp4/6 in Connect
+Subject: [PATCH 24/43] dpnet: IPeer support tcp4/6 in Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -128,7 +128,7 @@ index b01f7b4..6dead8d 100644
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 427b2bf..f9e939a 100644
+index eb1e479..8729ad6 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -58,7 +58,8 @@ typedef struct IDirectPlay8PeerImpl

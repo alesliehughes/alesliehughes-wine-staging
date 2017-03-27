@@ -1,7 +1,7 @@
-From 49675a4317f31dfba0988a1549f8093efa3e3368 Mon Sep 17 00:00:00 2001
+From 2342877e0e96d038fe126921bb4cb81f9b2f5f5c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 09:38:04 +1100
-Subject: [PATCH 26/42] dpnet: Send connect data when sending
+Subject: [PATCH 26/43] dpnet: Send connect data when sending
  DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -154,7 +154,7 @@ index 6dead8d..e926241 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 93b00e9..438ce8c 100644
+index 2b14f50..7476cb0 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -62,6 +62,9 @@ typedef struct IDirectPlay8PeerImpl

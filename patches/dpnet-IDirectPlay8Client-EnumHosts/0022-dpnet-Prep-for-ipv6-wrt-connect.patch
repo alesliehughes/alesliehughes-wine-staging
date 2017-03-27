@@ -1,7 +1,7 @@
-From 5348460f5bc259c6b6b105370ec42c3a9e9d1026 Mon Sep 17 00:00:00 2001
+From bbbd4fb4fac375e4a1a33a85d5fa75902410d642 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:49:18 +1100
-Subject: [PATCH 22/42] dpnet: Prep for ipv6 wrt connect
+Subject: [PATCH 22/43] dpnet: Prep for ipv6 wrt connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -264,7 +264,7 @@ index 2e2a242..b01f7b4 100644
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
  extern DWORD WINAPI connect_thread(void *threaddata) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index eefd545..427b2bf 100644
+index ed95867..eb1e479 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -327,7 +327,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,

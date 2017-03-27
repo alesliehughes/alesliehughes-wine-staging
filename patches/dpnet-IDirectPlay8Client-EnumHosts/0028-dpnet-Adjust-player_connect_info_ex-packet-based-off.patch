@@ -1,7 +1,7 @@
-From b1438629e7a0755cdadf29f75de652129e626a0b Mon Sep 17 00:00:00 2001
+From 7a1ae6eb2f656b244fe2d21fd277b58c6fb18636 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 13:40:04 +1100
-Subject: [PATCH 28/42] dpnet: Adjust player_connect_info_ex packet based off
+Subject: [PATCH 28/43] dpnet: Adjust player_connect_info_ex packet based off
  being client/peer
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -103,7 +103,7 @@ index e926241..71b3c25 100644
  
  
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 438ce8c..c705437 100644
+index 7476cb0..01d0ddd 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -344,7 +344,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,

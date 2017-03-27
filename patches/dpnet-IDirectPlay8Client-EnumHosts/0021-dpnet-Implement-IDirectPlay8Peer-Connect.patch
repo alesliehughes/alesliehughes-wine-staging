@@ -1,7 +1,7 @@
-From 7401068c1162cbc99ba9f6814f948c4295fe19a5 Mon Sep 17 00:00:00 2001
+From 25b69a97ab14d7d185df7fe8f4a56472a79ef9c0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:19:58 +1100
-Subject: [PATCH 21/42] dpnet: Implement IDirectPlay8Peer Connect
+Subject: [PATCH 21/43] dpnet: Implement IDirectPlay8Peer Connect
 
 ---
  dlls/dpnet/client.c        | 17 ++-------
@@ -79,7 +79,7 @@ index 601acd2..2e2a242 100644
  /* ------------------ */
  /* IDirectPlay8Client */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index ef41020..eefd545 100644
+index 3f3ba57..ed95867 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -31,6 +31,7 @@

@@ -1,7 +1,7 @@
-From 5b1fcaea66ac363030fcc4e54324858447561a9c Mon Sep 17 00:00:00 2001
+From 0aadbcbf247073258819485d8a37f864e29f49bb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 16:25:54 +1100
-Subject: [PATCH 29/42] dpnet: Fake success from IDirectPlay8Peer
+Subject: [PATCH 29/43] dpnet: Fake success from IDirectPlay8Peer
  EnumPlayersAndGroups
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index c705437..22d0eea 100644
+index 01d0ddd..d23baf3 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -509,7 +509,19 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumPlayersAndGroups(IDirectPlay8Peer

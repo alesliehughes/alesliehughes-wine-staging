@@ -1,7 +1,7 @@
-From e13bf70b6779200f55f11786bfc565a49638fa57 Mon Sep 17 00:00:00 2001
+From 6437dbd6a7112e5d34afc0fbf8c6c490e5203d5d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Nov 2016 09:41:28 +1100
-Subject: [PATCH 05/42] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
+Subject: [PATCH 05/43] dpnet: Send DPN_MSGID_ASYNC_OP_COMPLETE message in
  IDirectPlay8Client CancelAsyncOperation
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -43,10 +43,10 @@ index 3b047ff..5296e98 100644
          CloseHandle(This->cancelevent);
  
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index f35cd39..ed37ca4 100644
+index 7f0ba95..23ce5b3 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
-@@ -299,8 +299,8 @@ static void test_enum_hosts(void)
+@@ -305,8 +305,8 @@ static void test_enum_hosts(void)
      lastAsyncHandle = 0xdeadbeef;
      hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
      ok(hr == S_OK, "IDirectPlay8Client_CancelAsyncOperation failed with 0x%08x\n", hr);
@@ -55,8 +55,8 @@ index f35cd39..ed37ca4 100644
 +    ok(lastAsyncCode == DPNERR_USERCANCEL, "got 0x%08x\n", lastAsyncCode);
 +    ok(lastAsyncHandle == async, "got 0x%08x\n", async);
  
-     lastAsyncCode = E_FAIL;
-     lastAsyncHandle = 0xdeadbeef;
+     hr = IDirectPlay8Client_Initialize(client2, NULL, DirectPlayMessageHandler, 0);
+     ok(hr == S_OK, "got %x\n", hr);
 -- 
 1.9.1
 

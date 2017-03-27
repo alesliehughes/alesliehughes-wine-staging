@@ -1,7 +1,7 @@
-From aee8dea1f11af2806778636e6cba1365a999e158 Mon Sep 17 00:00:00 2001
+From 0b8f25a980ac74fcfb0676b360207d49e3c999f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Feb 2017 09:06:53 +1100
-Subject: [PATCH 36/42] dpnet: Support Name Table Enteries in ConnectInfo
+Subject: [PATCH 36/43] dpnet: Support Name Table Enteries in ConnectInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 45 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index b2ab637..01fad5b 100644
+index b2ab637..66a0ff1 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -924,9 +924,20 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
@@ -26,7 +26,7 @@ index b2ab637..01fad5b 100644
 +                        TRACE("entry_count %d, membership_count %d\n", info->entry_count, info->membership_count);
 +                        for(i = 0; i < info->entry_count; i++)
 +                        {
-+                            struct DN_NAMETABLE_ENTRY_INFO *entry = (struct DN_NAMETABLE_ENTRY_INFO*)(((char*)info) + sizeof(struct DN_SEND_CONNECT_INFO) + 
++                            struct DN_NAMETABLE_ENTRY_INFO *entry = (struct DN_NAMETABLE_ENTRY_INFO*)(((char*)info) + sizeof(struct DN_SEND_CONNECT_INFO) +
 +                                            (sizeof(struct DN_NAMETABLE_ENTRY_INFO) * i));
 +                            FIXME("dpnid 0x%08x, flags 0x%08x, name %s\n", entry->dpnid, entry->flags,
 +                                debugstr_an( ((char*)&dframe->type) + entry->name_offset, entry->name_size) );

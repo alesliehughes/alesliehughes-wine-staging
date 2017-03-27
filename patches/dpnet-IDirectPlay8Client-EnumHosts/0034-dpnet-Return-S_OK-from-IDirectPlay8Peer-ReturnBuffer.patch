@@ -1,7 +1,7 @@
-From a96e4886faf2538f636ba988dcec1a31e0d11396 Mon Sep 17 00:00:00 2001
+From 3912c8c9ed43c1b42d56acc98e9699e900c0f7d5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 21 Jan 2017 11:09:45 +1100
-Subject: [PATCH 34/42] dpnet: Return S_OK from IDirectPlay8Peer ReturnBuffer
+Subject: [PATCH 34/43] dpnet: Return S_OK from IDirectPlay8Peer ReturnBuffer
 
 When DPNSUCCESS_PENDING is received from the message handler
 we should wait until the application has finished with it.
@@ -28,7 +28,7 @@ index 31e0c56..b749e92 100644
                                          ERR("Message Handle for DPNMSG_RECEIVE failed (0x%08x).\n", hr);
  
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 6ce8f06..8ecb8d9 100644
+index dbfae22..e25487c 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -716,7 +716,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_ReturnBuffer(IDirectPlay8Peer *iface,

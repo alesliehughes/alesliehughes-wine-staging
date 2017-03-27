@@ -1,7 +1,7 @@
-From 9e0736fef45dca04ce57a388e7d55baf3fa664bf Mon Sep 17 00:00:00 2001
+From 556b93602990eebd2d35e7aaff89bf6b299d4b3e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Feb 2017 10:03:30 +1100
-Subject: [PATCH 37/42] dpnet: Ignore Namespace Version change packets.
+Subject: [PATCH 37/43] dpnet: Ignore Namespace Version change packets.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 19 insertions(+)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 01fad5b..0ecf405 100644
+index 66a0ff1..7f6130f 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -1127,6 +1127,13 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D

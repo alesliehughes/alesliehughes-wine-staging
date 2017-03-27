@@ -1,7 +1,7 @@
-From 5e0353fa032c4060266bfb57bf029076c8bbf6ba Mon Sep 17 00:00:00 2001
+From 2c98b7dd2f49782354cf5deca63b69d71804b2bb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Jan 2017 08:36:53 +1100
-Subject: [PATCH 32/42] dpnet: Support DN_MSG_INTERNAL_INSTRUCT_CONNECT message
+Subject: [PATCH 32/43] dpnet: Support DN_MSG_INTERNAL_INSTRUCT_CONNECT message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

@@ -1,7 +1,7 @@
-From ed455cbf11fd7f28bbe75101647625268502bf87 Mon Sep 17 00:00:00 2001
+From a676eb1113b74ad2997aa8547ea25e52ce73d383 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 16 Feb 2017 09:56:57 +1100
-Subject: [PATCH 19/42] dpnet: Implement IDirectPlay8Peer EnumHosts
+Subject: [PATCH 19/43] dpnet: Implement IDirectPlay8Peer EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -115,7 +115,7 @@ index 8423376..601acd2 100644
  /* IDirectPlay8Client */
  /* ------------------ */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 91a7e3e..ef41020 100644
+index e8a60c3..3f3ba57 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -52,6 +52,10 @@ typedef struct IDirectPlay8PeerImpl

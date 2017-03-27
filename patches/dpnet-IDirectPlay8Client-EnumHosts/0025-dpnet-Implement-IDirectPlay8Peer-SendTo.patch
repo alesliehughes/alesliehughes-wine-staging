@@ -1,14 +1,14 @@
-From 6b7e52cdd0239bb04b0be7de760bb8e356e5dccc Mon Sep 17 00:00:00 2001
+From 54396ae4560d6e1cafe3cd70f237da7205228cfc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 10:05:11 +1100
-Subject: [PATCH 25/42] dpnet: Implement IDirectPlay8Peer SendTo
+Subject: [PATCH 25/43] dpnet: Implement IDirectPlay8Peer SendTo
 
 ---
  dlls/dpnet/peer.c | 36 +++++++++++++++++++++++++++++++++++-
  1 file changed, 35 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index f9e939a..93b00e9 100644
+index 8729ad6..2b14f50 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -358,9 +358,43 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_SendTo(IDirectPlay8Peer *iface, const

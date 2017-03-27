@@ -1,7 +1,7 @@
-From 90aeb187624a010b508e8102c6f3829c4d58977d Mon Sep 17 00:00:00 2001
+From 696b4e8004262afcdc4276ba92e45a153b262fc7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 16 Feb 2017 09:48:37 +1100
-Subject: [PATCH 03/42] dpnet: Add Sync support in IDirectPlay8Client EnumHost
+Subject: [PATCH 03/43] dpnet: Add Sync support in IDirectPlay8Client EnumHost
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -210,10 +210,10 @@ index 1712bba..5e7f565 100644
  
  /* ------------------- */
 diff --git a/dlls/dpnet/tests/client.c b/dlls/dpnet/tests/client.c
-index ee2722b..f35cd39 100644
+index e11bfe3..7f0ba95 100644
 --- a/dlls/dpnet/tests/client.c
 +++ b/dlls/dpnet/tests/client.c
-@@ -270,7 +270,7 @@ static void test_enum_hosts(void)
+@@ -276,7 +276,7 @@ static void test_enum_hosts(void)
      hr = IDirectPlay8Client_EnumHosts(client, &appdesc, host, local, data, caps.dwMaxEnumPayloadSize, INFINITE, 0, INFINITE,
                                          NULL,  &async, 0);
      ok(hr == DPNSUCCESS_PENDING, "got 0x%08x\n", hr);
@@ -222,7 +222,7 @@ index ee2722b..f35cd39 100644
  
      /* This CancelAsyncOperation doesn't generate a DPN_MSGID_ASYNC_OP_COMPLETE */
      hr = IDirectPlay8Client_CancelAsyncOperation(client, async, 0);
-@@ -282,14 +282,16 @@ static void test_enum_hosts(void)
+@@ -288,14 +288,16 @@ static void test_enum_hosts(void)
      ok(hr == DPNERR_UNINITIALIZED, "IDirectPlay8Client_EnumHosts failed with 0x%08x\n", hr);
  
      /* Since we are running asynchronously, EnumHosts returns DPNSUCCESS_PENDING. */

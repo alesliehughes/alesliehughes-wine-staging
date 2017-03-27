@@ -1,7 +1,7 @@
-From 61bddaf5cea929bb4ab7ab91ea7c6a1f814401c9 Mon Sep 17 00:00:00 2001
+From 0a67124bfce25e2835174bee3fbd2d463dce3fba Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 19 Feb 2017 11:14:33 +1100
-Subject: [PATCH 40/42] dpnet: use real dnpid
+Subject: [PATCH 40/43] dpnet: use real dnpid
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f56212e..681c904 100644
+index 93d0339..cf1304d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -47,6 +47,8 @@ typedef struct IDirectPlay8LobbyClientImpl
@@ -23,7 +23,7 @@ index f56212e..681c904 100644
  {
      return CONTAINING_RECORD(iface, IDirectPlay8LobbyClientImpl, IDirectPlay8LobbyClient_iface);
 @@ -935,7 +937,8 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
-                             struct DN_NAMETABLE_ENTRY_INFO *entry = (struct DN_NAMETABLE_ENTRY_INFO*)(((char*)info) + sizeof(struct DN_SEND_CONNECT_INFO) + 
+                             struct DN_NAMETABLE_ENTRY_INFO *entry = (struct DN_NAMETABLE_ENTRY_INFO*)(((char*)info) + sizeof(struct DN_SEND_CONNECT_INFO) +
                                              (sizeof(struct DN_NAMETABLE_ENTRY_INFO) * i));
                              FIXME("dpnid 0x%08x, flags 0x%08x, name %s\n", entry->dpnid, entry->flags,
 -                                debugstr_an( ((char*)&dframe->type) + entry->name_offset, entry->name_size) );
@@ -33,7 +33,7 @@ index f56212e..681c904 100644
  
                          if(dframe_packet_session_ack(sock, serveraddr, addrsize, packet->nseq) == -1)
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 8ecb8d9..c8a20a6 100644
+index e25487c..45e1670 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
 @@ -504,6 +504,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetGroupInfo(IDirectPlay8Peer *iface,

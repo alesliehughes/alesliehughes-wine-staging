@@ -1,7 +1,7 @@
-From 1b17a039ca178668e7f79148b356d2f7a9f7ce26 Mon Sep 17 00:00:00 2001
+From 6e4b39f6343d0e557b6a8557dcfb2a3aede29e93 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:37:51 +1100
-Subject: [PATCH 15/42] dpnet: Implement IDirectPlay8Client Send
+Subject: [PATCH 15/43] dpnet: Implement IDirectPlay8Client Send
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

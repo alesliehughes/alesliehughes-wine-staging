@@ -1,7 +1,7 @@
-From 919496899dddfb35e5687f98c31ff1487169db28 Mon Sep 17 00:00:00 2001
+From 38743ee5eee212302ab0d3bff5cb36cbdbe77123 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 23 Feb 2017 20:43:08 +1100
-Subject: [PATCH 41/42] dpnet: Support wide string in dpaddress_to_sockaddr
+Subject: [PATCH 41/43] dpnet: Support wide string in dpaddress_to_sockaddr
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 24 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 681c904..1e138b6 100644
+index cf1304d..2cd50c1 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
 @@ -110,6 +110,20 @@ SOCKET find_free_socket(void)

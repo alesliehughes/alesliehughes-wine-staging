@@ -1,7 +1,7 @@
-From 4801b5ead40a8c408286958ec6927eabdbb272ae Mon Sep 17 00:00:00 2001
+From fb8af12ede3ef7253f8da9a91063188674989c76 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Jan 2017 14:09:06 +1100
-Subject: [PATCH 20/42] dpnet: hack for broadcast ipv6
+Subject: [PATCH 20/43] dpnet: hack for broadcast ipv6
 
 ---
  dlls/dpnet/client.c | 41 +++++++++++++++++++++++++++--------------

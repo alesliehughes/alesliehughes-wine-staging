@@ -1,7 +1,7 @@
-From d4bb4ffb557465b82d8b95240ee10f98fc5aaf30 Mon Sep 17 00:00:00 2001
+From 98e57e2ce0b970780dab70d8414dea6cb63c9ef0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Dec 2016 11:17:55 +1100
-Subject: [PATCH 18/42] dpnet: Correction to connect to make examples work :)
+Subject: [PATCH 18/43] dpnet: Correction to connect to make examples work :)
 
 ---
  dlls/dpnet/client.c | 148 ++++++++++++++++++++++++++++++++++++++--------------
