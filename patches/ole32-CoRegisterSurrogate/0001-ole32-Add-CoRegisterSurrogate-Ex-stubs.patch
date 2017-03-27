@@ -1,0 +1,73 @@
+From e706ff7f1fd90953d3932c277301462ab8caaae6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 27 Mar 2017 15:11:49 +1100
+Subject: [PATCH] ole32: Add CoRegisterSurrogate/Ex stubs
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/ole32/compobj.c  | 20 ++++++++++++++++++++
+ dlls/ole32/ole32.spec |  4 ++--
+ include/objbase.h     |  1 +
+ 3 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/ole32/compobj.c b/dlls/ole32/compobj.c
+index 7dd10a7..93e1b36 100644
+--- a/dlls/ole32/compobj.c
++++ b/dlls/ole32/compobj.c
+@@ -5074,6 +5074,26 @@ HRESULT WINAPI CoGetApartmentType(APTTYPE *type, APTTYPEQUALIFIER *qualifier)
+     return info->apt ? S_OK : CO_E_NOTINITIALIZED;
+ }
+ 
++/***********************************************************************
++ *           CoRegisterSurrogate [OLE32.@]
++ */
++HRESULT WINAPI CoRegisterSurrogate(LPSURROGATE surrogate)
++{
++    FIXME("(%p): stub\n", surrogate);
++
++    return S_OK;
++}
++
++/***********************************************************************
++ *           CoRegisterSurrogateEx [OLE32.@]
++ */
++HRESULT WINAPI CoRegisterSurrogateEx (REFGUID guid, void *reserved)
++{
++    FIXME("(%s %p): stub\n", debugstr_guid(guid), reserved);
++
++    return S_OK;
++}
++
+ typedef struct {
+     IGlobalOptions IGlobalOptions_iface;
+     LONG ref;
+diff --git a/dlls/ole32/ole32.spec b/dlls/ole32/ole32.spec
+index eab8664..58bdd22 100644
+--- a/dlls/ole32/ole32.spec
++++ b/dlls/ole32/ole32.spec
+@@ -66,8 +66,8 @@
+ @ stdcall CoRegisterMallocSpy (ptr)
+ @ stdcall CoRegisterMessageFilter(ptr ptr)
+ @ stdcall CoRegisterPSClsid(ptr ptr)
+-@ stub CoRegisterSurrogate
+-@ stub CoRegisterSurrogateEx
++@ stdcall CoRegisterSurrogate(ptr)
++@ stdcall CoRegisterSurrogateEx(ptr ptr)
+ @ stdcall CoReleaseMarshalData(ptr)
+ @ stdcall CoReleaseServerProcess()
+ @ stdcall CoResumeClassObjects()
+diff --git a/include/objbase.h b/include/objbase.h
+index 875f0e1..8f89389 100644
+--- a/include/objbase.h
++++ b/include/objbase.h
+@@ -331,6 +331,7 @@ HRESULT WINAPI CoRevokeClassObject(DWORD dwRegister);
+ HRESULT WINAPI CoGetPSClsid(REFIID riid,CLSID *pclsid);
+ HRESULT WINAPI CoRegisterPSClsid(REFIID riid, REFCLSID rclsid);
+ HRESULT WINAPI CoRegisterSurrogate(LPSURROGATE pSurrogate);
++HRESULT WINAPI CoRegisterSurrogateEx(REFGUID guid, void *reserved);
+ HRESULT WINAPI CoSuspendClassObjects(void);
+ HRESULT WINAPI CoResumeClassObjects(void);
+ ULONG WINAPI CoAddRefServerProcess(void);
+-- 
+1.9.1
+
