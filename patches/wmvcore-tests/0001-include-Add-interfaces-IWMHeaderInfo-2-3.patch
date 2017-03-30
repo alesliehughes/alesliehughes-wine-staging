@@ -1,7 +1,9 @@
-From abc1c59736aefb933dad6958517e0d670ddc93d8 Mon Sep 17 00:00:00 2001
+From 7e880d1c6e286537b8bacacec7ed9a5ce40d9966 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 14 Mar 2017 15:50:28 +1100
 Subject: [PATCH 1/2] include: Add interfaces IWMHeaderInfo/2/3
+
+v2 - Fixed [out] paramter - Thanks Andrew.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 158 insertions(+)
 
 diff --git a/include/wmsdkidl.idl b/include/wmsdkidl.idl
-index 0606be1..4d4a16d 100644
+index 0606be1..5ce849f 100644
 --- a/include/wmsdkidl.idl
 +++ b/include/wmsdkidl.idl
 @@ -183,6 +183,13 @@ typedef enum tagWMT_OFFSET_FORMAT
@@ -133,7 +135,7 @@ index 0606be1..4d4a16d 100644
 +{
 +    HRESULT GetAttributeCountEx(
 +        [in] WORD stream_num,
-+        [out] WORD attributes );
++        [out] WORD *attributes );
 +
 +    HRESULT GetAttributeIndices(
 +        [in] WORD stream_num,
