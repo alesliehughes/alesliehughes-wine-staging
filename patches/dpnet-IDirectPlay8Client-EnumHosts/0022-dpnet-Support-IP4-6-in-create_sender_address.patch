@@ -1,0 +1,57 @@
+From 424809cf97aa04ebc2a6137b64aeb0830ba51d94 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 Jan 2017 14:06:48 +1100
+Subject: [PATCH 22/42] dpnet: Support IP4/6 in create_sender_address
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 5d56508..6c9ec27 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -435,7 +435,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+     return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
+ }
+ 
+-static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
++static IDirectPlay8Address *create_sender_address(SOCKADDR_STORAGE *addr)
+ {
+     IDirectPlay8Address *sender = NULL;
+     char ip[INET6_ADDRSTRLEN] = {0};
+@@ -446,9 +446,18 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
+     if(FAILED(hr))
+         return sender;
+ 
+-    inet_ntop(addr->sin6_family, &addr->sin6_addr, ip, sizeof(ip));
+-    port = ntohs(addr->sin6_port);
+-    TRACE("Server IP address %s(%d)\n", ip, port);
++    if(addr->ss_family == AF_INET6)
++    {
++        inet_ntop(addr->ss_family, &(((struct sockaddr_in6 *)addr)->sin6_addr), ip, sizeof(ip));
++         port = ntohs( ((struct sockaddr_in6 *)addr)->sin6_port);
++    }
++    else
++    {
++        inet_ntop(addr->ss_family, &(((struct sockaddr_in *)addr)->sin_addr), ip, sizeof(ip));
++         port = ntohs( ((struct sockaddr_in *)addr)->sin_port);
++    }
++
++    TRACE("Server IP address %s port (%d)\n", ip, port);
+ 
+     if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip)+1, DPNA_DATATYPE_STRING_ANSI)))
+     {
+@@ -508,7 +517,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+     char buffer[1024];
+     int buflen = sizeof(buffer);
+     DWORD starttime = 0;
+-    struct sockaddr_in6 from;
++    SOCKADDR_STORAGE from;
+     int fromlen = sizeof(from);
+     int received = 0;
+     HRESULT hr = DPN_OK;
+-- 
+1.9.1
+

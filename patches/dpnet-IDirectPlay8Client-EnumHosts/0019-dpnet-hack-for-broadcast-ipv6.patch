@@ -1,0 +1,145 @@
+From 2267d77ddb86d05f800fcfad441f85969da73be0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 3 Jan 2017 14:09:06 +1100
+Subject: [PATCH 19/42] dpnet: hack for broadcast ipv6
+
+---
+ dlls/dpnet/client.c | 41 +++++++++++++++++++++++++++--------------
+ 1 file changed, 27 insertions(+), 14 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index f6048e7..14244bc 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -63,11 +63,12 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+ SOCKET find_free_socket(void)
+ {
+     SOCKET sock;
+-    struct sockaddr_in addr;
++    //struct sockaddr_in addr;
++    struct sockaddr_in6 addr;
+     ULONG value;
+     int port = 2302;    /* Native IDirectPlay8Client likes this port for the client. */
+ 
+-    sock = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
++    sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+     if(sock == INVALID_SOCKET)
+     {
+         ERR("Cannot create socket.\n");
+@@ -75,9 +76,12 @@ SOCKET find_free_socket(void)
+     }
+ 
+     memset(&addr, 0, sizeof(addr));
+-    addr.sin_family = AF_INET;
++    /*addr.sin_family = AF_INET;
+     addr.sin_port = htons(port);
+     addr.sin_addr.s_addr = htonl(INADDR_ANY);
++    */
++    addr.sin6_family = AF_INET6;
++    addr.sin6_port = htons (2302);
+ 
+     value = 1;
+     setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char *)&value, sizeof(value));
+@@ -90,7 +94,8 @@ SOCKET find_free_socket(void)
+            return sock;
+        }
+        if(WSAGetLastError() == WSAEADDRINUSE)
+-           addr.sin_port = htons(++port);
++           //addr.sin_port = htons(++port);
++           addr.sin6_port = htons(++port);
+        else
+            break;
+     }
+@@ -430,7 +435,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+     return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
+ }
+ 
+-static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
++static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
+ {
+     IDirectPlay8Address *sender = NULL;
+     char ip[INET6_ADDRSTRLEN] = {0};
+@@ -441,9 +446,9 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+     if(FAILED(hr))
+         return sender;
+ 
+-    inet_ntop(addr->sin_family, &addr->sin_addr, ip, sizeof(ip));
+-    port = ntohs(addr->sin_port);
+-    TRACE("Server IP address %s:%d\n", ip, port);
++    inet_ntop(addr->sin6_family, &addr->sin6_addr, ip, sizeof(ip));
++    port = ntohs(addr->sin6_port);
++    TRACE("Server IP address %s(%d)\n", ip, port);
+ 
+     if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip)+1, DPNA_DATATYPE_STRING_ANSI)))
+     {
+@@ -461,10 +466,9 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+     return sender;
+ }
+ 
+-static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWORD data_size, struct sockaddr_in *from)
++static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWORD data_size, void *addr, size_t addr_size)
+ {
+     char *packet;
+-
+     struct ENUM_QUERY_GUID *query;
+     static DWORD payloadvalue = 0;
+     BOOL has_guid = !IsEqualGUID(&application, &IID_NULL);
+@@ -489,7 +493,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+     if(data_size)
+         memcpy( packet + offset, data, data_size);
+ 
+-    err = sendto(sock, (void *)packet, size, 0, (struct sockaddr *)from, sizeof(struct sockaddr_in));
++    err = sendto(sock, (void *)packet, size, 0, (struct sockaddr *)addr, addr_size);
+     if(err == -1)
+         ERR("Sendto failed (%d).\n", WSAGetLastError());
+ 
+@@ -504,10 +508,16 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+     char buffer[1024];
+     int buflen = sizeof(buffer);
+     DWORD starttime = 0;
+-    struct sockaddr_in from;
++    struct sockaddr_in6 from;
+     int fromlen = sizeof(from);
+     int received = 0;
+     HRESULT hr = DPN_OK;
++    struct sockaddr_in6 addr;
++
++    memset (&addr, 0, sizeof(addr));
++    addr.sin6_family = AF_INET6;
++    addr.sin6_port = htons (DPNA_DPNSVR_PORT);
++    inet_pton(AF_INET6, "ff02::130", &addr.sin6_addr);
+ 
+     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+ 
+@@ -526,7 +536,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+         {
+             TRACE("Sending Request.\n");
+ 
+-            if(send_packet_enum_query(sock, application, NULL, 0, &host) == -1)
++            if(send_packet_enum_query(sock, application, NULL, 0, &addr, sizeof(struct sockaddr_in6) ) == -1)
+                 break;
+ 
+             starttime = GetTickCount();
+@@ -555,7 +565,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+                     {
+                         struct ENUM_QUERY_RESPONSE *data = (struct ENUM_QUERY_RESPONSE *)header;
+ 
+-                        TRACE("PACKET_ENUM_RESPONSE.\n");
++                        TRACE("PACKET_ENUM_RESPONSE (%d)\n", received);
+ 
+                         if(received <= sizeof(struct ENUM_QUERY_RESPONSE))
+                         {
+@@ -581,7 +591,10 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+                              */
+                             sender = create_sender_address(&from);
+                             if(!sender)
++                            {
++                                ERR("Couldnt create sender\n");
+                                 return;
++                            }
+ 
+                             response.pAddressSender          = sender;
+                             response.pApplicationDescription = &desc;
+-- 
+1.9.1
+

@@ -1,0 +1,86 @@
+From aa43e0aec4a81b86f2415b8e7daef9a01d16ec37 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 13 Dec 2016 12:36:29 +1100
+Subject: [PATCH 13/42] dpnet: Handle PACKET_CONTROL_END_STREAM message
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 47 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 29f8264..4593ddf 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -237,6 +237,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
+     return err;
+ }
+ 
++static int dframe_packet_sack_ack(SOCKET sock, struct sockaddr_in *addr, int nseq, int nrcv)
++{
++    struct SACK_PACKET sack;
++    int err;
++
++    sack.command = PACKET_COMMAND_CFRAME;
++    sack.opcode  = FRAME_EXOPCODE_SACK;
++    sack.flags   = SACK_FLAGS_RESPONSE;
++    sack.retry   = FALSE;
++    sack.nseq    = nseq;
++    sack.nrcv    = nrcv;
++    sack.padding = 0;
++    sack.timestamp = GetTickCount();
++
++    err = sendto(sock, (void *)&sack, sizeof(sack), 0, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
++    if(err == -1)
++        ERR("Sendto failed (%d).\n", WSAGetLastError());
++    else
++        FIXME("sack sent %d\n", err);
++
++    return err;
++}
++
+ /* 2.2.1.2 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX */
+ static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, const DPN_APPLICATION_DESC * const app_desc,
+                             WCHAR *name, struct sockaddr_in *addr)
+@@ -841,8 +864,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+     DWORD buflen;
+     struct sockaddr_in from;
+     int fromlen = sizeof(from);
++    BOOL connected = TRUE;
+ 
+-    while(hr == DPN_OK)
++    while(hr == DPN_OK && connected)
+     {
+         if(cancelevent)
+         {
+@@ -899,6 +923,27 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+                                 else
+                                     FIXME("sack sent %d\n", err);
+                             }
++                            else if(packet->control == PACKET_CONTROL_END_STREAM)
++                            {
++                                DPNMSG_TERMINATE_SESSION term;
++
++                                FIXME("PACKET_CONTROL_END_STREAM\n");
++
++                                dframe_packet_sack_ack(sock, serveraddr, packet->seq, packet->nseq);
++
++                                term.dwSize = sizeof(DPNMSG_TERMINATE_SESSION);
++                                term.hResultCode = S_OK;
++                                term.pvTerminateData = NULL;
++                                term.dwTerminateDataSize = 0;
++
++                                hr = msghandler(NULL, DPN_MSGID_TERMINATE_SESSION, &term);
++                                if(FAILED(hr))
++                                {
++                                    ERR("Message Handle for DPN_MSGID_TERMINATE_SESSION failed (0x%08x).\n", hr);
++                                }
++
++                                connected = FALSE;
++                            }
+                             else
+                             {
+                                 FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x, type %08x\n", packet->command, packet->control, packet->seq, packet->nseq, dframe->type);
+-- 
+1.9.1
+

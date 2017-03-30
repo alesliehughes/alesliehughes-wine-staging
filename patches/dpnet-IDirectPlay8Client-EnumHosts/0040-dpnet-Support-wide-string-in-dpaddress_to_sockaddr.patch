@@ -1,0 +1,56 @@
+From 86525fa3b21261c1fb4afb2139faf7862a61b485 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 23 Feb 2017 20:43:08 +1100
+Subject: [PATCH 40/42] dpnet: Support wide string in dpaddress_to_sockaddr
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index cf1304d..2cd50c1 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -110,6 +110,20 @@ SOCKET find_free_socket(void)
+     return sock;
+ }
+ 
++static inline char *heap_strdupWtoA(LPCWSTR str)
++{
++    char *ret = NULL;
++
++    if(str) {
++        DWORD size = WideCharToMultiByte(CP_ACP, 0, str, -1, NULL, 0, NULL, NULL);
++        ret = heap_alloc(size);
++        if(ret)
++            WideCharToMultiByte(CP_ACP, 0, str, -1, ret, size, NULL, NULL);
++    }
++
++    return ret;
++}
++
+ BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
+ {
+     DWORD size, type, port = DPNA_DPNSVR_PORT;
+@@ -150,7 +164,16 @@ BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
+             return FALSE;
+         }
+ 
+-        if(type != DPNA_DATATYPE_STRING_ANSI)
++        if(type == DPNA_DATATYPE_STRING)
++        {
++            char *buffer2 = heap_strdupWtoA( (WCHAR*)buffer);
++            heap_free(buffer);
++
++            TRACE("Convert hostname to ascii\n");
++
++            buffer = buffer2;
++        }
++        else if(type != DPNA_DATATYPE_STRING_ANSI)
+             FIXME("Type currently not supported (%d)\n", type);
+     }
+     else if(hr != DPNERR_DOESNOTEXIST)
+-- 
+1.9.1
+

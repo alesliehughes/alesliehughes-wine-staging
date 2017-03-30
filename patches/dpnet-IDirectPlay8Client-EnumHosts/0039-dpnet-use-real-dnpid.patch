@@ -1,0 +1,58 @@
+From 0935a2aef4658195cc1f07bb5d6d71c0328b62bb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 19 Feb 2017 11:14:33 +1100
+Subject: [PATCH 39/42] dpnet: use real dnpid
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dpnet/client.c | 5 ++++-
+ dlls/dpnet/peer.c   | 3 ++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index 93d0339..cf1304d 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -47,6 +47,8 @@ typedef struct IDirectPlay8LobbyClientImpl
+     void *usercontext;
+ } IDirectPlay8LobbyClientImpl;
+ 
++DPNID players[32];
++
+ static inline IDirectPlay8LobbyClientImpl *impl_from_IDirectPlay8LobbyClient(IDirectPlay8LobbyClient *iface)
+ {
+     return CONTAINING_RECORD(iface, IDirectPlay8LobbyClientImpl, IDirectPlay8LobbyClient_iface);
+@@ -935,7 +937,8 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+                             struct DN_NAMETABLE_ENTRY_INFO *entry = (struct DN_NAMETABLE_ENTRY_INFO*)(((char*)info) + sizeof(struct DN_SEND_CONNECT_INFO) +
+                                             (sizeof(struct DN_NAMETABLE_ENTRY_INFO) * i));
+                             FIXME("dpnid 0x%08x, flags 0x%08x, name %s\n", entry->dpnid, entry->flags,
+-                                debugstr_an( ((char*)&dframe->type) + entry->name_offset, entry->name_size) );
++                                debugstr_wn( (WCHAR*)(((char*)&info->reply_offset) + entry->name_offset/sizeof(WCHAR)), entry->name_size) );
++                            players[i] = entry->dpnid;
+                         }
+ 
+                         if(dframe_packet_session_ack(sock, serveraddr, addrsize, packet->nseq) == -1)
+diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
+index e25487c..45e1670 100644
+--- a/dlls/dpnet/peer.c
++++ b/dlls/dpnet/peer.c
+@@ -504,6 +504,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetGroupInfo(IDirectPlay8Peer *iface,
+     return DPNERR_GENERIC;
+ }
+ 
++extern DPNID players[32];
+ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumPlayersAndGroups(IDirectPlay8Peer *iface,
+         DPNID * const prgdpnid, DWORD * const pcdpnid, const DWORD dwFlags)
+ {
+@@ -516,7 +517,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumPlayersAndGroups(IDirectPlay8Peer
+ 
+         for(; i < *pcdpnid; i++)
+         {
+-            prgdpnid[i] = 0; /* FIXME */
++            prgdpnid[i] = players[i]; /* FIXME */
+         }
+ 
+     }
+-- 
+1.9.1
+

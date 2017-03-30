@@ -1,7 +1,7 @@
-From 8d8281a5fd1ed784cb4dc8eed18e8f37aaa1c1be Mon Sep 17 00:00:00 2001
+From 4cbf1aeda80456daa7a73746f762eea9a2c2aa3f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:59:01 +1100
-Subject: [PATCH 02/43] dpnet: Implement IDirectPlay8Client Enumhost when
+Subject: [PATCH 02/42] dpnet: Implement IDirectPlay8Client Enumhost when
  called synchronously
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -323,7 +323,7 @@ index a8050c5..b227e28 100644
      init_dpn_sp_caps(&client->spcaps);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 7b6de4a..1712bba 100644
+index 44ff289d..6531915 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
 @@ -27,10 +27,12 @@
