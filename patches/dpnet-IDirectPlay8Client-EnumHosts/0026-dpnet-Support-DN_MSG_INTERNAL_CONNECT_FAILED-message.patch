@@ -1,7 +1,7 @@
-From 433e557ebf42b41770463e4de4e9d5357d053589 Mon Sep 17 00:00:00 2001
+From fb9112a9cdc9ea3db2a97b124ed7468f09b0568e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 12:47:47 +1100
-Subject: [PATCH 26/42] dpnet: Support DN_MSG_INTERNAL_CONNECT_FAILED message
+Subject: [PATCH 26/43] dpnet: Support DN_MSG_INTERNAL_CONNECT_FAILED message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

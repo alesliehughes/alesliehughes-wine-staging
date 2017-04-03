@@ -1,7 +1,7 @@
-From f715448236773cb449edae9272078687344a3fa9 Mon Sep 17 00:00:00 2001
+From 05be8a0699b606d305180a5ac64053880805eef3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Jan 2017 09:38:04 +1100
-Subject: [PATCH 25/42] dpnet: Send connect data when sending
+Subject: [PATCH 25/43] dpnet: Send connect data when sending
  DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

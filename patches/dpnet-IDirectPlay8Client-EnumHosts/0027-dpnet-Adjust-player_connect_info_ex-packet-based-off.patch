@@ -1,7 +1,7 @@
-From 736891aa62388cbcc1008289a2aa9665a5ebf2cd Mon Sep 17 00:00:00 2001
+From 5e8bfb9f7ff26a9f84ce3b574cb1ad0f15855816 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 13:40:04 +1100
-Subject: [PATCH 27/42] dpnet: Adjust player_connect_info_ex packet based off
+Subject: [PATCH 27/43] dpnet: Adjust player_connect_info_ex packet based off
  being client/peer
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

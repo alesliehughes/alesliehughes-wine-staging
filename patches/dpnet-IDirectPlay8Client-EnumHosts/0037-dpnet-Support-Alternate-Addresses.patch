@@ -1,7 +1,7 @@
-From a3e02ace78ef4fd934ad51b485f768fb8f354e54 Mon Sep 17 00:00:00 2001
+From d4d61ea2501145572918bd67e41c2d062092d8c5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Feb 2017 12:36:51 +1100
-Subject: [PATCH 37/42] dpnet: Support Alternate Addresses
+Subject: [PATCH 37/43] dpnet: Support Alternate Addresses
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

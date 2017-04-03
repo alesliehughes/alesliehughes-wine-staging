@@ -1,7 +1,7 @@
-From c54e405c7cc012b80a7a7727207a8d7512b0a3d0 Mon Sep 17 00:00:00 2001
+From 24e8f7e7c09eb1bf78b2329e32bf0bf186ec4203 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 16 Feb 2017 09:56:57 +1100
-Subject: [PATCH 18/42] dpnet: Implement IDirectPlay8Peer EnumHosts
+Subject: [PATCH 18/43] dpnet: Implement IDirectPlay8Peer EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

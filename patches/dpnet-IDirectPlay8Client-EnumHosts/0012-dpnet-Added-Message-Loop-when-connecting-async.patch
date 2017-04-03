@@ -1,7 +1,7 @@
-From fea85dea0282d03239029a432034920cc185e005 Mon Sep 17 00:00:00 2001
+From 0728cbedd412da0d0e15aa8c12480faf52b2e745 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:29:09 +1100
-Subject: [PATCH 12/42] dpnet: Added Message Loop when connecting async
+Subject: [PATCH 12/43] dpnet: Added Message Loop when connecting async
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

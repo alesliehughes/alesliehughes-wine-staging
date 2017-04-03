@@ -1,7 +1,7 @@
-From 9f24b93c222c8dc9fb504f32de9981aca53672ed Mon Sep 17 00:00:00 2001
+From e8f7466dd3486ba52c93286af41ece9a79fcd226 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:17:02 +1100
-Subject: [PATCH 11/42] dpnet: Store a session key for connection.
+Subject: [PATCH 11/43] dpnet: Store a session key for connection.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

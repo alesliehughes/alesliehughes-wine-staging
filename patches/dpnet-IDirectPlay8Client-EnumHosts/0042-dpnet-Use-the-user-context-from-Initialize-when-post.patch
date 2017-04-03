@@ -1,7 +1,7 @@
-From 9e496bf635faf4a36535697c4f8300d099070ef5 Mon Sep 17 00:00:00 2001
+From 85b94afe190d62c01c71d2936d5381e66c153b53 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 27 Mar 2017 11:11:07 +1100
-Subject: [PATCH 42/42] dpnet: Use the user context from Initialize when
+Subject: [PATCH 42/43] dpnet: Use the user context from Initialize when
  posting DPN_MSGID_ENUM_HOSTS_RESPONSE
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

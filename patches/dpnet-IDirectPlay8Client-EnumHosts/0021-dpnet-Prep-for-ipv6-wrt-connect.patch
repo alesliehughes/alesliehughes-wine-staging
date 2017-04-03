@@ -1,7 +1,7 @@
-From 519063aee57b290357c5ece42a794253a4a31e40 Mon Sep 17 00:00:00 2001
+From a3d1c08d403795eb9a30e0005514f8fbd1459078 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:49:18 +1100
-Subject: [PATCH 21/42] dpnet: Prep for ipv6 wrt connect
+Subject: [PATCH 21/43] dpnet: Prep for ipv6 wrt connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

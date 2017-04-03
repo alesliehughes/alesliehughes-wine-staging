@@ -1,7 +1,7 @@
-From 424809cf97aa04ebc2a6137b64aeb0830ba51d94 Mon Sep 17 00:00:00 2001
+From 2814cf10a49243816f794323d0d09c793c86988f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 14:06:48 +1100
-Subject: [PATCH 22/42] dpnet: Support IP4/6 in create_sender_address
+Subject: [PATCH 22/43] dpnet: Support IP4/6 in create_sender_address
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

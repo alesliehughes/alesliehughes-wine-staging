@@ -1,7 +1,7 @@
-From 25db14fb77ba8c0bcb38c24a592ac36ec097550e Mon Sep 17 00:00:00 2001
+From 71024c9340c8c2ee10e905122f07fb1ce332d0ea Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 18 Feb 2017 21:21:31 +1100
-Subject: [PATCH 38/42] dpnet: temp3 - Update trace
+Subject: [PATCH 38/43] dpnet: temp3 - Update trace
 
 ---
  dlls/dpnet/client.c | 2 +-

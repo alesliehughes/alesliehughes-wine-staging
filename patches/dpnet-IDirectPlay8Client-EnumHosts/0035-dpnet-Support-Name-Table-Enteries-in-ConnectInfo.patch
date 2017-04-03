@@ -1,7 +1,7 @@
-From e062f0a3dbc71161adf839e59710ddd1642bbb1f Mon Sep 17 00:00:00 2001
+From 66e71ab93b9c68f7ebf6a7fa1057219081f8f4e1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Feb 2017 09:06:53 +1100
-Subject: [PATCH 35/42] dpnet: Support Name Table Enteries in ConnectInfo
+Subject: [PATCH 35/43] dpnet: Support Name Table Enteries in ConnectInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

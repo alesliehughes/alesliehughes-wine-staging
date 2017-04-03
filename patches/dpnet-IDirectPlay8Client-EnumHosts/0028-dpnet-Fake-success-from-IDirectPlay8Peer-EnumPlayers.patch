@@ -1,7 +1,7 @@
-From c15a47e9686cdf27174821ce133cbc09d049dfb3 Mon Sep 17 00:00:00 2001
+From 01adaefa9c3a358b507525609b677ab93e923557 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 16:25:54 +1100
-Subject: [PATCH 28/42] dpnet: Fake success from IDirectPlay8Peer
+Subject: [PATCH 28/43] dpnet: Fake success from IDirectPlay8Peer
  EnumPlayersAndGroups
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

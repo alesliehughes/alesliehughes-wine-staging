@@ -1,7 +1,7 @@
-From 8aa33ca183a1f13c58432bd195a7fa79297c7bc9 Mon Sep 17 00:00:00 2001
+From f86b0c3713503c7b13ac2d95906972fa80086627 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 20:08:15 +1100
-Subject: [PATCH 29/42] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
+Subject: [PATCH 29/43] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
  for now
 
 (Was causing the connected event to occur)

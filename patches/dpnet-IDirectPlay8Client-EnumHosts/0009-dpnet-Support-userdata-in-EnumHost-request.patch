@@ -1,7 +1,7 @@
-From 5a359ba0bed3658a8763c63223b54637a1f0bbf5 Mon Sep 17 00:00:00 2001
+From 0c3f4f0956828fefe23d6faaf5b9ea9a5a2b7fbe Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 9 Dec 2016 14:55:29 +1100
-Subject: [PATCH 09/42] dpnet: Support userdata in EnumHost request
+Subject: [PATCH 09/43] dpnet: Support userdata in EnumHost request
 
 ---
  dlls/dpnet/client.c   | 36 +++++++++++++++++++++++++++---------

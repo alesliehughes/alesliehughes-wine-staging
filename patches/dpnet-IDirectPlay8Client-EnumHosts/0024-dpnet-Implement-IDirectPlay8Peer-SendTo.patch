@@ -1,7 +1,7 @@
-From ae34bea5a252a797bb15b34eb98d642fd6437401 Mon Sep 17 00:00:00 2001
+From 798def5275d678e9b6ff7573b61649727ac7f7d8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 10:05:11 +1100
-Subject: [PATCH 24/42] dpnet: Implement IDirectPlay8Peer SendTo
+Subject: [PATCH 24/43] dpnet: Implement IDirectPlay8Peer SendTo
 
 ---
  dlls/dpnet/peer.c | 36 +++++++++++++++++++++++++++++++++++-

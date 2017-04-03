@@ -1,7 +1,7 @@
-From ebf6988d4dfbff03f2762527b5db0b8b78206f9d Mon Sep 17 00:00:00 2001
+From afe91c080e971084d045aec573797c8134e8780e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 21 Jan 2017 11:09:45 +1100
-Subject: [PATCH 33/42] dpnet: Return S_OK from IDirectPlay8Peer ReturnBuffer
+Subject: [PATCH 33/43] dpnet: Return S_OK from IDirectPlay8Peer ReturnBuffer
 
 When DPNSUCCESS_PENDING is received from the message handler
 we should wait until the application has finished with it.

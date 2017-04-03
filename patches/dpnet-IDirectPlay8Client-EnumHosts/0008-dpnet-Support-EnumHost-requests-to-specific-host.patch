@@ -1,7 +1,7 @@
-From b2d22b8cd21c7b66b773ec2c7386d7ac857bbb32 Mon Sep 17 00:00:00 2001
+From fc4480318d8edf5b49c0a4540670e701b20cce4e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 9 Dec 2016 11:48:37 +1100
-Subject: [PATCH 08/42] dpnet: Support EnumHost requests to specific host
+Subject: [PATCH 08/43] dpnet: Support EnumHost requests to specific host
 
 ---
  dlls/dpnet/client.c | 17 +++++++++--------

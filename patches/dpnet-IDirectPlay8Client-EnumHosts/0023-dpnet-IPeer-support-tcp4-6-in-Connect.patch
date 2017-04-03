@@ -1,7 +1,7 @@
-From a6ad9396d70b6e8b167b4c2d2def114395374a85 Mon Sep 17 00:00:00 2001
+From 8627666a4520d928dd5a20f8cdab1435762fad1f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 09:42:29 +1100
-Subject: [PATCH 23/42] dpnet: IPeer support tcp4/6 in Connect
+Subject: [PATCH 23/43] dpnet: IPeer support tcp4/6 in Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

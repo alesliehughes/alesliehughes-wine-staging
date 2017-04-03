@@ -1,7 +1,7 @@
-From 67bf844331713550e3ff296e9601cd1c9a703a83 Mon Sep 17 00:00:00 2001
+From d2573bc231562e3fe166e529a81a1f0bf4a5bed0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 25 Mar 2017 19:01:09 +1100
-Subject: [PATCH 41/42] dpnet: Changes to support Proper Name Resolve - These
+Subject: [PATCH 41/43] dpnet: Changes to support Proper Name Resolve - These
  need to be bad ported for the initial EnumHost patch
 
 ---
