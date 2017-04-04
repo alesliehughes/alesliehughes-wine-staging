@@ -1,0 +1,94 @@
+From 1d6f1883e18e6e14859209d8d010d5cfcd5aacca Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 4 Apr 2017 16:29:35 +1000
+Subject: [PATCH] winhttp/tests: Added multi Authenticate header test
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/winhttp/tests/winhttp.c | 49 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+
+diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
+index d4406af..5345bf1 100644
+--- a/dlls/winhttp/tests/winhttp.c
++++ b/dlls/winhttp/tests/winhttp.c
+@@ -2049,6 +2049,16 @@ static const char headmsg[] =
+ "Content-Length: 100\r\n"
+ "\r\n";
+ 
++static const char multiauth[] =
++"HTTP/1.1 401 Unauthorized\r\n"
++"Server: winetest\r\n"
++"WWW-Authenticate: Bearer\r\n"
++"WWW-Authenticate: Basic realm=\"placebo\"\r\n"
++"WWW-Authenticate: NTLM\r\n"
++"Content-Length: 10\r\n"
++"Content-Type: text/plain\r\n"
++"\r\n";
++
+ static const char unauthorized[] = "Unauthorized";
+ static const char hello_world[] = "Hello World";
+ 
+@@ -2158,6 +2168,10 @@ static DWORD CALLBACK server_thread(LPVOID param)
+             else
+                 send(c, notokmsg, sizeof(notokmsg) - 1, 0);
+         }
++        if (strstr(buffer, "GET /multiauth"))
++        {
++            send(c, multiauth, sizeof multiauth - 1, 0);
++        }
+         if (strstr(buffer, "GET /cookie4"))
+         {
+             send(c, cookiemsg2, sizeof(cookiemsg2) - 1, 0);
+@@ -2504,6 +2518,40 @@ static void test_basic_authentication(int port)
+     WinHttpCloseHandle(ses);
+ }
+ 
++static void test_multi_authentication(int port)
++{
++    static const WCHAR multiauthW[] = {'/','m','u','l','t','i','a','u','t','h',0};
++    static const WCHAR getW[] = {'G','E','T',0};
++    HINTERNET ses, con, req;
++    DWORD supported, first, target = 8;
++    BOOL ret;
++
++    ses = WinHttpOpen(test_useragent, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, 0);
++    ok(ses != NULL, "failed to open session %u\n", GetLastError());
++
++    con = WinHttpConnect(ses, localhostW, port, 0);
++    ok(con != NULL, "failed to open a connection %u\n", GetLastError());
++
++    req = WinHttpOpenRequest(con, getW, multiauthW, NULL, NULL, NULL, 0);
++    ok(req != NULL, "failed to open a request %u\n", GetLastError());
++
++    ret = WinHttpSendRequest(req, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
++                             WINHTTP_NO_REQUEST_DATA,0, 0, 0 );
++    ok(ret, "expected success\n");
++
++    ret = WinHttpReceiveResponse(req, NULL);
++    ok(ret, "expected success\n");
++
++    ret = WinHttpQueryAuthSchemes(req, &supported, &first, &target);
++    todo_wine ok(ret, "expected success\n");
++    todo_wine ok(supported == (WINHTTP_AUTH_SCHEME_BASIC | WINHTTP_AUTH_SCHEME_NTLM), "got %x\n", supported);
++    todo_wine ok(target == WINHTTP_AUTH_TARGET_SERVER, "got %x\n", target);
++
++    WinHttpCloseHandle(req);
++    WinHttpCloseHandle(con);
++    WinHttpCloseHandle(ses);
++}
++
+ static void test_no_headers(int port)
+ {
+     static const WCHAR no_headersW[] = {'/','n','o','_','h','e','a','d','e','r','s',0};
+@@ -4303,6 +4351,7 @@ START_TEST (winhttp)
+     test_head_request(si.port);
+     test_not_modified(si.port);
+     test_basic_authentication(si.port);
++    test_multi_authentication(si.port);
+     test_bad_header(si.port);
+     test_multiple_reads(si.port);
+     test_cookies(si.port);
+-- 
+1.9.1
+
