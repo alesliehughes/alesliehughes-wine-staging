@@ -1,7 +1,9 @@
-From aaa45f1687b1623ce88ef0a55ec0cde9b7ab7f67 Mon Sep 17 00:00:00 2001
+From 1553e98d1da5df9079bb29ab355097ef4e51f621 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
-Subject: [PATCH] odbccp32: Implement SQLRemoveTranslator/W
+Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveTranslator/W
+
+v2 - Fix trace message.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,7 +12,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 66 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 7b2f020..d95a110 100644
+index 7b2f020bbe..4e00f2a29f 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -1229,20 +1229,75 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
@@ -40,7 +42,7 @@ index 7b2f020..d95a110 100644
 +
 +            size = sizeof(usagecount);
 +            RegGetValueA(hkeydriver, NULL, "UsageCount", RRF_RT_DWORD, &type, &usagecount, &size);
-+            TRACE("Usage count %d\n", count);
++            TRACE("Usage count %d\n", usagecount);
 +            count = usagecount - 1;
 +            if (count)
 +            {
@@ -97,10 +99,10 @@ index 7b2f020..d95a110 100644
  
  BOOL WINAPI SQLSetConfigMode(UWORD wConfigMode)
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index e977e91..036bcf9 100644
+index 7a6e8db3ef..69e2c25c56 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
-@@ -525,13 +525,13 @@ void test_SQLInstallTranslatorEx(void)
+@@ -530,13 +530,13 @@ void test_SQLInstallTranslatorEx(void)
  
      cnt = 100;
      ret = SQLRemoveTranslator("WINE ODBC Translator", &cnt);
@@ -119,5 +121,5 @@ index e977e91..036bcf9 100644
  
  START_TEST(misc)
 -- 
-1.9.1
+2.11.0
 

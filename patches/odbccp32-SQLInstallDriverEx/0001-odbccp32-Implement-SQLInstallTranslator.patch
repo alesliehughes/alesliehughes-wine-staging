@@ -1,18 +1,21 @@
-From ab918e147d5a6a95043172ee33c009f9c4c56360 Mon Sep 17 00:00:00 2001
+From 699628c8c13e5845f5b1b38c96f606fb07a210c7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 17 Mar 2017 09:48:50 +1100
-Subject: [PATCH] odbccp32: Implement SQLInstallTranslator
+Subject: [PATCH 1/2] odbccp32: Implement SQLInstallTranslator
 
 v2 - Correct test to work under XP - Thanks Hans.
+v3 - Correct Long lines.
+   - Removed extra \0
+   - Added size test.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 13 +++++-----
- dlls/odbccp32/tests/misc.c | 62 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 69 insertions(+), 6 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 13 ++++-----
+ dlls/odbccp32/tests/misc.c | 67 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 6a2c484..7b2f020 100644
+index 6a2c484379..7b2f020bbe 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -41,6 +41,7 @@ static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D'
@@ -65,10 +68,10 @@ index 6a2c484..7b2f020 100644
      if (pcbPathOut)
          *pcbPathOut = len;
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index 4fdf584..e977e91 100644
+index 35b9f35033..7a6e8db3ef 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
-@@ -473,6 +473,67 @@ void test_SQLInstallDriverEx(void)
+@@ -473,6 +473,72 @@ static void test_SQLInstallDriverEx(void)
      ok(cnt == 0, "SQLRemoveDriver failed %d\n", cnt);
  }
  
@@ -84,7 +87,8 @@ index 4fdf584..e977e91 100644
 +
 +    GetSystemDirectoryA(syspath, MAX_PATH);
 +
-+    ret = SQLInstallTranslatorEx("WINE ODBC Translator\0Translator=sample.dll\0Setup=sample.dll\0\0", NULL, path, MAX_PATH, &size, ODBC_INSTALL_COMPLETE, NULL);
++    ret = SQLInstallTranslatorEx("WINE ODBC Translator\0Translator=sample.dll\0Setup=sample.dll\0",
++                                 NULL, path, MAX_PATH, &size, ODBC_INSTALL_COMPLETE, NULL);
 +    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
 +    if (sql_ret && error_code == ODBC_ERROR_WRITING_SYSINFO_FAILED)
 +    {
@@ -93,15 +97,19 @@ index 4fdf584..e977e91 100644
 +    }
 +    ok(sql_ret && error_code == SQL_SUCCESS, "SQLInstallDriverEx failed %d, %u\n", sql_ret, error_code);
 +    ok(!strcmp(path, syspath), "invalid path %s\n", path);
++    ok(size == strlen(path), "invalid length %d\n", size);
 +
-+    ret = SQLInstallTranslatorEx("WINE ODBC Translator Path\0Translator=sample.dll\0Setup=sample.dll\0\0", "c:\\temp", path, MAX_PATH, &size, ODBC_INSTALL_COMPLETE, NULL);
++    ret = SQLInstallTranslatorEx("WINE ODBC Translator Path\0Translator=sample.dll\0Setup=sample.dll\0",
++                                 "c:\\temp", path, MAX_PATH, &size, ODBC_INSTALL_COMPLETE, NULL);
 +    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
 +    ok(sql_ret && error_code == SQL_SUCCESS, "SQLInstallTranslatorEx failed %d, %u\n", sql_ret, error_code);
 +    ok(!strcmp(path, "c:\\temp"), "invalid path %s\n", path);
++    ok(size == strlen(path), "invalid length %d\n", size);
 +
 +    if(ret)
 +    {
-+        res = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\ODBC\\ODBCINST.INI\\WINE ODBC Translator", 0, KEY_READ, &hkey);
++        res = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\ODBC\\ODBCINST.INI\\WINE ODBC Translator", 0,
++                            KEY_READ, &hkey);
 +        ok(res == ERROR_SUCCESS, "RegOpenKeyExW failed\n");
 +        if (res == ERROR_SUCCESS)
 +        {
@@ -136,12 +144,12 @@ index 4fdf584..e977e91 100644
  START_TEST(misc)
  {
      test_SQLConfigMode();
-@@ -482,4 +543,5 @@ START_TEST(misc)
+@@ -482,4 +548,5 @@ START_TEST(misc)
      test_SQLGetPrivateProfileString();
      test_SQLGetPrivateProfileStringW();
      test_SQLInstallDriverEx();
 +    test_SQLInstallTranslatorEx();
  }
 -- 
-1.9.1
+2.11.0
 
