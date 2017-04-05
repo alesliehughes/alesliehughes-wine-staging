@@ -1,15 +1,18 @@
-From 1d6f1883e18e6e14859209d8d010d5cfcd5aacca Mon Sep 17 00:00:00 2001
+From 6487703f719200ac791cb6ea6068fa4d53aa84f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 4 Apr 2017 16:29:35 +1000
-Subject: [PATCH] winhttp/tests: Added multi Authenticate header test
+Subject: [v2 PATCH] winhttp/tests: Added multi Authenticate header test
+
+v2 - initial supported, first
+   - Add Test for first.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/winhttp/tests/winhttp.c | 49 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
+ dlls/winhttp/tests/winhttp.c | 50 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
 diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
-index d4406af..5345bf1 100644
+index d4406afb6b..9802297121 100644
 --- a/dlls/winhttp/tests/winhttp.c
 +++ b/dlls/winhttp/tests/winhttp.c
 @@ -2049,6 +2049,16 @@ static const char headmsg[] =
@@ -40,7 +43,7 @@ index d4406af..5345bf1 100644
          if (strstr(buffer, "GET /cookie4"))
          {
              send(c, cookiemsg2, sizeof(cookiemsg2) - 1, 0);
-@@ -2504,6 +2518,40 @@ static void test_basic_authentication(int port)
+@@ -2504,6 +2518,41 @@ static void test_basic_authentication(int port)
      WinHttpCloseHandle(ses);
  }
  
@@ -49,7 +52,7 @@ index d4406af..5345bf1 100644
 +    static const WCHAR multiauthW[] = {'/','m','u','l','t','i','a','u','t','h',0};
 +    static const WCHAR getW[] = {'G','E','T',0};
 +    HINTERNET ses, con, req;
-+    DWORD supported, first, target = 8;
++    DWORD supported = 10, first = 9, target = 8;
 +    BOOL ret;
 +
 +    ses = WinHttpOpen(test_useragent, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, 0);
@@ -72,6 +75,7 @@ index d4406af..5345bf1 100644
 +    todo_wine ok(ret, "expected success\n");
 +    todo_wine ok(supported == (WINHTTP_AUTH_SCHEME_BASIC | WINHTTP_AUTH_SCHEME_NTLM), "got %x\n", supported);
 +    todo_wine ok(target == WINHTTP_AUTH_TARGET_SERVER, "got %x\n", target);
++    todo_wine ok(first == 1, "got %x\n", first);
 +
 +    WinHttpCloseHandle(req);
 +    WinHttpCloseHandle(con);
@@ -81,7 +85,7 @@ index d4406af..5345bf1 100644
  static void test_no_headers(int port)
  {
      static const WCHAR no_headersW[] = {'/','n','o','_','h','e','a','d','e','r','s',0};
-@@ -4303,6 +4351,7 @@ START_TEST (winhttp)
+@@ -4303,6 +4352,7 @@ START_TEST (winhttp)
      test_head_request(si.port);
      test_not_modified(si.port);
      test_basic_authentication(si.port);
@@ -90,5 +94,5 @@ index d4406af..5345bf1 100644
      test_multiple_reads(si.port);
      test_cookies(si.port);
 -- 
-1.9.1
+2.11.0
 
