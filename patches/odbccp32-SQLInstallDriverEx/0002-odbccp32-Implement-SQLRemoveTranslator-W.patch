@@ -1,9 +1,10 @@
-From 1553e98d1da5df9079bb29ab355097ef4e51f621 Mon Sep 17 00:00:00 2001
+From a9ba2b78e56791936a3f083376efc4195b1bb605 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
 Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveTranslator/W
 
-v2 - Fix trace message.
+v3 - Fix trace message.
+v4 - Fixed assignment of usage_count
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -12,7 +13,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 66 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 7b2f020bbe..4e00f2a29f 100644
+index 7b2f020bbe..161f2c2bd2 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -1229,20 +1229,75 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
@@ -74,7 +75,7 @@ index 7b2f020bbe..4e00f2a29f 100644
 +    }
 +
 +    if (usage_count)
-+        *usage_count = 0;
++        *usage_count = usagecount;
 +
 +    return TRUE;
  }

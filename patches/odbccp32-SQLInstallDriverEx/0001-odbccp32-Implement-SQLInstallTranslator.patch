@@ -1,12 +1,13 @@
-From 699628c8c13e5845f5b1b38c96f606fb07a210c7 Mon Sep 17 00:00:00 2001
+From 78bba8de7fa4bb838095ba05c222575e993d1393 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 17 Mar 2017 09:48:50 +1100
-Subject: [PATCH 1/2] odbccp32: Implement SQLInstallTranslator
+Subject: [v4 PATCH 1/2] odbccp32: Implement SQLInstallTranslator
 
 v2 - Correct test to work under XP - Thanks Hans.
 v3 - Correct Long lines.
    - Removed extra \0
    - Added size test.
+v4 - No changes
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
