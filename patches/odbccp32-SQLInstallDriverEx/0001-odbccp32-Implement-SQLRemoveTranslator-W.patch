@@ -1,22 +1,24 @@
-From a9ba2b78e56791936a3f083376efc4195b1bb605 Mon Sep 17 00:00:00 2001
+From 68f653c3935177072151029ef82492c493b61630 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 3 Dec 2015 12:38:29 +1100
-Subject: [PATCH 2/2] odbccp32: Implement SQLRemoveTranslator/W
+Subject: [v5 PATCH] odbccp32: Implement SQLRemoveTranslator/W
 
 v3 - Fix trace message.
 v4 - Fixed assignment of usage_count
+v5 - Return FALSE if item not found
+   - Add test
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 69 +++++++++++++++++++++++++++++++++++++++++-----
- dlls/odbccp32/tests/misc.c |  8 +++---
- 2 files changed, 66 insertions(+), 11 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 78 +++++++++++++++++++++++++++++++++++++++++-----
+ dlls/odbccp32/tests/misc.c | 17 +++++++---
+ 2 files changed, 84 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 7b2f020bbe..161f2c2bd2 100644
+index 7b2f020bbe..773c5d2489 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -1229,20 +1229,75 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
+@@ -1229,20 +1229,84 @@ BOOL WINAPI SQLRemoveDSNFromIni(LPCSTR lpszDSN)
      return FALSE;
  }
  
@@ -25,6 +27,7 @@ index 7b2f020bbe..161f2c2bd2 100644
  {
 +    HKEY hkey;
 +    DWORD usagecount = 1;
++    BOOL ret = TRUE;
 +
      clear_errors();
 -    FIXME("%s %p\n", debugstr_w(lpszTranslator), lpdwUsageCount);
@@ -60,12 +63,20 @@ index 7b2f020bbe..161f2c2bd2 100644
 +        if (!usagecount)
 +        {
 +            if(RegDeleteKeyW(hkey, translator) != ERROR_SUCCESS)
-+                ERR("Failed to delete registry key: %s\n", debugstr_w(translator));
++            {
++                push_error(ODBC_ERROR_COMPONENT_NOT_FOUND, odbc_error_component_not_found);
++                WARN("Failed to delete registry key: %s\n", debugstr_w(translator));
++                ret = FALSE;
++            }
 +
-+            if (RegOpenKeyW(hkey, odbctranslators, &hkeydriver) == ERROR_SUCCESS)
++            if (ret && RegOpenKeyW(hkey, odbctranslators, &hkeydriver) == ERROR_SUCCESS)
 +            {
 +                if(RegDeleteValueW(hkeydriver, translator) != ERROR_SUCCESS)
-+                    ERR("Failed to delete registry value: %s\n", debugstr_w(translator));
++                {
++                    push_error(ODBC_ERROR_COMPONENT_NOT_FOUND, odbc_error_component_not_found);
++                    WARN("Failed to delete registry key: %s\n", debugstr_w(translator));
++                    ret = FALSE;
++                }
 +
 +                RegCloseKey(hkeydriver);
 +            }
@@ -74,10 +85,10 @@ index 7b2f020bbe..161f2c2bd2 100644
 +        RegCloseKey(hkey);
 +    }
 +
-+    if (usage_count)
++    if (ret && usage_count)
 +        *usage_count = usagecount;
 +
-+    return TRUE;
++    return ret;
  }
  
  BOOL WINAPI SQLRemoveTranslator(LPCSTR lpszTranslator, LPDWORD lpdwUsageCount)
@@ -100,10 +111,10 @@ index 7b2f020bbe..161f2c2bd2 100644
  
  BOOL WINAPI SQLSetConfigMode(UWORD wConfigMode)
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index 7a6e8db3ef..69e2c25c56 100644
+index 7a6e8db3ef..ed8e6f1984 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
-@@ -530,13 +530,13 @@ void test_SQLInstallTranslatorEx(void)
+@@ -530,13 +530,22 @@ void test_SQLInstallTranslatorEx(void)
  
      cnt = 100;
      ret = SQLRemoveTranslator("WINE ODBC Translator", &cnt);
@@ -118,6 +129,15 @@ index 7a6e8db3ef..69e2c25c56 100644
 -    todo_wine ok(cnt == 0, "SQLRemoveTranslator failed %d\n", cnt);
 +    ok(ret, "SQLRemoveTranslator failed\n");
 +    ok(cnt == 0, "SQLRemoveTranslator failed %d\n", cnt);
++
++    cnt = 100;
++    ret = SQLRemoveTranslator("WINE ODBC Translator NonExist", &cnt);
++    ok(!ret, "SQLRemoveTranslator succeeded\n");
++    ok(cnt == 100, "SQLRemoveTranslator succeeded %d\n", cnt);
++    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
++    ok(sql_ret && error_code == ODBC_ERROR_COMPONENT_NOT_FOUND,
++        "SQLInstallTranslatorEx failed %d, %u\n", sql_ret, error_code);
++
  }
  
  START_TEST(misc)
