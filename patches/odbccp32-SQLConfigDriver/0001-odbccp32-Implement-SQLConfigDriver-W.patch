@@ -1,4 +1,4 @@
-From 37b3424baa364e56c1df0c6596ca0cff60ca15f4 Mon Sep 17 00:00:00 2001
+From ddf3c6b3b00973f2c6b37945f17a0790c22c746a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 8 Nov 2016 16:26:03 +1100
 Subject: [PATCH] odbccp32: Implement SQLConfigDriver/W
@@ -8,26 +8,27 @@ v2 - Use worker function to load DLL
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 108 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 98 insertions(+), 10 deletions(-)
+ dlls/odbccp32/odbccp32.c | 115 ++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 105 insertions(+), 10 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 7b2f020..e1181f0 100644
+index 773c5d2..041170a 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -62,6 +62,11 @@ static const WCHAR odbc_error_component_not_found[] = {'C','o','m','p','o','n','
+@@ -62,6 +62,12 @@ static const WCHAR odbc_error_component_not_found[] = {'C','o','m','p','o','n','
  static const WCHAR odbc_error_out_of_mem[] = {'O','u','t',' ','o','f',' ','m','e','m','o','r','y',0};
  static const WCHAR odbc_error_invalid_param_sequence[] = {'I','n','v','a','l','i','d',' ','p','a','r','a','m','e','t','e','r',' ','s','e','q','u','e','n','c','e',0};
  static const WCHAR odbc_error_invalid_param_string[] = {'I','n','v','a','l','i','d',' ','p','a','r','a','m','e','t','e','r',' ','s','t','r','i','n','g',0};
 +static const WCHAR odbc_error_invalid_dsn[] = {'I','n','v','a','l','i','d',' ','D','S','N',0};
 +static const WCHAR odbc_error_load_lib_failed[] = {'L','o','a','d',' ','L','i','b','r','a','r','y',' ','F','a','i','l','e','d',0};
++static const WCHAR odbc_error_request_failed[] = {'R','e','q','u','e','s','t',' ','F','a','i','l','e','d',0};
 +
 +static BOOL (WINAPI *pConfigDriverW)(HWND hwnd, WORD request, const WCHAR *driver, const WCHAR *args, const WCHAR *msg, WORD msgmax, WORD *msgout);
 +static BOOL (WINAPI *pConfigDriverA)(HWND hwnd, WORD request, const char *driver, const char *args, const char *msg, WORD msgmax, WORD *msgout);
  
  /* Push an error onto the error stack, taking care of ranges etc. */
  static void push_error(int code, LPCWSTR msg)
-@@ -248,22 +253,105 @@ BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
+@@ -248,22 +254,111 @@ BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
      return TRUE;
  }
  
@@ -102,9 +103,12 @@ index 7b2f020..e1181f0 100644
 +    if(!hmod)
 +        return FALSE;
 +
-+    pConfigDriverW = (void*) GetProcAddress(hmod, "ConfigDriverW");
++    pConfigDriverW = (void*)GetProcAddress(hmod, "ConfigDriverW");
 +    if(pConfigDriverW)
 +        funcret = pConfigDriverW(hwnd, request, driver, args, msg, msgmax, msgout);
++
++    if(!funcret)
++        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
 +
 +    FreeLibrary(hmod);
 +
@@ -133,9 +137,12 @@ index 7b2f020..e1181f0 100644
 +    if(!hmod)
 +        return FALSE;
 +
-+    pConfigDriverA = (void*) GetProcAddress(hmod, "ConfigDriver");
++    pConfigDriverA = (void*)GetProcAddress(hmod, "ConfigDriver");
 +    if(pConfigDriverA)
 +        funcret = pConfigDriverA(hwnd, request, driver, args, msg, msgmax, msgout);
++
++    if(!funcret)
++        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
 +
 +    FreeLibrary(hmod);
 +
