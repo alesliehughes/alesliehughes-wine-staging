@@ -1,29 +1,28 @@
-From a519da437f97989ad76544582c23107dc26f985f Mon Sep 17 00:00:00 2001
+From 7968df81fad758b696f608ee2e8bc4ddf7cba0db Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 3 Aug 2016 10:27:39 +1000
+Date: Fri, 7 Apr 2017 20:06:11 +1000
 Subject: [PATCH] wined3d: Check pointer before use
 
 Need for Speed - The Run
-See Mailing list - Dev for comments about a proper fix.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/wined3d/query.c | 2 +-
+ dlls/wined3d/context.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/dlls/wined3d/query.c b/dlls/wined3d/query.c
-index 97675ad..2101e62 100644
---- a/dlls/wined3d/query.c
-+++ b/dlls/wined3d/query.c
-@@ -537,7 +537,7 @@ static BOOL wined3d_timestamp_query_ops_poll(struct wined3d_query *query)
+diff --git a/dlls/wined3d/context.c b/dlls/wined3d/context.c
+index 7c090d432a..55b4917037 100644
+--- a/dlls/wined3d/context.c
++++ b/dlls/wined3d/context.c
+@@ -3892,7 +3892,7 @@ struct wined3d_context *context_reacquire(const struct wined3d_device *device,
+ {
+     struct wined3d_context *current_context;
  
-     TRACE("query %p.\n", query);
+-    if (context->tid != GetCurrentThreadId())
++    if (context || context->tid != GetCurrentThreadId())
+         return NULL;
  
--    if (tq->context->tid != GetCurrentThreadId())
-+    if (!tq->context || tq->context->tid != GetCurrentThreadId())
-     {
-         FIXME("%p Wrong thread, returning 1.\n", query);
-         tq->timestamp = 1;
+     current_context = context_acquire(device, context->current_rt.texture,
 -- 
-2.8.1
+2.11.0
 
