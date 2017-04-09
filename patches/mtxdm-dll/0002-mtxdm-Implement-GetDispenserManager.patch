@@ -1,4 +1,4 @@
-From 6257f4b0c6e0daab7519e2db0ce3d2a3671e783a Mon Sep 17 00:00:00 2001
+From 900031eb7a25b69f74ea8e56d661aa17b024a322 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Mar 2017 15:26:41 +1100
 Subject: [PATCH 2/2] mtxdm: Implement GetDispenserManager
@@ -7,10 +7,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/mtxdm/Makefile.in  |  2 +-
  dlls/mtxdm/mtxdm.spec   |  2 +-
- dlls/mtxdm/mtxdm_main.c | 11 +++++++++--
+ dlls/mtxdm/mtxdm_main.c | 20 +++++++-------------
  include/Makefile.in     |  1 +
  include/mtxdm.h         | 34 ++++++++++++++++++++++++++++++++++
- 5 files changed, 46 insertions(+), 4 deletions(-)
+ 5 files changed, 44 insertions(+), 15 deletions(-)
  create mode 100644 include/mtxdm.h
 
 diff --git a/dlls/mtxdm/Makefile.in b/dlls/mtxdm/Makefile.in
@@ -32,10 +32,10 @@ index 9cff0d9..4aad62f 100644
 -@ stub GetDispenserManager
 +@ cdecl GetDispenserManager(ptr)
 diff --git a/dlls/mtxdm/mtxdm_main.c b/dlls/mtxdm/mtxdm_main.c
-index d859571..a22e654 100644
+index d859571..75020fe 100644
 --- a/dlls/mtxdm/mtxdm_main.c
 +++ b/dlls/mtxdm/mtxdm_main.c
-@@ -22,18 +22,25 @@
+@@ -22,22 +22,16 @@
  
  #include "windef.h"
  #include "winbase.h"
@@ -44,30 +44,32 @@ index d859571..a22e654 100644
  
  WINE_DEFAULT_DEBUG_CHANNEL(comsvcs);
  
+-BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
 +
 +HRESULT CDECL GetDispenserManager(IDispenserManager **dispenser)
-+{
+ {
+-    TRACE("(%p, %u, %p)\n", instance, reason, reserved);
+-
+-    switch (reason)
+-    {
+-        case DLL_WINE_PREATTACH:
+-            return FALSE;    /* prefer native version */
+-        case DLL_PROCESS_ATTACH:
+-            DisableThreadLibraryCalls(instance);
+-            break;
+-    }
+-
+-    return TRUE;
 +    TRACE("%p\n", dispenser);
 +
 +    return CoCreateInstance( &CLSID_DispenserManager, NULL, CLSCTX_ALL, &IID_IDispenserManager, (void**)&dispenser);
-+}
+ }
 +
- BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
- {
-     TRACE("(%p, %u, %p)\n", instance, reason, reserved);
- 
-     switch (reason)
-     {
--        case DLL_WINE_PREATTACH:
--            return FALSE;    /* prefer native version */
-         case DLL_PROCESS_ATTACH:
-             DisableThreadLibraryCalls(instance);
-             break;
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 9ee3d52..38d9bcf 100644
+index 2384c93..f9cb7b4 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -510,6 +510,7 @@ HEADER_SRCS = \
+@@ -513,6 +513,7 @@ HEADER_SRCS = \
  	msxml2did.h \
  	msxml6did.h \
  	msxmldid.h \
