@@ -1,0 +1,192 @@
+From 43513806418060f5059cd32cf56151a53257b9b3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 13 Apr 2017 15:32:53 +1000
+Subject: [PATCH 3/3] oleaut32/tests: Added BstrFromDisp tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oleaut32/tests/vartype.c | 140 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 140 insertions(+)
+
+diff --git a/dlls/oleaut32/tests/vartype.c b/dlls/oleaut32/tests/vartype.c
+index ff495bd..d16e741 100644
+--- a/dlls/oleaut32/tests/vartype.c
++++ b/dlls/oleaut32/tests/vartype.c
+@@ -511,6 +511,7 @@ static HRESULT (WINAPI *pVarBstrFromCy)(CY,LCID,ULONG,BSTR*);
+ static HRESULT (WINAPI *pVarBstrFromDec)(DECIMAL*,LCID,ULONG,BSTR*);
+ static HRESULT (WINAPI *pVarBstrCmp)(BSTR,BSTR,LCID,ULONG);
+ static HRESULT (WINAPI *pVarBstrCat)(BSTR,BSTR,BSTR*);
++static HRESULT (WINAPI *pVarBstrFromDisp)(IDispatch*,LCID,ULONG,BSTR*);
+ 
+ static INT (WINAPI *pSystemTimeToVariantTime)(LPSYSTEMTIME,double*);
+ static void (WINAPI *pClearCustData)(LPCUSTDATA);
+@@ -591,6 +592,7 @@ static HRESULT WINAPI DummyDispatch_Invoke(IDispatch *iface,
+                                            UINT *arg_err)
+ {
+   DummyDispatch *This = impl_from_IDispatch(iface);
++  static WCHAR value[] = {'1','0',0};
+ 
+   CHECK_EXPECT(dispatch_invoke);
+ 
+@@ -614,6 +616,14 @@ static HRESULT WINAPI DummyDispatch_Invoke(IDispatch *iface,
+   V_VT(res) = This->vt;
+   if (This->vt == VT_UI1)
+       V_UI1(res) = 1;
++  else if (This->vt == VT_I4)
++      V_I4(res) = 4;
++  else if (This->vt == VT_BSTR)
++      V_BSTR(res) = SysAllocString(value);
++  else if (This->vt == VT_EMPTY)
++      V_I4(res) = 0;
++  else if(This->vt == VT_NULL)
++      V_BSTR(res) = NULL;
+   else
+       memset(res, 0, sizeof(*res));
+ 
+@@ -5267,6 +5277,135 @@ static void test_VarBstrFromDec(void)
+ #undef BSTR_DEC64
+ }
+ 
++static void test_VarBstrFromDisp(void)
++{
++    DummyDispatch dispatch;
++    HRESULT hres;
++    VARIANTARG vSrc, vDst;
++    BSTR b;
++    LCID in;
++
++    CHECKPTR(VarBstrFromDisp);
++
++    in = MAKELCID(MAKELANGID(LANG_ENGLISH,SUBLANG_ENGLISH_US),SORT_DEFAULT);
++
++    VariantInit(&vSrc);
++    VariantInit(&vDst);
++
++    /* BSTR */
++    init_test_dispatch(1, VT_BSTR, &dispatch);
++    V_VT(&vSrc) = VT_DISPATCH;
++    V_DISPATCH(&vSrc) = &dispatch.IDispatch_iface;
++
++    SET_EXPECT(dispatch_invoke);
++    hres = pVarBstrFromDisp(&dispatch.IDispatch_iface, in, 0, &b);
++    ok(hres == S_OK, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++    SysFreeString(b);
++
++    SET_EXPECT(dispatch_invoke);
++    V_VT(&vDst) = VT_EMPTY;
++    V_UI1(&vDst) = 0;
++    hres = VariantChangeTypeEx(&vDst, &vSrc, 0, 0, VT_BSTR);
++    ok(hres == S_OK, "got 0x%08x\n", hres);
++    ok(V_VT(&vDst) == VT_BSTR, "got %d\n", V_VT(&vDst));
++    CHECK_CALLED(dispatch_invoke);
++    VariantClear(&vDst);
++
++    /* VT_UI1 */
++    init_test_dispatch(1, VT_UI1, &dispatch);
++    V_VT(&vSrc) = VT_DISPATCH;
++    V_DISPATCH(&vSrc) = &dispatch.IDispatch_iface;
++
++    SET_EXPECT(dispatch_invoke);
++    hres = pVarBstrFromDisp(&dispatch.IDispatch_iface, in, 0, &b);
++    todo_wine ok(hres == DISP_E_BADVARTYPE, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++
++    SET_EXPECT(dispatch_invoke);
++    V_VT(&vDst) = VT_EMPTY;
++    V_UI1(&vDst) = 0;
++    hres = VariantChangeTypeEx(&vDst, &vSrc, 0, 0, VT_BSTR);
++    ok(hres == S_OK, "got 0x%08x\n", hres);
++    ok(V_VT(&vDst) == VT_BSTR, "got %d\n", V_VT(&vDst));
++    CHECK_CALLED(dispatch_invoke);
++    VariantClear(&vDst);
++
++    /* VT_I4 */
++    init_test_dispatch(1, VT_I4, &dispatch);
++    V_VT(&vSrc) = VT_DISPATCH;
++    V_DISPATCH(&vSrc) = &dispatch.IDispatch_iface;
++
++    SET_EXPECT(dispatch_invoke);
++    hres = pVarBstrFromDisp(&dispatch.IDispatch_iface, in, 0, &b);
++    todo_wine ok(hres == DISP_E_BADVARTYPE, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++
++    SET_EXPECT(dispatch_invoke);
++    V_VT(&vDst) = VT_EMPTY;
++    V_UI1(&vDst) = 0;
++    hres = VariantChangeTypeEx(&vDst, &vSrc, 0, 0, VT_BSTR);
++    ok(hres == S_OK, "got 0x%08x\n", hres);
++    ok(V_VT(&vDst) == VT_BSTR, "got %d\n", V_VT(&vDst));
++    CHECK_CALLED(dispatch_invoke);
++    VariantClear(&vDst);
++
++    /* VT_EMPTY */
++    init_test_dispatch(1, VT_EMPTY, &dispatch);
++    V_VT(&vSrc) = VT_DISPATCH;
++    V_DISPATCH(&vSrc) = &dispatch.IDispatch_iface;
++
++    SET_EXPECT(dispatch_invoke);
++    hres = pVarBstrFromDisp(&dispatch.IDispatch_iface, in, 0, &b);
++    todo_wine ok(hres == DISP_E_BADVARTYPE, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++
++    SET_EXPECT(dispatch_invoke);
++    V_VT(&vDst) = VT_EMPTY;
++    V_UI1(&vDst) = 0;
++    hres = VariantChangeTypeEx(&vDst, &vSrc, 0, 0, VT_BSTR);
++    ok(hres == S_OK, "got 0x%08x\n", hres);
++    ok(V_VT(&vDst) == VT_BSTR, "got %d\n", V_VT(&vDst));
++    CHECK_CALLED(dispatch_invoke);
++    VariantClear(&vDst);
++
++    /* NULL */
++    init_test_dispatch(1, VT_NULL, &dispatch);
++    SET_EXPECT(dispatch_invoke);
++    hres = pVarBstrFromDisp(&dispatch.IDispatch_iface, in, 0, &b);
++    ok(hres == DISP_E_TYPEMISMATCH, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++    
++    SET_EXPECT(dispatch_invoke);
++    V_VT(&vDst) = VT_NULL;
++    V_UI1(&vDst) = 0;
++    hres = VariantChangeTypeEx(&vDst, &vSrc, 0, 0, VT_BSTR);
++    ok(hres == DISP_E_TYPEMISMATCH, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++    VariantClear(&vDst);
++
++    /* BSTR - Error */
++    init_test_dispatch(1, VT_BSTR, &dispatch);
++    dispatch.bFailInvoke = TRUE;
++    V_VT(&vSrc) = VT_DISPATCH;
++    V_DISPATCH(&vSrc) = &dispatch.IDispatch_iface;
++
++    SET_EXPECT(dispatch_invoke);
++    hres = pVarBstrFromDisp(&dispatch.IDispatch_iface, in, 0, &b);
++    ok(hres == DISP_E_TYPEMISMATCH, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++
++    SET_EXPECT(dispatch_invoke);
++    V_VT(&vDst) = VT_EMPTY;
++    V_UI1(&vDst) = 0;
++    hres = VariantChangeTypeEx(&vDst, &vSrc, 0, 0, VT_BSTR);
++    ok(hres == DISP_E_TYPEMISMATCH, "got 0x%08x\n", hres);
++    CHECK_CALLED(dispatch_invoke);
++    VariantClear(&vDst);
++
++    VariantClear(&vSrc);
++}
++
+ #define _VARBSTRCMP(left,right,lcid,flags,result) \
+         hres = pVarBstrCmp(left,right,lcid,flags); \
+         ok(hres == result, "VarBstrCmp: expected " #result ", got hres=0x%x\n", hres)
+@@ -6854,6 +6993,7 @@ START_TEST(vartype)
+   test_VarBstrFromDate();
+   test_VarBstrFromCy();
+   test_VarBstrFromDec();
++  test_VarBstrFromDisp();
+   test_VarBstrCmp();
+   test_SysStringLen();
+   test_SysStringByteLen();
+-- 
+1.9.1
+
