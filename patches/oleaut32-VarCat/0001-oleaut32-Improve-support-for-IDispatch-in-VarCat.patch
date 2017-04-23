@@ -1,7 +1,7 @@
-From 219560fbb871fa24ca34ce046c6e1ea2827f4bf0 Mon Sep 17 00:00:00 2001
+From 2a8948ae3fe4a0b3dc4aa34f80e6de30e5ac9d8c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Apr 2017 10:09:26 +0000
-Subject: [v4 PATCH] oleaut32: Improve support for IDispatch in VarCat
+Subject: [PATCH] oleaut32: Improve support for IDispatch in VarCat
 
 Fixes https://bugs.winehq.org/show_bug.cgi?id=27106
 
@@ -9,6 +9,7 @@ v2 - Correct rightvt compare
 v3 - Removed IDispatch ref count
    - Allow explicit error code return from Invoke.
 v4 - Correct failing test.
+v5 - Fix Comments in FIXMEs.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -17,7 +18,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 231 insertions(+)
 
 diff --git a/dlls/oleaut32/tests/vartest.c b/dlls/oleaut32/tests/vartest.c
-index 0e86ffb..eec19bf 100644
+index 0e86ffb..7d781e7 100644
 --- a/dlls/oleaut32/tests/vartest.c
 +++ b/dlls/oleaut32/tests/vartest.c
 @@ -97,6 +97,150 @@ static BOOL has_i8;
@@ -197,7 +198,7 @@ index 0e86ffb..eec19bf 100644
 +    ok(V_VT(&result) == VT_BSTR, "got %d\n", V_VT(&result));
 +    ok(SysStringLen(V_BSTR(&result)) == 0, "got %d\n", SysStringLen(V_BSTR(&result)));
 +    CHECK_CALLED(dispatch_invoke);
-+    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: EMPTY concat with EMPTY did not return empty VT_BSTR\n");
++    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: DISPATCH concat with EMPTY did not return empty VT_BSTR\n");
 +
 +    VariantClear(&left);
 +    VariantClear(&right);
@@ -214,7 +215,7 @@ index 0e86ffb..eec19bf 100644
 +    ok(V_VT(&result) == VT_BSTR, "got %d\n", V_VT(&result));
 +    ok(SysStringLen(V_BSTR(&result)) == 0, "got %d\n", SysStringLen(V_BSTR(&result)));
 +    CHECK_CALLED(dispatch_invoke);
-+    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: EMPTY concat with EMPTY did not return empty VT_BSTR\n");
++    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: DISPATCH concat with EMPTY did not return empty VT_BSTR\n");
 +
 +    VariantClear(&left);
 +    VariantClear(&right);
@@ -233,7 +234,7 @@ index 0e86ffb..eec19bf 100644
 +    hres = pVarCat(&left,&right,&result);
 +    ok(hres == S_OK, "VarCat failed with error 0x%08x\n", hres);
 +    CHECK_CALLED(dispatch_invoke);
-+    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: VT_BSTR concat with VT_BSTR failed to return correct result\n");
++    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: VT_DISPATCH concat with VT_BSTR failed to return correct result\n");
 +
 +    VariantClear(&left);
 +    VariantClear(&right);
