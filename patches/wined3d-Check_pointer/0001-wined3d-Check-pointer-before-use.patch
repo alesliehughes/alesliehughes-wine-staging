@@ -19,7 +19,7 @@ index 7c090d432a..55b4917037 100644
      struct wined3d_context *current_context;
  
 -    if (context->tid != GetCurrentThreadId())
-+    if (context || context->tid != GetCurrentThreadId())
++    if (!context || context->tid != GetCurrentThreadId())
          return NULL;
  
      current_context = context_acquire(device, context->current_rt.texture,
