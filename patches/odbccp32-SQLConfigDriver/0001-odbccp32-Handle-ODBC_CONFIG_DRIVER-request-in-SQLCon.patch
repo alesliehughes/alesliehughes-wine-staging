@@ -1,4 +1,4 @@
-From 8354bf1b94d3801072386bf4e6b0280af574ac1d Mon Sep 17 00:00:00 2001
+From d42a825a2241ac3fdeec0c79e43574859d2838cb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 10 Apr 2017 11:13:47 +1000
 Subject: [PATCH] odbccp32: Handle ODBC_CONFIG_DRIVER request in
@@ -10,15 +10,17 @@ updated when the previous call successed.
 v2 - Added more tests to show that arg is a single name=value.
    - Added more error checks
 v3 - Fix crash on XP.
+v4 - Free Handles on error.
+   - Corrected order of test so all tests are run.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c   | 83 ++++++++++++++++++++++++++++++++++++++++++++++
- dlls/odbccp32/tests/misc.c | 65 +++++++++++++++++++++++++++++++++---
- 2 files changed, 144 insertions(+), 4 deletions(-)
+ dlls/odbccp32/odbccp32.c   | 88 ++++++++++++++++++++++++++++++++++++++++++++++
+ dlls/odbccp32/tests/misc.c | 65 +++++++++++++++++++++++++++++++---
+ 2 files changed, 149 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index f28d464..cbbf7af 100644
+index f28d464..475b74e 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -65,6 +65,7 @@ static const WCHAR odbc_error_invalid_param_string[] = {'I','n','v','a','l','i',
@@ -29,31 +31,30 @@ index f28d464..cbbf7af 100644
  
  /* Push an error onto the error stack, taking care of ranges etc. */
  static void push_error(int code, LPCWSTR msg)
-@@ -303,6 +304,59 @@ static HMODULE load_config_driver(const WCHAR *driver)
+@@ -303,6 +304,64 @@ static HMODULE load_config_driver(const WCHAR *driver)
      return hmod;
  }
  
 +static BOOL write_config_value(const WCHAR *driver, const WCHAR *args)
 +{
 +    long ret;
-+    HKEY hkey;
++    HKEY hkey, hkeydriver;
++    WCHAR *name = NULL;
 +
 +    if (!args)
 +        return FALSE;
 +
 +    if ((ret = RegOpenKeyW(HKEY_LOCAL_MACHINE, odbcini, &hkey)) == ERROR_SUCCESS)
 +    {
-+        HKEY hkeydriver;
-+
 +        if ((ret = RegOpenKeyW(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
 +        {
 +            WCHAR *divider, *value;
 +
-+            WCHAR *name = heap_alloc( (strlenW(args) + 1) * sizeof(WCHAR));
++            name = heap_alloc( (strlenW(args) + 1) * sizeof(WCHAR));
 +            if(!name)
 +            {
 +                push_error(ODBC_ERROR_OUT_OF_MEM, odbc_error_out_of_mem);
-+                return FALSE;
++                goto fail;
 +            }
 +            lstrcpyW(name, args);
 +
@@ -61,8 +62,7 @@ index f28d464..cbbf7af 100644
 +            if(!divider)
 +            {
 +                push_error(ODBC_ERROR_INVALID_KEYWORD_VALUE, odbc_error_invalid_keyword);
-+                heap_free(name);
-+                return FALSE;
++                goto fail;
 +            }
 +
 +            value = divider + 1;
@@ -84,12 +84,19 @@ index f28d464..cbbf7af 100644
 +        push_error(ODBC_ERROR_COMPONENT_NOT_FOUND, odbc_error_component_not_found);
 +
 +    return ret == ERROR_SUCCESS;
++
++fail:
++    RegCloseKey(hkeydriver);
++    RegCloseKey(hkey);
++    heap_free(name);
++
++    return FALSE;
 +}
 +
  BOOL WINAPI SQLConfigDriverW(HWND hwnd, WORD request, LPCWSTR driver,
                 LPCWSTR args, LPWSTR msg, WORD msgmax, WORD *msgout)
  {
-@@ -314,6 +368,11 @@ BOOL WINAPI SQLConfigDriverW(HWND hwnd, WORD request, LPCWSTR driver,
+@@ -314,6 +373,11 @@ BOOL WINAPI SQLConfigDriverW(HWND hwnd, WORD request, LPCWSTR driver,
      TRACE("(%p %d %s %s %p %d %p)\n", hwnd, request, debugstr_w(driver),
            debugstr_w(args), msg, msgmax, msgout);
  
@@ -101,7 +108,7 @@ index f28d464..cbbf7af 100644
      hmod = load_config_driver(driver);
      if(!hmod)
          return FALSE;
-@@ -343,6 +402,30 @@ BOOL WINAPI SQLConfigDriver(HWND hwnd, WORD request, LPCSTR driver,
+@@ -343,6 +407,30 @@ BOOL WINAPI SQLConfigDriver(HWND hwnd, WORD request, LPCSTR driver,
            debugstr_a(args), msg, msgmax, msgout);
  
      driverW = heap_strdupAtoW(driver);
@@ -133,7 +140,7 @@ index f28d464..cbbf7af 100644
      HeapFree(GetProcessHeap(), 0, driverW);
      if(!hmod)
 diff --git a/dlls/odbccp32/tests/misc.c b/dlls/odbccp32/tests/misc.c
-index ed8e6f1..e5a8896 100644
+index ed8e6f1..8e119e0 100644
 --- a/dlls/odbccp32/tests/misc.c
 +++ b/dlls/odbccp32/tests/misc.c
 @@ -421,31 +421,63 @@ static void test_SQLInstallDriverEx(void)
@@ -182,15 +189,15 @@ index ed8e6f1..e5a8896 100644
 +    ok(sql_ret == SQL_NO_DATA || (sql_ret && error_code == SQL_SUCCESS), "SQLInstallDriverEx failed %d, %u\n", sql_ret, error_code);
      ok(!strcmp(path, "c:\\temp"), "invalid path %s\n", path);
  
++    ret = SQLConfigDriver(NULL, ODBC_CONFIG_DRIVER, "WINE ODBC Driver Path", "empty", error, sizeof(error), NULL);
++    ok(!ret, "SQLConfigDriver successful\n");
++    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
++    ok(sql_ret && error_code == ODBC_ERROR_INVALID_KEYWORD_VALUE, "SQLConfigDriver failed %d, %u\n", sql_ret, error_code);
++
 +    ret = SQLConfigDriver(NULL, ODBC_CONFIG_DRIVER, "WINE ODBC Driver Path", "NoWrite=60;xxxx=555", error, sizeof(error), NULL);
 +    ok(ret, "SQLConfigDriver failed\n");
 +    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
 +    ok(sql_ret == SQL_NO_DATA || (sql_ret && error_code == SQL_SUCCESS), "SQLConfigDriver failed %d, %u\n", sql_ret, error_code);
-+
-+    ret = SQLConfigDriver(NULL, ODBC_CONFIG_DRIVER, "WINE ODBC Driver Path", "empty", error, sizeof(error), NULL);
-+    ok(!ret, "SQLConfigDriver successed\n");
-+    sql_ret = SQLInstallerErrorW(1, &error_code, NULL, 0, NULL);
-+    ok(sql_ret && error_code == ODBC_ERROR_INVALID_KEYWORD_VALUE, "SQLConfigDriver failed %d, %u\n", sql_ret, error_code);
 +
      if (ret)
      {

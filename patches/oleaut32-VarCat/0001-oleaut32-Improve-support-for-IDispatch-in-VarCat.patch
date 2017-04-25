@@ -1,7 +1,7 @@
 From 2a8948ae3fe4a0b3dc4aa34f80e6de30e5ac9d8c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Apr 2017 10:09:26 +0000
-Subject: [PATCH] oleaut32: Improve support for IDispatch in VarCat
+Subject: [v5 PATCH] oleaut32: Improve support for IDispatch in VarCat
 
 Fixes https://bugs.winehq.org/show_bug.cgi?id=27106
 
