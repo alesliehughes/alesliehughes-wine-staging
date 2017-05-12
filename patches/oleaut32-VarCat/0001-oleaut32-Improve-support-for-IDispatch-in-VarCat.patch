@@ -1,11 +1,13 @@
-From fb82e7708d52d241c28175d74fe6f33129572399 Mon Sep 17 00:00:00 2001
+From 2a5f3881d998651eafef3a2c7021daa28d826462 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Apr 2017 10:09:26 +0000
-Subject: [v6 PATCH] oleaut32: Improve support for IDispatch in VarCat
+Subject: [v8 PATCH] oleaut32: Improve support for IDispatch in VarCat
 
 Fixes https://bugs.winehq.org/show_bug.cgi?id=27106
 
 v6 - Simplify the code when the Variant cannot be coerced.
+v7 - Fix copy/paste bug in return value.
+v8 - Fixed failed test.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -14,7 +16,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 229 insertions(+), 40 deletions(-)
 
 diff --git a/dlls/oleaut32/tests/vartest.c b/dlls/oleaut32/tests/vartest.c
-index 0e86ffb..7d781e7 100644
+index 0e86ffb..f4224dc 100644
 --- a/dlls/oleaut32/tests/vartest.c
 +++ b/dlls/oleaut32/tests/vartest.c
 @@ -97,6 +97,150 @@ static BOOL has_i8;
@@ -131,7 +133,7 @@ index 0e86ffb..7d781e7 100644
 +    ok(arg_err == NULL, "got %p\n", arg_err);
 +
 +    if (FAILED(This->result))
-+        return FAILED(This->result);
++        return This->result;
 +
 +    V_VT(res) = This->vt;
 +    if (This->vt == VT_UI1)
@@ -244,7 +246,7 @@ index 0e86ffb..7d781e7 100644
 +
 +    SET_EXPECT(dispatch_invoke);
 +    hres = VarCat(&left, &right, &result);
-+    ok(hres == S_OK, "got 0x%08x\n", hres);
++    todo_wine ok(hres == E_OUTOFMEMORY, "got 0x%08x\n", hres);
 +    CHECK_CALLED(dispatch_invoke);
 +
 +    VariantClear(&left);
