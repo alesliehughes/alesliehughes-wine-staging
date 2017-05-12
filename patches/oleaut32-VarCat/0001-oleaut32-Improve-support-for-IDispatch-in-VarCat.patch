@@ -1,21 +1,17 @@
-From 2a8948ae3fe4a0b3dc4aa34f80e6de30e5ac9d8c Mon Sep 17 00:00:00 2001
+From fb82e7708d52d241c28175d74fe6f33129572399 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Apr 2017 10:09:26 +0000
-Subject: [v5 PATCH] oleaut32: Improve support for IDispatch in VarCat
+Subject: [v6 PATCH] oleaut32: Improve support for IDispatch in VarCat
 
 Fixes https://bugs.winehq.org/show_bug.cgi?id=27106
 
-v2 - Correct rightvt compare
-v3 - Removed IDispatch ref count
-   - Allow explicit error code return from Invoke.
-v4 - Correct failing test.
-v5 - Fix Comments in FIXMEs.
+v6 - Simplify the code when the Variant cannot be coerced.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/oleaut32/tests/vartest.c | 217 ++++++++++++++++++++++++++++++++++++++++++
- dlls/oleaut32/variant.c       |  14 +++
- 2 files changed, 231 insertions(+)
+ dlls/oleaut32/variant.c       |  52 +++-------
+ 2 files changed, 229 insertions(+), 40 deletions(-)
 
 diff --git a/dlls/oleaut32/tests/vartest.c b/dlls/oleaut32/tests/vartest.c
 index 0e86ffb..7d781e7 100644
@@ -260,37 +256,83 @@ index 0e86ffb..7d781e7 100644
      V_VT(&left) = VT_BOOL;
      V_BOOL(&left) = VARIANT_TRUE;
 diff --git a/dlls/oleaut32/variant.c b/dlls/oleaut32/variant.c
-index 17f753a..dd4558c 100644
+index 17f753a..aa86be0 100644
 --- a/dlls/oleaut32/variant.c
 +++ b/dlls/oleaut32/variant.c
-@@ -2611,6 +2611,13 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
-                 V_VT(&bstrvar_left) = VT_BSTR;
-                 V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
+@@ -2605,30 +2605,16 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
+                 else
+                     V_BSTR(&bstrvar_left) = SysAllocString(str_false);
              }
-+            else if (leftvt == VT_DISPATCH)
-+            {
-+                /* The returned Dispatch Value, may not be able to be coerced, ie. VT_NULL */
-+                hres = VariantChangeTypeEx(&bstrvar_left,left,0,0,VT_BSTR);
-+                if (hres != S_OK && hres != DISP_E_TYPEMISMATCH)
-+                    return hres;
-+            }
+-            /* Fill with empty string for later concat with right side */
+-            else if (leftvt == VT_NULL)
+-            {
+-                V_VT(&bstrvar_left) = VT_BSTR;
+-                V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
+-            }
              else
              {
++                /* The value may not be able to be coerced, ie. VT_NULL */
                  hres = VariantChangeTypeEx(&bstrvar_left,left,0,0,VT_BSTR);
-@@ -2651,6 +2658,13 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
-                 V_VT(&bstrvar_right) = VT_BSTR;
-                 V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
-             }
-+            else if (rightvt == VT_DISPATCH)
-+            {
-+                /* The returned Dispatch Value, may not be able to be coerced, ie. VT_NULL */
-+                hres = VariantChangeTypeEx(&bstrvar_right,right,0,0,VT_BSTR);
+-                if (hres != S_OK) {
+-                    VariantClear(&bstrvar_left);
+-                    VariantClear(&bstrvar_right);
+-                    if (leftvt == VT_NULL && (rightvt == VT_EMPTY ||
+-                        rightvt == VT_NULL || rightvt ==  VT_I2 ||
+-                        rightvt == VT_I4 || rightvt == VT_R4 ||
+-                        rightvt == VT_R8 || rightvt == VT_CY ||
+-                        rightvt == VT_DATE || rightvt == VT_BSTR ||
+-                        rightvt == VT_BOOL ||  rightvt == VT_DECIMAL ||
+-                        rightvt == VT_I1 || rightvt == VT_UI1 ||
+-                        rightvt == VT_UI2 || rightvt == VT_UI4 ||
+-                        rightvt == VT_I8 || rightvt == VT_UI8 ||
+-                        rightvt == VT_INT || rightvt == VT_UINT))
+-                        return DISP_E_BADVARTYPE;
 +                if (hres != S_OK && hres != DISP_E_TYPEMISMATCH)
-+                    return hres;
-+            }
+                     return hres;
++                else if(FAILED(hres))
++                {
++                    V_VT(&bstrvar_left) = VT_BSTR;
++                    V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
+                 }
+             }
+         }
+@@ -2645,30 +2631,16 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
+                 else
+                     V_BSTR(&bstrvar_right) = SysAllocString(str_false);
+             }
+-            /* Fill with empty string for later concat with right side */
+-            else if (rightvt == VT_NULL)
+-            {
+-                V_VT(&bstrvar_right) = VT_BSTR;
+-                V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
+-            }
              else
              {
++                /* The value may not be able to be coerced, ie. VT_NULL */
                  hres = VariantChangeTypeEx(&bstrvar_right,right,0,0,VT_BSTR);
+-                if (hres != S_OK) {
+-                    VariantClear(&bstrvar_left);
+-                    VariantClear(&bstrvar_right);
+-                    if (rightvt == VT_NULL && (leftvt == VT_EMPTY ||
+-                        leftvt == VT_NULL || leftvt ==  VT_I2 ||
+-                        leftvt == VT_I4 || leftvt == VT_R4 ||
+-                        leftvt == VT_R8 || leftvt == VT_CY ||
+-                        leftvt == VT_DATE || leftvt == VT_BSTR ||
+-                        leftvt == VT_BOOL ||  leftvt == VT_DECIMAL ||
+-                        leftvt == VT_I1 || leftvt == VT_UI1 ||
+-                        leftvt == VT_UI2 || leftvt == VT_UI4 ||
+-                        leftvt == VT_I8 || leftvt == VT_UI8 ||
+-                        leftvt == VT_INT || leftvt == VT_UINT))
+-                        return DISP_E_BADVARTYPE;
++                if (hres != S_OK && hres != DISP_E_TYPEMISMATCH)
+                     return hres;
++                else if(FAILED(hres))
++                {
++                    V_VT(&bstrvar_right) = VT_BSTR;
++                    V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
+                 }
+             }
+         }
 -- 
 1.9.1
 
