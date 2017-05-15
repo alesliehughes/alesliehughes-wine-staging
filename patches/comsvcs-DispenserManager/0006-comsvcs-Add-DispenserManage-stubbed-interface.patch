@@ -1,7 +1,7 @@
 From 126cab6ef5bbd0f35ccadc0ce61c80f3b3b07cd3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 24 Jan 2017 16:28:07 +1100
-Subject: [PATCH 6/8] comsvcs: Add DispenserManage stubbed interface
+Subject: [PATCH 6/8] comsvcs: Add DispenserManager stubbed interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
