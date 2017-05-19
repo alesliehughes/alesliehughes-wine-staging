@@ -1,7 +1,7 @@
-From a90318a95b137f0772da4d4f3559d215350490c6 Mon Sep 17 00:00:00 2001
+From 17ff249c8e59c1f716769c1257b4938bfa57a155 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 May 2017 14:25:26 +1000
-Subject: [PATCH 2/2] include/mfreadwrite.idl: Add interface IMFSinkWriter
+Subject: [PATCH] include/mfreadwrite.idl: Add interface IMFSinkWriter
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 40 insertions(+)
 
 diff --git a/include/mfreadwrite.idl b/include/mfreadwrite.idl
-index a146552..c15811a 100644
+index a146552..c8816cd 100644
 --- a/include/mfreadwrite.idl
 +++ b/include/mfreadwrite.idl
 @@ -31,6 +31,26 @@ enum
@@ -54,12 +54,12 @@ index a146552..c15811a 100644
 +    HRESULT SetInputMediaType([in] DWORD index, [in] IMFMediaType *type, [in] IMFAttributes *parameters);
 +    HRESULT BeginWriting(void);
 +    HRESULT WriteSample([in] DWORD index, [in] IMFSample *sample);
-+    HRESULT SendStreamTick( [in] DWORD index, [in] LONGLONG timestamp);
++    HRESULT SendStreamTick([in] DWORD index, [in] LONGLONG timestamp);
 +    HRESULT PlaceMarker([in] DWORD index, [in] void *context);
 +    HRESULT NotifyEndOfSegment([in] DWORD index);
 +    HRESULT Flush([in] DWORD index);
 +    HRESULT Finalize(void);
-+    HRESULT GetServiceForStream([in] DWORD index, [in] REFGUID service, [in] REFIID riid, [out] void *object);
++    HRESULT GetServiceForStream([in] DWORD index, [in] REFGUID service, [in] REFIID riid, [out] void **object);
 +    HRESULT GetStatistics([in] DWORD index, [out] MF_SINK_WRITER_STATISTICS *stats);
 +};
 +
