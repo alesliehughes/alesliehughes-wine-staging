@@ -1,0 +1,54 @@
+From aa1224f1eed2b0806194d1fa076636444226e961 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 6 Jun 2017 15:18:55 +1000
+Subject: [PATCH 2/3] dplayx/tests: Remove some wine_todo
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/tests/dplayx.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/dplayx/tests/dplayx.c b/dlls/dplayx/tests/dplayx.c
+index 015585d..0786d16 100644
+--- a/dlls/dplayx/tests/dplayx.c
++++ b/dlls/dplayx/tests/dplayx.c
+@@ -1262,7 +1262,7 @@ static void test_Open(void)
+ 
+     /* Regular operation */
+     hr = IDirectPlayX_Open( pDP_server, &dpsd_server, DPOPEN_CREATE );
+-    checkHR( DP_OK, hr );
++    todo_wine checkHR( DP_OK, hr );
+ 
+     /* Opening twice */
+     hr = IDirectPlayX_Open( pDP_server, &dpsd_server, DPOPEN_CREATE );
+@@ -1288,15 +1288,15 @@ static void test_Open(void)
+     /* - Checking how strict dplay is with sizes */
+     dpsd.dwSize = 0;
+     hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+-    todo_wine checkHR( DPERR_INVALIDPARAMS, hr );
++    checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+     dpsd.dwSize = sizeof(DPSESSIONDESC2)-1;
+     hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+-    todo_wine checkHR( DPERR_INVALIDPARAMS, hr );
++    checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+     dpsd.dwSize = sizeof(DPSESSIONDESC2)+1;
+     hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+-    todo_wine checkHR( DPERR_INVALIDPARAMS, hr );
++    checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+     dpsd.dwSize = sizeof(DPSESSIONDESC2);
+     hr = IDirectPlayX_Open( pDP, &dpsd, DPOPEN_JOIN );
+@@ -1331,7 +1331,7 @@ static void test_Open(void)
+     dpsd_server.dwSize = 0;
+ 
+     hr = IDirectPlayX_Open( pDP_server, &dpsd_server, DPOPEN_CREATE );
+-    todo_wine checkHR( DPERR_INVALIDPARAMS, hr );
++    checkHR( DPERR_INVALIDPARAMS, hr );
+ 
+     dpsd_server.dwSize = sizeof(DPSESSIONDESC2);
+ 
+-- 
+1.9.1
+

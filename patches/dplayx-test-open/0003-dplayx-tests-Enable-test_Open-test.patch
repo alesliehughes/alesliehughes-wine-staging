@@ -1,0 +1,42 @@
+From cfd242b44eadefca727b66df69b607d1a02efe8f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 6 Jun 2017 15:20:27 +1000
+Subject: [PATCH 3/3] dplayx/tests: Enable test_Open test
+
+This isn't to be accepted.  It's here so someone testing
+the previous two patches doesn't have the modify it themselves.
+(No crash or success in todo_wine).
+
+The test still take too long, which has do with the fact that it's
+calling Open/Close in EnumSession.  This scenario means we have
+wait for the EnumSession to timeout before it returns.
+
+---
+ dlls/dplayx/tests/dplayx.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dplayx/tests/dplayx.c b/dlls/dplayx/tests/dplayx.c
+index 0786d16..8aa935b 100644
+--- a/dlls/dplayx/tests/dplayx.c
++++ b/dlls/dplayx/tests/dplayx.c
+@@ -6947,6 +6947,8 @@ START_TEST(dplayx)
+     test_InitializeConnection();
+     test_GetCaps();
+     test_EnumAddressTypes();
++    /* test_Open() takes almost a minute, */
++    test_Open();
+ 
+     if (!winetest_interactive)
+     {
+@@ -6956,8 +6958,6 @@ START_TEST(dplayx)
+ 
+     trace("Running in interactive mode, tests will take a while\n");
+ 
+-    /* test_Open() takes almost a minute, */
+-    test_Open();
+     /* test_EnumSession takes three minutes */
+     test_EnumSessions();
+     test_SessionDesc();
+-- 
+1.9.1
+
