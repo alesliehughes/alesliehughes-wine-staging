@@ -1,340 +1,222 @@
-From 2a5f3881d998651eafef3a2c7021daa28d826462 Mon Sep 17 00:00:00 2001
+From 102da1eff0bdd3a1922a6aac7af8d11a90bc2b21 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Mon, 17 Apr 2017 10:09:26 +0000
-Subject: [v8 PATCH] oleaut32: Improve support for IDispatch in VarCat
+Date: Fri, 26 May 2017 08:54:17 +1000
+Subject: [PATCH] oleaut32: Improve support for IDispatch in VarCat
+
+v3: Use worker function to get the value from Dispatch.
+
+We cannot use VariantChangeTypeEx to convert the IDispatch type
+since it always returns DISP_E_TYPEMISMATCH when the Invoke fails.
 
 Fixes https://bugs.winehq.org/show_bug.cgi?id=27106
 
-v6 - Simplify the code when the Variant cannot be coerced.
-v7 - Fix copy/paste bug in return value.
-v8 - Fixed failed test.
-
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/oleaut32/tests/vartest.c | 217 ++++++++++++++++++++++++++++++++++++++++++
- dlls/oleaut32/variant.c       |  52 +++-------
- 2 files changed, 229 insertions(+), 40 deletions(-)
+ dlls/oleaut32/tests/vartest.c |  20 +++++++--
+ dlls/oleaut32/variant.c       | 100 ++++++++++++++++++++++++------------------
+ 2 files changed, 74 insertions(+), 46 deletions(-)
 
 diff --git a/dlls/oleaut32/tests/vartest.c b/dlls/oleaut32/tests/vartest.c
-index 0e86ffb..f4224dc 100644
+index a271c50..d8a6ebf 100644
 --- a/dlls/oleaut32/tests/vartest.c
 +++ b/dlls/oleaut32/tests/vartest.c
-@@ -97,6 +97,150 @@ static BOOL has_i8;
- #define R8_MAX DBL_MAX
- #define R8_MIN DBL_MIN
+@@ -6093,7 +6093,7 @@ static void test_VarCat(void)
  
-+#define DEFINE_EXPECT(func) \
-+    static BOOL expect_ ## func = FALSE, called_ ## func = FALSE
-+
-+#define SET_EXPECT(func) \
-+    do { called_ ## func = FALSE; expect_ ## func = TRUE; } while(0)
-+
-+#define CHECK_EXPECT2(func) \
-+    do { \
-+        ok(expect_ ##func, "unexpected call " #func "\n"); \
-+        called_ ## func = TRUE; \
-+    }while(0)
-+
-+#define CHECK_EXPECT(func) \
-+    do { \
-+        CHECK_EXPECT2(func); \
-+        expect_ ## func = FALSE; \
-+    }while(0)
-+
-+#define CHECK_CALLED(func) \
-+    do { \
-+        ok(called_ ## func, "expected " #func "\n"); \
-+        expect_ ## func = called_ ## func = FALSE; \
-+    }while(0)
-+
-+DEFINE_EXPECT(dispatch_invoke);
-+
-+typedef struct
-+{
-+    IDispatch IDispatch_iface;
-+    VARTYPE vt;
-+    HRESULT result;
-+} DummyDispatch;
-+
-+static inline DummyDispatch *impl_from_IDispatch(IDispatch *iface)
-+{
-+    return CONTAINING_RECORD(iface, DummyDispatch, IDispatch_iface);
-+}
-+
-+static ULONG WINAPI DummyDispatch_AddRef(IDispatch *iface)
-+{
-+    return 2;
-+}
-+
-+static ULONG WINAPI DummyDispatch_Release(IDispatch *iface)
-+{
-+    return 1;
-+}
-+
-+static HRESULT WINAPI DummyDispatch_QueryInterface(IDispatch *iface,
-+                                                   REFIID riid,
-+                                                   void** ppvObject)
-+{
-+    *ppvObject = NULL;
-+
-+    if (IsEqualIID(riid, &IID_IDispatch) ||
-+        IsEqualIID(riid, &IID_IUnknown))
-+    {
-+        *ppvObject = iface;
-+        IDispatch_AddRef(iface);
-+    }
-+
-+    return *ppvObject ? S_OK : E_NOINTERFACE;
-+}
-+
-+static HRESULT WINAPI DummyDispatch_GetTypeInfoCount(IDispatch *iface, UINT *pctinfo)
-+{
-+    ok(0, "Unexpected call\n");
-+    return E_NOTIMPL;
-+}
-+
-+static HRESULT WINAPI DummyDispatch_GetTypeInfo(IDispatch *iface, UINT tinfo, LCID lcid, ITypeInfo **ti)
-+{
-+    ok(0, "Unexpected call\n");
-+    return E_NOTIMPL;
-+}
-+
-+static HRESULT WINAPI DummyDispatch_GetIDsOfNames(IDispatch *iface, REFIID riid, LPOLESTR *names,
-+    UINT cnames, LCID lcid, DISPID *dispid)
-+{
-+    ok(0, "Unexpected call\n");
-+    return E_NOTIMPL;
-+}
-+
-+static HRESULT WINAPI DummyDispatch_Invoke(IDispatch *iface,
-+                                           DISPID dispid, REFIID riid,
-+                                           LCID lcid, WORD wFlags,
-+                                           DISPPARAMS *params,
-+                                           VARIANT *res,
-+                                           EXCEPINFO *ei,
-+                                           UINT *arg_err)
-+{
-+    DummyDispatch *This = impl_from_IDispatch(iface);
-+
-+    CHECK_EXPECT(dispatch_invoke);
-+
-+    ok(dispid == DISPID_VALUE, "got dispid %d\n", dispid);
-+    ok(IsEqualIID(riid, &IID_NULL), "go riid %s\n", wine_dbgstr_guid(riid));
-+    ok(wFlags == DISPATCH_PROPERTYGET, "Flags wrong\n");
-+
-+    ok(params->rgvarg == NULL, "got %p\n", params->rgvarg);
-+    ok(params->rgdispidNamedArgs == NULL, "got %p\n", params->rgdispidNamedArgs);
-+    ok(params->cArgs == 0, "got %d\n", params->cArgs);
-+    ok(params->cNamedArgs == 0, "got %d\n", params->cNamedArgs);
-+
-+    ok(res != NULL, "got %p\n", res);
-+    ok(V_VT(res) == VT_EMPTY, "got %d\n", V_VT(res));
-+    ok(ei == NULL, "got %p\n", ei);
-+    ok(arg_err == NULL, "got %p\n", arg_err);
-+
-+    if (FAILED(This->result))
-+        return This->result;
-+
-+    V_VT(res) = This->vt;
-+    if (This->vt == VT_UI1)
-+        V_UI1(res) = 34;
-+    else if (This->vt == VT_NULL)
-+    {
-+        V_VT(res) = VT_NULL;
-+        V_BSTR(res) = NULL;
-+    }
-+    else
-+        memset(res, 0, sizeof(*res));
-+
-+    return S_OK;
-+}
-+
-+static const IDispatchVtbl DummyDispatch_VTable =
-+{
-+    DummyDispatch_QueryInterface,
-+    DummyDispatch_AddRef,
-+    DummyDispatch_Release,
-+    DummyDispatch_GetTypeInfoCount,
-+    DummyDispatch_GetTypeInfo,
-+    DummyDispatch_GetIDsOfNames,
-+    DummyDispatch_Invoke
-+};
-+
-+static void init_test_dispatch(VARTYPE vt, DummyDispatch *dispatch)
-+{
-+    dispatch->IDispatch_iface.lpVtbl = &DummyDispatch_VTable;
-+    dispatch->vt = vt;
-+    dispatch->result = S_OK;
-+}
-+
- typedef struct IRecordInfoImpl
- {
-     IRecordInfo IRecordInfo_iface;
-@@ -5607,6 +5751,7 @@ static void test_VarCat(void)
-     HRESULT hres;
-     HRESULT expected_error_num;
-     int cmp;
-+    DummyDispatch dispatch;
- 
-     CHECKPTR(VarCat);
- 
-@@ -5941,6 +6086,78 @@ static void test_VarCat(void)
-     VariantClear(&result);
-     VariantClear(&expected);
- 
-+    /* Dispatch conversion */
-+    init_test_dispatch(VT_NULL, &dispatch);
-+    V_VT(&left) = VT_DISPATCH;
-+    V_DISPATCH(&left) = &dispatch.IDispatch_iface;
-+
-+    V_VT(&expected) = VT_BSTR;
-+    V_BSTR(&expected)= SysAllocString(sz_empty);
-+
-+    SET_EXPECT(dispatch_invoke);
-+    hres = VarCat(&left, &right, &result);
+     SET_EXPECT(dispatch_invoke);
+     hres = VarCat(&left, &right, &result);
+-    todo_wine ok(hres == S_OK, "got 0x%08x\n", hres);
 +    ok(hres == S_OK, "got 0x%08x\n", hres);
-+    ok(V_VT(&result) == VT_BSTR, "got %d\n", V_VT(&result));
-+    ok(SysStringLen(V_BSTR(&result)) == 0, "got %d\n", SysStringLen(V_BSTR(&result)));
-+    CHECK_CALLED(dispatch_invoke);
-+    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: DISPATCH concat with EMPTY did not return empty VT_BSTR\n");
-+
-+    VariantClear(&left);
-+    VariantClear(&right);
-+    VariantClear(&result);
-+    VariantClear(&expected);
-+
-+    init_test_dispatch(VT_NULL, &dispatch);
-+    V_VT(&right) = VT_DISPATCH;
-+    V_DISPATCH(&right) = &dispatch.IDispatch_iface;
-+
-+    SET_EXPECT(dispatch_invoke);
-+    hres = VarCat(&left, &right, &result);
+     ok(V_VT(&result) == VT_BSTR, "got %d\n", V_VT(&result));
+     ok(SysStringLen(V_BSTR(&result)) == 0, "got %d\n", SysStringLen(V_BSTR(&result)));
+     CHECK_CALLED(dispatch_invoke);
+@@ -6108,7 +6108,7 @@ static void test_VarCat(void)
+ 
+     SET_EXPECT(dispatch_invoke);
+     hres = VarCat(&left, &right, &result);
+-    todo_wine ok(hres == S_OK, "got 0x%08x\n", hres);
 +    ok(hres == S_OK, "got 0x%08x\n", hres);
-+    ok(V_VT(&result) == VT_BSTR, "got %d\n", V_VT(&result));
-+    ok(SysStringLen(V_BSTR(&result)) == 0, "got %d\n", SysStringLen(V_BSTR(&result)));
+     ok(V_VT(&result) == VT_BSTR, "got %d\n", V_VT(&result));
+     ok(SysStringLen(V_BSTR(&result)) == 0, "got %d\n", SysStringLen(V_BSTR(&result)));
+     CHECK_CALLED(dispatch_invoke);
+@@ -6140,7 +6140,21 @@ static void test_VarCat(void)
+ 
+     SET_EXPECT(dispatch_invoke);
+     hres = VarCat(&left, &right, &result);
+-    todo_wine ok(hres == E_OUTOFMEMORY, "got 0x%08x\n", hres);
++    ok(hres == E_OUTOFMEMORY, "got 0x%08x\n", hres);
 +    CHECK_CALLED(dispatch_invoke);
-+    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: DISPATCH concat with EMPTY did not return empty VT_BSTR\n");
 +
 +    VariantClear(&left);
 +    VariantClear(&right);
 +    VariantClear(&result);
-+    VariantClear(&expected);
-+
-+    init_test_dispatch(VT_UI1, &dispatch);
-+    V_VT(&right) = VT_DISPATCH;
-+    V_DISPATCH(&right) = &dispatch.IDispatch_iface;
-+
-+    V_VT(&expected) = VT_BSTR;
-+    V_VT(&left) = VT_BSTR;
-+    V_BSTR(&left) = SysAllocString(sz12);
-+    V_BSTR(&expected) = SysAllocString(sz1234);
-+    SET_EXPECT(dispatch_invoke);
-+    hres = pVarCat(&left,&right,&result);
-+    ok(hres == S_OK, "VarCat failed with error 0x%08x\n", hres);
-+    CHECK_CALLED(dispatch_invoke);
-+    ok(VarCmp(&result,&expected,lcid,0) == VARCMP_EQ, "VarCat: VT_DISPATCH concat with VT_BSTR failed to return correct result\n");
-+
-+    VariantClear(&left);
-+    VariantClear(&right);
-+    VariantClear(&result);
-+    VariantClear(&expected);
 +
 +    init_test_dispatch(VT_NULL, &dispatch);
-+    dispatch.result = E_OUTOFMEMORY;
++    dispatch.result = DISP_E_TYPEMISMATCH;
 +    V_VT(&right) = VT_DISPATCH;
 +    V_DISPATCH(&right) = &dispatch.IDispatch_iface;
 +
 +    SET_EXPECT(dispatch_invoke);
 +    hres = VarCat(&left, &right, &result);
-+    todo_wine ok(hres == E_OUTOFMEMORY, "got 0x%08x\n", hres);
-+    CHECK_CALLED(dispatch_invoke);
-+
-+    VariantClear(&left);
-+    VariantClear(&right);
-+    VariantClear(&result);
-+    VariantClear(&expected);
-+
-     /* Test boolean conversion */
-     V_VT(&left) = VT_BOOL;
-     V_BOOL(&left) = VARIANT_TRUE;
++    ok(hres == DISP_E_TYPEMISMATCH, "got 0x%08x\n", hres);
+     CHECK_CALLED(dispatch_invoke);
+ 
+     VariantClear(&left);
 diff --git a/dlls/oleaut32/variant.c b/dlls/oleaut32/variant.c
-index 17f753a..aa86be0 100644
+index 2dcded5..56ee83f 100644
 --- a/dlls/oleaut32/variant.c
 +++ b/dlls/oleaut32/variant.c
-@@ -2605,30 +2605,16 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
-                 else
-                     V_BSTR(&bstrvar_left) = SysAllocString(str_false);
-             }
+@@ -515,6 +515,22 @@ static inline HRESULT VARIANT_CoerceArray(VARIANTARG* pd, VARIANTARG* ps, VARTYP
+   return DISP_E_TYPEMISMATCH;
+ }
+ 
++static HRESULT VARIANT_FetchDispatchValue(LPVARIANT pvDispatch, LPVARIANT pValue)
++{
++    HRESULT hres;
++    static DISPPARAMS emptyParams = { NULL, NULL, 0, 0 };
++
++    if ((V_VT(pvDispatch) & VT_TYPEMASK) == VT_DISPATCH) {
++        if (NULL == V_DISPATCH(pvDispatch)) return DISP_E_TYPEMISMATCH;
++        hres = IDispatch_Invoke(V_DISPATCH(pvDispatch), DISPID_VALUE, &IID_NULL,
++            LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &emptyParams, pValue,
++            NULL, NULL);
++    } else {
++        hres = DISP_E_TYPEMISMATCH;
++    }
++    return hres;
++}
++
+ /******************************************************************************
+  * Check if a variants type is valid.
+  */
+@@ -2581,64 +2597,78 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
+     else
+     {
+         VARIANT bstrvar_left, bstrvar_right;
++        VARIANT *tmp;
++        VARIANT fetched;
++
+         V_VT(out) = VT_BSTR;
+ 
+         VariantInit(&bstrvar_left);
+         VariantInit(&bstrvar_right);
++        VariantInit(&fetched);
+ 
+         /* Convert left side variant to string */
+         if (leftvt != VT_BSTR)
+         {
 -            /* Fill with empty string for later concat with right side */
--            else if (leftvt == VT_NULL)
--            {
+-            if (leftvt == VT_NULL)
++            tmp = left;
++
++            if(leftvt == VT_DISPATCH)
+             {
 -                V_VT(&bstrvar_left) = VT_BSTR;
 -                V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
--            }
-             else
++                hres = VARIANT_FetchDispatchValue(left, &fetched);
++                if(FAILED(hres))
++                    goto failed;
++
++                tmp = &fetched;
+             }
+-            else
++
++            hres = VariantChangeTypeEx(&bstrvar_left,tmp,0,VARIANT_ALPHABOOL|VARIANT_LOCALBOOL,VT_BSTR);
++            if (hres == DISP_E_TYPEMISMATCH)
              {
-+                /* The value may not be able to be coerced, ie. VT_NULL */
-                 hres = VariantChangeTypeEx(&bstrvar_left,left,0,0,VT_BSTR);
+-                hres = VariantChangeTypeEx(&bstrvar_left,left,0,VARIANT_ALPHABOOL|VARIANT_LOCALBOOL,VT_BSTR);
 -                if (hres != S_OK) {
 -                    VariantClear(&bstrvar_left);
 -                    VariantClear(&bstrvar_right);
--                    if (leftvt == VT_NULL && (rightvt == VT_EMPTY ||
--                        rightvt == VT_NULL || rightvt ==  VT_I2 ||
--                        rightvt == VT_I4 || rightvt == VT_R4 ||
--                        rightvt == VT_R8 || rightvt == VT_CY ||
--                        rightvt == VT_DATE || rightvt == VT_BSTR ||
--                        rightvt == VT_BOOL ||  rightvt == VT_DECIMAL ||
--                        rightvt == VT_I1 || rightvt == VT_UI1 ||
--                        rightvt == VT_UI2 || rightvt == VT_UI4 ||
--                        rightvt == VT_I8 || rightvt == VT_UI8 ||
--                        rightvt == VT_INT || rightvt == VT_UINT))
--                        return DISP_E_BADVARTYPE;
-+                if (hres != S_OK && hres != DISP_E_TYPEMISMATCH)
-                     return hres;
-+                else if(FAILED(hres))
-+                {
-+                    V_VT(&bstrvar_left) = VT_BSTR;
-+                    V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
-                 }
+-                    return hres;
+-                }
++                V_VT(&bstrvar_left) = VT_BSTR;
++                V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
              }
++            else if(hres != S_OK)
++                goto failed;
          }
-@@ -2645,30 +2631,16 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
-                 else
-                     V_BSTR(&bstrvar_right) = SysAllocString(str_false);
-             }
+ 
+         /* convert right side variant to string */
+         if (rightvt != VT_BSTR)
+         {
 -            /* Fill with empty string for later concat with right side */
--            else if (rightvt == VT_NULL)
--            {
+-            if (rightvt == VT_NULL)
++            tmp = right;
++
++            if(rightvt == VT_DISPATCH)
+             {
 -                V_VT(&bstrvar_right) = VT_BSTR;
 -                V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
--            }
-             else
++                hres = VARIANT_FetchDispatchValue(right, &fetched);
++                if(FAILED(hres))
++                    goto failed;
++
++                tmp = &fetched;
+             }
+-            else
++
++            hres = VariantChangeTypeEx(&bstrvar_right,tmp,0,VARIANT_ALPHABOOL|VARIANT_LOCALBOOL,VT_BSTR);
++            if (hres == DISP_E_TYPEMISMATCH)
              {
-+                /* The value may not be able to be coerced, ie. VT_NULL */
-                 hres = VariantChangeTypeEx(&bstrvar_right,right,0,0,VT_BSTR);
+-                hres = VariantChangeTypeEx(&bstrvar_right,right,0,VARIANT_ALPHABOOL|VARIANT_LOCALBOOL,VT_BSTR);
 -                if (hres != S_OK) {
 -                    VariantClear(&bstrvar_left);
 -                    VariantClear(&bstrvar_right);
--                    if (rightvt == VT_NULL && (leftvt == VT_EMPTY ||
--                        leftvt == VT_NULL || leftvt ==  VT_I2 ||
--                        leftvt == VT_I4 || leftvt == VT_R4 ||
--                        leftvt == VT_R8 || leftvt == VT_CY ||
--                        leftvt == VT_DATE || leftvt == VT_BSTR ||
--                        leftvt == VT_BOOL ||  leftvt == VT_DECIMAL ||
--                        leftvt == VT_I1 || leftvt == VT_UI1 ||
--                        leftvt == VT_UI2 || leftvt == VT_UI4 ||
--                        leftvt == VT_I8 || leftvt == VT_UI8 ||
--                        leftvt == VT_INT || leftvt == VT_UINT))
--                        return DISP_E_BADVARTYPE;
-+                if (hres != S_OK && hres != DISP_E_TYPEMISMATCH)
-                     return hres;
-+                else if(FAILED(hres))
-+                {
-+                    V_VT(&bstrvar_right) = VT_BSTR;
-+                    V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
-                 }
+-                    return hres;
+-                }
++                V_VT(&bstrvar_right) = VT_BSTR;
++                V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
              }
++            else if(hres != S_OK)
++                goto failed;
          }
+ 
+         /* Concat the resulting strings together */
+         if (leftvt == VT_BSTR && rightvt == VT_BSTR)
+-            VarBstrCat (V_BSTR(left), V_BSTR(right), &V_BSTR(out));
++            hres = VarBstrCat (V_BSTR(left), V_BSTR(right), &V_BSTR(out));
+         else if (leftvt != VT_BSTR && rightvt != VT_BSTR)
+-            VarBstrCat (V_BSTR(&bstrvar_left), V_BSTR(&bstrvar_right), &V_BSTR(out));
++            hres = VarBstrCat (V_BSTR(&bstrvar_left), V_BSTR(&bstrvar_right), &V_BSTR(out));
+         else if (leftvt != VT_BSTR && rightvt == VT_BSTR)
+-            VarBstrCat (V_BSTR(&bstrvar_left), V_BSTR(right), &V_BSTR(out));
++            hres = VarBstrCat (V_BSTR(&bstrvar_left), V_BSTR(right), &V_BSTR(out));
+         else if (leftvt == VT_BSTR && rightvt != VT_BSTR)
+-            VarBstrCat (V_BSTR(left), V_BSTR(&bstrvar_right), &V_BSTR(out));
++            hres = VarBstrCat (V_BSTR(left), V_BSTR(&bstrvar_right), &V_BSTR(out));
+ 
++failed:
+         VariantClear(&bstrvar_left);
+         VariantClear(&bstrvar_right);
+-        return S_OK;
++        VariantClear(&fetched);
++        return hres;
+     }
+ }
+ 
+@@ -2865,22 +2895,6 @@ HRESULT WINAPI VarCmp(LPVARIANT left, LPVARIANT right, LCID lcid, DWORD flags)
+ #undef _VARCMP
+ }
+ 
+-static HRESULT VARIANT_FetchDispatchValue(LPVARIANT pvDispatch, LPVARIANT pValue)
+-{
+-    HRESULT hres;
+-    static DISPPARAMS emptyParams = { NULL, NULL, 0, 0 };
+-
+-    if ((V_VT(pvDispatch) & VT_TYPEMASK) == VT_DISPATCH) {
+-        if (NULL == V_DISPATCH(pvDispatch)) return DISP_E_TYPEMISMATCH;
+-        hres = IDispatch_Invoke(V_DISPATCH(pvDispatch), DISPID_VALUE, &IID_NULL,
+-            LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &emptyParams, pValue,
+-            NULL, NULL);
+-    } else {
+-        hres = DISP_E_TYPEMISMATCH;
+-    }
+-    return hres;
+-}
+-
+ /**********************************************************************
+  *              VarAnd [OLEAUT32.142]
+  *
 -- 
 1.9.1
 
