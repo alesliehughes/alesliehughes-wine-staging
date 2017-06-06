@@ -1,4 +1,4 @@
-From 0613b4cbd4bc2b0f0a0e28a785cae3640b748656 Mon Sep 17 00:00:00 2001
+From 2043b60ba4011d9f7dbb29c4942fa5e729cec3f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 24 May 2017 15:01:02 +1000
 Subject: [PATCH 1/2] include/windocdec.idl: Add interface IWICImagingFactory2
@@ -12,7 +12,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 60 insertions(+), 1 deletion(-)
 
 diff --git a/include/wincodec.idl b/include/wincodec.idl
-index 962a6fd688..6ae817ac43 100644
+index 962a6fd..1ea6e0e 100644
 --- a/include/wincodec.idl
 +++ b/include/wincodec.idl
 @@ -20,6 +20,8 @@ import "wtypes.idl";
@@ -65,7 +65,7 @@ index 962a6fd688..6ae817ac43 100644
 -cpp_quote("DEFINE_GUID(CLSID_WICImagingFactory, 0xcacaf262,0x9370,0x4615,0xa1,0x3b,0x9f,0x55,0x39,0xda,0x4c,0x0a);")
 +[
 +    object,
-+    uuid(04C75BF8-3CE1-473B-ACC5-3CC4F5E94999),
++    uuid(04c75bf8-3ce1-473b-acc5-3cc4f5e94999),
 +    local
 +]
 +interface IWICImageEncoder : IUnknown
@@ -112,5 +112,5 @@ index 962a6fd688..6ae817ac43 100644
      object,
      uuid(dc2bb46d-3f07-481e-8625-220c4aedbb33)
 -- 
-2.11.0
+1.9.1
 
