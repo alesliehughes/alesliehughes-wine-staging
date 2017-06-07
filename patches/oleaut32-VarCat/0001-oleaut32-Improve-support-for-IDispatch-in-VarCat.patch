@@ -1,9 +1,10 @@
-From 102da1eff0bdd3a1922a6aac7af8d11a90bc2b21 Mon Sep 17 00:00:00 2001
+From d4e0b22a2aa98659a00366a216c70082b57817ba Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 May 2017 08:54:17 +1000
 Subject: [PATCH] oleaut32: Improve support for IDispatch in VarCat
 
 v3: Use worker function to get the value from Dispatch.
+v4: Use SysStringLen() for empty string.
 
 We cannot use VariantChangeTypeEx to convert the IDispatch type
 since it always returns DISP_E_TYPEMISMATCH when the Invoke fails.
@@ -13,11 +14,11 @@ Fixes https://bugs.winehq.org/show_bug.cgi?id=27106
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/oleaut32/tests/vartest.c |  20 +++++++--
- dlls/oleaut32/variant.c       | 100 ++++++++++++++++++++++++------------------
- 2 files changed, 74 insertions(+), 46 deletions(-)
+ dlls/oleaut32/variant.c       | 102 ++++++++++++++++++++++++------------------
+ 2 files changed, 75 insertions(+), 47 deletions(-)
 
 diff --git a/dlls/oleaut32/tests/vartest.c b/dlls/oleaut32/tests/vartest.c
-index a271c50..d8a6ebf 100644
+index a271c5092a..d8a6ebf8cb 100644
 --- a/dlls/oleaut32/tests/vartest.c
 +++ b/dlls/oleaut32/tests/vartest.c
 @@ -6093,7 +6093,7 @@ static void test_VarCat(void)
@@ -62,7 +63,7 @@ index a271c50..d8a6ebf 100644
  
      VariantClear(&left);
 diff --git a/dlls/oleaut32/variant.c b/dlls/oleaut32/variant.c
-index 2dcded5..56ee83f 100644
+index 2dcded5989..06799dae78 100644
 --- a/dlls/oleaut32/variant.c
 +++ b/dlls/oleaut32/variant.c
 @@ -515,6 +515,22 @@ static inline HRESULT VARIANT_CoerceArray(VARIANTARG* pd, VARIANTARG* ps, VARTYP
@@ -88,6 +89,15 @@ index 2dcded5..56ee83f 100644
  /******************************************************************************
   * Check if a variants type is valid.
   */
+@@ -2503,7 +2519,7 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
+ {
+     VARTYPE leftvt,rightvt,resultvt;
+     HRESULT hres;
+-    static const WCHAR sz_empty[] = {'\0'};
++
+     leftvt = V_VT(left);
+     rightvt = V_VT(right);
+ 
 @@ -2581,64 +2597,78 @@ HRESULT WINAPI VarCat(LPVARIANT left, LPVARIANT right, LPVARIANT out)
      else
      {
@@ -130,7 +140,7 @@ index 2dcded5..56ee83f 100644
 -                    return hres;
 -                }
 +                V_VT(&bstrvar_left) = VT_BSTR;
-+                V_BSTR(&bstrvar_left) = SysAllocString(sz_empty);
++                V_BSTR(&bstrvar_left) = SysAllocStringLen(NULL, 0);
              }
 +            else if(hres != S_OK)
 +                goto failed;
@@ -165,7 +175,7 @@ index 2dcded5..56ee83f 100644
 -                    return hres;
 -                }
 +                V_VT(&bstrvar_right) = VT_BSTR;
-+                V_BSTR(&bstrvar_right) = SysAllocString(sz_empty);
++                V_BSTR(&bstrvar_right) = SysAllocStringLen(NULL, 0);
              }
 +            else if(hres != S_OK)
 +                goto failed;
@@ -218,5 +228,5 @@ index 2dcded5..56ee83f 100644
   *              VarAnd [OLEAUT32.142]
   *
 -- 
-1.9.1
+2.11.0
 
