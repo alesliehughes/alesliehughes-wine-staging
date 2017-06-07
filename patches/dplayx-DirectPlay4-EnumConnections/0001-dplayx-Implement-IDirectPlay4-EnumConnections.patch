@@ -1,0 +1,28 @@
+From 1d4468d7c523016b2c826687892c59d2e575b56d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 7 Jun 2017 11:43:13 +1000
+Subject: [PATCH] dplayx: Implement IDirectPlay4 EnumConnections
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dplayx/dplay.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dplayx/dplay.c b/dlls/dplayx/dplay.c
+index 4a80f1c29b..86d5355066 100644
+--- a/dlls/dplayx/dplay.c
++++ b/dlls/dplayx/dplay.c
+@@ -4490,8 +4490,8 @@ static HRESULT WINAPI IDirectPlay4Impl_EnumConnections( IDirectPlay4 *iface,
+         const GUID *application, LPDPENUMCONNECTIONSCALLBACK enumcb, void *context, DWORD flags )
+ {
+     IDirectPlayImpl *This = impl_from_IDirectPlay4( iface );
+-    FIXME( "(%p)->(%p,%p,%p,0x%08x): stub\n", This, application, enumcb, context, flags );
+-    return DP_OK;
++    return IDirectPlayX_EnumConnections( &This->IDirectPlay4_iface, application, enumcb, context,
++            flags );
+ }
+ 
+ static HRESULT WINAPI IDirectPlay3AImpl_EnumGroupsInGroup( IDirectPlay3A *iface, DPID group,
+-- 
+2.11.0
+
