@@ -1,0 +1,42 @@
+From 988ee60e7fa75dd46a1892e00ee9e28a7deaeb88 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 15 Jun 2017 08:32:48 +1000
+Subject: [PATCH] include/wincodec.idl: Stop redefinition of ID2D1Image
+
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=43175
+
+v2 - import d2d1.idl to include support for ID2D1Image
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/wincodec.idl | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/include/wincodec.idl b/include/wincodec.idl
+index 1ea6e0e..7b6c3a7 100644
+--- a/include/wincodec.idl
++++ b/include/wincodec.idl
+@@ -19,6 +19,7 @@
+ import "wtypes.idl";
+ import "propidl.idl";
+ import "ocidl.idl";
++import "d2d1.idl";
+ 
+ cpp_quote ("#include \"dcommon.h\"")
+ 
+@@ -219,12 +220,10 @@ cpp_quote("DEFINE_GUID(GUID_WICPixelFormat32bppCMYK, 0x6fddc324,0x4e03,0x4bfe,0x
+ 
+ cpp_quote("#if 0")
+ typedef DWORD *ID2D1Device;
+-typedef DWORD *ID2D1Image;
+ typedef DWORD *D2D1_PIXEL_FORMAT;
+ cpp_quote ("#endif")
+ 
+ cpp_quote ("typedef interface ID2D1Device ID2D1Device;")
+-cpp_quote ("typedef interface ID2D1Image ID2D1Image;")
+ 
+ typedef struct WICRect {
+     INT X;
+-- 
+1.9.1
+
