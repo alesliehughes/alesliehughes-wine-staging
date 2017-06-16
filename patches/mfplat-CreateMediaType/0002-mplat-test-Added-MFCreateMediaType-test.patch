@@ -1,19 +1,23 @@
-From ead32150aef9ff4092cb59e676df2fe46f201059 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 24 May 2017 11:17:57 +1000
-Subject: [PATCH 3/3] mplat/test: Added MFCreateMediaType test
+Subject: [v3 PATCH 3/3] mplat/test: Added MFCreateMediaType test
+Message-Id: <MEXPR01MB0198F29992BCDAF082F4BD6D93F10@MEXPR01MB0198.ausprd01.prod.outlook.com>
+Date: Wed, 31 May 2017 04:38:19 +0000
+In-Reply-To: <20170531043740.24485-1-leslie_alistair@hotmail.com>
+References: <20170531043740.24485-1-leslie_alistair@hotmail.com>
+
+v2,v3 - No Changes
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/mfplat/tests/mfplat.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ dlls/mfplat/tests/mfplat.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
 diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
-index 4a95137bc4..2aa1f0d5f8 100644
+index 83e1538686..bd81ae5d39 100644
 --- a/dlls/mfplat/tests/mfplat.c
 +++ b/dlls/mfplat/tests/mfplat.c
-@@ -154,12 +154,38 @@ if(0)
-     ok(ret == S_OK || broken(ret == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)), "got %x\n", ret);
+@@ -191,6 +191,33 @@ static void init_functions(void)
+ #undef X
  }
  
 +void test_MFCreateMediaType(void)
@@ -41,16 +45,20 @@ index 4a95137bc4..2aa1f0d5f8 100644
 +
 +    MFShutdown();
 +}
- 
++
++
  START_TEST(mfplat)
  {
      CoInitialize(NULL);
+@@ -199,6 +226,7 @@ START_TEST(mfplat)
  
      test_register();
+     test_source_resolver();
 +    test_MFCreateMediaType();
  
      CoUninitialize();
  }
+
 -- 
 2.11.0
 
