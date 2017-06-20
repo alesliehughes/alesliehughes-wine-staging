@@ -1,7 +1,7 @@
 From 988ee60e7fa75dd46a1892e00ee9e28a7deaeb88 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 15 Jun 2017 08:32:48 +1000
-Subject: [PATCH] include/wincodec.idl: Stop redefinition of ID2D1Image
+Subject: [v2 PATCH] include/wincodec.idl: Stop redefinition of ID2D1Image
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=43175
 
