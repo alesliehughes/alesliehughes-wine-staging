@@ -1,0 +1,27 @@
+From c1d005fe149b3310126faa390a0511528ee7a07c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Jun 2017 15:50:15 +1000
+Subject: [PATCH 3/3] qmgr: Register interface
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/qmgr/qmgr.rgs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dlls/qmgr/qmgr.rgs b/dlls/qmgr/qmgr.rgs
+index 675505ed6a..b7e63a58c3 100644
+--- a/dlls/qmgr/qmgr.rgs
++++ b/dlls/qmgr/qmgr.rgs
+@@ -11,5 +11,9 @@ HKCR
+         {
+             val AppID = s '{69AD4AEE-51BE-439B-A92C-86AE490E8B30}'
+         }
++        '{659CDEA7-489E-11D9-A9CD-000D56965251}'
++        {
++            val AppID = s '{69AD4AEE-51BE-439B-A92C-86AE490E8B30}'
++        }
+     }
+ }
+-- 
+2.11.0
+
