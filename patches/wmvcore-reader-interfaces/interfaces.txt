@@ -1,3 +1,12 @@
+static const char* debugstr_longlong(ULONGLONG ll)
+{
+    static char str[17];
+    if (sizeof(ll) > sizeof(unsigned long) && ll >> 32)
+        sprintf(str, "%lx%08lx", (unsigned long)(ll >> 32), (unsigned long)ll);
+    else
+        sprintf(str, "%lx", (unsigned long)ll);
+    return str;
+}
 
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({96406bec-2b2b-11d3-b36b-00c04f6108ff} 0x2a982d4)
 IID_IWMReaderNetworkConfig
