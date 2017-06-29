@@ -1,0 +1,45 @@
+From 194c3b2bdcb84bffdcc29f83ae0273e31fa83186 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 30 Jun 2017 09:13:28 +1000
+Subject: [PATCH 08/10] iphlpapi/tests: Use standard wine_dbgstr_longlong
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/iphlpapi/tests/iphlpapi.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/iphlpapi/tests/iphlpapi.c b/dlls/iphlpapi/tests/iphlpapi.c
+index d8c319e..dd0cb90 100644
+--- a/dlls/iphlpapi/tests/iphlpapi.c
++++ b/dlls/iphlpapi/tests/iphlpapi.c
+@@ -167,16 +167,6 @@ static const char *ntoa( DWORD ip )
+     return buffer;
+ }
+ 
+-static inline const char* debugstr_longlong(ULONGLONG ll)
+-{
+-    static char string[17];
+-    if (sizeof(ll) > sizeof(unsigned long) && ll >> 32)
+-        sprintf(string, "%lx%08lx", (unsigned long)(ll >> 32), (unsigned long)ll);
+-    else
+-        sprintf(string, "%lx", (unsigned long)ll);
+-    return string;
+-}
+-
+ /*
+ still-to-be-tested 98-only functions:
+ GetUniDirectionalAdapterInfo
+@@ -1513,8 +1503,8 @@ static void test_GetAdaptersAddresses(void)
+         }
+ 
+         if (S(U(*aa)).Length < sizeof(IP_ADAPTER_ADDRESSES_LH)) continue;
+-        trace("TransmitLinkSpeed:     %s\n", debugstr_longlong(aa->TransmitLinkSpeed));
+-        trace("ReceiveLinkSpeed:      %s\n", debugstr_longlong(aa->ReceiveLinkSpeed));
++        trace("TransmitLinkSpeed:     %s\n", wine_dbgstr_longlong(aa->TransmitLinkSpeed));
++        trace("ReceiveLinkSpeed:      %s\n", wine_dbgstr_longlong(aa->ReceiveLinkSpeed));
+         trace("FirstWinsServerAddress:%p\n", aa->FirstWinsServerAddress);
+         trace("FirstGatewayAddress:   %p\n", aa->FirstGatewayAddress);
+         trace("Ipv4Metric:            %u\n", aa->Ipv4Metric);
+-- 
+1.9.1
+

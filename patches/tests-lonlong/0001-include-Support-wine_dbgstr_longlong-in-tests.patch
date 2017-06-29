@@ -1,0 +1,48 @@
+From 47f781b944d96ae617c942fac5ba6ab49b928d0f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 29 Jun 2017 09:40:38 +1000
+Subject: [PATCH 01/10] include: Support wine_dbgstr_longlong in tests
+
+v2 - Fixed formatting
+   - Release unused part of buffer.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/wine/test.h | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/include/wine/test.h b/include/wine/test.h
+index af602c0..4ec66d5 100644
+--- a/include/wine/test.h
++++ b/include/wine/test.h
+@@ -68,6 +68,7 @@ extern const char *wine_dbgstr_wn( const WCHAR *str, int n );
+ extern const char *wine_dbgstr_guid( const GUID *guid );
+ extern const char *wine_dbgstr_rect( const RECT *rect );
+ static inline const char *wine_dbgstr_w( const WCHAR *s ) { return wine_dbgstr_wn( s, -1 ); }
++extern const char *wine_dbgstr_longlong( ULONGLONG ll );
+ 
+ /* strcmpW is available for tests compiled under Wine, but not in standalone
+  * builds under Windows, so we reimplement it under a different name. */
+@@ -541,6 +542,19 @@ const char *wine_dbgstr_rect( const RECT *rect )
+     return res;
+ }
+ 
++const char *wine_dbgstr_longlong( ULONGLONG ll )
++{
++    char *res;
++
++    res = get_temp_buffer( 17 );
++    if (sizeof(ll) > sizeof(unsigned long) && ll >> 32)
++        sprintf( res, "%lx%08lx", (unsigned long)(ll >> 32), (unsigned long)ll );
++    else
++        sprintf( res, "%lx", (unsigned long)ll );
++    release_temp_buffer( res, strlen(res) + 1 );
++    return res;
++}
++
+ /* Find a test by name */
+ static const struct test *find_test( const char *name )
+ {
+-- 
+1.9.1
+
