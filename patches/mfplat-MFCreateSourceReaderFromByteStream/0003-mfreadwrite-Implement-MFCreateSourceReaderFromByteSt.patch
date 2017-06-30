@@ -1,17 +1,17 @@
-From b82e6d3b754d835dd82dff9e2510c2cb745428f0 Mon Sep 17 00:00:00 2001
+From 312d806922f1e83418c613bf6cbe650ad95f4b62 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 20 Apr 2017 21:44:51 +1000
 Subject: [PATCH] mfreadwrite: Implement MFCreateSourceReaderFromByteStream
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/mfreadwrite/main.c           | 192 ++++++++++++++++++++++++++++++++++++++
+ dlls/mfreadwrite/main.c           | 175 ++++++++++++++++++++++++++++++++++++++
  dlls/mfreadwrite/mfreadwrite.spec |   2 +-
  include/mfreadwrite.idl           |   2 +
- 3 files changed, 195 insertions(+), 1 deletion(-)
+ 3 files changed, 178 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
-index d3feeaf61d..6c399e901b 100644
+index d3feeaf..89cfed3 100644
 --- a/dlls/mfreadwrite/main.c
 +++ b/dlls/mfreadwrite/main.c
 @@ -20,8 +20,11 @@
@@ -26,7 +26,7 @@ index d3feeaf61d..6c399e901b 100644
  #include "mfreadwrite.h"
  
  #include "wine/debug.h"
-@@ -50,3 +53,192 @@ HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAt
+@@ -50,3 +53,175 @@ HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAt
  
      return E_NOTIMPL;
  }
@@ -93,100 +93,83 @@ index d3feeaf61d..6c399e901b 100644
 +
 +static HRESULT WINAPI src_reader_GetStreamSelection(IMFSourceReader *iface, DWORD index, BOOL *selected)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %p\n", This, index, selected);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_SetStreamSelection(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        BOOL selected)
++static HRESULT WINAPI src_reader_SetStreamSelection(IMFSourceReader *iface, DWORD index, BOOL selected)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %d\n", This, index, selected);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_GetNativeMediaType(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        DWORD typeindex,
-+        IMFMediaType **type)
++static HRESULT WINAPI src_reader_GetNativeMediaType(IMFSourceReader *iface, DWORD index, DWORD typeindex,
++            IMFMediaType **type)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %d, %p\n", This, index, typeindex, type);
++
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_GetCurrentMediaType(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        IMFMediaType **type)
++static HRESULT WINAPI src_reader_GetCurrentMediaType(IMFSourceReader *iface, DWORD index, IMFMediaType **type)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %p\n", This, index, type);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_SetCurrentMediaType(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        DWORD *reserved,
++static HRESULT WINAPI src_reader_SetCurrentMediaType(IMFSourceReader *iface, DWORD index, DWORD *reserved,
 +        IMFMediaType *type)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %p, %p\n", This, index, reserved, type);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_SetCurrentPosition(
-+        IMFSourceReader *iface,
-+        REFGUID format,
-+        REFPROPVARIANT position)
++static HRESULT WINAPI src_reader_SetCurrentPosition(IMFSourceReader *iface, REFGUID format, REFPROPVARIANT position)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, %s, %p\n", This, debugstr_guid(format), position);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_ReadSample(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        DWORD flags,
-+        DWORD *actualindex,
-+        DWORD *sampleflags,
-+        LONGLONG *timestamp,
++static HRESULT WINAPI src_reader_ReadSample(IMFSourceReader *iface, DWORD index,
++        DWORD flags, DWORD *actualindex, DWORD *sampleflags, LONGLONG *timestamp,
 +        IMFSample **sample)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, 0x%08x, %p, %p, %p, %p\n", This, index, flags, actualindex,
++          sampleflags, timestamp, sample);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_Flush(
-+        IMFSourceReader *iface,
-+        DWORD index)
++static HRESULT WINAPI src_reader_Flush(IMFSourceReader *iface, DWORD index)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x\n", This, index);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_GetServiceForStream(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        REFGUID service,
-+        REFIID riid,
-+        void **object)
++static HRESULT WINAPI src_reader_GetServiceForStream(IMFSourceReader *iface, DWORD index, REFGUID service,
++        REFIID riid, void **object)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %s, %s, %p\n", This, index, debugstr_guid(service), debugstr_guid(riid), object);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI src_reader_GetPresentationAttribute(
-+        IMFSourceReader *iface,
-+        DWORD index,
-+        REFGUID guid,
-+        PROPVARIANT *attr)
++static HRESULT WINAPI src_reader_GetPresentationAttribute(IMFSourceReader *iface, DWORD index,
++        REFGUID guid, PROPVARIANT *attr)
 +{
-+    FIXME("\n");
++    srcreader *This = impl_from_IMFSourceReader(iface);
++    FIXME("%p, 0x%08x, %s, %p\n", This, index, debugstr_guid(guid), attr);
 +    return E_NOTIMPL;
 +}
 +
-+struct IMFSourceReaderVtbl srcreader_vtbl = 
++struct IMFSourceReaderVtbl srcreader_vtbl =
 +{
 +    src_reader_QueryInterface,
 +    src_reader_AddRef,
@@ -203,7 +186,7 @@ index d3feeaf61d..6c399e901b 100644
 +    src_reader_GetPresentationAttribute
 +};
 +
-+HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFMediaSource *stream, IMFAttributes *attributes, IMFSourceReader **reader)
++HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFByteStream *stream, IMFAttributes *attributes, IMFSourceReader **reader)
 +{
 +    srcreader *object;
 +
@@ -220,7 +203,7 @@ index d3feeaf61d..6c399e901b 100644
 +    return S_OK;
 +}
 diff --git a/dlls/mfreadwrite/mfreadwrite.spec b/dlls/mfreadwrite/mfreadwrite.spec
-index 70b95a8ed9..4272b7183c 100644
+index 70b95a8..4272b71 100644
 --- a/dlls/mfreadwrite/mfreadwrite.spec
 +++ b/dlls/mfreadwrite/mfreadwrite.spec
 @@ -2,6 +2,6 @@
@@ -232,17 +215,17 @@ index 70b95a8ed9..4272b7183c 100644
  @ stdcall MFCreateSourceReaderFromMediaSource(ptr ptr ptr)
  @ stub MFCreateSourceReaderFromURL
 diff --git a/include/mfreadwrite.idl b/include/mfreadwrite.idl
-index 3f53ff9340..4c99d3d2c4 100644
+index a146552..d861fc6 100644
 --- a/include/mfreadwrite.idl
 +++ b/include/mfreadwrite.idl
-@@ -42,5 +42,7 @@ interface IMFSourceReader : IUnknown
+@@ -53,5 +53,7 @@ interface IMFSourceReader : IUnknown
      HRESULT GetPresentationAttribute([in] DWORD index, [in] REFGUID guid, [out] PROPVARIANT *attr);
  };
  
-+cpp_quote( "HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFMediaSource *source, IMFAttributes *attributes," )
++cpp_quote( "HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFByteStream *stream, IMFAttributes *attributes," )
 +cpp_quote( "                                                   IMFSourceReader **reader);" )
  cpp_quote( "HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAttributes *attributes," )
  cpp_quote( "                                                   IMFSourceReader **reader);" )
 -- 
-2.11.0
+1.9.1
 
