@@ -57,7 +57,7 @@ index 6cf48b7e19..dcf0856bfb 100644
 +library BackgroundCopyManager3_0
 +{
 +    [
-+        uuid(659cdea7-489e-11d9-a9cd-000d56965251),
++        uuid(659cdea7-489e-11d9-a9cd-000d56965251)
 +    ]
 +    coclass BackgroundCopyManager3_0
 +    {
