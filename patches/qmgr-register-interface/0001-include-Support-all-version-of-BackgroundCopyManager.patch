@@ -1,0 +1,64 @@
+From 2f3b83a029b8aa77d232ba7d7e14a54e1c587d99 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 6 Jul 2017 14:20:05 +1000
+Subject: [PATCH] include: Support all version of BackgroundCopyManager from
+ bits.h
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/qmgrprxy/qmgrprxy.idl | 6 ------
+ include/bits1_5.idl        | 2 ++
+ include/bits2_0.idl        | 2 ++
+ include/bits2_5.idl        | 2 ++
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/qmgrprxy/qmgrprxy.idl b/dlls/qmgrprxy/qmgrprxy.idl
+index 046c9ca..7fae46a 100644
+--- a/dlls/qmgrprxy/qmgrprxy.idl
++++ b/dlls/qmgrprxy/qmgrprxy.idl
+@@ -22,12 +22,6 @@
+ 
+ #include "bits.idl"
+ 
+-#define DO_NO_IMPORTS
+-#include "bits1_5.idl"
+-#include "bits2_0.idl"
+-#include "bits2_5.idl"
+-#include "bits3_0.idl"
+-
+ [
+     threading(both),
+     uuid(5ce34c0d-0dc9-4c1f-897c-daa1b78cee7c)  /* IBackgroundCopyManager */
+diff --git a/include/bits1_5.idl b/include/bits1_5.idl
+index 274a7de..5937ce0 100644
+--- a/include/bits1_5.idl
++++ b/include/bits1_5.idl
+@@ -86,3 +86,5 @@ interface IBackgroundCopyJob2 : IBackgroundCopyJob
+     HRESULT SetCredentials(BG_AUTH_CREDENTIALS *cred);
+     HRESULT RemoveCredentials(BG_AUTH_TARGET target, BG_AUTH_SCHEME scheme);
+ }
++
++cpp_quote("#include \"bits2_0.h\"")
+diff --git a/include/bits2_0.idl b/include/bits2_0.idl
+index efe6dde..0440ccd 100644
+--- a/include/bits2_0.idl
++++ b/include/bits2_0.idl
+@@ -93,3 +93,5 @@ library BackgroundCopyManager2_0
+     interface IBackgroundCopyJob3;
+     interface IBackgroundCopyFile2;
+ }
++
++cpp_quote("#include \"bits2_5.h\"")
+diff --git a/include/bits2_5.idl b/include/bits2_5.idl
+index 29ea75c..c58dc8a 100644
+--- a/include/bits2_5.idl
++++ b/include/bits2_5.idl
+@@ -98,3 +98,5 @@ library BackgroundCopyManager2_5
+     interface IBackgroundCopyCallback;
+     interface IBackgroundCopyJobHttpOptions;
+ }
++
++cpp_quote("#include \"bits3_0.h\"")
+-- 
+1.9.1
+
