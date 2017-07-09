@@ -1,12 +1,6 @@
 
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({96406bec-2b2b-11d3-b36b-00c04f6108ff} 0x2a982d4)
-IID_IWMReaderNetworkConfig
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({d979a853-042b-4050-8387-c939db22013f} 0x2a982d8)
-IID_IWMReaderNetworkConfig2
-
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({96406bed-2b2b-11d3-b36b-00c04f6108ff} 0x2a982dc)
-IWMReaderStreamClock
+*IWMReaderStreamClock
 
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({56a86897-0ad4-11ce-b03a-0020af0ba770} 0x2a982e0)
 ????
