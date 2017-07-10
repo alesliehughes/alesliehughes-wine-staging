@@ -1,4 +1,4 @@
-From 2f3b83a029b8aa77d232ba7d7e14a54e1c587d99 Mon Sep 17 00:00:00 2001
+From c5db094c8363b0b027792c0ba8d03c53a8a13c2e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 6 Jul 2017 14:20:05 +1000
 Subject: [PATCH] include: Support all version of BackgroundCopyManager from
@@ -6,29 +6,11 @@ Subject: [PATCH] include: Support all version of BackgroundCopyManager from
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/qmgrprxy/qmgrprxy.idl | 6 ------
- include/bits1_5.idl        | 2 ++
- include/bits2_0.idl        | 2 ++
- include/bits2_5.idl        | 2 ++
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ include/bits1_5.idl | 2 ++
+ include/bits2_0.idl | 5 +++++
+ include/bits2_5.idl | 2 ++
+ 3 files changed, 9 insertions(+)
 
-diff --git a/dlls/qmgrprxy/qmgrprxy.idl b/dlls/qmgrprxy/qmgrprxy.idl
-index 046c9ca..7fae46a 100644
---- a/dlls/qmgrprxy/qmgrprxy.idl
-+++ b/dlls/qmgrprxy/qmgrprxy.idl
-@@ -22,12 +22,6 @@
- 
- #include "bits.idl"
- 
--#define DO_NO_IMPORTS
--#include "bits1_5.idl"
--#include "bits2_0.idl"
--#include "bits2_5.idl"
--#include "bits3_0.idl"
--
- [
-     threading(both),
-     uuid(5ce34c0d-0dc9-4c1f-897c-daa1b78cee7c)  /* IBackgroundCopyManager */
 diff --git a/include/bits1_5.idl b/include/bits1_5.idl
 index 274a7de..5937ce0 100644
 --- a/include/bits1_5.idl
@@ -40,10 +22,25 @@ index 274a7de..5937ce0 100644
 +
 +cpp_quote("#include \"bits2_0.h\"")
 diff --git a/include/bits2_0.idl b/include/bits2_0.idl
-index efe6dde..0440ccd 100644
+index efe6dde..1d17c38 100644
 --- a/include/bits2_0.idl
 +++ b/include/bits2_0.idl
-@@ -93,3 +93,5 @@ library BackgroundCopyManager2_0
+@@ -32,11 +32,14 @@ cpp_quote("#define BG_COPY_FILE_ALL   15")
+ 
+ cpp_quote("#define BG_LENGTH_TO_EOF (UINT64)(-1)")
+ 
++cpp_quote("#ifndef _BG_FILE_RANGE_DEFINED")
++cpp_quote("#define _BG_FILE_RANGE_DEFINED")
+ typedef struct _BG_FILE_RANGE
+ {
+     UINT64 InitialOffset;
+     UINT64 Length;
+ } BG_FILE_RANGE;
++cpp_quote("#endif")
+ 
+ [
+     uuid(443c8934-90ff-48ed-bcde-26f5c7450042),
+@@ -93,3 +96,5 @@ library BackgroundCopyManager2_0
      interface IBackgroundCopyJob3;
      interface IBackgroundCopyFile2;
  }

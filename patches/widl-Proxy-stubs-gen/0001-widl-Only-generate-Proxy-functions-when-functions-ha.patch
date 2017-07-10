@@ -4,6 +4,8 @@ Date: Mon, 10 Jul 2017 14:20:57 +1000
 Subject: [PATCH 1/2] widl: Only generate Proxy Stubs when functions have
  the call_as attribute
 
+Fixes: https://bugs.winehq.org/show_bug.cgi?id=43302
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  tools/widl/header.c | 2 +-
