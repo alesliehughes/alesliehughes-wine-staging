@@ -1,7 +1,4 @@
 
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({96406bed-2b2b-11d3-b36b-00c04f6108ff} 0x2a982dc)
-*IWMReaderStreamClock
-
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({56a86897-0ad4-11ce-b03a-0020af0ba770} 0x2a982e0)
 ????
 
@@ -31,9 +28,6 @@ IWMDRMReader2
 
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({f28c0300-9baa-4477-a846-1744d9cbf533} 0x2a98304)
 IWMReaderPlaylistBurn
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({fdbe5592-81a1-41ea-93bd-735cad1adc05} 0x2a98308)
-IWMReaderTypeNegotiation
 
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({f369e2f0-e081-4fe6-8450-b810b2f410d1} 0x2a9830c)
 IWMReaderTimecode
