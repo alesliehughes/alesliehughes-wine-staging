@@ -1,36 +1,9 @@
 
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({56a86897-0ad4-11ce-b03a-0020af0ba770} 0x2a982e0)
-????
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({00ef96cc-a461-4546-8bcd-c9a28f0e06f5} 0x2a982e4)
-IWMProfile3
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({8bfc2b9e-b646-4233-a877-1c6a079669dc} 0x2a982e8)
-IWMPacketSize2
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({df683f00-2d49-4d8e-92b7-fb19f6a0dc57} 0x2a982ec)
-IWMLanguageList
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({96406bda-2b2b-11d3-b36b-00c04f6108ff} 0x2a982f0)
-IWMHeaderInfo
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({15cf9781-454e-482e-b393-85fae487a810} 0x2a982f4)
-IWMHeaderInfo2
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({15cc68e3-27cc-4ecd-b222-3f5d02d80bd5} 0x2a982f8)
-IWMHeaderInfo3
-
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({d2827540-3ee7-432c-b14c-dc17f085d3b3} 0x2a982fc)
-IWMDRMReader
+IWMDRMReader (E_NOINTERFACE)
 
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({befe7a75-9f1d-4075-b9d9-a3c37bda49a0} 0x2a98300)
-IWMDRMReader2
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({f28c0300-9baa-4477-a846-1744d9cbf533} 0x2a98304)
-IWMReaderPlaylistBurn
-
-fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({f369e2f0-e081-4fe6-8450-b810b2f410d1} 0x2a9830c)
-IWMReaderTimecode
+IWMDRMReader2 (E_NOINTERFACE)
 
 fixme:wmvcore:WMReader_QueryInterface (0xe464008)->({5c938aeb-6378-479e-bfd5-eafba63dc6e9} 0x2a98310)
 ????
