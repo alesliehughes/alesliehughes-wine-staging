@@ -1,15 +1,15 @@
-From c561eb36ae09a95b1adb8e21a927641f798d2f36 Mon Sep 17 00:00:00 2001
+From e073f05f073c07ffd26ad7b1b6b409ad6c30fb68 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Jun 2017 14:36:03 +1000
 Subject: [PATCH 1/3] include: Add BackgroundCopyManager3_0 coclass
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/bits3_0.idl | 43 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ include/bits3_0.idl | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
 diff --git a/include/bits3_0.idl b/include/bits3_0.idl
-index 6cf48b7e19..dcf0856bfb 100644
+index 6cf48b7..cb6c309 100644
 --- a/include/bits3_0.idl
 +++ b/include/bits3_0.idl
 @@ -21,6 +21,7 @@
@@ -20,7 +20,7 @@ index 6cf48b7e19..dcf0856bfb 100644
  #endif
  
  [
-@@ -32,3 +33,45 @@ interface IBackgroundCopyCallback2 : IBackgroundCopyCallback
+@@ -32,3 +33,39 @@ interface IBackgroundCopyCallback2 : IBackgroundCopyCallback
      HRESULT FileTransferred([in] IBackgroundCopyJob *job,
                              [in] IBackgroundCopyFile *file);
  }
@@ -36,18 +36,12 @@ index 6cf48b7e19..dcf0856bfb 100644
 +cpp_quote("#define BG_JOB_DISABLE_BRANCH_CACHE      0x0004")
 +
 +    HRESULT SetPeerCachingFlags(DWORD flags);
-+
 +    HRESULT GetPeerCachingFlags([out, ref] DWORD *flags);
-+
 +    HRESULT GetOwnerIntegrityLevel([out, ref] ULONG *level);
-+
 +    HRESULT GetOwnerElevationState([out, ref] BOOL *elevated);
-+
 +    HRESULT SetMaximumDownloadTime(ULONG timeout);
-+
 +    HRESULT GetMaximumDownloadTime([out,ref] ULONG *timeout);
 +};
-+
 +
 +[
 +    uuid(659cdea6-489e-11d9-a9cd-000d56965251),
@@ -67,5 +61,5 @@ index 6cf48b7e19..dcf0856bfb 100644
 +    interface IBackgroundCopyJob4;
 +}
 -- 
-2.11.0
+1.9.1
 

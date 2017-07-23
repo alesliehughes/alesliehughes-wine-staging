@@ -1,7 +1,7 @@
-From c1d005fe149b3310126faa390a0511528ee7a07c Mon Sep 17 00:00:00 2001
+From 28758313429d5a3de483da052fce8a899eb9c45a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Jun 2017 15:50:15 +1000
-Subject: [PATCH 3/3] qmgr: Register interface
+Subject: [PATCH 2/3] qmgr: Register interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/dlls/qmgr/qmgr.rgs b/dlls/qmgr/qmgr.rgs
-index 675505ed6a..b7e63a58c3 100644
+index 675505e..b7e63a5 100644
 --- a/dlls/qmgr/qmgr.rgs
 +++ b/dlls/qmgr/qmgr.rgs
 @@ -11,5 +11,9 @@ HKCR
@@ -23,5 +23,5 @@ index 675505ed6a..b7e63a58c3 100644
      }
  }
 -- 
-2.11.0
+1.9.1
 
