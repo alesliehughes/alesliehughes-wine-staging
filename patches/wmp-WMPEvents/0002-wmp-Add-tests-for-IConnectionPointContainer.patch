@@ -1,0 +1,81 @@
+From 45701e22df43a077f87e34b63b15e821b4b42954 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 2 Aug 2017 17:55:14 +1000
+Subject: [PATCH 2/2] wmp: Add tests for IConnectionPointContainer
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/wmp/tests/oleobj.c | 48 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 46 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/wmp/tests/oleobj.c b/dlls/wmp/tests/oleobj.c
+index 3242d0c..2b646d7 100644
+--- a/dlls/wmp/tests/oleobj.c
++++ b/dlls/wmp/tests/oleobj.c
+@@ -854,10 +854,53 @@ static void test_QI(IUnknown *unk)
+     hres = IUnknown_QueryInterface(unk, &IID_IOleInPlaceObjectWindowless, (void**)&tmp);
+     ok(hres == S_OK, "Could not get IOleInPlaceObjectWindowless iface: %08x\n", hres);
+     IUnknown_Release(tmp);
++}
++
++static void test_IConnectionPointContainer(IOleObject *oleobj)
++{
++    IConnectionPointContainer *container;
++    IConnectionPoint *point;
++    HRESULT hres;
+ 
+-    hres = IUnknown_QueryInterface(unk, &IID_IConnectionPointContainer, (void**)&tmp);
++    hres = IOleObject_QueryInterface(oleobj, &IID_IConnectionPointContainer, (void**)&container);
+     ok(hres == S_OK, "Could not get IConnectionPointContainer iface: %08x\n", hres);
+-    IUnknown_Release(tmp);
++
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID_IPropertyNotifySink, &point);
++    ok(hres == CONNECT_E_NOCONNECTION, "got: %08x\n", hres);
++
++    point = NULL;
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID_IWMPEvents, &point);
++    todo_wine ok(hres == S_OK, "got: %08x\n", hres);
++    if(point)
++        IConnectionPoint_Release(point);
++
++    point = NULL;
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID_IWMPEvents2, &point);
++    todo_wine ok(hres == S_OK, "got: %08x\n", hres);
++    if(point)
++        IConnectionPoint_Release(point);
++
++    point = NULL;
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID_IWMPEvents3, &point);
++    if(FAILED(hres))
++        todo_wine win_skip("IWMPEvents3 not supported\n");
++    if(point)
++        IConnectionPoint_Release(point);
++
++    point = NULL;
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID_IWMPEvents4, &point);
++    if(FAILED(hres))
++        todo_wine win_skip("IWMPEvents4 not supported\n");
++    if(point)
++        IConnectionPoint_Release(point);
++
++    point = NULL;
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID__WMPOCXEvents, &point);
++    todo_wine ok(hres == S_OK, "got: %08x\n", hres);
++    if(point)
++        IConnectionPoint_Release(point);
++
++    IConnectionPointContainer_Release(container);
+ }
+ 
+ static void test_extent(IOleObject *oleobj)
+@@ -955,6 +998,7 @@ static void test_wmp(void)
+     IProvideClassInfo2_Release(class_info);
+ 
+     test_QI((IUnknown*)oleobj);
++    test_IConnectionPointContainer(oleobj);
+     test_extent(oleobj);
+ 
+     hres = IOleObject_GetMiscStatus(oleobj, DVASPECT_CONTENT, &misc_status);
+-- 
+1.9.1
+
