@@ -1,0 +1,3 @@
+Returning S_OK in MFStartup breaks steam (constant thread crashing)
+
+
