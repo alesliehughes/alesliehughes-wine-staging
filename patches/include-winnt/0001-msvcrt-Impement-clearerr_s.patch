@@ -1,0 +1,179 @@
+From d5210927a834b203f762e63ec0ebfc9d352f26c1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 Sep 2017 15:26:52 +1000
+Subject: [PATCH] msvcrt: Impement clearerr_s
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ .../api-ms-win-crt-stdio-l1-1-0.spec                     |  2 +-
+ dlls/msvcr100/msvcr100.spec                              |  2 +-
+ dlls/msvcr110/msvcr110.spec                              |  2 +-
+ dlls/msvcr120/msvcr120.spec                              |  2 +-
+ dlls/msvcr120_app/msvcr120_app.spec                      |  2 +-
+ dlls/msvcr80/msvcr80.spec                                |  2 +-
+ dlls/msvcr90/msvcr90.spec                                |  2 +-
+ dlls/msvcrt/file.c                                       | 16 ++++++++++++++++
+ dlls/msvcrt/msvcrt.spec                                  |  2 +-
+ dlls/ucrtbase/ucrtbase.spec                              |  2 +-
+ include/msvcrt/stdio.h                                   |  1 +
+ 11 files changed, 26 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/api-ms-win-crt-stdio-l1-1-0/api-ms-win-crt-stdio-l1-1-0.spec b/dlls/api-ms-win-crt-stdio-l1-1-0/api-ms-win-crt-stdio-l1-1-0.spec
+index 6c46519..98bb853 100644
+--- a/dlls/api-ms-win-crt-stdio-l1-1-0/api-ms-win-crt-stdio-l1-1-0.spec
++++ b/dlls/api-ms-win-crt-stdio-l1-1-0/api-ms-win-crt-stdio-l1-1-0.spec
+@@ -113,7 +113,7 @@
+ @ cdecl _wtmpnam(ptr) ucrtbase._wtmpnam
+ @ cdecl _wtmpnam_s(ptr long) ucrtbase._wtmpnam_s
+ @ cdecl clearerr(ptr) ucrtbase.clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) ucrtbase.clearerr_s
+ @ cdecl fclose(ptr) ucrtbase.fclose
+ @ cdecl feof(ptr) ucrtbase.feof
+ @ cdecl ferror(ptr) ucrtbase.ferror
+diff --git a/dlls/msvcr100/msvcr100.spec b/dlls/msvcr100/msvcr100.spec
+index 1c95da9..340a41a 100644
+--- a/dlls/msvcr100/msvcr100.spec
++++ b/dlls/msvcr100/msvcr100.spec
+@@ -1647,7 +1647,7 @@
+ @ cdecl ceil(double) MSVCRT_ceil
+ @ cdecl -arch=arm,x86_64,arm64 ceilf(float) MSVCRT_ceilf
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ cdecl cos(double) MSVCRT_cos
+ @ cdecl -arch=arm,x86_64,arm64 cosf(float) MSVCRT_cosf
+diff --git a/dlls/msvcr110/msvcr110.spec b/dlls/msvcr110/msvcr110.spec
+index 86209ac..cc90e0c 100644
+--- a/dlls/msvcr110/msvcr110.spec
++++ b/dlls/msvcr110/msvcr110.spec
+@@ -2004,7 +2004,7 @@
+ @ cdecl ceil(double) MSVCRT_ceil
+ @ cdecl -arch=arm,x86_64,arm64 ceilf(float) MSVCRT_ceilf
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ cdecl cos(double) MSVCRT_cos
+ @ cdecl -arch=arm,x86_64,arm64 cosf(float) MSVCRT_cosf
+diff --git a/dlls/msvcr120/msvcr120.spec b/dlls/msvcr120/msvcr120.spec
+index c091bd1..1e7e452 100644
+--- a/dlls/msvcr120/msvcr120.spec
++++ b/dlls/msvcr120/msvcr120.spec
+@@ -2079,7 +2079,7 @@
+ @ stub cimagf
+ @ stub cimagl
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ stub clog
+ @ stub clog10
+diff --git a/dlls/msvcr120_app/msvcr120_app.spec b/dlls/msvcr120_app/msvcr120_app.spec
+index 0193282..fba1463 100644
+--- a/dlls/msvcr120_app/msvcr120_app.spec
++++ b/dlls/msvcr120_app/msvcr120_app.spec
+@@ -1745,7 +1745,7 @@
+ @ stub cimagf
+ @ stub cimagl
+ @ cdecl clearerr(ptr) msvcr120.clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) msvcr120.clearerr_s
+ @ cdecl clock() msvcr120.clock
+ @ stub clog
+ @ stub clog10
+diff --git a/dlls/msvcr80/msvcr80.spec b/dlls/msvcr80/msvcr80.spec
+index a08748c..d0e9be0 100644
+--- a/dlls/msvcr80/msvcr80.spec
++++ b/dlls/msvcr80/msvcr80.spec
+@@ -1329,7 +1329,7 @@
+ @ cdecl ceil(double) MSVCRT_ceil
+ @ cdecl -arch=arm,x86_64,arm64 ceilf(float) MSVCRT_ceilf
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ cdecl cos(double) MSVCRT_cos
+ @ cdecl -arch=arm,x86_64,arm64 cosf(float) MSVCRT_cosf
+diff --git a/dlls/msvcr90/msvcr90.spec b/dlls/msvcr90/msvcr90.spec
+index 1604d62..c3a6d2e 100644
+--- a/dlls/msvcr90/msvcr90.spec
++++ b/dlls/msvcr90/msvcr90.spec
+@@ -1302,7 +1302,7 @@
+ @ cdecl ceil(double) MSVCRT_ceil
+ @ cdecl -arch=arm,x86_64,arm64 ceilf(float) MSVCRT_ceilf
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ cdecl cos(double) MSVCRT_cos
+ @ cdecl cosh(double) MSVCRT_cosh
+diff --git a/dlls/msvcrt/file.c b/dlls/msvcrt/file.c
+index 8af9bc2..3a0d18b 100644
+--- a/dlls/msvcrt/file.c
++++ b/dlls/msvcrt/file.c
+@@ -1467,6 +1467,22 @@ void CDECL MSVCRT_clearerr(MSVCRT_FILE* file)
+ }
+ 
+ /*********************************************************************
++ *		clearerr_s (MSVCRT.@)
++ */
++int CDECL MSVCRT_clearerr_s(MSVCRT_FILE* file)
++{
++  TRACE(":file (%p) fd (%d)\n",file,file->_file);
++
++  if(!file)
++    return MSVCRT_EINVAL;
++
++  MSVCRT__lock_file(file);
++  file->_flag &= ~(MSVCRT__IOERR | MSVCRT__IOEOF);
++  MSVCRT__unlock_file(file);
++  return 0;
++}
++
++/*********************************************************************
+  *		rewind (MSVCRT.@)
+  */
+ void CDECL MSVCRT_rewind(MSVCRT_FILE* file)
+diff --git a/dlls/msvcrt/msvcrt.spec b/dlls/msvcrt/msvcrt.spec
+index 4e80308..e72fd7d 100644
+--- a/dlls/msvcrt/msvcrt.spec
++++ b/dlls/msvcrt/msvcrt.spec
+@@ -1264,7 +1264,7 @@
+ @ cdecl ceil(double) MSVCRT_ceil
+ @ cdecl -arch=arm,x86_64,arm64 ceilf(float) MSVCRT_ceilf
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-# stub clearerr_s(ptr)
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ cdecl cos(double) MSVCRT_cos
+ @ cdecl cosh(double) MSVCRT_cosh
+diff --git a/dlls/ucrtbase/ucrtbase.spec b/dlls/ucrtbase/ucrtbase.spec
+index 9512a22..26b773c 100644
+--- a/dlls/ucrtbase/ucrtbase.spec
++++ b/dlls/ucrtbase/ucrtbase.spec
+@@ -2222,7 +2222,7 @@
+ @ stub cimagf
+ @ stub cimagl
+ @ cdecl clearerr(ptr) MSVCRT_clearerr
+-@ stub clearerr_s
++@ cdecl clearerr_s(ptr) MSVCRT_clearerr_s
+ @ cdecl clock() MSVCRT_clock
+ @ stub clog
+ @ stub clog10
+diff --git a/include/msvcrt/stdio.h b/include/msvcrt/stdio.h
+index 0606d07..31b0427 100644
+--- a/include/msvcrt/stdio.h
++++ b/include/msvcrt/stdio.h
+@@ -143,6 +143,7 @@ int    __cdecl _putc_nolock(int,FILE*);
+ int    __cdecl _ungetc_nolock(int,FILE*);
+ 
+ void   __cdecl clearerr(FILE*);
++errno_t __cdecl clearerr_s(FILE*);
+ int    __cdecl fclose(FILE*);
+ int    __cdecl feof(FILE*);
+ int    __cdecl ferror(FILE*);
+-- 
+1.9.1
+

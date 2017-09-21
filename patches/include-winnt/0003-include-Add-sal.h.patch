@@ -1,20 +1,20 @@
-From b3036d68840deaa161af598b88779f523005bd97 Mon Sep 17 00:00:00 2001
+From 944d90930f9df19ea8f58db705d20f883312f3bd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 6 Jan 2017 11:47:18 +1100
-Subject: [PATCH 3/6] include: Add sal.h
+Subject: [PATCH 1/2] include: Add sal.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/msvcrt/sal.h | 68 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
- create mode 100644 include/msvcrt/sal.h
+ include/sal.h | 71 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
+ create mode 100644 include/sal.h
 
-diff --git a/include/msvcrt/sal.h b/include/msvcrt/sal.h
+diff --git a/include/sal.h b/include/sal.h
 new file mode 100644
-index 0000000..b46e97e
+index 0000000..87b5d74
 --- /dev/null
-+++ b/include/msvcrt/sal.h
-@@ -0,0 +1,68 @@
++++ b/include/sal.h
+@@ -0,0 +1,71 @@
 +/*
 + * Copyright (C) 2017 Alistair Leslie-Hughes
 + *
@@ -60,6 +60,8 @@ index 0000000..b46e97e
 +#define _Inout_z_cap_(count)
 +#define _Inout_z_cap_c_(count)
 +
++#define _Null_terminated_
++
 +#define _Out_
 +#define _Out_bytecap_(count)
 +#define _Out_bytecapcount_(count)
@@ -69,6 +71,7 @@ index 0000000..b46e97e
 +#define _Out_opt_
 +#define _Out_opt_z_cap_(count)
 +#define _Out_opt_z_cap_post_count_(count1, count2)
++#define _Out_writes_z_(count)
 +#define _Out_z_cap_(count)
 +#define _Out_z_cap_c_(count)
 +#define _Out_z_cap_post_count_(count1, count2)
