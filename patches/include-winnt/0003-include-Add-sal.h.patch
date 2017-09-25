@@ -1,20 +1,20 @@
-From dec25a8610679931be3c2393e19f1ea0c8361e07 Mon Sep 17 00:00:00 2001
+From 9fab48a92c59472d62503a54c0ea7063976ab478 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 6 Jan 2017 11:47:18 +1100
 Subject: [PATCH] include: Add sal.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/sal.h | 79 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
+ include/sal.h | 95 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 95 insertions(+)
  create mode 100644 include/sal.h
 
 diff --git a/include/sal.h b/include/sal.h
 new file mode 100644
-index 0000000..2beb886
+index 0000000..3769126
 --- /dev/null
 +++ b/include/sal.h
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,95 @@
 +/*
 + * Copyright (C) 2017 Alistair Leslie-Hughes
 + *
@@ -50,12 +50,16 @@ index 0000000..2beb886
 +#define _In_opt_
 +#define _In_opt_count_(count)
 +#define _In_opt_z_
++#define _In_reads_(count)
++#define _In_reads_bytes_(count)
++#define _In_reads_opt_z_(count)
++#define _In_reads_z_(count)
 +#define _In_z_
 +
 +#define _Inout_
-+#define _In_reads_bytes_(count)
 +#define _Inout_cap_(count)
 +#define _Inout_opt_
++#define _Inout_updates_z_(count)
 +#define _Inout_z_
 +#define _Inout_z_bytecap_(count)
 +#define _Inout_z_cap_(count)
@@ -72,19 +76,31 @@ index 0000000..2beb886
 +#define _Out_opt_
 +#define _Out_opt_z_cap_(count)
 +#define _Out_opt_z_cap_post_count_(count1, count2)
-+#define  _Out_writes_bytes_to_(count1, count2)
++#define _Out_writes_(count)
++#define _Out_writes_bytes_to_(count1, count2)
 +#define _Out_writes_opt_(count)
++#define _Out_writes_opt_z_(count)
++#define _Out_writes_to_(count1, count2)
 +#define _Out_writes_z_(count)
 +#define _Out_z_cap_(count)
 +#define _Out_z_cap_c_(count)
 +#define _Out_z_cap_post_count_(count1, count2)
 +
++#define _Outptr_result_buffer_(count)
++#define _Outptr_result_maybenull_z_
++
++#define _Post_invalid_
 +#define _Post_writable_byte_size_(count)
 +#define _Post_z_
 +
++#define _Pre_maybenull_
 +#define _Pre_notnull_
++#define _Pre_writable_size_(count)
++
++#define _Printf_format_string_
 +
 +#define _Ret_maybenull_
++#define _Ret_maybenull_z_
 +#define _Ret_opt_
 +#define _Ret_opt_z_cap_(count)
 +#define _Ret_writes_bytes_maybenull_(count)
