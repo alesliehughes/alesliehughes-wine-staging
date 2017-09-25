@@ -1,22 +1,25 @@
-From d5210927a834b203f762e63ec0ebfc9d352f26c1 Mon Sep 17 00:00:00 2001
+From fdfb4f3de354de6c74c1268f50a0494bded4be03 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 21 Sep 2017 15:26:52 +1000
-Subject: [PATCH] msvcrt: Impement clearerr_s
+Date: Fri, 22 Sep 2017 09:50:23 +0000
+Subject: [v3 PATCH] msvcrt: Impement clearerr_s
+
+v2: Use helper function for invalid parameter.
+v3: Fixed TRACE.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- .../api-ms-win-crt-stdio-l1-1-0.spec                     |  2 +-
- dlls/msvcr100/msvcr100.spec                              |  2 +-
- dlls/msvcr110/msvcr110.spec                              |  2 +-
- dlls/msvcr120/msvcr120.spec                              |  2 +-
- dlls/msvcr120_app/msvcr120_app.spec                      |  2 +-
- dlls/msvcr80/msvcr80.spec                                |  2 +-
- dlls/msvcr90/msvcr90.spec                                |  2 +-
- dlls/msvcrt/file.c                                       | 16 ++++++++++++++++
- dlls/msvcrt/msvcrt.spec                                  |  2 +-
- dlls/ucrtbase/ucrtbase.spec                              |  2 +-
- include/msvcrt/stdio.h                                   |  1 +
- 11 files changed, 26 insertions(+), 9 deletions(-)
+ .../api-ms-win-crt-stdio-l1-1-0.spec                      |  2 +-
+ dlls/msvcr100/msvcr100.spec                               |  2 +-
+ dlls/msvcr110/msvcr110.spec                               |  2 +-
+ dlls/msvcr120/msvcr120.spec                               |  2 +-
+ dlls/msvcr120_app/msvcr120_app.spec                       |  2 +-
+ dlls/msvcr80/msvcr80.spec                                 |  2 +-
+ dlls/msvcr90/msvcr90.spec                                 |  2 +-
+ dlls/msvcrt/file.c                                        | 15 +++++++++++++++
+ dlls/msvcrt/msvcrt.spec                                   |  2 +-
+ dlls/ucrtbase/ucrtbase.spec                               |  2 +-
+ include/msvcrt/stdio.h                                    |  1 +
+ 11 files changed, 25 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/api-ms-win-crt-stdio-l1-1-0/api-ms-win-crt-stdio-l1-1-0.spec b/dlls/api-ms-win-crt-stdio-l1-1-0/api-ms-win-crt-stdio-l1-1-0.spec
 index 6c46519..98bb853 100644
@@ -58,7 +61,7 @@ index 86209ac..cc90e0c 100644
  @ cdecl cos(double) MSVCRT_cos
  @ cdecl -arch=arm,x86_64,arm64 cosf(float) MSVCRT_cosf
 diff --git a/dlls/msvcr120/msvcr120.spec b/dlls/msvcr120/msvcr120.spec
-index c091bd1..1e7e452 100644
+index ad25b17..fabe0f8 100644
 --- a/dlls/msvcr120/msvcr120.spec
 +++ b/dlls/msvcr120/msvcr120.spec
 @@ -2079,7 +2079,7 @@
@@ -71,7 +74,7 @@ index c091bd1..1e7e452 100644
  @ stub clog
  @ stub clog10
 diff --git a/dlls/msvcr120_app/msvcr120_app.spec b/dlls/msvcr120_app/msvcr120_app.spec
-index 0193282..fba1463 100644
+index b37ab32..38c2707 100644
 --- a/dlls/msvcr120_app/msvcr120_app.spec
 +++ b/dlls/msvcr120_app/msvcr120_app.spec
 @@ -1745,7 +1745,7 @@
@@ -110,10 +113,10 @@ index 1604d62..c3a6d2e 100644
  @ cdecl cos(double) MSVCRT_cos
  @ cdecl cosh(double) MSVCRT_cosh
 diff --git a/dlls/msvcrt/file.c b/dlls/msvcrt/file.c
-index 8af9bc2..3a0d18b 100644
+index 8af9bc2..2b43a20 100644
 --- a/dlls/msvcrt/file.c
 +++ b/dlls/msvcrt/file.c
-@@ -1467,6 +1467,22 @@ void CDECL MSVCRT_clearerr(MSVCRT_FILE* file)
+@@ -1467,6 +1467,21 @@ void CDECL MSVCRT_clearerr(MSVCRT_FILE* file)
  }
  
  /*********************************************************************
@@ -121,10 +124,9 @@ index 8af9bc2..3a0d18b 100644
 + */
 +int CDECL MSVCRT_clearerr_s(MSVCRT_FILE* file)
 +{
-+  TRACE(":file (%p) fd (%d)\n",file,file->_file);
++  TRACE(":file (%p)\n",file);
 +
-+  if(!file)
-+    return MSVCRT_EINVAL;
++  if (!MSVCRT_CHECK_PMT(file != NULL)) return MSVCRT_EINVAL;
 +
 +  MSVCRT__lock_file(file);
 +  file->_flag &= ~(MSVCRT__IOERR | MSVCRT__IOEOF);
