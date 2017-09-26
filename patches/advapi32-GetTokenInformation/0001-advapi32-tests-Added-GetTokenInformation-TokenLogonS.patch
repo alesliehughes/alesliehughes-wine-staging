@@ -1,0 +1,43 @@
+From 8eb6896f266f1d3ea18407cadec67cca7394c5c0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 26 Sep 2017 14:52:53 +1000
+Subject: [PATCH] advapi32/tests: Added GetTokenInformation TokenLogonSid test
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/advapi32/tests/security.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/dlls/advapi32/tests/security.c b/dlls/advapi32/tests/security.c
+index 4121908..c8305c6 100644
+--- a/dlls/advapi32/tests/security.c
++++ b/dlls/advapi32/tests/security.c
+@@ -1835,6 +1835,25 @@ static void test_token_attr(void)
+     LocalFree(SidString);
+     HeapFree(GetProcessHeap(), 0, User);
+ 
++    /* logon */
++    ret = GetTokenInformation(Token, TokenLogonSid, NULL, 0, &Size);
++    if(!ret && (GetLastError() == ERROR_INVALID_PARAMETER))
++        todo_wine win_skip("TokenLogonSid not supported. Skipping tests\n");
++    else
++    {
++        todo_wine ok(!ret && (GetLastError() == ERROR_INSUFFICIENT_BUFFER),
++            "GetTokenInformation(TokenLogonSid) failed with error %d\n", GetLastError());
++        Groups = HeapAlloc(GetProcessHeap(), 0, Size);
++        ret = GetTokenInformation(Token, TokenLogonSid, Groups, Size, &Size);
++        todo_wine ok(ret,
++            "GetTokenInformation(TokenLogonSid) failed with error %d\n", GetLastError());
++        if(ret)
++        {
++            /* TODO - Test of groups? */
++        }
++        HeapFree(GetProcessHeap(), 0, Groups);
++    }
++
+     /* privileges */
+     ret = GetTokenInformation(Token, TokenPrivileges, NULL, 0, &Size);
+     ok(!ret && (GetLastError() == ERROR_INSUFFICIENT_BUFFER),
+-- 
+1.9.1
+
