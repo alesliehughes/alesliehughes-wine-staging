@@ -1,0 +1,65 @@
+From 5eecac551deaec9513765102d2b93543c784eed9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 May 2017 15:00:50 +1000
+Subject: [PATCH] ole32: CreateDataCache should return a COleCache object by
+ default.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/ole32/datacache.c  |  5 ++++-
+ dlls/ole32/tests/ole2.c | 10 ++++++++--
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/ole32/datacache.c b/dlls/ole32/datacache.c
+index a95d0fb..c563118 100644
+--- a/dlls/ole32/datacache.c
++++ b/dlls/ole32/datacache.c
+@@ -2760,7 +2760,10 @@ HRESULT WINAPI CreateDataCache(
+   if (newCache == 0)
+     return E_OUTOFMEMORY;
+ 
+-  hr = IUnknown_QueryInterface(&newCache->IUnknown_inner, riid, ppvObj);
++  if ( !pUnkOuter && IsEqualIID(&IID_IUnknown, riid) )
++      hr = IUnknown_QueryInterface(&newCache->IUnknown_inner, &IID_IOleCache2, ppvObj);
++  else
++      hr = IUnknown_QueryInterface(&newCache->IUnknown_inner, riid, ppvObj);
+   IUnknown_Release(&newCache->IUnknown_inner);
+ 
+   return hr;
+diff --git a/dlls/ole32/tests/ole2.c b/dlls/ole32/tests/ole2.c
+index b30f63b..39b161c 100644
+--- a/dlls/ole32/tests/ole2.c
++++ b/dlls/ole32/tests/ole2.c
+@@ -1575,6 +1575,7 @@ static void test_data_cache(void)
+     char szSystemDir[MAX_PATH];
+     WCHAR wszPath[MAX_PATH];
+     static const WCHAR wszShell32[] = {'\\','s','h','e','l','l','3','2','.','d','l','l',0};
++    DWORD connection;
+ 
+     static const struct expected_method methods_cacheinitnew[] =
+     {
+@@ -1651,14 +1652,19 @@ static void test_data_cache(void)
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+     hr = IUnknown_QueryInterface(unk, &IID_IOleCache2, (void**)&pOleCache);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+-todo_wine {
+     ok(unk == (IUnknown*)olecache, "got %p, expected %p\n", olecache, unk);
+     ok(unk == (IUnknown*)pOleCache, "got %p, expected %p\n", pOleCache, unk);
+-}
++
+     IOleCache2_Release(pOleCache);
+     IOleCache_Release(olecache);
+     IUnknown_Release(unk);
+ 
++    hr = CreateDataCache(NULL, &CLSID_NULL, &IID_IUnknown, (void**)&olecache);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    hr = IOleCache_Cache(olecache, &fmtetc, ADVF_PRIMEFIRST | ADVFCACHE_NOHANDLER, &connection);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    IOleCache_Release(olecache);
++
+     /* Test with new data */
+ 
+     hr = CreateDataCache(NULL, &CLSID_NULL, &IID_IOleCache2, (LPVOID *)&pOleCache);
+-- 
+1.9.1
+
