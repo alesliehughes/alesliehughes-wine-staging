@@ -1,0 +1,48 @@
+From 9fc72fba8fb239f2b63cd4a37c02c9ef79cb7247 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 2 Oct 2017 11:01:56 +1100
+Subject: [v2 PATCH 1/2] advapi32: Handle WinLogonIdsSid in CreateWellKnownSid
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/advapi32/security.c       |  2 +-
+ dlls/advapi32/tests/security.c | 10 ++++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/advapi32/security.c b/dlls/advapi32/security.c
+index e36792c..e666062 100644
+--- a/dlls/advapi32/security.c
++++ b/dlls/advapi32/security.c
+@@ -967,7 +967,7 @@ CreateWellKnownSid( WELL_KNOWN_SID_TYPE WellKnownSidType,
+     unsigned int i;
+     TRACE("(%d, %s, %p, %p)\n", WellKnownSidType, debugstr_sid(DomainSid), pSid, cbSid);
+ 
+-    if (cbSid == NULL || (DomainSid && !IsValidSid(DomainSid)))
++    if (cbSid == NULL || (DomainSid && !IsValidSid(DomainSid)) || WellKnownSidType == WinLogonIdsSid)
+     {
+         SetLastError(ERROR_INVALID_PARAMETER);
+         return FALSE;
+diff --git a/dlls/advapi32/tests/security.c b/dlls/advapi32/tests/security.c
+index d41e42e..bf321e7 100644
+--- a/dlls/advapi32/tests/security.c
++++ b/dlls/advapi32/tests/security.c
+@@ -2067,6 +2067,16 @@ static void test_CreateWellKnownSid(void)
+     ok(ret, "CreateWellKnownSid failed %u\n", GetLastError());
+     HeapFree(GetProcessHeap(), 0, sid);
+ 
++    /* Cannot create WinLogonIdsSid */
++    SetLastError(0xdeadbeef);
++    size = SECURITY_MAX_SID_SIZE;
++    sid = HeapAlloc(GetProcessHeap(), 0, size);
++    ret = pCreateWellKnownSid(WinLogonIdsSid, NULL, sid, &size);
++    error = GetLastError();
++    ok(!ret, "CreateWellKnownSid succeeded\n");
++    ok(error == ERROR_INVALID_PARAMETER, "expected ERROR_INVALID_PARAMETER, got %u\n", error);
++    HeapFree(GetProcessHeap(), 0, sid);
++
+     /* a domain sid usually have three subauthorities but we test that CreateWellKnownSid doesn't check it */
+     AllocateAndInitializeSid(&ident, 6, SECURITY_NT_NON_UNIQUE, 12, 23, 34, 45, 56, 0, 0, &domainsid);
+ 
+-- 
+1.9.1
+

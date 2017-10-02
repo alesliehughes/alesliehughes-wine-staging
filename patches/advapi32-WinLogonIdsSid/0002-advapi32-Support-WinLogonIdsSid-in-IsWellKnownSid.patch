@@ -1,0 +1,27 @@
+From c82a6abff9ace70c35466d475dee15deca5e47fa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 2 Oct 2017 10:18:34 +1100
+Subject: [v2 PATCH 2/2] advapi32: Support WinLogonIdsSid in IsWellKnownSid
+
+v2: Correct RID count
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/advapi32/security.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/advapi32/security.c b/dlls/advapi32/security.c
+index e666062..84aa2f1 100644
+--- a/dlls/advapi32/security.c
++++ b/dlls/advapi32/security.c
+@@ -104,6 +104,7 @@ static const WELLKNOWNSID WellKnownSids[] =
+     { {'R','C'}, WinRestrictedCodeSid, { SID_REVISION, 1, { SECURITY_NT_AUTHORITY }, { SECURITY_RESTRICTED_CODE_RID } } },
+     { {0,0}, WinTerminalServerSid, { SID_REVISION, 1, { SECURITY_NT_AUTHORITY }, { SECURITY_TERMINAL_SERVER_RID } } },
+     { {0,0}, WinRemoteLogonIdSid, { SID_REVISION, 1, { SECURITY_NT_AUTHORITY }, { SECURITY_REMOTE_LOGON_RID } } },
++    { {0,0}, WinLogonIdsSid, { SID_REVISION, SECURITY_LOGON_IDS_RID_COUNT, { SECURITY_NT_AUTHORITY }, { SECURITY_LOGON_IDS_RID } } },
+     { {'S','Y'}, WinLocalSystemSid, { SID_REVISION, 1, { SECURITY_NT_AUTHORITY }, { SECURITY_LOCAL_SYSTEM_RID } } },
+     { {'L','S'}, WinLocalServiceSid, { SID_REVISION, 1, { SECURITY_NT_AUTHORITY }, { SECURITY_LOCAL_SERVICE_RID } } },
+     { {'N','S'}, WinNetworkServiceSid, { SID_REVISION, 1, { SECURITY_NT_AUTHORITY }, { SECURITY_NETWORK_SERVICE_RID } } },
+-- 
+1.9.1
+
