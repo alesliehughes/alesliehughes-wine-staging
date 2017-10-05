@@ -1,0 +1,65 @@
+From c0f72a35e0206b372742cd9b8df0a24ade233130 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 5 Oct 2017 12:13:03 +1100
+Subject: [PATCH 3/3] kernelbase: Add AppPolicyGetThreadInitializationType stub
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ .../api-ms-win-appmodel-runtime-l1-1-2.spec                 |  2 +-
+ dlls/kernelbase/kernelbase.spec                             |  2 +-
+ dlls/kernelbase/main.c                                      | 13 +++++++++++++
+ 3 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/api-ms-win-appmodel-runtime-l1-1-2/api-ms-win-appmodel-runtime-l1-1-2.spec b/dlls/api-ms-win-appmodel-runtime-l1-1-2/api-ms-win-appmodel-runtime-l1-1-2.spec
+index 8ae7f0b..f98ec0e 100644
+--- a/dlls/api-ms-win-appmodel-runtime-l1-1-2/api-ms-win-appmodel-runtime-l1-1-2.spec
++++ b/dlls/api-ms-win-appmodel-runtime-l1-1-2/api-ms-win-appmodel-runtime-l1-1-2.spec
+@@ -4,7 +4,7 @@
+ @ stub AppPolicyGetMediaFoundationCodecLoading
+ @ stdcall AppPolicyGetProcessTerminationMethod(ptr ptr) kernelbase.AppPolicyGetProcessTerminationMethod
+ @ stub AppPolicyGetShowDeveloperDiagnostic
+-@ stub AppPolicyGetThreadInitializationType
++@ stdcall AppPolicyGetThreadInitializationType(ptr ptr) kernelbase.AppPolicyGetThreadInitializationType
+ @ stub AppPolicyGetWindowingModel
+ @ stub GetApplicationUserModelIdFromToken
+ @ stub GetPackageFamilyNameFromToken
+diff --git a/dlls/kernelbase/kernelbase.spec b/dlls/kernelbase/kernelbase.spec
+index e228497..85b2323 100644
+--- a/dlls/kernelbase/kernelbase.spec
++++ b/dlls/kernelbase/kernelbase.spec
+@@ -46,7 +46,7 @@
+ # @ stub AppPolicyGetMediaFoundationCodecLoading
+ @ stdcall AppPolicyGetProcessTerminationMethod(ptr ptr)
+ # @ stub AppPolicyGetShowDeveloperDiagnostic
+-# @ stub AppPolicyGetThreadInitializationType
++@ stdcall AppPolicyGetThreadInitializationType(ptr ptr)
+ # @ stub AppPolicyGetWindowingModel
+ # @ stub AppXFreeMemory
+ # @ stub AppXGetApplicationData
+diff --git a/dlls/kernelbase/main.c b/dlls/kernelbase/main.c
+index f402ec4..36427cc 100644
+--- a/dlls/kernelbase/main.c
++++ b/dlls/kernelbase/main.c
+@@ -36,6 +36,19 @@ HRESULT WINAPI AppPolicyGetProcessTerminationMethod(HANDLE token, AppPolicyProce
+ }
+ 
+ /***********************************************************************
++ *          AppPolicyGetThreadInitializationType (KERNELBASE.@)
++ */
++LONG WINAPI AppPolicyGetThreadInitializationType(HANDLE token, AppPolicyThreadInitializationType *policy)
++{
++    FIXME("%p, %p\n", token, policy);
++
++    if(policy)
++        *policy = AppPolicyThreadInitializationType_None;
++
++    return ERROR_SUCCESS;
++}
++
++/***********************************************************************
+  *          QuirkIsEnabled3 (KERNELBASE.@)
+  */
+ BOOL WINAPI QuirkIsEnabled3(void *unk1, void *unk2)
+-- 
+1.9.1
+
