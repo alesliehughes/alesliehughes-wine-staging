@@ -1,15 +1,17 @@
-From c9adb5753e8a6519db16700c1c8c7c30061e9482 Mon Sep 17 00:00:00 2001
+From 95cf07892f6c6b8452a1ade5e3bb139c110a2e56 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 2 Oct 2017 15:01:09 +1100
-Subject: [PATCH] qedit: Support IAMTimelineGroup interface in IAMTimelineObj
+Subject: [v3 PATCH] qedit: Support IAMTimelineGroup interface in IAMTimelineObj
 
 Fixes: https://bugs.winehq.org/show_bug.cgi?id=43163
+
+v3. Correct QI
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/qedit/tests/timeline.c |  12 ++-
- dlls/qedit/timeline.c       | 214 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 223 insertions(+), 3 deletions(-)
+ dlls/qedit/timeline.c       | 195 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 204 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/qedit/tests/timeline.c b/dlls/qedit/tests/timeline.c
 index 4801743..b1011fc 100644
@@ -37,7 +39,7 @@ index 4801743..b1011fc 100644
          IAMTimelineObj_Release(obj);
      }
 diff --git a/dlls/qedit/timeline.c b/dlls/qedit/timeline.c
-index 906efd5..01564d4 100644
+index 906efd5..5d3fb46 100644
 --- a/dlls/qedit/timeline.c
 +++ b/dlls/qedit/timeline.c
 @@ -51,6 +51,7 @@ static inline TimelineImpl *impl_from_IAMTimeline(IAMTimeline *iface)
@@ -79,7 +81,7 @@ index 906efd5..01564d4 100644
      else
          WARN("(%p, %s,%p): not found\n", This, debugstr_guid(riid), ppv);
  
-@@ -803,3 +813,207 @@ static const IAMTimelineObjVtbl IAMTimelineObj_VTable =
+@@ -803,3 +813,188 @@ static const IAMTimelineObjVtbl IAMTimelineObj_VTable =
      TimelineObj_GetGroupIBelongTo,
      TimelineObj_GetEmbedDepth,
  };
@@ -87,26 +89,7 @@ index 906efd5..01564d4 100644
 +static HRESULT WINAPI timelinegrp_QueryInterface(IAMTimelineGroup *iface, REFIID riid, void **object)
 +{
 +    TimelineObjImpl *This = impl_from_IAMTimelineGroup(iface);
-+
-+    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), object);
-+
-+    if (!object)
-+        return E_POINTER;
-+
-+    *object = NULL;
-+    if (IsEqualIID(riid, &IID_IUnknown)   || 
-+        IsEqualIID(riid, &IID_IAMTimelineGroup) )
-+        *object = &This->IAMTimelineGroup_iface;
-+    else if (IsEqualIID(riid, &IID_IAMTimelineObj) )
-+        *object = &This->IAMTimelineObj_iface;
-+    else
-+        WARN("(%p, %s,%p): not found\n", This, debugstr_guid(riid), object);
-+
-+    if (!*object)
-+        return E_NOINTERFACE;
-+
-+    IUnknown_AddRef((IUnknown*)*object);
-+    return S_OK;
++    return IAMTimelineObj_QueryInterface(&This->IAMTimelineObj_iface, riid, object);
 +}
 +
 +static ULONG WINAPI timelinegrp_AddRef(IAMTimelineGroup *iface)
