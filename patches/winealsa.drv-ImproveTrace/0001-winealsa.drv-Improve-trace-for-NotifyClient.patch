@@ -1,0 +1,54 @@
+From d7587c24adb051c869971d538e47373a67b11ef4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 26 Oct 2017 10:08:45 +1100
+Subject: [PATCH] winealsa.drv: Improve trace for NotifyClient
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/winealsa.drv/midi.c | 23 +++++++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/winealsa.drv/midi.c b/dlls/winealsa.drv/midi.c
+index 6ef1976..cc9478d 100644
+--- a/dlls/winealsa.drv/midi.c
++++ b/dlls/winealsa.drv/midi.c
+@@ -122,6 +122,25 @@ static CRITICAL_SECTION crit_sect = { &critsect_debug, -1, 0, 0, 0, 0 };
+ static int end_thread;
+ static HANDLE hThread;
+ 
++static const char *dump_notify_msg(int msg)
++{
++    switch(msg)
++    {
++        case MM_MIM_OPEN:      return "MM_MIM_OPEN";
++        case MM_MIM_CLOSE:     return "MM_MIM_CLOSE";
++        case MM_MIM_DATA:      return "MM_MIM_DATA";
++        case MM_MIM_LONGDATA:  return "MM_MIM_LONGDATA";
++        case MM_MIM_ERROR:     return "MM_MIM_ERROR";
++        case MM_MIM_LONGERROR: return "MM_MIM_LONGERROR";
++
++        case MM_MOM_OPEN:       return "MM_MOM_OPEN";
++        case MM_MOM_CLOSE:      return "MM_MOM_CLOSE";
++        case MM_MOM_DONE:       return "MM_MOM_DONE";
++        case MM_MOM_POSITIONCB: return "MM_MOM_POSITIONCB";
++    }
++
++    return "Unknown";
++}
+ /*======================================================================*
+  *                  Low level MIDI implementation			*
+  *======================================================================*/
+@@ -186,8 +205,8 @@ static void MIDI_NotifyClient(UINT wDevID, WORD wMsg,
+     HANDLE		hDev;
+     DWORD_PTR 		dwInstance;
+ 
+-    TRACE("wDevID = %04X wMsg = %d dwParm1 = %04lX dwParam2 = %04lX\n",
+-	  wDevID, wMsg, dwParam1, dwParam2);
++    TRACE("wDevID = %04X wMsg = %s (0x%04X) dwParm1 = %04lX dwParam2 = %04lX\n",
++	  wDevID, dump_notify_msg(wMsg), wMsg, dwParam1, dwParam2);
+ 
+     switch (wMsg) {
+     case MOM_OPEN:
+-- 
+1.9.1
+
