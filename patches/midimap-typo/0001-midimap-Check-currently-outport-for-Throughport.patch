@@ -1,0 +1,26 @@
+From 8b466cd7f8ab2b0dc93601bf10f59287b3621131 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 26 Oct 2017 12:20:46 +1100
+Subject: [PATCH] midimap: Check each Midi Output for a Midi Through synthesizer
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/midimap/midimap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/midimap/midimap.c b/dlls/midimap/midimap.c
+index f36b252..16707bb 100644
+--- a/dlls/midimap/midimap.c
++++ b/dlls/midimap/midimap.c
+@@ -574,7 +574,7 @@ static LRESULT MIDIMAP_drvOpen(void)
+ 	    midiOutPorts[dev].lpbPatch = NULL;
+ 	    for (i = 0; i < 16; i++)
+ 		midiOutPorts[dev].aChn[i] = i;
+-	    if (strncmpW(midiOutPorts[0].name, throughportW, strlenW(throughportW)) != 0)
++	    if (strncmpW(midiOutPorts[dev].name, throughportW, strlenW(throughportW)) != 0)
+ 	        found_valid_port = TRUE;
+ 	}
+ 	else
+-- 
+1.9.1
+
