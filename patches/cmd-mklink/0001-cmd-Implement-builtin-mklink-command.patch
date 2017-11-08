@@ -1,17 +1,17 @@
-From 2f7f93301924b9994aebca2a21e624c29fab266a Mon Sep 17 00:00:00 2001
+From 36c9baddcd638fe95c8aa96240c9259414561c97 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 10 Jan 2017 11:46:15 +1100
-Subject: [v2 PATCH] cmd: Implement builtin mklink command
+Subject: [v3 PATCH] cmd: Implement builtin mklink command
 
-v2: Fixed create logic
+v3. Fixed help message.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  programs/cmd/builtins.c | 52 +++++++++++++++++++++++++++++++++++++++++++++++++
- programs/cmd/cmd.rc     | 11 ++++++++++-
+ programs/cmd/cmd.rc     | 12 +++++++++++-
  programs/cmd/wcmd.h     |  4 +++-
  programs/cmd/wcmdmain.c |  3 +++
- 4 files changed, 68 insertions(+), 2 deletions(-)
+ 4 files changed, 69 insertions(+), 2 deletions(-)
 
 diff --git a/programs/cmd/builtins.c b/programs/cmd/builtins.c
 index 1da1f67..6f7a2c9 100644
@@ -81,26 +81,27 @@ index 1da1f67..6f7a2c9 100644
 +    WCMD_output_stderr(WCMD_LoadMessage(WCMD_READFAIL), file1);
 +}
 diff --git a/programs/cmd/cmd.rc b/programs/cmd/cmd.rc
-index 03388de..3ebae5a 100644
+index 03388de..3f74791 100644
 --- a/programs/cmd/cmd.rc
 +++ b/programs/cmd/cmd.rc
-@@ -310,6 +310,15 @@ CHOICE is mainly used to build a menu selection in a batch file.\n"
+@@ -310,6 +310,16 @@ CHOICE is mainly used to build a menu selection in a batch file.\n"
  "EXIT terminates the current command session and returns to the operating\n\
  system or shell from which you invoked cmd.\n"
  
 +  WCMD_MKLINK,
 +"Creates a symbolic link.\n\
-+MKLINK [[/D] | [/H] | [/J]] Link Target\n\
-+/D             Creates a directory symbolic link.  Default is a file symbolic link.\n\
-+/H             Creates a hard link instead of a symbolic link.\n\
-+/J             Creates a Directory Junction.\n\
-+Link specifies the new symbolic link name.\n\
-+Target specifies the path (relative or absolute) that the new link refers to.\n"
++MKLINK [options] link_name target\n\
++Options:\n\
++/d             Creates a symbolic link.  (Default)\n\
++/h             Creates a hard link.\n\
++/j             Creates a Directory Junction.\n\
++link_name specifies the new symbolic link name.\n\
++target specifies the path that the link_name points to.\n"
 +
    WCMD_ALLHELP,
  "CMD built-in commands are:\n\
  ASSOC\t\tShow or modify file extension associations\n\
-@@ -328,6 +337,7 @@ ENDLOCAL\tEnd localization of environment changes in a batch file\n\
+@@ -328,6 +338,7 @@ ENDLOCAL\tEnd localization of environment changes in a batch file\n\
  FTYPE\t\tShow or modify open commands associated with file types\n\
  HELP\t\tShow brief help details on a topic\n\
  MD (MKDIR)\tCreate a subdirectory\n\
@@ -108,7 +109,7 @@ index 03388de..3ebae5a 100644
  MORE\t\tDisplay output in pages\n\
  MOVE\t\tMove a file, set of files or directory tree\n\
  PATH\t\tSet or show the search path\n\
-@@ -348,7 +358,6 @@ VOL\t\tShow the volume label of a disk device\n\
+@@ -348,7 +359,6 @@ VOL\t\tShow the volume label of a disk device\n\
  XCOPY\t\tCopy source files or directory trees to a destination\n\
  EXIT\t\tClose down CMD\n\n\
  Enter HELP <command> for further information on any of the above commands.\n"
@@ -117,7 +118,7 @@ index 03388de..3ebae5a 100644
    WCMD_YES, "#msgctxt#Yes key#Y"
    WCMD_NO, "#msgctxt#No key#N"
 diff --git a/programs/cmd/wcmd.h b/programs/cmd/wcmd.h
-index 1180251..7a02a01 100644
+index 557be14..d4d97a0 100644
 --- a/programs/cmd/wcmd.h
 +++ b/programs/cmd/wcmd.h
 @@ -101,6 +101,7 @@ void WCMD_type (WCHAR *);
@@ -141,7 +142,7 @@ index 1180251..7a02a01 100644
  /* Some standard messages */
  extern const WCHAR newlineW[];
 diff --git a/programs/cmd/wcmdmain.c b/programs/cmd/wcmdmain.c
-index 102e485..108d5f8 100644
+index cec6df0..827ddd2 100644
 --- a/programs/cmd/wcmdmain.c
 +++ b/programs/cmd/wcmdmain.c
 @@ -1597,6 +1597,9 @@ void WCMD_execute (const WCHAR *command, const WCHAR *redirects,
