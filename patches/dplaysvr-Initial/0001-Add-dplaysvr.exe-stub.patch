@@ -1,6 +1,6 @@
-From 7043f95340a60b35cce61beefaa73a87a7fb83c0 Mon Sep 17 00:00:00 2001
+From e6e5ec67f9daaaf1ad6ce590e4cd6e9efe9ecdcf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Sun, 21 Jun 2015 20:31:57 +1000
+Date: Tue, 28 Nov 2017 14:16:20 +1100
 Subject: [PATCH] Add dplaysvr.exe stub
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -14,10 +14,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 programs/dplaysvr/main.c
 
 diff --git a/configure b/configure
-index ebaa38c..24bff4e 100755
+index 4217def..22af135 100755
 --- a/configure
 +++ b/configure
-@@ -1379,6 +1379,7 @@ enable_cmd
+@@ -1601,6 +1601,7 @@ enable_cmd
  enable_conhost
  enable_control
  enable_cscript
@@ -25,25 +25,25 @@ index ebaa38c..24bff4e 100755
  enable_dpnsvr
  enable_dxdiag
  enable_eject
-@@ -17754,6 +17755,7 @@ wine_fn_config_test programs/cmd/tests cmd.exe_test
+@@ -19116,6 +19117,7 @@ wine_fn_config_test programs/cmd/tests cmd.exe_test
  wine_fn_config_program conhost enable_conhost install
  wine_fn_config_program control enable_control install
  wine_fn_config_program cscript enable_cscript clean,install
 +wine_fn_config_program dplaysvr enable_dplaysvr install
  wine_fn_config_program dpnsvr enable_dpnsvr install
- wine_fn_config_program dxdiag enable_dxdiag install,po
+ wine_fn_config_program dxdiag enable_dxdiag clean,install
  wine_fn_config_program eject enable_eject install
 diff --git a/configure.ac b/configure.ac
-index fa58592..4e8f5e1 100644
+index 22620ec..3a84e18 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3451,6 +3451,7 @@ WINE_CONFIG_TEST(programs/cmd/tests)
+@@ -3731,6 +3731,7 @@ WINE_CONFIG_TEST(programs/cmd/tests)
  WINE_CONFIG_PROGRAM(conhost,,[install])
  WINE_CONFIG_PROGRAM(control,,[install])
  WINE_CONFIG_PROGRAM(cscript,,[clean,install])
 +WINE_CONFIG_PROGRAM(dplaysvr,,[install])
  WINE_CONFIG_PROGRAM(dpnsvr,,[install])
- WINE_CONFIG_PROGRAM(dxdiag,,[install,po])
+ WINE_CONFIG_PROGRAM(dxdiag,,[clean,install])
  WINE_CONFIG_PROGRAM(eject,,[install])
 diff --git a/programs/dplaysvr/Makefile.in b/programs/dplaysvr/Makefile.in
 new file mode 100644
@@ -96,5 +96,5 @@ index 0000000..4ecfd45
 +    return 0;
 +}
 -- 
-2.1.4
+1.9.1
 
