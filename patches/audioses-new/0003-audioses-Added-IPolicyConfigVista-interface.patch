@@ -1,0 +1,286 @@
+From ae891407a39183fcb0d420463b25e56cb199f594 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Dec 2017 14:34:04 +1100
+Subject: [PATCH 3/3] audioses: Added IPolicyConfigVista interface
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/audioses/audioses_main.c | 253 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 253 insertions(+)
+
+diff --git a/dlls/audioses/audioses_main.c b/dlls/audioses/audioses_main.c
+index dba6767606..94e260f4f0 100644
+--- a/dlls/audioses/audioses_main.c
++++ b/dlls/audioses/audioses_main.c
+@@ -23,6 +23,10 @@
+ 
+ #include "config.h"
+ 
++#include "initguid.h"
++
++#define COBJMACROS
++
+ #include <stdarg.h>
+ 
+ #include "windef.h"
+@@ -53,8 +57,257 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
+     return TRUE;
+ }
+ 
++static HRESULT WINAPI ClassFactory_QueryInterface(IClassFactory *iface, REFIID riid, void **ppv)
++{
++    *ppv = NULL;
++
++    if(IsEqualGUID(&IID_IUnknown, riid)) {
++        TRACE("(%p)->(IID_IUnknown %p)\n", iface, ppv);
++        *ppv = iface;
++    }else if(IsEqualGUID(&IID_IClassFactory, riid)) {
++        TRACE("(%p)->(IID_IClassFactory %p)\n", iface, ppv);
++        *ppv = iface;
++    }
++
++    if(*ppv) {
++        IUnknown_AddRef((IUnknown*)*ppv);
++        return S_OK;
++    }
++
++    FIXME("(%p)->(%s %p)\n", iface, debugstr_guid(riid), ppv);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI ClassFactory_AddRef(IClassFactory *iface)
++{
++    TRACE("(%p)\n", iface);
++    return 2;
++}
++
++static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
++{
++    TRACE("(%p)\n", iface);
++    return 1;
++}
++
++static HRESULT WINAPI ClassFactory_LockServer(IClassFactory *iface, BOOL fLock)
++{
++    TRACE("(%p)->(%x)\n", iface, fLock);
++    return S_OK;
++}
++
++HRESULT WINAPI Policy_CreateInstance(IClassFactory *iface,IUnknown *outer, REFIID riid, void **ppv)
++{
++    return S_OK;
++}
++
++static const IClassFactoryVtbl AudioSesPolicyVtbl = {
++    ClassFactory_QueryInterface,
++    ClassFactory_AddRef,
++    ClassFactory_Release,
++    Policy_CreateInstance,
++    ClassFactory_LockServer
++};
++
++static IClassFactory AudioSesFactory = { &AudioSesPolicyVtbl };
++
++
++typedef struct _vistapolicy
++{
++    IPolicyConfigVista IPolicyConfigVista_iface;
++
++    LONG ref;
++} vistapolicy;
++
++static inline vistapolicy *impl_from_IPolicyConfigVista( IPolicyConfigVista *iface )
++{
++    return CONTAINING_RECORD(iface, vistapolicy, IPolicyConfigVista_iface);
++}
++
++static HRESULT WINAPI vistapolicy_QueryInterface(IPolicyConfigVista *iface, REFIID riid, void **object)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++
++    TRACE("%p %s %p\n", This, debugstr_guid(riid), object);
++
++    if ( IsEqualGUID( riid, &IID_IPolicyConfigVista ) ||
++         IsEqualGUID( riid, &IID_IUnknown ) )
++    {
++        *object = &This->IPolicyConfigVista_iface;
++    }
++    else
++    {
++        FIXME("Unsupported interface %s\n", debugstr_guid(riid));
++        return E_NOINTERFACE;
++    }
++
++    IPolicyConfigVista_AddRef(iface);
++
++    return S_OK;
++}
++
++static ULONG WINAPI vistapolicy_AddRef(IPolicyConfigVista *iface)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    ULONG ref = InterlockedIncrement(&This->ref);
++
++    TRACE("%p ref=%u\n", This, ref);
++
++    return ref;
++}
++
++static ULONG WINAPI vistapolicy_Release(IPolicyConfigVista *iface)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    ULONG ref = InterlockedDecrement(&This->ref);
++
++    TRACE("%p ref=%u\n", This, ref);
++
++    if (ref == 0)
++    {
++        HeapFree(GetProcessHeap(), 0, This);
++    }
++
++    return ref;
++}
++
++static HRESULT WINAPI vistapolicy_GetMixFormat(IPolicyConfigVista *iface, LPCWSTR deviceid, WAVEFORMATEX **format)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_GetDeviceFormat(IPolicyConfigVista *iface, LPCWSTR deviceid, BOOL isdefault,
++    WAVEFORMATEX **format)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_SetDeviceFormat(IPolicyConfigVista *iface, LPCWSTR deviceid, WAVEFORMATEX *end_format,
++    WAVEFORMATEX *mix_format)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_GetProcessingPeriod(IPolicyConfigVista *iface, LPCWSTR deviceid, BOOL isdefault,
++    REFERENCE_TIME *default_period, REFERENCE_TIME *min_period)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_SetProcessingPeriod(IPolicyConfigVista *iface, LPCWSTR deviceid, REFERENCE_TIME *period)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_GetShareMode(IPolicyConfigVista *iface, LPCWSTR deviceid, DeviceShareMode *mode)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_SetShareMode(IPolicyConfigVista *iface, LPCWSTR deviceid, DeviceShareMode *mode)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_GetPropertyValue(IPolicyConfigVista *iface, LPCWSTR deviceid, PROPERTYKEY *key,
++    PROPVARIANT *value)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_SetPropertyValue(IPolicyConfigVista *iface, LPCWSTR deviceid, PROPERTYKEY *key,
++    PROPVARIANT *value)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_SetDefaultEndpoint(IPolicyConfigVista *iface, LPCWSTR deviceid, ERole role)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI vistapolicy_SetEndpointVisibility(IPolicyConfigVista *iface, LPCWSTR deviceid, BOOL visible)
++{
++    vistapolicy *This = impl_from_IPolicyConfigVista(iface);
++    FIXME("stub %p\n", This);
++    return E_NOTIMPL;
++}
++
++static const IPolicyConfigVistaVtbl vistapolicy_vtbl = 
++{
++    vistapolicy_QueryInterface,
++    vistapolicy_AddRef,
++    vistapolicy_Release,
++    vistapolicy_GetMixFormat,
++    vistapolicy_GetDeviceFormat,
++    vistapolicy_SetDeviceFormat,
++    vistapolicy_GetProcessingPeriod,
++    vistapolicy_SetProcessingPeriod,
++    vistapolicy_GetShareMode,
++    vistapolicy_SetShareMode,
++    vistapolicy_GetPropertyValue,
++    vistapolicy_SetPropertyValue,
++    vistapolicy_SetDefaultEndpoint,
++    vistapolicy_SetEndpointVisibility
++};
++
++HRESULT WINAPI VistaPolicy_CreateInstance(IClassFactory *iface,IUnknown *outer, REFIID riid, void **ppv)
++{
++    vistapolicy *This;
++
++    This = HeapAlloc( GetProcessHeap(), 0, sizeof(*This) );
++    if ( !This )
++        return E_OUTOFMEMORY;
++
++    This->IPolicyConfigVista_iface.lpVtbl = &vistapolicy_vtbl;
++    This->ref = 1;
++
++    *ppv = (IUnknown*)&This->IPolicyConfigVista_iface;
++
++    return S_OK;
++}
++
++static const IClassFactoryVtbl AudioSesVistaPolicyVtbl = {
++    ClassFactory_QueryInterface,
++    ClassFactory_AddRef,
++    ClassFactory_Release,
++    VistaPolicy_CreateInstance,
++    ClassFactory_LockServer
++};
++
++static IClassFactory AudioSesVistaFactory = { &AudioSesVistaPolicyVtbl };
++
+ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+ {
++    if(IsEqualGUID(&CLSID_CPolicyConfigClient, rclsid)) {
++        TRACE("(CLSID_CPolicyConfigClient %s %p)\n", debugstr_guid(riid), ppv);
++        return IClassFactory_QueryInterface(&AudioSesFactory, riid, ppv);
++    }
++    else if(IsEqualGUID(&CLSID_CPolicyConfigVistaClient, rclsid)) {
++        TRACE("(CLSID_CPolicyConfigVistaClient %s %p)\n", debugstr_guid(riid), ppv);
++        return IClassFactory_QueryInterface(&AudioSesVistaFactory, riid, ppv);
++    }
++
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
+     return CLASS_E_CLASSNOTAVAILABLE;
+ }
+-- 
+2.15.0
+
