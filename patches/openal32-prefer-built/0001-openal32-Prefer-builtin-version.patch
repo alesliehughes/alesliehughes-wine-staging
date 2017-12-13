@@ -1,0 +1,26 @@
+From 3e1f6dac1ac239f3cca0b46af8ef2147e6cf8084 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 13 Dec 2017 15:29:30 +1100
+Subject: [PATCH] openal32: Prefer builtin version
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/openal32/openal.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/dlls/openal32/openal.c b/dlls/openal32/openal.c
+index cd49b92..5a4e1e7 100644
+--- a/dlls/openal32/openal.c
++++ b/dlls/openal32/openal.c
+@@ -99,8 +99,6 @@ BOOL WINAPI DllMain( HINSTANCE hinst, DWORD reason, LPVOID reserved )
+ {
+     switch(reason)
+     {
+-    case DLL_WINE_PREATTACH:
+-        return FALSE;    /* prefer native version */
+     case DLL_PROCESS_ATTACH:
+         DisableThreadLibraryCalls(hinst);
+ #define LOADFUNC(x) x = alcGetProcAddress(NULL, #x)
+-- 
+1.9.1
+
