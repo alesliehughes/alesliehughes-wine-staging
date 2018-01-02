@@ -1,0 +1,108 @@
+From 2dae03985a61f9dfa79fd74f1e1b2a8875d55516 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 4 Dec 2017 14:49:50 +1100
+Subject: [PATCH 2/3] dpnsvr: Add a loopback connection to comminicate with
+ local servers
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ programs/dpnsvr/main.c | 52 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+
+diff --git a/programs/dpnsvr/main.c b/programs/dpnsvr/main.c
+index c795884..589825f 100644
+--- a/programs/dpnsvr/main.c
++++ b/programs/dpnsvr/main.c
+@@ -30,6 +30,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(dpnsvr);
+ 
+ #define BUF_SIZE 500
+ 
++SOCKET localsocket;
+ SOCKET *socks;
+ static int sock_cnt = 0;
+ static int sock_max = 10;
+@@ -132,16 +133,55 @@ static BOOL create_directplay_sockets(void)
+     return TRUE;
+ }
+ 
++static BOOL setup_local_network(void)
++{
++    struct sockaddr_in addr;
++    ULONG block = 1;
++
++    localsocket = socket(AF_INET, SOCK_STREAM,  IPPROTO_TCP);
++    if(localsocket == SOCKET_ERROR)
++    {
++        WINE_ERR("Failed to create local socket %d.\n", WSAGetLastError());
++        return FALSE;
++    }
++
++    memset(&addr, 0, sizeof(addr));
++
++    addr.sin_family = AF_INET;
++    addr.sin_port = htons(DPNA_DPNSVR_PORT + 1);
++    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
++
++    if (bind(localsocket, (struct sockaddr *)&addr, sizeof(addr)) != 0)
++    {
++        WINE_ERR("Failed to bind socket %d.\n", WSAGetLastError());
++        closesocket(localsocket);
++        return FALSE;
++    }
++
++    ioctlsocket(localsocket, FIONBIO, &block);
++    listen(localsocket, 5);
++
++    WINE_TRACE("Localhost listening.\n");
++
++    return TRUE;
++}
++
+ int wmain(int argc, WCHAR *argv[])
+ {
+     WSADATA data;
+     int i, loop = 0;
++    SOCKET remote;
++    struct sockaddr_in addr;
++    int addrlen;
+ 
+     if (WSAStartup(MAKEWORD(2, 2), &data))
+         return 1;
+ 
+     create_directplay_sockets();
+ 
++    /* Use a socket to comminicate with applications that have loaded us. */
++    setup_local_network();
++
+     while(loop < 30)
+     {
+         for(i=0; i < sock_cnt; i++)
+@@ -158,6 +198,16 @@ int wmain(int argc, WCHAR *argv[])
+                 WINE_ERR("Error %d.\n", WSAGetLastError());
+         }
+ 
++        addrlen = sizeof(addr);
++        remote = accept(localsocket, (struct sockaddr *)&addr, &addrlen);
++        if(remote != SOCKET_ERROR)
++        {
++            WINE_FIXME("Accepted socket.\n");
++            closesocket(remote);
++        }
++        else if(WSAGetLastError() != WSAEWOULDBLOCK)
++            WINE_ERR("local Error %d.\n", WSAGetLastError());
++
+         WINE_FIXME("Sleeping...\n");
+         Sleep(1000);
+         loop++;
+@@ -168,6 +218,8 @@ int wmain(int argc, WCHAR *argv[])
+         closesocket(socks[i]);
+     }
+ 
++    closesocket(localsocket);
++
+     HeapFree(GetProcessHeap(), 0, socks);
+ 
+     WSACleanup();
+-- 
+1.9.1
+
