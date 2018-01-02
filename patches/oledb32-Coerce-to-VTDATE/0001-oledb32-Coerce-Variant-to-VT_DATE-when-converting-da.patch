@@ -1,7 +1,9 @@
-From c38c59d7705d338f1e241eb0e0168b7f438a2623 Mon Sep 17 00:00:00 2001
+From 0a64f88eed43223e19de53240f6d193d1fd87083 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 22 Dec 2017 11:19:36 +1100
-Subject: [PATCH] oledb32: Coerce Variant to VT_DATE when converting data
+Subject: [v2 PATCH] oledb32: Coerce Variant to VT_DATE when converting data
+
+v2: Correct Parameters passed to VariantChangeType.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +11,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
-index 267de1b..3634ef4 100644
+index 267de1b..22609ae 100644
 --- a/dlls/oledb32/convert.c
 +++ b/dlls/oledb32/convert.c
 @@ -475,10 +475,13 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
@@ -20,7 +22,7 @@ index 267de1b..3634ef4 100644
 +        {
 +            VariantInit(&tmp);
 +
-+            if ((hr = VariantChangeType((VARIANT*)src, &tmp, 0, VT_DATE)) == S_OK)
++            if ((hr = VariantChangeType(&tmp, (VARIANT*)src, 0, VT_DATE)) == S_OK)
              {
                  SYSTEMTIME st;
 -                hr = (VariantTimeToSystemTime( V_DATE((VARIANT*)src), &st) ? S_OK : E_FAIL);
