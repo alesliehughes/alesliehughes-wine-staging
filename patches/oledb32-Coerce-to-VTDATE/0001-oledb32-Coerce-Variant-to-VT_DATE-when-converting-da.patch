@@ -1,14 +1,16 @@
-From 0a64f88eed43223e19de53240f6d193d1fd87083 Mon Sep 17 00:00:00 2001
+From 0d370145ced1162dabb0d5e674c87481f325c358 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 22 Dec 2017 11:19:36 +1100
-Subject: [v2 PATCH] oledb32: Coerce Variant to VT_DATE when converting data
+Subject: [v3 PATCH] oledb32: Coerce Variant to VT_DATE when converting data
 
 v2: Correct Parameters passed to VariantChangeType.
+V3: Added tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/oledb32/convert.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ dlls/oledb32/convert.c       |  8 ++++++--
+ dlls/oledb32/tests/convert.c | 19 +++++++++++++++++++
+ 2 files changed, 25 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
 index 267de1b..22609ae 100644
@@ -38,6 +40,36 @@ index 267de1b..22609ae 100644
          default: FIXME("Unimplemented conversion %04x -> DBDATE\n", src_type); return  E_NOTIMPL;
          }
          break;
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index 1d55e7f..6b0dd55 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -3357,6 +3357,25 @@ static void test_converttodbdate(void)
+     ok(dst_len == sizeof(DBDATE), "got %ld\n", dst_len);
+     ok(!memcmp(&ts, &dst, sizeof(DBDATE) ), "bytes differ\n");
+ 
++    V_VT(&var) = VT_R8;
++    V_R8(&var) = 41408.086250;
++    dst_len = 0;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_VARIANT, DBTYPE_DBDATE, sizeof(var), &dst_len, &var, &dst, 2, 0, &dst_status, 0, 0, 0);
++    ok(hr == S_OK, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(DBDATE), "got %ld\n", dst_len);
++    ok(!memcmp(&ts, &dst, sizeof(DBDATE) ), "bytes differ\n");
++
++    V_VT(&var) = VT_BSTR;
++    V_BSTR(&var) = SysAllocString(strW);
++    dst_len = 0;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_VARIANT, DBTYPE_DBDATE, sizeof(var), &dst_len, &var, &dst, 2, 0, &dst_status, 0, 0, 0);
++    ok(hr == S_OK, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(DBDATE), "got %ld\n", dst_len);
++    ok(!memcmp(&ts, &dst, sizeof(DBDATE) ), "bytes differ\n");
++    VariantClear(&var);
++
+     dst_len = 0;
+     bstr = SysAllocString(strW);
+     hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBDATE, 0, &dst_len, &bstr, &dst, 2, 0, &dst_status, 0, 0, 0);
 -- 
 1.9.1
 
