@@ -1,0 +1,66 @@
+From 01b553f534ee018a16df83c24f441ea9e6bf9dca Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 5 Jun 2018 16:07:39 +1000
+Subject: [PATCH 1/2] include: Add IWbemUnsecuredApartment interfaces
+
+For https://bugs.winehq.org/show_bug.cgi?id=30439
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/wbemcli.idl | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+
+diff --git a/include/wbemcli.idl b/include/wbemcli.idl
+index 4a0f4e2..2dc451a 100644
+--- a/include/wbemcli.idl
++++ b/include/wbemcli.idl
+@@ -660,3 +660,46 @@ interface IWbemQualifierSet : IUnknown
+ 
+     HRESULT EndEnumeration();
+ }
++
++
++typedef [v1_enum] enum tag_WBEM_UNSECAPP_FLAG_TYPE
++{
++    WBEM_FLAG_UNSECAPP_DEFAULT_CHECK_ACCESS = 0,
++    WBEM_FLAG_UNSECAPP_CHECK_ACCESS         = 1,
++    WBEM_FLAG_UNSECAPP_DONT_CHECK_ACCESS    = 2
++} WBEM_UNSECAPP_FLAG_TYPE;
++
++[
++    object,
++    restricted,
++    uuid(1cfaba8c-1523-11d1-ad79-00c04fd8fdff)
++]
++interface IUnsecuredApartment : IUnknown
++{
++    HRESULT CreateObjectStub(
++        [in] IUnknown *object,
++        [out] IUnknown **stub);
++};
++
++[
++    object,
++    restricted,
++    uuid(31739d04-3471-4cf4-9a7c-57a44ae71956)
++]
++interface IWbemUnsecuredApartment : IUnsecuredApartment
++{
++    HRESULT CreateSinkStub(
++        [in] IWbemObjectSink *sink,
++        [in] DWORD flags,
++        [in,unique] const WCHAR *reserved,
++        [out] IWbemObjectSink **stub);
++};
++
++[
++    uuid(49bd2028-1523-11d1-ad79-00c04fd8fdff)
++]
++coclass UnsecuredApartment
++{
++    interface IUnsecuredApartment;
++    interface IWbemUnsecuredApartment;
++};
+-- 
+1.9.1
+

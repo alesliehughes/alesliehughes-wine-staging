@@ -1,0 +1,119 @@
+From 4c8eb1dbf0c43af3d0c478e884c4ac53e0f0ed71 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Jun 2018 10:15:12 +1000
+Subject: [PATCH 2/2] wbemdisp/tests: Add UnsecuredApartment test
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/wbemdisp/tests/wbemdisp.c | 89 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
+
+diff --git a/dlls/wbemdisp/tests/wbemdisp.c b/dlls/wbemdisp/tests/wbemdisp.c
+index 1ce0456..15562e9 100644
+--- a/dlls/wbemdisp/tests/wbemdisp.c
++++ b/dlls/wbemdisp/tests/wbemdisp.c
+@@ -370,12 +370,101 @@ static void test_locator(void)
+     ISWbemLocator_Release( locator );
+ }
+ 
++static HRESULT WINAPI wbemsink_QueryInterface(IWbemObjectSink *iface, REFIID riid, void **obj)
++{
++    if (IsEqualGUID( riid, &IID_IWbemObjectSink ) ||
++        IsEqualGUID( riid, &IID_IUnknown ))
++    {
++        *obj = iface;
++        return S_OK;
++    }
++
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI wbemsink_AddRef(IWbemObjectSink *iface)
++{
++    return 2;
++}
++
++static ULONG WINAPI wbemsink_Release(IWbemObjectSink *iface)
++{
++    return 1;
++}
++
++static HRESULT WINAPI wbemsink_Indicate(IWbemObjectSink *iface, LONG count, IWbemClassObject **array)
++{
++    trace( "Indicate\n");
++    return E_FAIL;
++}
++
++static HRESULT WINAPI wbemsink_SetStatus(IWbemObjectSink *iface, LONG flags, HRESULT result, BSTR param, IWbemClassObject *object)
++{
++    trace("SetStatus\n");
++    return E_FAIL;
++}
++
++
++static struct IWbemObjectSinkVtbl sink_vtbl =
++{
++    wbemsink_QueryInterface,
++    wbemsink_AddRef,
++    wbemsink_Release,
++    wbemsink_Indicate,
++    wbemsink_SetStatus
++};
++
++static IWbemObjectSink object_sink = { &sink_vtbl };
++
++static void test_UnsecuredApartment(void)
++{
++    IUnsecuredApartment *unsecapp;
++    IWbemObjectSink *sink;
++    IUnknown *unk, *unk2;
++    IMarshal *marshal;
++    HRESULT hr;
++
++    hr = CoCreateInstance( &CLSID_UnsecuredApartment, NULL, CLSCTX_LOCAL_SERVER, &IID_IUnsecuredApartment, (void **)&unsecapp );
++    if (hr != S_OK)
++    {
++        win_skip( "Can't create instance of UnsecuredApartment (0x%08x)\n", hr );
++        return;
++    }
++
++    hr = IUnsecuredApartment_CreateObjectStub(unsecapp, (IUnknown *)&object_sink, &unk);
++    ok( hr == S_OK, "got %x\n", hr );
++
++    hr = IUnknown_QueryInterface(unk, &IID_IMarshal,(void**)&marshal);
++    ok( hr == S_OK, "got %x\n", hr );
++    IMarshal_Release(marshal);
++
++    hr = IUnknown_QueryInterface(unk, &IID_IStdMarshalInfo,(void**)&unk2);
++    ok( hr == E_NOINTERFACE, "got %x\n", hr );
++
++    hr = IUnknown_QueryInterface(unk, &IID_IExternalConnection,(void**)&unk2);
++    ok( hr == E_NOINTERFACE, "got %x\n", hr );
++
++    hr = IUnknown_QueryInterface(unk, &IID_IWbemObjectSink,(void**)&sink);
++    ok( hr == S_OK, "got %x\n", hr );
++    IUnknown_Release(unk);
++
++    /* TODO?
++        pServices is an IWbemServices* object
++        pServices->CreateInstanceEnumAsync(strClassName, 0, NULL, sink);
++    */
++
++    IWbemObjectSink_Release(sink);
++
++    IUnsecuredApartment_Release(unsecapp);
++}
++
+ START_TEST(wbemdisp)
+ {
+     CoInitialize( NULL );
+ 
+     test_ParseDisplayName();
+     test_locator();
++    test_UnsecuredApartment();
+ 
+     CoUninitialize();
+ }
+-- 
+1.9.1
+
