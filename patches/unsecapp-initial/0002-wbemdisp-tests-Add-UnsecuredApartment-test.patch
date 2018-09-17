@@ -1,7 +1,9 @@
-From 4c8eb1dbf0c43af3d0c478e884c4ac53e0f0ed71 Mon Sep 17 00:00:00 2001
+From 8ee94dde28f98d8351da4f081ca6b011293ffe60 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jun 2018 10:15:12 +1000
-Subject: [PATCH 2/2] wbemdisp/tests: Add UnsecuredApartment test
+Subject: [PATCH 2/4] wbemdisp/tests: Add UnsecuredApartment test
+
+For https://bugs.winehq.org/show_bug.cgi?id=30439
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
