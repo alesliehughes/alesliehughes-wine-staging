@@ -1,0 +1,222 @@
+From 047d9139a3af2eb648a2e82ca9bd7d24735d2a11 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 6 Sep 2018 12:18:42 +1000
+Subject: [PATCH] comsvcs: Add initial tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                      |  15 +---
+ configure.ac                   |   1 +
+ dlls/comsvcs/tests/Makefile.in |   5 ++
+ dlls/comsvcs/tests/dispenser.c | 163 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 171 insertions(+), 13 deletions(-)
+ create mode 100644 dlls/comsvcs/tests/Makefile.in
+ create mode 100644 dlls/comsvcs/tests/dispenser.c
+
+diff --git a/configure b/configure
+index b800fd2..052f695 100755
+--- a/configure
++++ b/configure
+@@ -19247,6 +19235,7 @@ wine_fn_config_makefile dlls/commdlg.dll16 enable_win16
+ wine_fn_config_makefile dlls/compobj.dll16 enable_win16
+ wine_fn_config_makefile dlls/compstui enable_compstui
+ wine_fn_config_makefile dlls/comsvcs enable_comsvcs
++wine_fn_config_makefile dlls/comsvcs/tests enable_tests
+ wine_fn_config_makefile dlls/concrt140 enable_concrt140
+ wine_fn_config_makefile dlls/connect enable_connect
+ wine_fn_config_makefile dlls/credui enable_credui
+diff --git a/configure.ac b/configure.ac
+index d7d5e8e..4f3b4e4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3106,6 +3106,7 @@ WINE_CONFIG_MAKEFILE(dlls/commdlg.dll16,enable_win16)
+ WINE_CONFIG_MAKEFILE(dlls/compobj.dll16,enable_win16)
+ WINE_CONFIG_MAKEFILE(dlls/compstui)
+ WINE_CONFIG_MAKEFILE(dlls/comsvcs)
++WINE_CONFIG_MAKEFILE(dlls/comsvcs/tests)
+ WINE_CONFIG_MAKEFILE(dlls/concrt140)
+ WINE_CONFIG_MAKEFILE(dlls/connect)
+ WINE_CONFIG_MAKEFILE(dlls/credui)
+diff --git a/dlls/comsvcs/tests/Makefile.in b/dlls/comsvcs/tests/Makefile.in
+new file mode 100644
+index 0000000..b3ff9a1
+--- /dev/null
++++ b/dlls/comsvcs/tests/Makefile.in
+@@ -0,0 +1,5 @@
++TESTDLL   = comsvcs.dll
++IMPORTS   = ole32 uuid
++
++C_SRCS = \
++	dispenser.c
+diff --git a/dlls/comsvcs/tests/dispenser.c b/dlls/comsvcs/tests/dispenser.c
+new file mode 100644
+index 0000000..741df6c
+--- /dev/null
++++ b/dlls/comsvcs/tests/dispenser.c
+@@ -0,0 +1,163 @@
++/*
++ * Copyright 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define COBJMACROS
++
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "ole2.h"
++#include "comsvcs.h"
++
++#include "wine/test.h"
++
++static HRESULT WINAPI driver_QueryInterface(IDispenserDriver *iface, REFIID riid, void **object)
++{
++    if (IsEqualGUID(riid, &IID_IUnknown) ||
++        IsEqualGUID(riid, &IID_IDispenserDriver))
++    {
++        *object = iface;
++
++        return S_OK;
++    }
++
++    ok(0, "Unknown iterface %s\n", wine_dbgstr_guid(riid));
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI driver_AddRef(IDispenserDriver *iface)
++{
++    return 2;
++}
++
++static ULONG WINAPI driver_Release(IDispenserDriver *iface)
++{
++    return 1;
++}
++
++static HRESULT WINAPI driver_CreateResource(IDispenserDriver *iface, const RESTYPID restypid, RESID *resid, TIMEINSECS *destroy)
++{
++    //TODO - EXPECTED
++    trace("RESTYPID %s\n", wine_dbgstr_w( (WCHAR*)(DWORD_PTR)restypid) );
++
++    *resid = 10;
++    return S_OK;
++}
++
++static HRESULT WINAPI driver_RateResource(IDispenserDriver *iface, const RESTYPID restypid, const RESID resid,
++    const BOOL requires, RESOURCERATING *rating)
++{
++    ok(0, "unexpected call\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI driver_EnlistResource(IDispenserDriver *iface, const RESID resid, const TRANSID transid)
++{
++    ok(0, "unexpected call\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI driver_ResetResource(IDispenserDriver *iface, const RESID resid)
++{
++    ok(resid == 10, "RESID %d\n", resid);
++    return S_OK;
++}
++
++static HRESULT WINAPI driver_DestroyResource(IDispenserDriver *iface, const RESID resid)
++{
++    ok(0, "unexpected call\n");
++    return S_OK;
++}
++
++static HRESULT WINAPI driver_DestroyResourceS(IDispenserDriver *iface, const SRESID resid)
++{
++    ok(0, "unexpected call\n");
++    return E_NOTIMPL;
++}
++
++
++static const struct IDispenserDriverVtbl driver_vtbl =
++{
++    driver_QueryInterface,
++    driver_AddRef,
++    driver_Release,
++    driver_CreateResource,
++    driver_RateResource,
++    driver_EnlistResource,
++    driver_ResetResource,
++    driver_DestroyResource,
++    driver_DestroyResourceS
++};
++
++static IDispenserDriver DispenserDriver = { &driver_vtbl };
++
++static void create_dispenser(void)
++{
++    static const WCHAR pool0[] = {'S','C','.','P','o','o','l',' ','0',' ','0',0};
++    static const WCHAR pool1[] = {'S','C','.','P','o','o','l',' ','1',' ','1',0};
++    HRESULT hr;
++    IDispenserManager *dispenser = NULL;
++    IHolder *holder1 = NULL, *holder2 = NULL;
++
++    hr = CoCreateInstance( &CLSID_DispenserManager, NULL, CLSCTX_ALL, &IID_IDispenserManager, (void**)&dispenser);
++    ok(hr == S_OK, "Failed to create object 0x%08x\n", hr);
++    if(FAILED(hr))
++    {
++        win_skip("DispenserManager not available\n");
++        return;
++    }
++
++    hr = IDispenserManager_RegisterDispenser(dispenser, &DispenserDriver, pool0, &holder1);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDispenserManager_RegisterDispenser(dispenser, &DispenserDriver, pool0, &holder2);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    todo_wine ok(holder1 != holder2, "same holder object returned\n");
++
++    if(holder1)
++    {
++        RESID resid;
++        hr = IHolder_AllocResource(holder1, (RESTYPID)(DWORD_PTR)&pool1, &resid);
++        todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++
++        hr = IHolder_FreeResource(holder1, resid);
++        todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++        
++        IHolder_Release(holder1);
++    }
++    if(holder2)
++        IHolder_Release(holder2);
++
++    IDispenserManager_Release(dispenser);
++}
++
++
++START_TEST(dispenser)
++{
++    HRESULT hr;
++
++    hr = CoInitialize(0);
++    ok( hr == S_OK, "failed to init com\n");
++    if (hr != S_OK)
++        return;
++
++    create_dispenser();
++
++    CoUninitialize();
++}
+-- 
+1.9.1
+

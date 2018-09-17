@@ -1,18 +1,19 @@
-From 79b2e4d2092493caa1a2801ff2b7dd6a58ddb509 Mon Sep 17 00:00:00 2001
+From f7c1a7bc0335c83389be8180ceb76c829bd7fa23 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2017 12:20:17 +1100
-Subject: [PATCH 8/8] comsvcs: Implement IDispenserManager RegisterDispenser
+Subject: [PATCH] comsvcs: Implement IDispenserManager RegisterDispenser
 
-Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+This needs to be split between RegisterDispenser
+and holder_allocResource (must return S_OK).
 ---
- dlls/comsvcs/main.c | 172 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 171 insertions(+), 1 deletion(-)
+ dlls/comsvcs/main.c | 182 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 181 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index 7b06041..7c5a18c 100644
+index 6b7ec14..72e7770 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
-@@ -43,11 +43,176 @@ typedef struct dispensermanager
+@@ -43,11 +43,186 @@ typedef struct dispensermanager
  
  } dispensermanager;
  
@@ -21,6 +22,7 @@ index 7b06041..7c5a18c 100644
 +    IHolder IHolder_iface;
 +    LONG ref;
 +
++    IDispenserDriver *driver;
 +} holder;
 +
  static inline dispensermanager *impl_from_IDispenserManager(IDispenserManager *iface)
@@ -70,7 +72,9 @@ index 7b06041..7c5a18c 100644
 +
 +    if (!ref)
 +    {
-+       HeapFree(GetProcessHeap(), 0, This);
++        IDispenserDriver_AddRef(This->driver);
++
++        heap_free(This);
 +    }
 +
 +    return ref;
@@ -79,10 +83,15 @@ index 7b06041..7c5a18c 100644
 +static HRESULT WINAPI holder_AllocResource(IHolder *iface, const RESTYPID typeid, RESID *resid)
 +{
 +    holder *This = impl_from_IHolder(iface);
++    HRESULT hr;
++    TIMEINSECS secs;
 +
 +    FIXME("(%p)->(%08lx, %p) stub\n", This, typeid, resid);
 +
-+    return E_NOTIMPL;
++    hr = IDispenserDriver_CreateResource(This->driver, typeid, resid, &secs);
++
++    FIXME("<- 0x%08x\n", hr);
++    return S_OK;
 +}
 +
 +static HRESULT WINAPI holder_FreeResource(IHolder *iface, const RESID resid)
@@ -163,14 +172,14 @@ index 7b06041..7c5a18c 100644
 +    holder_RequestDestroyResource
 +};
 +
-+static HRESULT WINAPI CreateHolder(IHolder **object)
++static HRESULT create_holder(IDispenserDriver *driver, IHolder **object)
 +{
 +    holder *hold;
 +    HRESULT ret;
 +
 +    TRACE("(%p)\n", object);
 +
-+    hold = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*hold));
++    hold = heap_alloc(sizeof(*hold));
 +    if (!hold)
 +    {
 +        *object = NULL;
@@ -179,6 +188,8 @@ index 7b06041..7c5a18c 100644
 +
 +    hold->IHolder_iface.lpVtbl = &holder_vtbl;
 +    hold->ref = 1;
++    hold->driver = driver;
++    IDispenserDriver_AddRef(driver);
 +
 +    ret = holder_QueryInterface(&hold->IHolder_iface, &IID_IHolder, (void**)object);
 +    holder_Release(&hold->IHolder_iface);
@@ -189,7 +200,7 @@ index 7b06041..7c5a18c 100644
  static HRESULT WINAPI dismanager_QueryInterface(IDispenserManager *iface, REFIID riid, void **object)
  {
      dispensermanager *This = impl_from_IDispenserManager(iface);
-@@ -95,10 +260,15 @@ static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDi
+@@ -95,10 +270,15 @@ static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDi
                          LPCOLESTR name, IHolder **dispenser)
  {
      dispensermanager *This = impl_from_IDispenserManager(iface);
@@ -198,7 +209,7 @@ index 7b06041..7c5a18c 100644
      FIXME("(%p)->(%p, %s, %p) stub\n", This, driver, debugstr_w(name), dispenser);
  
 -    return E_NOTIMPL;
-+    hr = CreateHolder(dispenser);
++    hr = create_holder(driver, dispenser);
 +
 +    FIXME("<-- %p\n", *dispenser);
 +
