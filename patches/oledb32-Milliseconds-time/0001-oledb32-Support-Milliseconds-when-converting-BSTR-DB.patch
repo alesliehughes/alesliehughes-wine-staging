@@ -1,0 +1,84 @@
+From 90daea11dae9f57ec5b6179321518eaf389b9e16 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 19 Jun 2018 11:38:25 +1000
+Subject: [PATCH] oledb32: Support Milliseconds when converting BSTR ->
+ DBTIMESTAMP
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/convert.c       | 39 +++++++++++++++++++++++++++++++++++++++
+ dlls/oledb32/tests/convert.c |  8 ++++----
+ 2 files changed, 43 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index 5bad105..4607ecb 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -527,6 +527,45 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+                 d->second = st.wSecond;
+                 d->fraction = st.wMilliseconds * 1000000;
+             }
++            else
++            {
++                WCHAR *de = s;
++                DWORD len = SysStringLen(s);
++
++                TRACE("String with Millseconds: %s\n", debugstr_w(s));
++
++                VariantClear(&var);
++
++                while (len && de[len] != '.')
++                {
++                    len--;
++                }
++
++                V_VT(&var) = VT_BSTR;
++                V_BSTR(&var) = SysAllocStringLen(s, len);
++                if ((hr = VariantChangeType(&var, &var, 0, VT_DATE)) == S_OK)
++                {
++                    SYSTEMTIME st;
++
++                    hr = (VariantTimeToSystemTime( V_DATE(&var), &st) ? S_OK : E_FAIL);
++                    d->year = st.wYear;
++                    d->month = st.wMonth;
++                    d->day = st.wDay;
++                    d->hour = st.wHour;
++                    d->minute = st.wMinute;
++                    d->second = st.wSecond;
++                    d->fraction = 0;
++
++                    VariantClear(&var);
++                    V_VT(&var) = VT_BSTR;
++                    V_BSTR(&var) = SysAllocString(de + (len+1));
++                    if(VariantChangeType(&var, &var, 0, VT_I4) == S_OK)
++                    {
++                        TRACE("Millseconds: %d\n", V_I4(&var));
++                        d->fraction = V_I4(&var);
++                    }
++                }
++            }
+ 
+             VariantClear(&var);
+         }
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index 4416240..34b503d 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -3641,10 +3641,10 @@ static void test_converttotimestamp(void)
+     bstr = SysAllocString(strFullW);
+     dst_len = 0x1234;
+     hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
+-    todo_wine ok(hr == S_OK, "got %08x\n", hr);
+-    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
+-    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
+-    todo_wine ok(!memcmp(&ts1, &dst, sizeof(ts1)), "Wrong timestamp\n");
++    ok(hr == S_OK, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    ok(!memcmp(&ts1, &dst, sizeof(ts1)), "Wrong timestamp\n");
+     SysFreeString(bstr);
+ 
+     V_VT(&var) = VT_NULL;
+-- 
+1.9.1
+
