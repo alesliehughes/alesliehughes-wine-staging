@@ -1,0 +1,275 @@
+From affaab851b37df2917425c8753279507bfe29987 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 22 Sep 2017 15:56:52 +1000
+Subject: [PATCH 1/2] dpnsvr: Listen for broadcast packets
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ programs/dpnsvr/Makefile.in |   1 +
+ programs/dpnsvr/main.c      | 231 +++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 228 insertions(+), 4 deletions(-)
+
+diff --git a/programs/dpnsvr/Makefile.in b/programs/dpnsvr/Makefile.in
+index 1dac8a4..a99055b 100644
+--- a/programs/dpnsvr/Makefile.in
++++ b/programs/dpnsvr/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE    = dpnsvr.exe
++IMPORTS   = ws2_32 advapi32 iphlpapi user32
+ APPMODE   = -mconsole -municode
+ 
+ C_SRCS = \
+diff --git a/programs/dpnsvr/main.c b/programs/dpnsvr/main.c
+index 6041cbc..72e64d0 100644
+--- a/programs/dpnsvr/main.c
++++ b/programs/dpnsvr/main.c
+@@ -15,19 +15,242 @@
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+  */
++#include <winsock2.h>
++#include <ws2tcpip.h>
++#include <windows.h>
++#include <iphlpapi.h>
++#include <wine/unicode.h>
+ 
++#include "dplay8.h"
++#include "dpaddr.h"
++#include "wine/heap.h"
+ #include "wine/debug.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dpnsvr);
+ 
++#include "pshpack1.h"
++struct ENUM_QUERY
++{
++    BYTE lead;
++    BYTE command;
++    WORD payload;
++    BYTE type;
++    GUID application;
++};
++#include "poppack.h"
++
++SOCKET *socks;
++static int sock_cnt = 0;
++static int sock_max = 10;
++
++static void print_addr(PIP_ADAPTER_UNICAST_ADDRESS ua)
++{
++    char buf[256];
++    int family = ua->Address.lpSockaddr->sa_family;
++
++    memset(buf, 0, sizeof(buf));
++    getnameinfo(ua->Address.lpSockaddr, ua->Address.iSockaddrLength, buf, sizeof(buf), NULL, 0,NI_NUMERICHOST);
++    WINE_TRACE("%d. %s: %s\n", sock_cnt, family == AF_INET ? "IPv4":"IPv6", buf);
++}
++
++static BOOL create_directplay_sockets(FD_SET *readset)
++{
++    ULONG block = 1;
++    int broad = 1;
++    DWORD rv, size;
++    PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
++    PIP_ADAPTER_UNICAST_ADDRESS ua;
++
++    socks = heap_alloc(sock_max * sizeof(SOCKET));
++    if(!socks)
++    {
++        WINE_ERR("Out of memory.\n");
++        return FALSE;
++    }
++
++    rv = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, NULL, &size);
++    if (rv != ERROR_BUFFER_OVERFLOW)
++    {
++        WINE_ERR("GetAdaptersAddresses() failed.\n");
++        return FALSE;
++    }
++
++    adapter_addresses = heap_alloc(size);
++    if (!adapter_addresses)
++    {
++        WINE_ERR("Out of memory.\n");
++        return FALSE;
++    }
++
++    rv = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, adapter_addresses, &size);
++    if (rv != ERROR_SUCCESS)
++    {
++        WINE_ERR("GetAdaptersAddresses() failed.\n");
++        free(adapter_addresses);
++        return FALSE;
++    }
++
++    for (aa = adapter_addresses; aa != NULL; aa = aa->Next)
++    {
++        if (aa->IfType == IF_TYPE_ETHERNET_CSMACD)
++        {
++            for (ua = aa->FirstUnicastAddress; ua != NULL; ua = ua->Next)
++            {
++                print_addr(ua);
++
++                socks[sock_cnt] = socket(ua->Address.lpSockaddr->sa_family, SOCK_DGRAM, IPPROTO_UDP);
++                if (socks[sock_cnt] == -1)
++                {
++                    WINE_ERR("Failed to create socket %d.\n", WSAGetLastError());
++                    continue;
++                }
++
++                broad = 1;
++                setsockopt(socks[sock_cnt], SOL_SOCKET, SO_BROADCAST, (char *)&broad, sizeof(broad));
++
++                if (ua->Address.lpSockaddr->sa_family == AF_INET)
++                    ((struct sockaddr_in*)ua->Address.lpSockaddr)->sin_port = htons(DPNA_DPNSVR_PORT);
++                else
++                {
++                    int value = 1;
++
++                    /* Window/Linux have different defaults for binding only to ipv6, always set
++                     *  this value since it can be changed via /proc
++                     */
++                    setsockopt(socks[sock_cnt], IPPROTO_IPV6, IPV6_V6ONLY, (char *)&value, sizeof(value));
++                    ((struct sockaddr_in6*)ua->Address.lpSockaddr)->sin6_port = htons(DPNA_DPNSVR_PORT);
++                }
++
++                if (bind(socks[sock_cnt], ua->Address.lpSockaddr, ua->Address.iSockaddrLength) != 0)
++                {
++                    WINE_ERR("Failed to bind socket %d.\n", WSAGetLastError());
++                    closesocket(socks[sock_cnt]);
++                    continue;
++                }
++
++                FD_SET(socks[sock_cnt], readset);
++                ioctlsocket(socks[sock_cnt], FIONBIO, &block);
++                listen(socks[sock_cnt], 10);
++
++                sock_cnt++;
++                if(sock_cnt >= sock_max)
++                {
++                    WINE_ERR("Binding on to many sockets.\n");
++                    break;
++                }
++            }
++        }
++    }
++
++    heap_free(adapter_addresses);
++
++    WINE_TRACE("Created %d sockets\n", sock_cnt);
++
++    return TRUE;
++}
++
++static BOOL time_elasped = FALSE;
++static void CALLBACK timer_callback(HWND hwnd, UINT msg, UINT_PTR id, DWORD systime)
++{
++    WINE_TRACE("Timer event\n");
++    time_elasped = TRUE;
++}
++
++static void DoMsgs(void)
++{
++	MSG msg = {0};
++	while (PeekMessageW(&msg, NULL, 0, 0, QS_ALLINPUT | PM_REMOVE))
++	{
++		TranslateMessage(&msg);
++		DispatchMessageW(&msg);
++	}
++}
++
++static void dump_enum_query_packet(void *buf, size_t bufsize, struct sockaddr *addr, socklen_t addrlen)
++{
++    struct ENUM_QUERY *query;
++    char ip[256];
++
++    memset(ip, 0, sizeof(ip));
++    getnameinfo(addr, addrlen, ip, sizeof(ip), NULL, 0,NI_NUMERICHOST);
++
++    WINE_TRACE("Processing buffer size %lu from %s\n", bufsize, ip);
++    if (bufsize < sizeof(struct ENUM_QUERY))
++    {
++        WINE_ERR("Buffer too small\n");
++        return;
++    }
++
++    query = buf;
++    WINE_TRACE("\tLead        %d\n", query->lead);
++    WINE_TRACE("\tCommand     %d\n", query->command);
++    WINE_TRACE("\tPayload     %d\n", query->payload);
++    WINE_TRACE("\tType        %d\n", query->type);
++    WINE_TRACE("\tApplication %s\n", debugstr_guid(&query->application));
++}
++
++#define BUF_SIZE 1024
++
+ int wmain(int argc, WCHAR *argv[])
+ {
++    char buf[BUF_SIZE];
++    WSADATA data;
+     int i;
++    DWORD timer;
++    struct sockaddr addr;
++    socklen_t addrlen;
++    FD_SET readset;
++    TIMEVAL delay;
++
++    if (WSAStartup(MAKEWORD(2, 2), &data))
++        return 1;
++
++    timer = SetTimer(NULL, 1, 60000, timer_callback);
++
++    FD_ZERO(&readset);
++    create_directplay_sockets(&readset);
++
++    while (!time_elasped)
++    {
++        delay.tv_sec = 5;
++
++        if (select(0, &readset, NULL, NULL, &delay) > 0)
++        {
++            size_t nread;
++
++            for (i=0; i < sock_cnt; i++)
++            {
++                if (!FD_ISSET(socks[i], &readset))
++                    continue;
++
++                nread = BUF_SIZE;
++                memset(buf, 0, nread);
++
++                /*
++                 * We only read data from these sockets, the data then need to
++                 *  be passed onto any application that has registered with us.
++                 */
++                nread = recvfrom(socks[i], buf, nread, 0, &addr, &addrlen);
++                if (nread != -1)
++                {
++                    dump_enum_query_packet(buf, nread, &addr, addrlen);
++                }
++                else if(WSAGetLastError() != WSAEWOULDBLOCK)
++                    WINE_ERR("Error %d.\n", WSAGetLastError());
++            }
++        }
++
++        DoMsgs();
++    }
++
++    for (i=0; i < sock_cnt; i++)
++    {
++        closesocket(socks[i]);
++    }
+ 
+-    WINE_FIXME("stub:");
+-    for (i = 0; i < argc; i++)
+-        WINE_FIXME(" %s", wine_dbgstr_w(argv[i]));
+-    WINE_FIXME("\n");
++    KillTimer(NULL, timer);
++    heap_free(socks);
+ 
++    WSACleanup();
+     return 0;
+ }
+-- 
+1.9.1
+
