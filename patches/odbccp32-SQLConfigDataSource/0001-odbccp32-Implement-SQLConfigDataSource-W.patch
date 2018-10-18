@@ -1,0 +1,194 @@
+From 3a4b3f87a10e93cfa689cb969dc6667fa59b0cfe Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 7 Aug 2018 14:39:38 +1000
+Subject: [PATCH] odbccp32: Implement SQLConfigDataSource/W
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/odbccp32/odbccp32.c | 156 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 132 insertions(+), 24 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index 694a90c..71d9e56 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -102,6 +102,33 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
+     return ret;
+ }
+ 
++static inline WCHAR *heap_attrdupAtoW(const char *str)
++{
++    LPWSTR ret = NULL;
++
++    if(str)
++    {
++        DWORD size = 0, len;
++        const char *p;
++        LPWSTR current = NULL;
++
++        for (p = str; *p; p += lstrlenA(p) + 1)
++        {
++            len = MultiByteToWideChar(CP_ACP, 0, p, -1, NULL, 0);
++            size += len;
++        }
++
++        current = ret = heap_alloc_zero( (size+1)*sizeof(WCHAR));
++        for (p = str; *p; p += lstrlenA(p) + 1)
++        {
++            len = MultiByteToWideChar(CP_ACP, 0, p, -1, current, size);
++            current += len;
++            size -= len;
++        }
++    }
++    return ret;
++}
++
+ 
+ BOOL WINAPI ODBCCPlApplet( LONG i, LONG j, LONG * p1, LONG * p2)
+ {
+@@ -220,30 +247,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
+     return success;
+ }
+ 
+-BOOL WINAPI SQLConfigDataSourceW(HWND hwndParent, WORD fRequest,
+-               LPCWSTR lpszDriver, LPCWSTR lpszAttributes)
+-{
+-    LPCWSTR p;
+-
+-    clear_errors();
+-    FIXME("%p %d %s %s\n", hwndParent, fRequest, debugstr_w(lpszDriver),
+-          debugstr_w(lpszAttributes));
+-
+-    for (p = lpszAttributes; *p; p += lstrlenW(p) + 1)
+-        FIXME("%s\n", debugstr_w(p));
+-
+-    return TRUE;
+-}
+-
+-BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
+-               LPCSTR lpszDriver, LPCSTR lpszAttributes)
+-{
+-    FIXME("%p %d %s %s\n", hwndParent, fRequest, debugstr_a(lpszDriver),
+-          debugstr_a(lpszAttributes));
+-    clear_errors();
+-    return TRUE;
+-}
+-
+ static HMODULE load_config_driver(const WCHAR *driver)
+ {
+     static WCHAR reg_driver[] = {'d','r','i','v','e','r',0};
+@@ -360,6 +363,111 @@ fail:
+     return FALSE;
+ }
+ 
++static BOOL call_ConfigDNS(HANDLE mod, HWND hwnd, WORD request, LPCSTR driverA, LPCSTR attributesA, LPCWSTR driverW, LPCWSTR attributesW)
++{
++    BOOL (WINAPI *pConfigDSN)(HWND hwnd, WORD request, const char *driver, const char *attr);
++    BOOL (WINAPI *pConfigDSNW)(HWND hwnd, WORD request, const WCHAR *driver, const WCHAR *attr);
++    BOOL ret = FALSE;
++
++    TRACE("%p, %p, %d, %p, %p, %p %p\n", mod, hwnd, request, driverA, attributesA, driverW, attributesW);
++
++    pConfigDSN = (void*)GetProcAddress(mod, "ConfigDSN");
++    pConfigDSNW = (void*)GetProcAddress(mod, "ConfigDSNW");
++
++    if(pConfigDSNW)
++    {
++        const WCHAR *attr = attributesW;
++        if(!attr)
++            attr = heap_attrdupAtoW(attributesA);
++
++        TRACE("Calling ConfigDSNW (%p)\n", pConfigDSNW);
++
++        ret = pConfigDSNW(hwnd, request, driverW, attr);
++
++        if(attr != attributesW)
++            heap_free((WCHAR *)attr);
++    }
++    else if(pConfigDSN)
++    {
++        TRACE("Calling pConfigDSN (%p)\n", pConfigDSN);
++        ret = pConfigDSN(hwnd, request, driverA, attributesA);
++    }
++    else
++        ERR("Neither ConfigDSN or ConfigDSNW found.\n");
++
++    if(!ret)
++        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
++
++    return TRUE;
++}
++
++BOOL WINAPI SQLConfigDataSourceW(HWND hwndParent, WORD fRequest,
++               LPCWSTR lpszDriver, LPCWSTR lpszAttributes)
++{
++    HMODULE hmod;
++    BOOL ret = FALSE;
++
++    TRACE("%p, %d, %s, %s\n", hwndParent, fRequest, debugstr_w(lpszDriver), debugstr_w(lpszAttributes));
++    if(TRACE_ON(odbc))
++    {
++        const WCHAR *p;
++        for (p = lpszAttributes; *p; p += lstrlenW(p) + 1)
++            TRACE("%s\n", debugstr_w(p));
++    }
++
++    clear_errors();
++
++    hmod = load_config_driver(lpszDriver);
++    if(!hmod)
++        return FALSE;
++
++    ret = call_ConfigDNS (hmod, hwndParent, fRequest, NULL, NULL, lpszDriver, lpszAttributes);
++
++    FreeLibrary(hmod);
++
++    return ret;
++}
++
++BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
++               LPCSTR lpszDriver, LPCSTR lpszAttributes)
++{
++    HMODULE hmod;
++    BOOL ret = FALSE;
++    WCHAR *driverW;
++
++    TRACE("%p, %d, %s, %s\n", hwndParent, fRequest, debugstr_a(lpszDriver), debugstr_a(lpszAttributes));
++
++    if(TRACE_ON(odbc))
++    {
++        const char *p;
++        for (p = lpszAttributes; *p; p += lstrlenA(p) + 1)
++            TRACE("%s\n", debugstr_a(p));
++    }
++
++    clear_errors();
++
++    driverW = heap_strdupAtoW(lpszDriver);
++    if(!driverW)
++    {
++        push_error(ODBC_ERROR_OUT_OF_MEM, odbc_error_out_of_mem);
++        return FALSE;
++    }
++
++    hmod = load_config_driver(driverW);
++    if(!hmod)
++    {
++        heap_free(driverW);
++        return FALSE;
++    }
++
++    ret = call_ConfigDNS (hmod, hwndParent, fRequest, lpszDriver, lpszAttributes, driverW, NULL);
++    heap_free(driverW);
++
++    FreeLibrary(hmod);
++
++    return ret;
++}
++
+ BOOL WINAPI SQLConfigDriverW(HWND hwnd, WORD request, LPCWSTR driver,
+                LPCWSTR args, LPWSTR msg, WORD msgmax, WORD *msgout)
+ {
+-- 
+1.9.1
+
