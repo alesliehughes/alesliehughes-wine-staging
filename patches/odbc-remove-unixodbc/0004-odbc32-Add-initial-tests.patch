@@ -1,0 +1,158 @@
+From 417fed77aa452a410b2af02050ce7a6b56cf9349 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 22 Oct 2018 15:06:51 +1100
+Subject: [PATCH 4/4] odbc32: Add initial tests
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                      |   1 +
+ configure.ac                   |   1 +
+ dlls/odbc32/tests/Makefile.in  |   4 ++
+ dlls/odbc32/tests/connection.c | 100 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 106 insertions(+)
+ create mode 100644 dlls/odbc32/tests/Makefile.in
+ create mode 100644 dlls/odbc32/tests/connection.c
+
+diff --git a/configure b/configure
+index 9d4a7a8..532a700 100755
+--- a/configure
++++ b/configure
+@@ -19702,6 +19702,7 @@ wine_fn_config_makefile dlls/ntprint enable_ntprint
+ wine_fn_config_makefile dlls/ntprint/tests enable_tests
+ wine_fn_config_makefile dlls/objsel enable_objsel
+ wine_fn_config_makefile dlls/odbc32 enable_odbc32
++wine_fn_config_makefile dlls/odbc32/tests enable_tests
+ wine_fn_config_makefile dlls/odbccp32 enable_odbccp32
+ wine_fn_config_makefile dlls/odbccp32/tests enable_tests
+ wine_fn_config_makefile dlls/odbccu32 enable_odbccu32
+diff --git a/configure.ac b/configure.ac
+index b64d99e..91ed861 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3555,6 +3555,7 @@ WINE_CONFIG_MAKEFILE(dlls/ntprint)
+ WINE_CONFIG_MAKEFILE(dlls/ntprint/tests)
+ WINE_CONFIG_MAKEFILE(dlls/objsel)
+ WINE_CONFIG_MAKEFILE(dlls/odbc32)
++WINE_CONFIG_MAKEFILE(dlls/odbc32/tests)
+ WINE_CONFIG_MAKEFILE(dlls/odbccp32)
+ WINE_CONFIG_MAKEFILE(dlls/odbccp32/tests)
+ WINE_CONFIG_MAKEFILE(dlls/odbccu32)
+diff --git a/dlls/odbc32/tests/Makefile.in b/dlls/odbc32/tests/Makefile.in
+new file mode 100644
+index 0000000..4d8716e
+--- /dev/null
++++ b/dlls/odbc32/tests/Makefile.in
+@@ -0,0 +1,4 @@
++TESTDLL   = odbc32.dll
++IMPORTS   = odbc32
++
++C_SRCS = connection.c
+diff --git a/dlls/odbc32/tests/connection.c b/dlls/odbc32/tests/connection.c
+new file mode 100644
+index 0000000..3b01b73
+--- /dev/null
++++ b/dlls/odbc32/tests/connection.c
+@@ -0,0 +1,100 @@
++/*
++ * Copyright 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include <wine/test.h>
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "sqlext.h"
++#include "odbcinst.h"
++
++static void test_SQLAllocEnv(void)
++{
++    SQLRETURN ret;
++    SQLHENV sqlenv, sqlenv2;
++
++    ret = SQLAllocEnv(NULL);
++    ok(ret == SQL_ERROR, "got %d\n", ret);
++
++    ret = SQLAllocEnv(&sqlenv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++
++    ret = SQLAllocEnv(&sqlenv2);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    ok(sqlenv != sqlenv2, "got %d\n", ret);
++
++    ret = SQLFreeEnv(sqlenv2);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++
++    ret = SQLFreeEnv(sqlenv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++
++    ret = SQLFreeEnv(sqlenv);
++    todo_wine ok(ret == SQL_INVALID_HANDLE, "got %d\n", ret);
++
++    ret = SQLFreeEnv(SQL_NULL_HENV);
++    todo_wine ok(ret == SQL_INVALID_HANDLE, "got %d\n", ret);
++}
++
++void test_SQLGetEnvAttr(void)
++{
++    SQLRETURN ret;
++    SQLHENV sqlenv;
++    SQLINTEGER value, length;
++
++    ret = SQLAllocEnv(&sqlenv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++
++    value = 5;
++    length = 12;
++    ret = SQLGetEnvAttr(SQL_NULL_HENV, SQL_ATTR_CONNECTION_POOLING, &value, sizeof(SQLINTEGER), &length);
++    todo_wine ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    todo_wine ok(value == 0, "got %d\n", value);
++    todo_wine ok(length == 0, "got %d\n", length);
++
++    value = 5;
++    length = 12;
++    ret = SQLGetEnvAttr(SQL_NULL_HENV, SQL_ATTR_CONNECTION_POOLING, &value, 0, &length);
++    todo_wine ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    todo_wine ok(value == 0, "got %d\n", value);
++    todo_wine ok(length == 0, "got %d\n", length);
++
++    value = 5;
++    length = 12;
++    ret = SQLGetEnvAttr(sqlenv, SQL_ATTR_CONNECTION_POOLING, &value, sizeof(SQLINTEGER), &length);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    ok(value == 0, "got %d\n", value);
++    ok(length == 12, "got %d\n", length);
++
++    value = 5;
++    length = 12;
++    ret = SQLGetEnvAttr(sqlenv, SQL_ATTR_CONNECTION_POOLING, &value, 2, &length);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    ok(value == 0, "got %d\n", value);
++    ok(length == 12, "got %d\n", length);
++
++    ret = SQLFreeEnv(sqlenv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++}
++
++START_TEST(connection)
++{
++    test_SQLAllocEnv();
++    test_SQLGetEnvAttr();
++}
+-- 
+1.9.1
+

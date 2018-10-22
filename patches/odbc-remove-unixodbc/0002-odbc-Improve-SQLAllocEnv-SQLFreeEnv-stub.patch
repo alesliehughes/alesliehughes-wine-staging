@@ -1,0 +1,119 @@
+From f8bd9fd4e271fe148eed780fce763d8c4c75f329 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 22 Oct 2018 14:06:20 +1100
+Subject: [PATCH 2/4] odbc: Improve SQLAllocEnv/SQLFreeEnv stub
+
+---
+ dlls/odbc32/odbc_main.c | 43 ++++++++++++++++++++++---------------------
+ 1 file changed, 22 insertions(+), 21 deletions(-)
+
+diff --git a/dlls/odbc32/odbc_main.c b/dlls/odbc32/odbc_main.c
+index 5b0921d..353e379 100644
+--- a/dlls/odbc32/odbc_main.c
++++ b/dlls/odbc32/odbc_main.c
+@@ -33,6 +33,7 @@
+ #include "winbase.h"
+ #include "winreg.h"
+ #include "wine/debug.h"
++#include "wine/heap.h"
+ #include "wine/library.h"
+ #include "wine/unicode.h"
+ 
+@@ -44,7 +45,6 @@ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
+ WINE_DECLARE_DEBUG_CHANNEL(winediag);
+ 
+ static SQLRETURN (*pSQLAllocConnect)(SQLHENV,SQLHDBC*);
+-static SQLRETURN (*pSQLAllocEnv)(SQLHENV*);
+ static SQLRETURN (*pSQLAllocHandle)(SQLSMALLINT,SQLHANDLE,SQLHANDLE*);
+ static SQLRETURN (*pSQLAllocHandleStd)(SQLSMALLINT,SQLHANDLE,SQLHANDLE*);
+ static SQLRETURN (*pSQLAllocStmt)(SQLHDBC,SQLHSTMT*);
+@@ -90,7 +90,6 @@ static SQLRETURN (*pSQLFetchScroll)(SQLHSTMT,SQLSMALLINT,SQLLEN);
+ static SQLRETURN (*pSQLForeignKeys)(SQLHSTMT,SQLCHAR*,SQLSMALLINT,SQLCHAR*,SQLSMALLINT,SQLCHAR*,SQLSMALLINT,SQLCHAR*,SQLSMALLINT,SQLCHAR*,SQLSMALLINT,SQLCHAR*,SQLSMALLINT);
+ static SQLRETURN (*pSQLForeignKeysW)(SQLHSTMT,SQLWCHAR*,SQLSMALLINT,SQLWCHAR*,SQLSMALLINT,SQLWCHAR*,SQLSMALLINT,SQLWCHAR*,SQLSMALLINT,SQLWCHAR*,SQLSMALLINT,SQLWCHAR*,SQLSMALLINT);
+ static SQLRETURN (*pSQLFreeConnect)(SQLHDBC);
+-static SQLRETURN (*pSQLFreeEnv)(SQLHENV);
+ static SQLRETURN (*pSQLFreeHandle)(SQLSMALLINT,SQLHANDLE);
+ static SQLRETURN (*pSQLFreeStmt)(SQLHSTMT,SQLUSMALLINT);
+ static SQLRETURN (*pSQLGetConnectAttr)(SQLHDBC,SQLINTEGER,SQLPOINTER,SQLINTEGER,SQLINTEGER*);
+@@ -175,6 +174,11 @@ SQLRETURN WINAPI ODBC32_SQLDataSources(SQLHENV, SQLUSMALLINT, SQLCHAR *, SQLSMAL
+ SQLRETURN WINAPI ODBC32_SQLDrivers(SQLHENV, SQLUSMALLINT, SQLCHAR *, SQLSMALLINT, SQLSMALLINT *,
+                                    SQLCHAR *, SQLSMALLINT, SQLSMALLINT *);
+ 
++struct SQLHENV_data
++{
++    int type;
++};
++
+ /***********************************************************************
+  * DllMain [Internal] Initializes the internal 'ODBC32.DLL'.
+  */
+@@ -217,7 +221,6 @@ static BOOL ODBC_LoadDMFunctions(void)
+     else WARN( "Failed to load %s: %s\n", #name, error )
+ 
+     LOAD_FUNC(SQLAllocConnect);
+-    LOAD_FUNC(SQLAllocEnv);
+     LOAD_FUNC(SQLAllocHandle);
+     LOAD_FUNC(SQLAllocHandleStd);
+     LOAD_FUNC(SQLAllocStmt);
+@@ -263,7 +266,6 @@ static BOOL ODBC_LoadDMFunctions(void)
+     LOAD_FUNC(SQLForeignKeys);
+     LOAD_FUNC(SQLForeignKeysW);
+     LOAD_FUNC(SQLFreeConnect);
+-    LOAD_FUNC(SQLFreeEnv);
+     LOAD_FUNC(SQLFreeHandle);
+     LOAD_FUNC(SQLFreeStmt);
+     LOAD_FUNC(SQLGetConnectAttr);
+@@ -365,19 +367,22 @@ SQLRETURN WINAPI ODBC32_SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *Conn
+  */
+ SQLRETURN WINAPI ODBC32_SQLAllocEnv(SQLHENV *EnvironmentHandle)
+ {
+-    SQLRETURN ret;
+-    FIXME("EnvironmentHandle %p\n", EnvironmentHandle);
++    struct SQLHENV_data *data;
+ 
+-    if (!pSQLAllocEnv)
+-    {
+-       *EnvironmentHandle = SQL_NULL_HENV;
+-       FIXME("Not ready\n");
++    TRACE("EnvironmentHandle %p\n", EnvironmentHandle);
++
++    if(!EnvironmentHandle)
++        return SQL_ERROR;
++
++    *EnvironmentHandle = SQL_NULL_HENV;
++
++    data = heap_alloc(sizeof(data));
++    if (!data)
+        return SQL_ERROR;
+-    }
+ 
+-    ret = pSQLAllocEnv(EnvironmentHandle);
+-    FIXME("Returns %d, EnvironmentHandle %p\n", ret, *EnvironmentHandle);
+-    return ret;
++    *EnvironmentHandle = data;
++
++    return SQL_SUCCESS;
+ }
+ 
+ 
+@@ -804,14 +809,10 @@ SQLRETURN WINAPI ODBC32_SQLFreeConnect(SQLHDBC ConnectionHandle)
+  */
+ SQLRETURN WINAPI ODBC32_SQLFreeEnv(SQLHENV EnvironmentHandle)
+ {
+-    SQLRETURN ret;
+-    FIXME("EnvironmentHandle %p\n",EnvironmentHandle);
++    TRACE("EnvironmentHandle %p\n",EnvironmentHandle);
+ 
+-    if (!pSQLFreeEnv) return SQL_ERROR;
+-
+-    ret = pSQLFreeEnv(EnvironmentHandle);
+-    FIXME("Returns %d\n", ret);
+-    return ret;
++    heap_free(EnvironmentHandle);
++    return SQL_SUCCESS;
+ }
+ 
+ 
+-- 
+1.9.1
+
