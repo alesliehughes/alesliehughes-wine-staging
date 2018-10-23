@@ -1,30 +1,30 @@
-From 193109b9652d90d24f1081f94cf4acd1d01a9353 Mon Sep 17 00:00:00 2001
+From db5a2018eef29a09183d1860f526c77e65bf9159 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Aug 2018 14:39:38 +1000
 Subject: [PATCH] odbccp32: Implement SQLConfigDataSource/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 156 +++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 132 insertions(+), 24 deletions(-)
+ dlls/odbccp32/odbccp32.c | 155 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 131 insertions(+), 24 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 694a90c..ed0bf10 100644
+index 694a90c..4ad64c4 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -102,6 +102,33 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
+@@ -102,6 +102,32 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
      return ret;
  }
  
 +static inline WCHAR *heap_attrdupAtoW(const char *str)
 +{
-+    LPWSTR ret = NULL;
++    WCHAR *ret = NULL;
 +
-+    if(str)
++    if (str)
 +    {
 +        DWORD size = 0, len;
 +        const char *p;
-+        LPWSTR current = NULL;
++        WCHAR *current;
 +
 +        for (p = str; *p; p += lstrlenA(p) + 1)
 +        {
@@ -37,7 +37,6 @@ index 694a90c..ed0bf10 100644
 +        {
 +            len = MultiByteToWideChar(CP_ACP, 0, p, -1, current, size);
 +            current += len;
-+            size -= len;
 +        }
 +    }
 +    return ret;
@@ -46,7 +45,7 @@ index 694a90c..ed0bf10 100644
  
  BOOL WINAPI ODBCCPlApplet( LONG i, LONG j, LONG * p1, LONG * p2)
  {
-@@ -220,30 +247,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
+@@ -220,30 +246,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
      return success;
  }
  
@@ -77,11 +76,11 @@ index 694a90c..ed0bf10 100644
  static HMODULE load_config_driver(const WCHAR *driver)
  {
      static WCHAR reg_driver[] = {'d','r','i','v','e','r',0};
-@@ -360,6 +363,111 @@ fail:
+@@ -360,6 +362,111 @@ fail:
      return FALSE;
  }
  
-+static BOOL call_ConfigDNS(HANDLE mod, HWND hwnd, WORD request, LPCSTR driverA, LPCSTR attributesA, LPCWSTR driverW, LPCWSTR attributesW)
++static BOOL call_ConfigDSN(HANDLE mod, HWND hwnd, WORD request, const char *driverA, const char *attributesA, const WCHAR *driverW, const WCHAR *attributesW)
 +{
 +    BOOL (WINAPI *pConfigDSN)(HWND hwnd, WORD request, const char *driver, const char *attr);
 +    BOOL (WINAPI *pConfigDSNW)(HWND hwnd, WORD request, const WCHAR *driver, const WCHAR *attr);
@@ -92,7 +91,7 @@ index 694a90c..ed0bf10 100644
 +    pConfigDSN = (void*)GetProcAddress(mod, "ConfigDSN");
 +    pConfigDSNW = (void*)GetProcAddress(mod, "ConfigDSNW");
 +
-+    if(pConfigDSNW)
++    if (pConfigDSNW)
 +    {
 +        const WCHAR *attr = attributesW;
 +        if(!attr)
@@ -105,7 +104,7 @@ index 694a90c..ed0bf10 100644
 +        if(attr != attributesW)
 +            heap_free((WCHAR *)attr);
 +    }
-+    else if(pConfigDSN)
++    else if (pConfigDSN)
 +    {
 +        TRACE("Calling pConfigDSN (%p)\n", pConfigDSN);
 +        ret = pConfigDSN(hwnd, request, driverA, attributesA);
@@ -113,72 +112,72 @@ index 694a90c..ed0bf10 100644
 +    else
 +        ERR("Neither ConfigDSN or ConfigDSNW found.\n");
 +
-+    if(!ret)
++    if (!ret)
 +        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
 +
 +    return ret;
 +}
 +
-+BOOL WINAPI SQLConfigDataSourceW(HWND hwndParent, WORD fRequest,
-+               LPCWSTR lpszDriver, LPCWSTR lpszAttributes)
++BOOL WINAPI SQLConfigDataSourceW(HWND hwnd, WORD request,
++               LPCWSTR driver, LPCWSTR attributes)
 +{
 +    HMODULE hmod;
 +    BOOL ret = FALSE;
 +
-+    TRACE("%p, %d, %s, %s\n", hwndParent, fRequest, debugstr_w(lpszDriver), debugstr_w(lpszAttributes));
-+    if(TRACE_ON(odbc))
++    TRACE("%p, %d, %s, %s\n", hwnd, request, debugstr_w(driver), debugstr_w(attributes));
++    if (TRACE_ON(odbc))
 +    {
 +        const WCHAR *p;
-+        for (p = lpszAttributes; *p; p += lstrlenW(p) + 1)
++        for (p = attributes; *p; p += lstrlenW(p) + 1)
 +            TRACE("%s\n", debugstr_w(p));
 +    }
 +
 +    clear_errors();
 +
-+    hmod = load_config_driver(lpszDriver);
-+    if(!hmod)
++    hmod = load_config_driver(driver);
++    if (!hmod)
 +        return FALSE;
 +
-+    ret = call_ConfigDNS (hmod, hwndParent, fRequest, NULL, NULL, lpszDriver, lpszAttributes);
++    ret = call_ConfigDSN (hmod, hwnd, request, NULL, NULL, driver, attributes);
 +
 +    FreeLibrary(hmod);
 +
 +    return ret;
 +}
 +
-+BOOL WINAPI SQLConfigDataSource(HWND hwndParent, WORD fRequest,
-+               LPCSTR lpszDriver, LPCSTR lpszAttributes)
++BOOL WINAPI SQLConfigDataSource(HWND hwnd, WORD request,
++               LPCSTR driver, LPCSTR attributes)
 +{
 +    HMODULE hmod;
 +    BOOL ret = FALSE;
 +    WCHAR *driverW;
 +
-+    TRACE("%p, %d, %s, %s\n", hwndParent, fRequest, debugstr_a(lpszDriver), debugstr_a(lpszAttributes));
++    TRACE("%p, %d, %s, %s\n", hwnd, request, debugstr_a(driver), debugstr_a(attributes));
 +
-+    if(TRACE_ON(odbc))
++    if (TRACE_ON(odbc))
 +    {
 +        const char *p;
-+        for (p = lpszAttributes; *p; p += lstrlenA(p) + 1)
++        for (p = attributes; *p; p += lstrlenA(p) + 1)
 +            TRACE("%s\n", debugstr_a(p));
 +    }
 +
 +    clear_errors();
 +
-+    driverW = heap_strdupAtoW(lpszDriver);
-+    if(!driverW)
++    driverW = heap_strdupAtoW(driver);
++    if (!driverW)
 +    {
 +        push_error(ODBC_ERROR_OUT_OF_MEM, odbc_error_out_of_mem);
 +        return FALSE;
 +    }
 +
 +    hmod = load_config_driver(driverW);
-+    if(!hmod)
++    if (!hmod)
 +    {
 +        heap_free(driverW);
 +        return FALSE;
 +    }
 +
-+    ret = call_ConfigDNS (hmod, hwndParent, fRequest, lpszDriver, lpszAttributes, driverW, NULL);
++    ret = call_ConfigDSN (hmod, hwnd, request, driver, attributes, driverW, NULL);
 +    heap_free(driverW);
 +
 +    FreeLibrary(hmod);
