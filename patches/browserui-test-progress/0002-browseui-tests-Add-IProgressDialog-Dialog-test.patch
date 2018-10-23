@@ -1,0 +1,48 @@
+From 7ad969b7703eacf82e22437b848e0e638652557e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 23 Oct 2018 14:14:23 +1100
+Subject: [PATCH] browseui/tests: Add IProgressDialog Dialog test
+
+Simple Dialog test to display the visual part of the IProgressDialog.
+
+---
+ dlls/browseui/tests/progressdlg.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/dlls/browseui/tests/progressdlg.c b/dlls/browseui/tests/progressdlg.c
+index 2203714..c1fb49c 100644
+--- a/dlls/browseui/tests/progressdlg.c
++++ b/dlls/browseui/tests/progressdlg.c
+@@ -32,6 +32,7 @@ static void test_IProgressDialog_QueryInterface(void)
+     IOleWindow *olewindow;
+     IUnknown *unk;
+     HRESULT hr;
++    int i;
+ 
+     hr = CoCreateInstance(&CLSID_ProgressDialog, NULL, CLSCTX_INPROC_SERVER, &IID_IProgressDialog, (void*)&dlg);
+     if (FAILED(hr)) {
+@@ -58,6 +59,21 @@ static void test_IProgressDialog_QueryInterface(void)
+         }
+         IOleWindow_Release(olewindow);
+     }
++
++    hr = IProgressDialog_StartProgressDialog(dlg, NULL, NULL, PROGDLG_MODAL | PROGDLG_AUTOTIME, NULL );
++    ok(hr == S_OK, "returned 0x%x\n", hr);
++
++    for(i =0; i < 100000; i++)
++    {
++        hr = IProgressDialog_SetProgress(dlg, i, 100000);
++        ok(hr == S_OK, "returned 0x%x\n", hr);
++        if(IProgressDialog_HasUserCancelled(dlg))
++            break;
++    }
++
++    hr = IProgressDialog_StopProgressDialog(dlg);
++    ok(hr == S_OK, "returned 0x%x\n", hr);
++
+     IProgressDialog_Release(dlg);
+ }
+ 
+-- 
+1.9.1
+

@@ -1,4 +1,4 @@
-From 3a4b3f87a10e93cfa689cb969dc6667fa59b0cfe Mon Sep 17 00:00:00 2001
+From 193109b9652d90d24f1081f94cf4acd1d01a9353 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Aug 2018 14:39:38 +1000
 Subject: [PATCH] odbccp32: Implement SQLConfigDataSource/W
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 132 insertions(+), 24 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 694a90c..71d9e56 100644
+index 694a90c..ed0bf10 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -102,6 +102,33 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
@@ -116,7 +116,7 @@ index 694a90c..71d9e56 100644
 +    if(!ret)
 +        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
 +
-+    return TRUE;
++    return ret;
 +}
 +
 +BOOL WINAPI SQLConfigDataSourceW(HWND hwndParent, WORD fRequest,
