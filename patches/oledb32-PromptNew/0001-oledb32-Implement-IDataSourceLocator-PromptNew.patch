@@ -1,23 +1,23 @@
-From 72925273067315b181a08ed3d1270d43394e34ff Mon Sep 17 00:00:00 2001
+From 7f43c1c059ad8fd453251d6ab4b6d0d83677e80e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 24 Oct 2018 14:34:39 +1100
 Subject: [PATCH] oledb32: Implement IDataSourceLocator PromptNew
 
-TODO.
-Loop HKEY_CLASSES_ROOT\CLSID\*
-if "OLE DB Provider" Key (Name of Provider).
-Record GUID or ProgID,
-
-"HKEY_CLASSES_ROOT\CLSID\{0C7FF16C-38E3-11d0-97AB-00C04FC2AD98}" example
+TODO: Add OLE DB Provider to Keys (if possible).
+0009:fixme:oledb:add_connectons_providers Found L"{0C7FF16C-38E3-11d0-97AB-00C04FC2AD98}\\OLE DB Provider"
+0009:fixme:oledb:add_connectons_providers Found L"{3449A1C8-C56C-11D0-AD72-00C04FC29863}\\OLE DB Provider"
+0009:fixme:oledb:add_connectons_providers Found L"{c8b522cb-5cf3-11ce-ade5-00aa0044773d}\\OLE DB Provider"
+0009:fixme:oledb:add_connectons_providers Found L"{dfc8bdc0-e378-11d0-9b30-0080c7e9fe95}\\OLE DB Provider"
+0009:fixme:oledb:add_connectons_providers Found L"{e8cc4cbe-fdff-11d0-b865-00a0c9081c1d}\\OLE DB Provider"
 ---
- dlls/oledb32/Makefile.in      |  1 +
- dlls/oledb32/dslocator.c      | 92 ++++++++++++++++++++++++++++++++++++++++++-
- dlls/oledb32/main.c           |  2 +-
- dlls/oledb32/oledb_private.h  |  2 +
- dlls/oledb32/resource.h       | 25 ++++++++++++
- dlls/oledb32/tests/database.c | 13 ++++--
- dlls/oledb32/version.rc       | 21 ++++++++++
- 7 files changed, 149 insertions(+), 7 deletions(-)
+ dlls/oledb32/Makefile.in      |   1 +
+ dlls/oledb32/dslocator.c      | 144 +++++++++++++++++++++++++++++++++++++++++-
+ dlls/oledb32/main.c           |   2 +-
+ dlls/oledb32/oledb_private.h  |   2 +
+ dlls/oledb32/resource.h       |  25 ++++++++
+ dlls/oledb32/tests/database.c |  13 ++--
+ dlls/oledb32/version.rc       |  21 ++++++
+ 7 files changed, 201 insertions(+), 7 deletions(-)
  create mode 100644 dlls/oledb32/resource.h
 
 diff --git a/dlls/oledb32/Makefile.in b/dlls/oledb32/Makefile.in
@@ -32,7 +32,7 @@ index a32e9b1..89c0a48 100644
  C_SRCS = \
  	convert.c \
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index d397e47..f100708 100644
+index d397e47..20273de 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -20,6 +20,7 @@
@@ -55,13 +55,12 @@ index d397e47..f100708 100644
  
  #include "wine/debug.h"
  #include "wine/heap.h"
-@@ -188,11 +192,95 @@ static HRESULT WINAPI dslocator_put_hWnd(IDataSourceLocator *iface, COMPATIBLE_L
+@@ -188,11 +192,147 @@ static HRESULT WINAPI dslocator_put_hWnd(IDataSourceLocator *iface, COMPATIBLE_L
      return S_OK;
  }
  
-+static void create_connections_columns(HWND hwnd)
++static void create_connections_columns(HWND lv)
 +{
-+    HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
 +    RECT rc;
 +    WCHAR buf[256];
 +    LVCOLUMNW column;
@@ -75,6 +74,57 @@ index d397e47..f100708 100644
 +    SendMessageW(lv, LVM_INSERTCOLUMNW, 0, (LPARAM)&column);
 +}
 +
++static void add_connectons_providers(HWND lv)
++{
++    static const WCHAR clsidkey[] = {'C','L','S','I','D',0};
++    static const WCHAR oledbprov[] = {'\\','O','L','E',' ','D','B',' ','P','r','o','v','i','d','e','r',0};
++    LONG res;
++    HKEY key = NULL, subkey;
++    DWORD index = 0;
++    LONG next_key;
++    WCHAR provider[MAX_PATH];
++    WCHAR guidkey[MAX_PATH];
++    LONG size;
++
++    res = RegOpenKeyExW(HKEY_CLASSES_ROOT, clsidkey, 0, KEY_READ, &key);
++    if (res == ERROR_FILE_NOT_FOUND)
++        return;
++
++    next_key = RegEnumKeyW(key, index, provider, MAX_PATH);
++    while (next_key == ERROR_SUCCESS)
++    {
++        WCHAR description[MAX_PATH];
++
++        lstrcpyW(guidkey, provider);
++        lstrcatW(guidkey, oledbprov);
++
++        res = RegOpenKeyW(key, guidkey, &subkey);
++        if (res == ERROR_SUCCESS)
++        {
++            TRACE("Found %s\n", debugstr_w(guidkey));
++
++            size = MAX_PATH;
++            res = RegQueryValueW(subkey, NULL, description, &size);
++            if (res == ERROR_SUCCESS)
++            {
++                LVITEMW item;
++                item.mask = LVIF_TEXT;
++                item.iItem = SendMessageW(lv, LVM_GETITEMCOUNT, 0, 0);
++                item.iSubItem = 0;
++                item.pszText = description;
++                SendMessageW(lv, LVM_INSERTITEMW, 0, (LPARAM)&item);
++                /* TODO - Add ProgID to item data */
++            }
++            RegCloseKey(subkey);
++        }
++
++        index++;
++        next_key = RegEnumKeyW(key, index, provider, MAX_PATH);
++    }
++
++    RegCloseKey(key);
++}
++
 +static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg,
 + WPARAM wp, LPARAM lp)
 +{
@@ -86,7 +136,9 @@ index d397e47..f100708 100644
 +    {
 +    case WM_INITDIALOG:
 +    {
-+        create_connections_columns(hwnd);
++        HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
++        create_connections_columns(lv);
++        add_connectons_providers(lv);
 +        
 +        break;
 +    }
