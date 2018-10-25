@@ -1,23 +1,18 @@
-From 7f43c1c059ad8fd453251d6ab4b6d0d83677e80e Mon Sep 17 00:00:00 2001
+From f0d46efe5a254db7fc691ebe91d24848be6de774 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 24 Oct 2018 14:34:39 +1100
 Subject: [PATCH] oledb32: Implement IDataSourceLocator PromptNew
 
-TODO: Add OLE DB Provider to Keys (if possible).
-0009:fixme:oledb:add_connectons_providers Found L"{0C7FF16C-38E3-11d0-97AB-00C04FC2AD98}\\OLE DB Provider"
-0009:fixme:oledb:add_connectons_providers Found L"{3449A1C8-C56C-11D0-AD72-00C04FC29863}\\OLE DB Provider"
-0009:fixme:oledb:add_connectons_providers Found L"{c8b522cb-5cf3-11ce-ade5-00aa0044773d}\\OLE DB Provider"
-0009:fixme:oledb:add_connectons_providers Found L"{dfc8bdc0-e378-11d0-9b30-0080c7e9fe95}\\OLE DB Provider"
-0009:fixme:oledb:add_connectons_providers Found L"{e8cc4cbe-fdff-11d0-b865-00a0c9081c1d}\\OLE DB Provider"
+TODO: Remove tests
 ---
  dlls/oledb32/Makefile.in      |   1 +
- dlls/oledb32/dslocator.c      | 144 +++++++++++++++++++++++++++++++++++++++++-
+ dlls/oledb32/dslocator.c      | 130 +++++++++++++++++++++++++++++++++++++++++-
  dlls/oledb32/main.c           |   2 +-
  dlls/oledb32/oledb_private.h  |   2 +
  dlls/oledb32/resource.h       |  25 ++++++++
- dlls/oledb32/tests/database.c |  13 ++--
- dlls/oledb32/version.rc       |  21 ++++++
- 7 files changed, 201 insertions(+), 7 deletions(-)
+ dlls/oledb32/tests/database.c |  18 ++++--
+ dlls/oledb32/version.rc       |  21 +++++++
+ 7 files changed, 191 insertions(+), 8 deletions(-)
  create mode 100644 dlls/oledb32/resource.h
 
 diff --git a/dlls/oledb32/Makefile.in b/dlls/oledb32/Makefile.in
@@ -32,7 +27,7 @@ index a32e9b1..89c0a48 100644
  C_SRCS = \
  	convert.c \
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index d397e47..20273de 100644
+index d397e47..9d77d9f 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -20,6 +20,7 @@
@@ -55,10 +50,11 @@ index d397e47..20273de 100644
  
  #include "wine/debug.h"
  #include "wine/heap.h"
-@@ -188,11 +192,147 @@ static HRESULT WINAPI dslocator_put_hWnd(IDataSourceLocator *iface, COMPATIBLE_L
+@@ -188,13 +192,133 @@ static HRESULT WINAPI dslocator_put_hWnd(IDataSourceLocator *iface, COMPATIBLE_L
      return S_OK;
  }
  
+-static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **ppADOConnection)
 +static void create_connections_columns(HWND lv)
 +{
 +    RECT rc;
@@ -125,70 +121,54 @@ index d397e47..20273de 100644
 +    RegCloseKey(key);
 +}
 +
-+static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg,
-+ WPARAM wp, LPARAM lp)
++static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 +{
-+    //PROPSHEETPAGEW *page;
-+
 +    TRACE("(%p, %08x, %08lx, %08lx)\n", hwnd, msg, wp, lp);
 +
 +    switch (msg)
 +    {
-+    case WM_INITDIALOG:
-+    {
-+        HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
-+        create_connections_columns(lv);
-+        add_connectons_providers(lv);
-+        
-+        break;
-+    }
-+    case WM_NOTIFY:
-+    {
-+        NMHDR *hdr = (NMHDR *)lp;
-+        //NMITEMACTIVATE *nm;
++        case WM_INITDIALOG:
++        {
++            HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
++            create_connections_columns(lv);
++            add_connectons_providers(lv);
 +
-+        switch (hdr->code)
-+        {
-+        case NM_CLICK:
-+            //nm = (NMITEMACTIVATE *)lp;
-+            //toggle_usage(hwnd, nm->iItem);
-+            //SendMessageW(GetParent(hwnd), PSM_CHANGED, (WPARAM)hwnd, 0);
-+            break;
-+        case PSN_APPLY:
-+            //apply_general_changes(hwnd);
 +            break;
 +        }
-+        break;
-+    }
-+    case WM_COMMAND:
-+        switch (HIWORD(wp))
++        case WM_COMMAND:
 +        {
-+            case EN_CHANGE:
-+                break;
-+            case BN_CLICKED:
-+                break;
++            if (LOWORD(wp) == IDC_BTN_NEXT)
++            {
++                /* TODO: Implement Connection dialog */
++                MessageBoxA(hwnd, "Not implemented yet.", "Error", MB_OK | MB_ICONEXCLAMATION);
++            }
++            break;
 +        }
-+        break;
++        default:
++            break;
 +    }
 +    return 0;
 +}
 +
 +#define MAX_PROP_PAGES 5
 +
- static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **ppADOConnection)
++static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **connection)
  {
      DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
--
--    FIXME("(%p)->(%p)\n",This, ppADOConnection);
 +    PROPSHEETHEADERW hdr;
 +    PROPSHEETPAGEW page;
+ 
+-    FIXME("(%p)->(%p)\n",This, ppADOConnection);
++    FIXME("(%p, %p) Semi-stub\n", iface, connection);
+ 
+-    return E_NOTIMPL;
++    if(!connection)
++        return E_INVALIDARG;
 +
-+    FIXME("(%p, %p)\n", iface, ppADOConnection);
++    *connection = NULL;
 +
 +    memset(&page, 0, sizeof(PROPSHEETPAGEW));
 +    page.dwSize = sizeof(page);
-+    //page.dwFlags = PSP_USECALLBACK;
-+    //page.pfnCallback = cert_properties_general_callback;
 +    page.hInstance = instance;
 +    page.u.pszTemplate = MAKEINTRESOURCEW(IDD_PROVIDER);
 +    page.pfnDlgProc = data_link_properties_dlg_proc;
@@ -202,9 +182,11 @@ index d397e47..20273de 100644
 +    hdr.u3.ppsp = &page;
 +    hdr.nPages = 1;
 +    PropertySheetW(&hdr);
- 
-     return E_NOTIMPL;
++
++    return S_FALSE;
  }
+ 
+ static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
 diff --git a/dlls/oledb32/main.c b/dlls/oledb32/main.c
 index f28e57a..9c8c7f2 100644
 --- a/dlls/oledb32/main.c
@@ -263,22 +245,27 @@ index 0000000..5dc5704
 +#define IDS_PROPSHEET_TITLE 2000
 +#define IDS_COL_PROVIDER    2001
 diff --git a/dlls/oledb32/tests/database.c b/dlls/oledb32/tests/database.c
-index 8ff55b9..94a17d4 100644
+index 8ff55b9..a240ce5 100644
 --- a/dlls/oledb32/tests/database.c
 +++ b/dlls/oledb32/tests/database.c
-@@ -939,6 +939,11 @@ static void test_dslocator(void)
+@@ -939,6 +939,16 @@ static void test_dslocator(void)
  
          hr = IDataSourceLocator_QueryInterface(dslocator, &IID_IRpcOptions, (void **)&opts);
          ok(hr == E_NOINTERFACE, "got %08x\n", hr);
 +        
 +        {
 +            IDispatch *disp;
++
++            hr = IDataSourceLocator_PromptNew(dslocator, NULL);
++            ok(hr == E_INVALIDARG, "got %08x\n", hr);
++
 +            hr = IDataSourceLocator_PromptNew(dslocator, &disp);
++            ok(hr == S_OK, "got %08x\n", hr);
 +        }
  
          IDataInitialize_Release(datainit2);
          IDataInitialize_Release(datainit);
-@@ -951,16 +956,16 @@ START_TEST(database)
+@@ -951,16 +961,16 @@ START_TEST(database)
  {
      OleInitialize(NULL);
  
@@ -300,23 +287,23 @@ index 8ff55b9..94a17d4 100644
      OleUninitialize();
  }
 diff --git a/dlls/oledb32/version.rc b/dlls/oledb32/version.rc
-index e082acc..b9b8f02 100644
+index e082acc..23bbee5 100644
 --- a/dlls/oledb32/version.rc
 +++ b/dlls/oledb32/version.rc
-@@ -15,6 +15,7 @@
+@@ -15,6 +15,9 @@
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
   */
++#pragma makedep po
++
 +#include "resource.h"
  
  #define WINE_FILEDESCRIPTION_STR "Wine oledb"
  #define WINE_FILENAME_STR "oledb32.dll"
-@@ -24,3 +25,23 @@
+@@ -24,3 +27,21 @@
  #define WINE_PRODUCTVERSION_STR "2.81.1117.0"
  
  #include "wine/wine_common_ver.rc"
-+
-+#pragma makedep po
 +
 +LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
 +
