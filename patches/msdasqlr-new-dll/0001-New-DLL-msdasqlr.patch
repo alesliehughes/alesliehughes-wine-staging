@@ -1,0 +1,290 @@
+From 483ba529b608015de07d6a23d762299bd769bea7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 26 Oct 2018 12:13:43 +1100
+Subject: [PATCH 1/2] New DLL msdasqlr
+
+---
+ configure                     |  16 +----
+ configure.ac                  |   1 +
+ dlls/msdasqlr/Makefile.in     |   6 ++
+ dlls/msdasqlr/msdasqlr.spec   |   5 ++
+ dlls/msdasqlr/msdasqlr_main.c | 133 ++++++++++++++++++++++++++++++++++++++++++
+ include/Makefile.in           |   2 +-
+ loader/wine.inf.in            |   1 +
+ 7 files changed, 150 insertions(+), 14 deletions(-)
+ create mode 100644 dlls/msdasqlr/Makefile.in
+ create mode 100644 dlls/msdasqlr/msdasqlr.spec
+ create mode 100644 dlls/msdasqlr/msdasqlr_main.c
+
+diff --git a/configure b/configure
+index 9d4a7a8..7b5183c 100755
+--- a/configure
++++ b/configure
+@@ -805,7 +805,6 @@ infodir
+ docdir
+ oldincludedir
+ includedir
+-runstatedir
+ localstatedir
+ sharedstatedir
+ sysconfdir
+@@ -1380,6 +1379,7 @@ enable_mscoree
+ enable_msctf
+ enable_msctfp
+ enable_msdaps
++enable_msdasqlr
+ enable_msdelta
+ enable_msdmo
+ enable_msdrm
+@@ -1875,7 +1875,6 @@ datadir='${datarootdir}'
+ sysconfdir='${prefix}/etc'
+ sharedstatedir='${prefix}/com'
+ localstatedir='${prefix}/var'
+-runstatedir='${localstatedir}/run'
+ includedir='${prefix}/include'
+ oldincludedir='/usr/include'
+ docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
+@@ -2128,15 +2127,6 @@ do
+   | -silent | --silent | --silen | --sile | --sil)
+     silent=yes ;;
+ 
+-  -runstatedir | --runstatedir | --runstatedi | --runstated \
+-  | --runstate | --runstat | --runsta | --runst | --runs \
+-  | --run | --ru | --r)
+-    ac_prev=runstatedir ;;
+-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+-  | --run=* | --ru=* | --r=*)
+-    runstatedir=$ac_optarg ;;
+-
+   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
+     ac_prev=sbindir ;;
+   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
+@@ -2274,7 +2264,7 @@ fi
+ for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
+ 		datadir sysconfdir sharedstatedir localstatedir includedir \
+ 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
+-		libdir localedir mandir runstatedir
++		libdir localedir mandir
+ do
+   eval ac_val=\$$ac_var
+   # Remove trailing slashes.
+@@ -2427,7 +2417,6 @@ Fine tuning of the installation directories:
+   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
+   --libdir=DIR            object code libraries [EPREFIX/lib]
+   --includedir=DIR        C header files [PREFIX/include]
+   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
+@@ -19596,6 +19585,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
+ wine_fn_config_makefile dlls/msctf/tests enable_tests
+ wine_fn_config_makefile dlls/msctfp enable_msctfp
+ wine_fn_config_makefile dlls/msdaps enable_msdaps
++wine_fn_config_makefile dlls/msdasqlr enable_msdasqlr
+ wine_fn_config_makefile dlls/msdelta enable_msdelta
+ wine_fn_config_makefile dlls/msdmo enable_msdmo
+ wine_fn_config_makefile dlls/msdmo/tests enable_tests
+diff --git a/configure.ac b/configure.ac
+index b64d99e..20fb951 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3449,6 +3449,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
+ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
+ WINE_CONFIG_MAKEFILE(dlls/msctfp)
+ WINE_CONFIG_MAKEFILE(dlls/msdaps)
++WINE_CONFIG_MAKEFILE(dlls/msdasqlr)
+ WINE_CONFIG_MAKEFILE(dlls/msdelta)
+ WINE_CONFIG_MAKEFILE(dlls/msdmo)
+ WINE_CONFIG_MAKEFILE(dlls/msdmo/tests)
+diff --git a/dlls/msdasqlr/Makefile.in b/dlls/msdasqlr/Makefile.in
+new file mode 100644
+index 0000000..5ffc21a
+--- /dev/null
++++ b/dlls/msdasqlr/Makefile.in
+@@ -0,0 +1,6 @@
++MODULE    = msdasqlr.dll
++IMPORTS   = uuid
++
++
++C_SRCS = \
++	msdasqlr_main.c
+diff --git a/dlls/msdasqlr/msdasqlr.spec b/dlls/msdasqlr/msdasqlr.spec
+new file mode 100644
+index 0000000..37b010b
+--- /dev/null
++++ b/dlls/msdasqlr/msdasqlr.spec
+@@ -0,0 +1,5 @@
++@ stdcall -private DllCanUnloadNow()
++@ stdcall -private DllGetClassObject(ptr ptr ptr)
++@ stdcall -private DllRegisterServer()
++@ stdcall -private DllUnregisterServer()
++
+diff --git a/dlls/msdasqlr/msdasqlr_main.c b/dlls/msdasqlr/msdasqlr_main.c
+new file mode 100644
+index 0000000..a155883
+--- /dev/null
++++ b/dlls/msdasqlr/msdasqlr_main.c
+@@ -0,0 +1,133 @@
++/*
++ * Copyright 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define COBJMACROS
++
++#include "config.h"
++
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "objbase.h"
++#include "rpcproxy.h"
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(msdasqlr);
++
++static HINSTANCE msdasqlr_instance;
++
++BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
++{
++    TRACE("(%p, %u, %p)\n", instance, reason, reserved);
++
++    switch (reason)
++    {
++        case DLL_WINE_PREATTACH:
++            return FALSE;    /* prefer native version */
++        case DLL_PROCESS_ATTACH:
++            msdasqlr_instance = instance;
++            DisableThreadLibraryCalls(instance);
++            break;
++    }
++
++    return TRUE;
++}
++
++HRESULT WINAPI DllCanUnloadNow(void)
++{
++    return S_FALSE;
++}
++
++/***********************************************************************
++ *		DllRegisterServer (MSXML3.@)
++ */
++HRESULT WINAPI DllRegisterServer(void)
++{
++    return __wine_register_resources( msdasqlr_instance );
++}
++
++/***********************************************************************
++ *		DllUnregisterServer (MSXML3.@)
++ */
++HRESULT WINAPI DllUnregisterServer(void)
++{
++    return __wine_unregister_resources( msdasqlr_instance );
++}
++
++static HRESULT WINAPI ClassFactory_QueryInterface(IClassFactory *iface, REFIID riid, void **ppv)
++{
++    *ppv = NULL;
++
++    if(IsEqualGUID(&IID_IUnknown, riid)) {
++        TRACE("(%p)->(IID_IUnknown %p)\n", iface, ppv);
++        *ppv = iface;
++    }else if(IsEqualGUID(&IID_IClassFactory, riid)) {
++        TRACE("(%p)->(IID_IClassFactory %p)\n", iface, ppv);
++        *ppv = iface;
++    }
++
++    if(*ppv) {
++        IUnknown_AddRef((IUnknown*)*ppv);
++        return S_OK;
++    }
++
++    WARN("(%p)->(%s %p)\n", iface, debugstr_guid(riid), ppv);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI ClassFactory_AddRef(IClassFactory *iface)
++{
++    TRACE("(%p)\n", iface);
++    return 2;
++}
++
++static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
++{
++    TRACE("(%p)\n", iface);
++    return 1;
++}
++
++HRESULT WINAPI ClassFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)
++{
++    FIXME("(%p %s %p)\n", outer, debugstr_guid(riid), ppv);
++
++    return CLASS_E_CLASSNOTAVAILABLE;
++}
++
++static HRESULT WINAPI ClassFactory_LockServer(IClassFactory *iface, BOOL fLock)
++{
++    TRACE("(%p)->(%x)\n", iface, fLock);
++    return S_OK;
++}
++
++static const IClassFactoryVtbl cffactoryVtbl = {
++    ClassFactory_QueryInterface,
++    ClassFactory_AddRef,
++    ClassFactory_Release,
++    ClassFactory_CreateInstance,
++    ClassFactory_LockServer
++};
++
++static IClassFactory cffactory = { &cffactoryVtbl };
++
++HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
++{
++    TRACE("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
++    return IClassFactory_QueryInterface(&cffactory, riid, ppv);
++}
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 08c57fa..3a08010 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -13,8 +13,8 @@ SOURCES = \
+ 	amaudio.h \
+ 	amstream.idl \
+ 	amvideo.idl \
+-	appcompatapi.h \
+ 	apiset.h \
++	appcompatapi.h \
+ 	appmgmt.h \
+ 	appmodel.h \
+ 	asptlb.idl \
+diff --git a/loader/wine.inf.in b/loader/wine.inf.in
+index b6aeb1c..77adb8f 100644
+--- a/loader/wine.inf.in
++++ b/loader/wine.inf.in
+@@ -2636,6 +2636,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+ 16427,Microsoft Shared\TextConv,
+ 16427,System\OLE DB,oledb32.dll
+ 16427,System\OLE DB,msdaps.dll
++16427,System\OLE DB,msdasqlr.dll
+ 11,,*
+ 
+ [SystemIni]
+-- 
+1.9.1
+

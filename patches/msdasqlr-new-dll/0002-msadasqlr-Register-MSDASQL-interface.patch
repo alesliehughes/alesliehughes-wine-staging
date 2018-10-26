@@ -1,0 +1,106 @@
+From d84139200ed4d8974af6a53650e64708e4964c14 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 26 Oct 2018 14:16:13 +1100
+Subject: [PATCH 2/2] msadasqlr: Register MSDASQL interface
+
+---
+ dlls/msdasqlr/Makefile.in           |  5 +++++
+ dlls/msdasqlr/msadasqlr_classes.idl | 26 ++++++++++++++++++++++++++
+ dlls/msdasqlr/msdasqlr.rc           | 20 ++++++++++++++++++++
+ dlls/msdasqlr/msdasqlr.rgs          | 11 +++++++++++
+ 4 files changed, 62 insertions(+)
+ create mode 100644 dlls/msdasqlr/msadasqlr_classes.idl
+ create mode 100644 dlls/msdasqlr/msdasqlr.rc
+ create mode 100644 dlls/msdasqlr/msdasqlr.rgs
+
+diff --git a/dlls/msdasqlr/Makefile.in b/dlls/msdasqlr/Makefile.in
+index 5ffc21a..5679b4c 100644
+--- a/dlls/msdasqlr/Makefile.in
++++ b/dlls/msdasqlr/Makefile.in
+@@ -4,3 +4,8 @@ IMPORTS   = uuid
+ 
+ C_SRCS = \
+ 	msdasqlr_main.c
++
++RC_SRCS = msdasqlr.rc
++
++IDL_SRCS = msadasqlr_classes.idl
++
+diff --git a/dlls/msdasqlr/msadasqlr_classes.idl b/dlls/msdasqlr/msadasqlr_classes.idl
+new file mode 100644
+index 0000000..0077494
+--- /dev/null
++++ b/dlls/msdasqlr/msadasqlr_classes.idl
+@@ -0,0 +1,26 @@
++/*
++ * Copyright 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#pragma makedep register
++
++[
++    progid("MSDASQL.1"),
++    vi_progid("MSDASQL"),
++    threading(both),
++    uuid(c8b522cb-5cf3-11ce-ade5-00aa0044773d)
++]
++coclass MSDASQL { }
+diff --git a/dlls/msdasqlr/msdasqlr.rc b/dlls/msdasqlr/msdasqlr.rc
+new file mode 100644
+index 0000000..20f557c
+--- /dev/null
++++ b/dlls/msdasqlr/msdasqlr.rc
+@@ -0,0 +1,20 @@
++/*
++ * Copyright 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++/* @makedep: msdasqlr.rgs */
++2 WINE_REGISTRY msdasqlr.rgs
+diff --git a/dlls/msdasqlr/msdasqlr.rgs b/dlls/msdasqlr/msdasqlr.rgs
+new file mode 100644
+index 0000000..b5ac427
+--- /dev/null
++++ b/dlls/msdasqlr/msdasqlr.rgs
+@@ -0,0 +1,11 @@
++HKCR
++{
++	NoRemove CLSID
++	{
++		NoRemove {c8b522cb-5cf3-11ce-ade5-00aa0044773d} = s 'MSDASQL'
++		{
++			val 'OLEDB_SERVICES' = d 4294967295
++			'OLE DB Provider' = s 'WINE OLE DB Provider for ODBC Drivers'
++		}
++	}
++}
+-- 
+1.9.1
+
