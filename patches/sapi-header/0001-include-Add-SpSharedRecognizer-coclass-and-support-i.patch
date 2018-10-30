@@ -1,4 +1,4 @@
-From 2554e892e38ae0459511beec779f77f821d77bf1 Mon Sep 17 00:00:00 2001
+From f1396ecbad6764b5cec9b363adb330bd40e1fe44 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 10 Sep 2018 15:29:00 +1000
 Subject: [PATCH] include: Add SpSharedRecognizer coclass and support
@@ -6,14 +6,14 @@ Subject: [PATCH] include: Add SpSharedRecognizer coclass and support
 
 WIP:
 ---
- include/sapi.idl | 766 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 766 insertions(+)
+ include/sapi.idl | 777 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 777 insertions(+)
 
 diff --git a/include/sapi.idl b/include/sapi.idl
-index e138432..34f1d86 100644
+index e138432..959d93d 100644
 --- a/include/sapi.idl
 +++ b/include/sapi.idl
-@@ -27,6 +27,73 @@ import "ocidl.idl";
+@@ -27,6 +27,72 @@ import "ocidl.idl";
  #define vi_progid(str)
  #endif
  
@@ -44,6 +44,7 @@ index e138432..34f1d86 100644
 +cpp_quote("#if 0")
 +typedef void * SPNOTIFYCALLBACK;
 +typedef void * SPSTATEHANDLE;
++cpp_quote("#endif")
 +
 +typedef [restricted, hidden] struct SPEVENT
 +{
@@ -55,10 +56,8 @@ index e138432..34f1d86 100644
 +    LPARAM    lParam;
 +} SPEVENT;
 +
-+cpp_quote("#else")
 +cpp_quote("typedef void __stdcall SPNOTIFYCALLBACK(WPARAM wParam, LPARAM lParam);")
 +cpp_quote("DECLARE_HANDLE(SPSTATEHANDLE);")
-+cpp_quote("#endif")
 +
 +const ULONG SP_MAX_LANGIDS = 20;
 +
@@ -87,7 +86,7 @@ index e138432..34f1d86 100644
  typedef [hidden] enum SPDATAKEYLOCATION
  {
      SPDKL_DefaultLocation = 0,
-@@ -35,6 +102,318 @@ typedef [hidden] enum SPDATAKEYLOCATION
+@@ -35,6 +101,330 @@ typedef [hidden] enum SPDATAKEYLOCATION
      SPDKL_CurrentConfig   = 5
  } SPDATAKEYLOCATION;
  
@@ -345,6 +344,18 @@ index e138432..34f1d86 100644
 +
 +typedef [restricted, hidden] struct SPPHRASERULE SPPHRASERULE;
 +
++struct SPPHRASERULE
++{
++    LPCWSTR                 pszName;
++    ULONG                   ulId;
++    ULONG                   ulFirstElement;
++    ULONG                   ulCountOfElements;
++    const SPPHRASERULE*     pNextSibling;
++    const SPPHRASERULE*     pFirstChild;
++    float                   SREngineConfidence;
++    signed char             Confidence;
++};
++
 +typedef [restricted, hidden] struct SPPHRASEPROPERTY SPPHRASEPROPERTY;
 +
 +struct SPPHRASEPROPERTY
@@ -406,7 +417,7 @@ index e138432..34f1d86 100644
  cpp_quote("#if defined(__GNUC__)")
  
  cpp_quote("#define SPCAT_AUDIOOUT (const WCHAR []){ 'H','K','E','Y','_','L','O','C','A','L','_','M','A','C','H','I','N','E','\\\\','S','O','F','T','W','A','R','E','\\\\','M','i','c','r','o','s','o','f','t','\\\\','S','p','e','e','c','h','\\\\','A','u','d','i','o','O','u','t','p','u','t',0 }")
-@@ -56,6 +435,10 @@ cpp_quote("static const WCHAR SPCAT_VOICES[] = {'H','K','E','Y','_','L','O','C',
+@@ -56,6 +446,10 @@ cpp_quote("static const WCHAR SPCAT_VOICES[] = {'H','K','E','Y','_','L','O','C',
  cpp_quote("#endif")
  
  interface IEnumSpObjectTokens;
@@ -417,7 +428,7 @@ index e138432..34f1d86 100644
  
  [
      object,
-@@ -191,6 +574,380 @@ interface IEnumSpObjectTokens : IUnknown
+@@ -191,6 +585,380 @@ interface IEnumSpObjectTokens : IUnknown
  }
  
  [
@@ -505,8 +516,8 @@ index e138432..34f1d86 100644
 +    HRESULT ClearRule(SPSTATEHANDLE state);
 +
 +    HRESULT CreateNewState(
-+                SPSTATEHANDLE state,   
-+                SPSTATEHANDLE *state);
++                [in] SPSTATEHANDLE instate,
++                [out] SPSTATEHANDLE *outstate);
 +
 +    HRESULT AddWordTransition(
 +                    SPSTATEHANDLE from_state,
@@ -639,14 +650,14 @@ index e138432..34f1d86 100644
 +    [local] HANDLE SpeakCompleteEvent();
 +    
 +    [local] HRESULT IsUISupported(
-+                [in] const WCHAR *typeof,
++                [in] const WCHAR *type,
 +                [in] void * extra,
 +                [in] ULONG count,
 +                [out] BOOL *supported);
 +    [local] HRESULT DisplayUI(
 +                [in] HWND parent,
 +                [in] const WCHAR *title,
-+                [in] const WCHAR *typeof,
++                [in] const WCHAR *type,
 +                [in] void *extra,
 +                [in] ULONG count);
 +};
@@ -705,7 +716,7 @@ index e138432..34f1d86 100644
 +{
 +    HRESULT GetRecognizer([out] ISpRecognizer **recognizer);
 +
-+    HRESULT CreateGrammar([in] ULONGLONG grammar, [out] ISpRecoGrammar **grammar);    
++    HRESULT CreateGrammar([in] ULONGLONG grammar, [out] ISpRecoGrammar **spgrammar);
 +
 +    HRESULT GetStatus([out] SPRECOCONTEXTSTATUS *status);
 +
@@ -787,9 +798,9 @@ index e138432..34f1d86 100644
 +    HRESULT GetStatus([out] SPRECOGNIZERSTATUS *status);
 +    HRESULT GetFormat([in] SPSTREAMFORMATTYPE type, [out] GUID *format, [out] WAVEFORMATEX **wave);
 +
-+    [local] HRESULT IsUISupported([in] const WCHAR *typeof, [in] void *extra, [in] ULONG count,
++    [local] HRESULT IsUISupported([in] const WCHAR *type, [in] void *extra, [in] ULONG count,
 +                [out] BOOL *supported);
-+    [local] HRESULT DisplayUI([in] HWND hwnd,[in] const WCHAR *title, [in] const WCHAR *typeof,
++    [local] HRESULT DisplayUI([in] HWND hwnd,[in] const WCHAR *title, [in] const WCHAR *type,
 +                [in] void *extra, [in] ULONG cnt);
 +    HRESULT EmulateRecognition([in] ISpPhrase *phrase);
 +};
@@ -798,7 +809,7 @@ index e138432..34f1d86 100644
      helpstring("Speech Object Library"),
      uuid(c866ca3a-32f7-11d2-9602-00c04f8ee628),
      version(5.4)
-@@ -210,4 +967,13 @@ library SpeechLib
+@@ -210,4 +978,13 @@ library SpeechLib
      {
          interface ISpObjectTokenCategory;
      }
