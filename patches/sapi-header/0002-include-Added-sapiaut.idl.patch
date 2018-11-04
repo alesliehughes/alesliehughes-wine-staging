@@ -1,0 +1,798 @@
+From f720a900267651df011107b1c47232f76f127424 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 30 Oct 2018 16:03:34 +1100
+Subject: [PATCH 2/2] include: Added sapiaut.idl
+
+WIP:
+---
+ include/Makefile.in |   1 +
+ include/sapi.idl    |   2 +
+ include/sapiaut.idl | 751 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 754 insertions(+)
+ create mode 100644 include/sapiaut.idl
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index cc78b1c..06f304c 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -558,6 +558,7 @@ SOURCES = \
+ 	rtutils.h \
+ 	sal.h \
+ 	sapi.idl \
++	sapiaut.idl \
+ 	sapiddk.idl \
+ 	scarderr.h \
+ 	schannel.h \
+diff --git a/include/sapi.idl b/include/sapi.idl
+index 666b1b2..19a96bf 100644
+--- a/include/sapi.idl
++++ b/include/sapi.idl
+@@ -967,6 +967,8 @@ library SpeechLib
+ {
+     importlib("stdole2.tlb");
+ 
++    #include "sapiaut.idl"
++
+     [
+         uuid(a910187f-0c7a-45ac-92cc-59edafb77b53),
+         helpstring("SpObjectTokenCategory Class"),
+diff --git a/include/sapiaut.idl b/include/sapiaut.idl
+new file mode 100644
+index 0000000..20b8ad7
+--- /dev/null
++++ b/include/sapiaut.idl
+@@ -0,0 +1,751 @@
++/*
++ *
++ * Copyright (C) 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++import "oaidl.idl";
++import "ocidl.idl";
++
++interface ISpeechAudioFormat;
++interface ISpeechObjectTokens;
++interface ISpeechRecognizer;
++
++typedef enum SpeechTokenShellFolder
++{
++    STSF_AppData         = 0x001a,
++    STSF_LocalAppData    = 0x001c,
++    STSF_CommonAppData   = 0x0023,
++    STSF_FlagCreate      = 0x8000
++} SpeechTokenShellFolder;
++
++typedef enum SpeechAudioState
++{
++    SASClosed = SPAS_CLOSED,
++    SASStop   = SPAS_STOP,
++    SASPause  = SPAS_PAUSE,
++    SASRun    = SPAS_RUN
++} SpeechAudioState;
++
++typedef enum SpeechRecognizerState
++{
++    SRSInactive          = SPRST_INACTIVE,
++    SRSActive            = SPRST_ACTIVE,
++    SRSActiveAlways      = SPRST_ACTIVE_ALWAYS,
++    SRSInactiveWithPurge = SPRST_INACTIVE_WITH_PURGE,
++} SpeechRecognizerState;
++
++typedef [hidden] enum DISPID_SpeechRecoContext
++{
++    DISPID_SRCRecognizer                         = 1,
++    DISPID_SRCAudioInInterferenceStatus,
++    DISPID_SRCRequestedUIType,
++    DISPID_SRCVoice,
++    DISPID_SRAllowVoiceFormatMatchingOnNextSet,
++    DISPID_SRCVoicePurgeEvent,
++    DISPID_SRCEventInterests,
++    DISPID_SRCCmdMaxAlternates,
++    DISPID_SRCState,
++    DISPID_SRCRetainedAudio,
++    DISPID_SRCRetainedAudioFormat,
++    DISPID_SRCPause,
++    DISPID_SRCResume,
++    DISPID_SRCCreateGrammar,
++    DISPID_SRCCreateResultFromMemory,
++    DISPID_SRCBookmark,
++    DISPID_SRCSetAdaptationData
++} DISPID_SpeechRecoContext;
++
++typedef [hidden] enum DISPID_SpeechDataKey
++{
++    DISPID_SDKSetBinaryValue = 1,
++    DISPID_SDKGetBinaryValue,
++    DISPID_SDKSetStringValue,
++    DISPID_SDKGetStringValue,
++    DISPID_SDKSetLongValue,
++    DISPID_SDKGetlongValue,
++    DISPID_SDKOpenKey,
++    DISPID_SDKCreateKey,
++    DISPID_SDKDeleteKey,
++    DISPID_SDKDeleteValue,
++    DISPID_SDKEnumKeys,
++    DISPID_SDKEnumValues
++} DISPID_SpeechDataKey;
++
++[
++    object,
++    uuid(ce17c09b-4efa-44d5-a4c9-59d9585ab0cd),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechDataKey : IDispatch
++{
++    [id(DISPID_SDKSetBinaryValue)]
++    HRESULT SetBinaryValue([in] const BSTR name, [in] VARIANT value);
++
++    [id(DISPID_SDKGetBinaryValue)]
++    HRESULT GetBinaryValue([in] const BSTR name, [out,retval] VARIANT *value);
++
++    [id(DISPID_SDKSetStringValue)]
++    HRESULT SetStringValue([in] const BSTR name, [in]const BSTR value);
++
++    [id(DISPID_SDKGetStringValue)]
++    HRESULT GetStringValue([in] const BSTR name, [out,retval] BSTR* value);
++
++    [id(DISPID_SDKSetLongValue)]
++    HRESULT SetLongValue([in] const BSTR name, [in] long value);
++
++    [id(DISPID_SDKGetlongValue)]
++    HRESULT GetLongValue([in] const BSTR name, [out,retval] long *value);
++
++    [id(DISPID_SDKOpenKey)]
++    HRESULT OpenKey( [in] const BSTR name, [out,retval] ISpeechDataKey **key);
++
++    [id(DISPID_SDKCreateKey)]
++    HRESULT CreateKey([in] const BSTR name, [out,retval] ISpeechDataKey **key);
++
++    [id(DISPID_SDKDeleteKey)]
++    HRESULT DeleteKey([in] const BSTR name);
++
++    [id(DISPID_SDKDeleteValue)]
++    HRESULT DeleteValue([in] const BSTR name);
++
++    [id(DISPID_SDKEnumKeys)]
++    HRESULT EnumKeys([in] long index, [out,retval] BSTR *name);
++
++    [id(DISPID_SDKEnumValues)]
++    HRESULT EnumValues([in] long Index, [out,retval] BSTR *name);
++};
++
++typedef enum SpeechDataKeyLocation
++{
++    SDKLDefaultLocation = 0,
++    SDKLCurrentUser     = 1,
++    SDKLLocalMachine    = 2,
++    SDKLCurrentConfig   = 5
++} SpeechDataKeyLocation;
++
++#define CLSCTXALL (CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER)
++
++typedef enum SpeechTokenContext
++{
++    STCInprocServer     = CLSCTX_INPROC_SERVER,
++    STCInprocHandler    = CLSCTX_INPROC_HANDLER,
++    STCLocalServer      = CLSCTX_LOCAL_SERVER,
++    STCRemoteServer     = CLSCTX_REMOTE_SERVER,
++    STCAll              = CLSCTXALL
++} SpeechTokenContext;
++
++typedef [hidden] enum DISPID_SpeechObjectTokenCategory
++{
++    DISPID_SOTCId = 1,
++    DISPID_SOTCDefault,
++    DISPID_SOTCSetId,
++    DISPID_SOTCGetDataKey,
++    DISPID_SOTCEnumerateTokens,
++} DISPID_SpeechObjectTokenCategory;
++
++[
++    object,
++    uuid(ca7eac50-2d01-4145-86d4-5ae7d70f4469),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechObjectTokenCategory : IDispatch
++{
++    [propget, id(DISPID_SOTCId)]
++    HRESULT Id([out, retval] BSTR *id);
++
++    [propput, id(DISPID_SOTCDefault)]
++    HRESULT Default([in] const BSTR token);
++    [propget, id(DISPID_SOTCDefault)]
++    HRESULT Default([out, retval] BSTR *token);
++
++    [id(DISPID_SOTCSetId)]
++    HRESULT SetId([in] const BSTR id, [in, defaultvalue(0)] VARIANT_BOOL created);
++
++    [hidden, id(DISPID_SOTCGetDataKey)]
++    HRESULT GetDataKey([in, defaultvalue(SDKLDefaultLocation)] SpeechDataKeyLocation location,
++                       [out, retval] ISpeechDataKey **key);
++
++    [id(DISPID_SOTCEnumerateTokens)]
++    HRESULT EnumerateTokens([in, defaultvalue("")] BSTR required,
++                             [in, defaultvalue("")] BSTR optional,
++                             [out, retval] ISpeechObjectTokens **tokens);
++};
++
++typedef [hidden] enum DISPID_SpeechObjectToken
++{
++    DISPID_SOTId                        = 1,
++    DISPID_SOTDataKey,
++    DISPID_SOTCategory,
++    DISPID_SOTGetDescription,
++    DISPID_SOTSetId,
++    DISPID_SOTGetAttribute,
++    DISPID_SOTCreateInstance,
++    DISPID_SOTRemove,
++    DISPID_SOTGetStorageFileName,
++    DISPID_SOTRemoveStorageFileName,
++    DISPID_SOTIsUISupported,
++    DISPID_SOTDisplayUI,
++    DISPID_SOTMatchesAttributes
++} DISPID_SpeechObjectToken;
++
++[
++    object,
++    uuid(c74a3adc-b727-4500-a84a-b526721c8b8c),
++    dual,
++    helpstring("ISpeechObjectToken Interface"),
++    pointer_default(unique)
++]
++interface ISpeechObjectToken : IDispatch
++{
++    [propget, id(DISPID_SOTId)]
++    HRESULT Id([out,retval]BSTR *object);
++
++    [propget, id(DISPID_SOTDataKey), hidden]
++    HRESULT DataKey([out,retval] ISpeechDataKey **key);
++
++    [propget, id(DISPID_SOTCategory)]
++    HRESULT Category([out,retval] ISpeechObjectTokenCategory **category);
++
++    [id(DISPID_SOTGetDescription)]
++    HRESULT GetDescription( [in,defaultvalue(0)] long locale,  [out,retval]BSTR *description);
++
++    [hidden, id(DISPID_SOTSetId)]
++    HRESULT SetId([in] BSTR id, [in, defaultvalue("")] BSTR category, [in, defaultvalue(0)] VARIANT_BOOL create);
++
++    [id(DISPID_SOTGetAttribute)]
++    HRESULT GetAttribute([in] BSTR name, [out, retval] BSTR* value);
++
++    [id(DISPID_SOTCreateInstance)]
++    HRESULT CreateInstance([in, defaultvalue(NULL)] IUnknown *outer,  [in, defaultvalue(STCAll)] SpeechTokenContext spcontext,
++                                [out, retval] IUnknown **object);
++
++    [hidden, id(DISPID_SOTRemove)]
++    HRESULT Remove([in] BSTR clsid);
++
++    [hidden, id(DISPID_SOTGetStorageFileName)]
++    HRESULT GetStorageFileName([in] BSTR clsid, [in] BSTR key, [in] BSTR name, [in] SpeechTokenShellFolder folder,
++                                [out,retval] BSTR* path);
++
++    [hidden, id(DISPID_SOTRemoveStorageFileName)]
++    HRESULT RemoveStorageFileName([in] BSTR clsid, [in]BSTR key, [in] VARIANT_BOOL delete);
++
++    [hidden, id(DISPID_SOTIsUISupported)]
++    HRESULT IsUISupported( [in]const BSTR type, [in, defaultvalue(NULL)] const VARIANT *data,
++                               [in, defaultvalue(NULL)] IUnknown *object,
++                               [out,retval] VARIANT_BOOL *supported);
++
++    [hidden, id(DISPID_SOTDisplayUI)]
++    HRESULT DisplayUI([in] long hwnd, [in] BSTR title, [in]const BSTR type,
++                           [in, defaultvalue(NULL)] const VARIANT *data,
++                           [in, defaultvalue(NULL)] IUnknown *object);
++
++    [id(DISPID_SOTMatchesAttributes)]
++    HRESULT MatchesAttributes([in] BSTR attributes, [out,retval] VARIANT_BOOL *matches);
++};
++
++typedef [hidden] enum DISPID_SpeechObjectTokens
++{
++    DISPID_SOTsCount    = 1,
++    DISPID_SOTsItem     = DISPID_VALUE,
++    DISPID_SOTs_NewEnum = DISPID_NEWENUM
++} DISPID_SpeechObjectTokens;
++
++[
++    object,
++    uuid(9285b776-2e7b-4bc0-b53e-580eb6fa967f),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechObjectTokens : IDispatch
++{
++    [propget, id(DISPID_SOTsCount)]
++    HRESULT Count([out, retval] long* count);
++
++    [id(DISPID_VALUE)]
++    HRESULT Item([in] long index, [out, retval] ISpeechObjectToken **token);
++
++    [propget, restricted, id(DISPID_NEWENUM)]
++    HRESULT _NewEnum([out, retval] IUnknown **ppenum);
++};
++
++typedef [hidden] enum DISPID_SpeechWaveFormatEx
++{
++    DISPID_SWFEFormatTag = 1,
++    DISPID_SWFEChannels,
++    DISPID_SWFESamplesPerSec,
++    DISPID_SWFEAvgBytesPerSec,
++    DISPID_SWFEBlockAlign,
++    DISPID_SWFEBitsPerSample,
++    DISPID_SWFEExtraData
++} DISPID_SpeechWaveFormatEx;
++
++[
++    object,
++    uuid(7A1EF0D5-1581-4741-88E4-209A49F11A10),
++    dual,
++    helpstring("ISpeechWaveFormatEx Interface"),
++    pointer_default(unique)
++]
++interface ISpeechWaveFormatEx : IDispatch
++{
++    [propget, id(DISPID_SWFEFormatTag)]
++    HRESULT FormatTag([out,retval] short *tag);
++    [propput, id(DISPID_SWFEFormatTag)]
++    HRESULT FormatTag([in] short tag);
++
++    [propget, id(DISPID_SWFEChannels)]
++    HRESULT Channels([out,retval] short *channels);
++    [propput, id(DISPID_SWFEChannels)]
++    HRESULT Channels([in] short channels);
++
++    [propget, id(DISPID_SWFESamplesPerSec)]
++    HRESULT SamplesPerSec([out,retval] long * samples);
++    [propput, id(DISPID_SWFESamplesPerSec)]
++    HRESULT SamplesPerSec([in] long samples);
++
++    [propget, id(DISPID_SWFEAvgBytesPerSec)]
++    HRESULT AvgBytesPerSec([out,retval] long *average);
++    [propput, id(DISPID_SWFEAvgBytesPerSec)]
++    HRESULT AvgBytesPerSec([in]long average);
++
++    [propget, id(DISPID_SWFEBlockAlign)]
++    HRESULT BlockAlign([out,retval]short *alignment);
++    [propput, id(DISPID_SWFEBlockAlign)]
++    HRESULT BlockAlign([in]short alignment);
++
++    [propget, id(DISPID_SWFEBitsPerSample)]
++    HRESULT BitsPerSample([out,retval] short *bits);
++    [propput, id(DISPID_SWFEBitsPerSample)]
++    HRESULT BitsPerSample([in] short bits);
++
++    [propget, id(DISPID_SWFEExtraData)]
++    HRESULT ExtraData([out,retval] VARIANT *data);
++    [propput, id(DISPID_SWFEExtraData)]
++    HRESULT ExtraData([in] VARIANT data);
++}
++
++typedef enum SpeechAudioFormatType
++{
++    SAFTDefault = -1,
++    SAFTNoAssignedFormat = 0,
++    SAFTText,
++    SAFTNonStandardFormat,
++    SAFTExtendedAudioFormat,
++
++    SAFT8kHz8BitMono,
++    SAFT8kHz8BitStereo,
++    SAFT8kHz16BitMono,
++    SAFT8kHz16BitStereo,
++    SAFT11kHz8BitMono,
++    SAFT11kHz8BitStereo,
++    SAFT11kHz16BitMono,
++    SAFT11kHz16BitStereo,
++    SAFT12kHz8BitMono,
++    SAFT12kHz8BitStereo,
++    SAFT12kHz16BitMono,
++    SAFT12kHz16BitStereo,
++    SAFT16kHz8BitMono,
++    SAFT16kHz8BitStereo,
++    SAFT16kHz16BitMono,
++    SAFT16kHz16BitStereo,
++    SAFT22kHz8BitMono,
++    SAFT22kHz8BitStereo,
++    SAFT22kHz16BitMono,
++    SAFT22kHz16BitStereo,
++    SAFT24kHz8BitMono,
++    SAFT24kHz8BitStereo,
++    SAFT24kHz16BitMono,
++    SAFT24kHz16BitStereo,
++    SAFT32kHz8BitMono,
++    SAFT32kHz8BitStereo,
++    SAFT32kHz16BitMono,
++    SAFT32kHz16BitStereo,
++    SAFT44kHz8BitMono,
++    SAFT44kHz8BitStereo,
++    SAFT44kHz16BitMono,
++    SAFT44kHz16BitStereo,
++    SAFT48kHz8BitMono,
++    SAFT48kHz8BitStereo,
++    SAFT48kHz16BitMono,
++    SAFT48kHz16BitStereo,
++
++    SAFTTrueSpeech_8kHz1BitMono,
++
++    SAFTCCITT_ALaw_8kHzMono,
++    SAFTCCITT_ALaw_8kHzStereo,
++    SAFTCCITT_ALaw_11kHzMono,
++    SAFTCCITT_ALaw_11kHzStereo,
++    SAFTCCITT_ALaw_22kHzMono,
++    SAFTCCITT_ALaw_22kHzStereo,
++    SAFTCCITT_ALaw_44kHzMono,
++    SAFTCCITT_ALaw_44kHzStereo,
++
++    SAFTCCITT_uLaw_8kHzMono,
++    SAFTCCITT_uLaw_8kHzStereo,
++    SAFTCCITT_uLaw_11kHzMono,
++    SAFTCCITT_uLaw_11kHzStereo,
++    SAFTCCITT_uLaw_22kHzMono,
++    SAFTCCITT_uLaw_22kHzStereo,
++    SAFTCCITT_uLaw_44kHzMono,
++    SAFTCCITT_uLaw_44kHzStereo,
++
++    SAFTADPCM_8kHzMono,
++    SAFTADPCM_8kHzStereo,
++    SAFTADPCM_11kHzMono,
++    SAFTADPCM_11kHzStereo,
++    SAFTADPCM_22kHzMono,
++    SAFTADPCM_22kHzStereo,
++    SAFTADPCM_44kHzMono,
++    SAFTADPCM_44kHzStereo,
++
++    SAFTGSM610_8kHzMono,
++    SAFTGSM610_11kHzMono,
++    SAFTGSM610_22kHzMono,
++    SAFTGSM610_44kHzMono,
++} SpeechAudioFormatType;
++
++typedef [hidden] enum DISPID_SpeechAudioFormat
++{
++    DISPID_SAFType = 1,
++    DISPID_SAFGuid,
++    DISPID_SAFGetWaveFormatEx,
++    DISPID_SAFSetWaveFormatEx
++} DISPID_SpeechAudioFormat;
++
++[
++    object,
++    uuid(e6e9c590-3e18-40e3-8299-061f98bde7c7),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechAudioFormat : IDispatch
++{
++    [propget, id(DISPID_SAFType)]
++    HRESULT Type([out,retval] SpeechAudioFormatType *format);
++    [propput, id(DISPID_SAFType)]
++    HRESULT Type([in] SpeechAudioFormatType format);
++
++    [propget, hidden, id(DISPID_SAFGuid)]
++    HRESULT Guid([out,retval] BSTR *guid);
++    [propput, hidden, id(DISPID_SAFGuid)]
++    HRESULT Guid([in] BSTR guid);
++
++    [hidden, id(DISPID_SAFGetWaveFormatEx)]
++    HRESULT GetWaveFormatEx([out,retval] ISpeechWaveFormatEx **speechwave);
++
++    [hidden, id(DISPID_SAFSetWaveFormatEx)]
++    HRESULT SetWaveFormatEx([in] ISpeechWaveFormatEx *speechwave);
++}
++
++typedef enum SpeechStreamSeekPositionType
++{
++    SSSPTRelativeToStart           = STREAM_SEEK_SET,
++    SSSPTRelativeToCurrentPosition = STREAM_SEEK_CUR,
++    SSSPTRelativeToEnd             = STREAM_SEEK_END
++} SpeechStreamSeekPositionType;
++
++typedef [hidden] enum DISPID_SpeechBaseStream
++{
++    DISPID_SBSFormat = 1,
++    DISPID_SBSRead,
++    DISPID_SBSWrite,
++    DISPID_SBSSeek
++} DISPID_SpeechBaseStream;
++
++[
++    object,
++    uuid(6450336f-7d49-4ced-8097-49d6dee37294),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechBaseStream : IDispatch
++{
++    [propget, id(DISPID_SBSFormat)]
++    HRESULT Format([out,retval] ISpeechAudioFormat **format);
++    [propputref, id(DISPID_SBSFormat)]
++    HRESULT Format([in] ISpeechAudioFormat *format);
++
++    [id(DISPID_SBSRead)]
++    HRESULT Read([out] VARIANT *buffer, [in] long written, [out,retval] long *read);
++
++    [id(DISPID_SBSWrite)]
++    HRESULT Write([in] VARIANT buffer, [out,retval] long *written);
++
++    [id(DISPID_SBSSeek)]
++    HRESULT Seek([in] VARIANT Position, [in, defaultvalue(SSSPTRelativeToStart)] SpeechStreamSeekPositionType origin,
++                    [out,retval] VARIANT *position);
++};
++
++typedef [hidden] enum DISPID_SpeechAudioStatus
++{
++    DISPID_SASFreeBufferSpace = 1,
++    DISPID_SASNonBlockingIO,
++    DISPID_SASState,
++    DISPID_SASCurrentSeekPosition,
++    DISPID_SASCurrentDevicePosition
++} DISPID_SpeechAudioStatus;
++
++[
++    object,
++    uuid(c62d9c91-7458-47f6-862d-1ef86fb0b278),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechAudioStatus : IDispatch
++{
++    [propget, helpstring("FreeBufferSpace"), id(DISPID_SASFreeBufferSpace)]
++    HRESULT FreeBufferSpace([out,retval] long *space);
++
++    [propget, helpstring("NonBlockingIO"), id(DISPID_SASNonBlockingIO)]
++    HRESULT NonBlockingIO([out,retval] long *nonblocking);
++
++    [propget, helpstring("State"), id(DISPID_SASState)]
++    HRESULT State([out, retval] SpeechAudioState *state);
++
++    [propget, helpstring("CurrentSeekPosition"), id(DISPID_SASCurrentSeekPosition)]
++    HRESULT CurrentSeekPosition([out,retval] VARIANT *position);
++
++    [propget, helpstring("CurrentDevicePosition"), id(DISPID_SASCurrentDevicePosition)]
++    HRESULT CurrentDevicePosition([out,retval] VARIANT *position);
++};
++
++typedef [hidden] enum DISPID_SpeechRecognizerStatus
++{
++    DISPID_SRSAudioStatus = 1,
++    DISPID_SRSCurrentStreamPosition,
++    DISPID_SRSCurrentStreamNumber,
++    DISPID_SRSNumberOfActiveRules,
++    DISPID_SRSClsidEngine,
++    DISPID_SRSSupportedLanguages
++} DISPID_SpeechRecognizerStatus;
++
++[
++    object,
++    uuid(bff9e781-53ec-484e-bb8a-0e1b5551e35c),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechRecognizerStatus : IDispatch
++{
++    [propget, id(DISPID_SRSAudioStatus)]
++    HRESULT AudioStatus([out,retval] ISpeechAudioStatus **audio);
++
++    [propget, id(DISPID_SRSCurrentStreamPosition)]
++    HRESULT CurrentStreamPosition([out,retval] VARIANT *pos);
++
++    [propget, id(DISPID_SRSCurrentStreamNumber)]
++    HRESULT CurrentStreamNumber([out,retval] long *number);
++
++    [propget, id(DISPID_SRSNumberOfActiveRules)]
++    HRESULT NumberOfActiveRules([out,retval] long *rules);
++
++    [propget, id(DISPID_SRSClsidEngine)]
++    HRESULT ClsidEngine([out,retval] BSTR *clsid);
++
++    [propget, id(DISPID_SRSSupportedLanguages)]
++    HRESULT SupportedLanguages([out,retval] VARIANT *languages);
++};
++
++[
++    object,
++    uuid(580aa49d-7e1e-4809-b8e2-57da806104b8),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechRecoContext : IDispatch
++{
++    [propget, id(DISPID_SRCRecognizer)]
++    HRESULT Recognizer( [out,retval] ISpeechRecognizer **recognizer);
++
++    [propget, id(DISPID_SRCAudioInInterferenceStatus)]
++    HRESULT AudioInputInterferenceStatus( [out,retval] SpeechInterference *interference);
++
++    [propget, id(DISPID_SRCRequestedUIType)]
++    HRESULT RequestedUIType( [out,retval] BSTR *type );
++
++    [propputref, id(DISPID_SRCVoice)]
++    HRESULT Voice([in] ISpeechVoice *voice);
++    [propget, id(DISPID_SRCVoice)]
++    HRESULT Voice([out,retval] ISpeechVoice **voice);
++
++    [propput, hidden, id(DISPID_SRAllowVoiceFormatMatchingOnNextSet)]
++    HRESULT AllowVoiceFormatMatchingOnNextSet([in] VARIANT_BOOL allow );
++    [propget, hidden, id(DISPID_SRAllowVoiceFormatMatchingOnNextSet)]
++    HRESULT AllowVoiceFormatMatchingOnNextSet([out,retval] VARIANT_BOOL *allow);
++
++    [propput, id(DISPID_SRCVoicePurgeEvent)]
++    HRESULT VoicePurgeEvent( [in]SpeechRecoEvents interest);
++    [propget, id(DISPID_SRCVoicePurgeEvent)]
++    HRESULT VoicePurgeEvent( [out,retval]SpeechRecoEvents *interest);
++
++    [propput, id(DISPID_SRCEventInterests)]
++    HRESULT EventInterests( [in]SpeechRecoEvents interest);
++    [propget, id(DISPID_SRCEventInterests)]
++    HRESULT EventInterests( [out,retval]SpeechRecoEvents *interest);
++
++    [propput, id(DISPID_SRCCmdMaxAlternates)]
++    HRESULT CmdMaxAlternates([in] long alternates);
++    [propget, id(DISPID_SRCCmdMaxAlternates)]
++    HRESULT CmdMaxAlternates([out,retval] long *alternates);
++
++    [propput, id(DISPID_SRCState)]
++    HRESULT State([in] SpeechRecoContextState state);
++    [propget, id(DISPID_SRCState)]
++    HRESULT State([out,retval] SpeechRecoContextState *state);
++
++    [propput, id(DISPID_SRCRetainedAudio)]
++    HRESULT RetainedAudio([in]SpeechRetainedAudioOptions option);
++    [propget, id(DISPID_SRCRetainedAudio)]
++    HRESULT RetainedAudio([out,retval]SpeechRetainedAudioOptions *option);
++
++    [propputref, id(DISPID_SRCRetainedAudioFormat)]
++    HRESULT RetainedAudioFormat([in] ISpeechAudioFormat *format);
++    [propget, id(DISPID_SRCRetainedAudioFormat)]
++    HRESULT RetainedAudioFormat([out,retval] ISpeechAudioFormat **format);
++
++    [id(DISPID_SRCPause)]
++    HRESULT Pause(void);
++
++    [id(DISPID_SRCResume)]
++    HRESULT Resume(void);
++
++    [id(DISPID_SRCCreateGrammar)]
++    HRESULT CreateGrammar([in, defaultvalue(0)] VARIANT id, [out,retval] ISpeechRecoGrammar **grammar);
++
++    [id(DISPID_SRCCreateResultFromMemory)]
++    HRESULT CreateResultFromMemory([in] VARIANT *block, [out,retval] ISpeechRecoResult **result);
++
++    [id(DISPID_SRCBookmark)]
++    HRESULT Bookmark([in] SpeechBookmarkOptions options, [in] VARIANT pos, [in] VARIANT bookmark);
++
++    [id(DISPID_SRCSetAdaptationData)]
++    HRESULT SetAdaptationData([in] BSTR adaptation);
++};
++
++typedef [hidden] enum DISPID_SpeechRecognizer
++{
++    DISPID_SRRecognizer = 1,
++    DISPID_SRAllowAudioInputFormatChangesOnNextSet,
++    DISPID_SRAudioInput,
++    DISPID_SRAudioInputStream,
++    DISPID_SRIsShared,
++    DISPID_SRState,
++    DISPID_SRStatus,
++    DISPID_SRProfile,
++    DISPID_SREmulateRecognition,
++    DISPID_SRCreateRecoContext,
++    DISPID_SRGetFormat,
++    DISPID_SRSetPropertyNumber,
++    DISPID_SRGetPropertyNumber,
++    DISPID_SRSetPropertyString,
++    DISPID_SRGetPropertyString,
++    DISPID_SRIsUISupported,
++    DISPID_SRDisplayUI,
++    DISPID_SRGetRecognizers,
++	DISPID_SVGetAudioInputs,
++	DISPID_SVGetProfiles
++} DISPID_SpeechRecognizer;
++
++
++[
++    object,
++    uuid(2d5f1c0c-bd75-4b08-9478-3b11fea2586c),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechRecognizer : IDispatch
++{
++    [propputref, id(DISPID_SRRecognizer)]
++    HRESULT Recognizer([in]ISpeechObjectToken *recognizer);
++    [propget, id(DISPID_SRRecognizer)]
++    HRESULT Recognizer([out,retval]ISpeechObjectToken **recognizer);
++
++    [propput, hidden, id(DISPID_SRAllowAudioInputFormatChangesOnNextSet)]
++    HRESULT AllowAudioInputFormatChangesOnNextSet([in] VARIANT_BOOL allow);
++    [propget, hidden, id(DISPID_SRAllowAudioInputFormatChangesOnNextSet)]
++    HRESULT AllowAudioInputFormatChangesOnNextSet([out,retval] VARIANT_BOOL *allow);
++
++    [propputref, id(DISPID_SRAudioInput)]
++    HRESULT AudioInput([in,defaultvalue(0)] ISpeechObjectToken *input);
++    [propget, id(DISPID_SRAudioInput)]
++    HRESULT AudioInput([out,retval] ISpeechObjectToken **input);
++
++    [propputref, id(DISPID_SRAudioInputStream)]
++    HRESULT AudioInputStream([in,defaultvalue(0)] ISpeechBaseStream *input);
++    [propget, id(DISPID_SRAudioInputStream)]
++    HRESULT AudioInputStream([out,retval] ISpeechBaseStream **input);
++
++    [propget, id(DISPID_SRIsShared)]
++    HRESULT IsShared([out,retval] VARIANT_BOOL *shared);
++
++    [propput, id(DISPID_SRState)]
++    HRESULT State([in] SpeechRecognizerState state);
++    [propget, id(DISPID_SRState)]
++    HRESULT State([out,retval] SpeechRecognizerState *state);
++
++    [propget, id(DISPID_SRStatus)]
++    HRESULT Status([out,retval] ISpeechRecognizerStatus **satus);
++
++    [propputref, id(DISPID_SRProfile)]
++    HRESULT Profile( [in,defaultvalue(0)]ISpeechObjectToken *profile);
++    [propget, id(DISPID_SRProfile)]
++    HRESULT Profile( [out,retval]ISpeechObjectToken **profile);
++
++    [id(DISPID_SREmulateRecognition)]
++    HRESULT EmulateRecognition([in] VARIANT elements, [in, defaultvalue(NULL)] VARIANT *attributes,
++                                [in, defaultvalue(0)] long id);
++
++    [id(DISPID_SRCreateRecoContext)]
++    HRESULT CreateRecoContext([out,retval] ISpeechRecoContext *ncontext);
++
++    [id(DISPID_SRGetFormat)]
++    HRESULT GetFormat([in] SpeechFormatType Type, [out,retval] ISpeechAudioFormat **format);
++
++    [hidden, id(DISPID_SRSetPropertyNumber)]
++    HRESULT SetPropertyNumber( [in]const BSTR name, [in] long value, [out,retval] VARIANT_BOOL *supported);
++
++    [hidden, id(DISPID_SRGetPropertyNumber)]
++    HRESULT GetPropertyNumber( [in]const BSTR name, [in,out] long *value, [out,retval] VARIANT_BOOL *supported);
++
++    [hidden, id(DISPID_SRSetPropertyString)]
++    HRESULT SetPropertyString( [in]const BSTR name, [in] const BSTR value, [out,retval] VARIANT_BOOL *supported);
++
++    [hidden, id(DISPID_SRGetPropertyString)]
++    HRESULT GetPropertyString( [in]const BSTR name, [in,out] BSTR *value, [out,retval] VARIANT_BOOL *supported);
++
++    [id(DISPID_SRIsUISupported)]
++    HRESULT IsUISupported([in] const BSTR type, [in, defaultvalue(NULL)] const VARIANT *data,
++                                [out,retval] VARIANT_BOOL *supported);
++
++    [id(DISPID_SRDisplayUI)]
++    HRESULT DisplayUI( [in]long hWnd, [in] BSTR title, [in] const BSTR type, [in, defaultvalue(NULL)] const VARIANT *data);
++
++    [id(DISPID_SRGetRecognizers)]
++    HRESULT GetRecognizers([in, defaultvalue("")] BSTR required, [in, defaultvalue("")] BSTR optional,
++                                [out,retval] ISpeechObjectTokens **tokens);
++
++    [id(DISPID_SVGetAudioInputs)]
++    HRESULT GetAudioInputs([in, defaultvalue("")] BSTR required,  [in, defaultvalue("")] BSTR optional,
++                                [out,retval] ISpeechObjectTokens **tokens);
++
++    [id(DISPID_SVGetProfiles)]
++    HRESULT GetProfiles([in, defaultvalue("")] BSTR required,  [in, defaultvalue("")] BSTR optional,
++                                [out,retval] ISpeechObjectTokens **tokens);
++
++};
+-- 
+1.9.1
+

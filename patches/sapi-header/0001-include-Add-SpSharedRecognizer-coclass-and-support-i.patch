@@ -1,7 +1,7 @@
-From f1396ecbad6764b5cec9b363adb330bd40e1fe44 Mon Sep 17 00:00:00 2001
+From 71d3616ebfe873827ef50d561f1ba7a3bb082f21 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 10 Sep 2018 15:29:00 +1000
-Subject: [PATCH] include: Add SpSharedRecognizer coclass and support
+Subject: [PATCH 1/2] include: Add SpSharedRecognizer coclass and support
  interfaces
 
 WIP:
@@ -10,7 +10,7 @@ WIP:
  1 file changed, 777 insertions(+)
 
 diff --git a/include/sapi.idl b/include/sapi.idl
-index e138432..959d93d 100644
+index e138432..666b1b2 100644
 --- a/include/sapi.idl
 +++ b/include/sapi.idl
 @@ -27,6 +27,72 @@ import "ocidl.idl";
@@ -77,7 +77,7 @@ index e138432..959d93d 100644
 +
 +typedef [hidden] struct tagSPPROPERTYINFO
 +{
-+    const WCHAR *pszName;     
++    const WCHAR *pszName;
 +    ULONG        ulId;
 +    const WCHAR *pszValue;
 +    VARIANT      vValue;
@@ -93,7 +93,7 @@ index e138432..959d93d 100644
 +typedef [hidden] enum SPLOADOPTIONS
 +{
 +    SPLO_STATIC,
-+    SPLO_DYNAMIC    
++    SPLO_DYNAMIC
 +} SPLOADOPTIONS;
 +
 +typedef [hidden] enum SPRULESTATE
@@ -289,13 +289,13 @@ index e138432..959d93d 100644
 +    ULONG           ulAudioTimeOffset;
 +    ULONG           ulAudioSizeTime;
 +    ULONG           ulAudioStreamOffset;
-+    ULONG           ulAudioSizeBytes;   
++    ULONG           ulAudioSizeBytes;
 +    ULONG           ulRetainedStreamOffset;
-+    ULONG           ulRetainedSizeBytes;   
++    ULONG           ulRetainedSizeBytes;
 +    const WCHAR     *pszDisplayText;
-+    const WCHAR     *pszLexicalForm;       
++    const WCHAR     *pszLexicalForm;
 +    const SPPHONEID *pszPronunciation;
-+    BYTE            bDisplayAttributes;           
++    BYTE            bDisplayAttributes;
 +    signed char     RequiredConfidence;
 +    signed char     ActualConfidence;
 +    BYTE            Reserved;
@@ -335,7 +335,7 @@ index e138432..959d93d 100644
 +    SPAUDIOSTATUS AudioStatus;
 +    ULONGLONG     ullRecognitionStreamPos;
 +    ULONG         ulStreamNumber;
-+    ULONG         ulNumActive;    
++    ULONG         ulNumActive;
 +    CLSID         clsidEngine;
 +    ULONG         cLangIDs;
 +    LANGID        aLangID[SP_MAX_LANGIDS];
@@ -360,9 +360,9 @@ index e138432..959d93d 100644
 +
 +struct SPPHRASEPROPERTY
 +{
-+    const WCHAR            *pszName;     
++    const WCHAR            *pszName;
 +    ULONG                   ulId;
-+    const WCHAR            *pszValue;   
++    const WCHAR            *pszValue;
 +    VARIANT                 vValue;
 +    ULONG                   ulFirstElement;
 +    ULONG                   ulCountOfElements;
@@ -396,7 +396,7 @@ index e138432..959d93d 100644
 +    const SPPHRASEELEMENT  *pElements;
 +    ULONG                   cReplacements;
 +    const SPPHRASEREPLACEMENT *pReplacements;
-+    GUID                    SREngineID;        
++    GUID                    SREngineID;
 +    ULONG                   ulSREnginePrivateDataSize;
 +    const BYTE             *pSREnginePrivateData;
 +} SPPHRASE;
@@ -442,7 +442,7 @@ index e138432..959d93d 100644
 +{
 +    HRESULT GetPhrase([out] SPPHRASE **phrase);
 +    HRESULT GetSerializedPhrase([out] SPSERIALIZEDPHRASE **phrase);
-+    HRESULT GetText([in] ULONG start, [in] ULONG count, [in] BOOL replacements, 
++    HRESULT GetText([in] ULONG start, [in] ULONG count, [in] BOOL replacements,
 +					[out] WCHAR **text, [out] BYTE *attributes);
 +    HRESULT Discard([in] DWORD types);
 +};
@@ -486,7 +486,7 @@ index e138432..959d93d 100644
 +    HRESULT SpeakAudio(
 +                [in] ULONG start,
 +                [in] ULONG elements,
-+                [in] DWORD flags, 
++                [in] DWORD flags,
 +                [out] ULONG *number);
 +
 +    HRESULT Serialize([out] SPSERIALIZEDRESULT **result);
@@ -520,26 +520,26 @@ index e138432..959d93d 100644
 +                [out] SPSTATEHANDLE *outstate);
 +
 +    HRESULT AddWordTransition(
-+                    SPSTATEHANDLE from_state,
-+                    SPSTATEHANDLE to_state,
-+                    const WCHAR *value,
-+                    const WCHAR *separators,
-+                    SPGRAMMARWORDTYPE type,
-+                    float weight,
-+                    const SPPROPERTYINFO *info);
++                    [in] SPSTATEHANDLE from_state,
++                    [in] SPSTATEHANDLE to_state,
++                    [in] const WCHAR *value,
++                    [in] const WCHAR *separators,
++                    [in] SPGRAMMARWORDTYPE type,
++                    [in] float weight,
++                    [in] const SPPROPERTYINFO *info);
 +
 +    HRESULT AddRuleTransition(
-+                SPSTATEHANDLE from_state,
-+                SPSTATEHANDLE to_state,
-+                SPSTATEHANDLE rule,
-+                float Wweight,
-+                const SPPROPERTYINFO *info);
++                [in] SPSTATEHANDLE from_state,
++                [in] SPSTATEHANDLE to_state,
++                [in] SPSTATEHANDLE rule,
++                [in] float weight,
++                [in] const SPPROPERTYINFO *info);
 +
 +    HRESULT AddResource([in] SPSTATEHANDLE state,
 +                        [in] const WCHAR *name,
 +                        [in] const WCHAR *value);
 +
-+    HRESULT Commit(DWORD reserved);
++    HRESULT Commit([in] DWORD reserved);
 +};
 +
 +[
@@ -613,42 +613,42 @@ index e138432..959d93d 100644
 +
 +    HRESULT Pause(void);
 +    HRESULT Resume(void);
-+                
++
 +    HRESULT SetVoice([in] ISpObjectToken *token);
 +    HRESULT GetVoice([out] ISpObjectToken **token);
-+    
++
 +    HRESULT Speak([in, string] const WCHAR *pwcs,
 +                [in] DWORD flags,
 +                [out] ULONG *number);
-+    HRESULT SpeakStream([in] IStream* stream,
++    HRESULT SpeakStream([in] IStream *stream,
 +                [in] DWORD flags,
 +                [out] ULONG *number);
-+                
++
 +    HRESULT GetStatus(
 +                [out] SPVOICESTATUS *status,
 +                [out, string] WCHAR **bookmark);
 +
-+    HRESULT Skip( [in,string] WCHAR* type, [in]long items, [out]ULONG *skipped );
-+                
-+    HRESULT SetPriority([in] SPVPRIORITY priority );
-+    HRESULT GetPriority([out] SPVPRIORITY* priority );
++    HRESULT Skip([in,string] WCHAR* type, [in] long items, [out] ULONG *skipped);
 +
-+    HRESULT SetAlertBoundary( [in] SPEVENTENUM boundary );
-+    HRESULT GetAlertBoundary( [out] SPEVENTENUM* boundary );
++    HRESULT SetPriority([in] SPVPRIORITY priority);
++    HRESULT GetPriority([out] SPVPRIORITY* priority);
 +
-+    HRESULT SetRate([in] long adjust );
-+    HRESULT GetRate([out] long* adjust);
-+    
++    HRESULT SetAlertBoundary([in] SPEVENTENUM boundary);
++    HRESULT GetAlertBoundary([out] SPEVENTENUM* boundary);
++
++    HRESULT SetRate([in] long adjust);
++    HRESULT GetRate([out] long *adjust);
++
 +    HRESULT SetVolume([in] USHORT volume);
-+    HRESULT GetVolume([out] USHORT* volume);
-+    
++    HRESULT GetVolume([out] USHORT *volume);
++
 +    HRESULT WaitUntilDone([in] ULONG timeout);
-+    
++
 +    HRESULT SetSyncSpeakTimeout([in] ULONG timeout);
 +    HRESULT GetSyncSpeakTimeout([out] ULONG *timeout);
 +
 +    [local] HANDLE SpeakCompleteEvent();
-+    
++
 +    [local] HRESULT IsUISupported(
 +                [in] const WCHAR *type,
 +                [in] void * extra,
@@ -672,17 +672,17 @@ index e138432..959d93d 100644
 +{
 +    HRESULT SetNotifySink([in] ISpNotifySink *sink);
 +    [local] HRESULT SetNotifyWindowMessage(
-+                [in] HWND hwnd, 
-+                [in] UINT msg, 
-+                [in] WPARAM wparam, 
++                [in] HWND hwnd,
++                [in] UINT msg,
++                [in] WPARAM wparam,
 +                [in] LPARAM lparam);
 +    [local] HRESULT SetNotifyCallbackFunction(
-+                [in] SPNOTIFYCALLBACK *callback, 
-+                [in] WPARAM wparam, 
++                [in] SPNOTIFYCALLBACK *callback,
++                [in] WPARAM wparam,
 +                [in] LPARAM lparam);
 +    [local] HRESULT SetNotifyCallbackInterface(
-+                [in] ISpNotifyCallback *callback, 
-+                [in] WPARAM wparam, 
++                [in] ISpNotifyCallback *callback,
++                [in] WPARAM wparam,
 +                [in] LPARAM lparam);
 +    [local] HRESULT SetNotifyWin32Event(void);
 +    [local] HRESULT WaitForNotifyEvent([in] DWORD milliseconds);
@@ -764,10 +764,10 @@ index e138432..959d93d 100644
 +]
 +interface ISpProperties : IUnknown
 +{
-+    HRESULT SetPropertyNum([in] const WCHAR* name, [in] long value);
-+    HRESULT GetPropertyNum([in] const WCHAR* name, [out] long* value);
-+    HRESULT SetPropertyString([in] const WCHAR* name, [in] const WCHAR* value);
-+    HRESULT GetPropertyString([in] const WCHAR* name, [out] WCHAR** value);
++    HRESULT SetPropertyNum([in] const WCHAR *name, [in] long value);
++    HRESULT GetPropertyNum([in] const WCHAR *name, [out] long *value);
++    HRESULT SetPropertyString([in] const WCHAR *name, [in] const WCHAR *value);
++    HRESULT GetPropertyString([in] const WCHAR *name, [out] WCHAR **value);
 +};
 +
 +[
@@ -780,7 +780,7 @@ index e138432..959d93d 100644
 +{
 +    HRESULT SetRecognizer([in] ISpObjectToken *recognizer);
 +    HRESULT GetRecognizer([out] ISpObjectToken **recognizer);
-+    
++
 +    HRESULT SetInput([in] IUnknown *input, [in] BOOL changes);
 +    HRESULT GetInputObjectToken([out] ISpObjectToken **token);
 +
@@ -819,7 +819,7 @@ index e138432..959d93d 100644
 +    ]
 +    coclass SpSharedRecognizer
 +    {
-+        [default] interface ISpeechRecognizer;
++        /*[default] interface ISpeechRecognizer;*/
 +        interface ISpRecognizer;
 +    };
  }
