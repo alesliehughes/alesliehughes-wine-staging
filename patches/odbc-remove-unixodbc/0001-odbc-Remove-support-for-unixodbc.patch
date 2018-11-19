@@ -1,7 +1,7 @@
 From f51e541031360dae57d6bf5f2e038088251b34af Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Oct 2018 12:30:41 +1100
-Subject: [PATCH 1/4] odbc: Remove support for unixodbc
+Subject: [PATCH 1/4] odbc32: Remove support for unixodbc
 
 ---
  dlls/odbc32/Makefile.in |    2 +-

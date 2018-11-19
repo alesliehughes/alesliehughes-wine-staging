@@ -1,7 +1,7 @@
 From f8bd9fd4e271fe148eed780fce763d8c4c75f329 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Oct 2018 14:06:20 +1100
-Subject: [PATCH 2/4] odbc: Improve SQLAllocEnv/SQLFreeEnv stub
+Subject: [PATCH 2/4] odbc32: Improve SQLAllocEnv/SQLFreeEnv stub
 
 ---
  dlls/odbc32/odbc_main.c | 43 ++++++++++++++++++++++---------------------

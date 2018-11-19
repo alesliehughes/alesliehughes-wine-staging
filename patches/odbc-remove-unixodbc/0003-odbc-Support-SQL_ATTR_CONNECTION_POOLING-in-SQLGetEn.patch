@@ -1,7 +1,7 @@
 From 40b169ab3c062f934988b466b3c690fa476b00ec Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Oct 2018 14:46:41 +1100
-Subject: [PATCH 3/4] odbc: Support SQL_ATTR_CONNECTION_POOLING in
+Subject: [PATCH 3/4] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
  SQLGetEnvAttr/SQLSetEnvAttr
 
 ---

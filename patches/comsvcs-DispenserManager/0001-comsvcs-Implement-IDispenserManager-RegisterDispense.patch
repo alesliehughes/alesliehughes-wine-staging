@@ -1,19 +1,17 @@
-From f7c1a7bc0335c83389be8180ceb76c829bd7fa23 Mon Sep 17 00:00:00 2001
+From 1381a27c0e765ffd3f80d9cceea4b615e2e51c05 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2017 12:20:17 +1100
-Subject: [PATCH] comsvcs: Implement IDispenserManager RegisterDispenser
+Subject: [PATCH 1/2] comsvcs: Implement IDispenserManager RegisterDispenser
 
-This needs to be split between RegisterDispenser
-and holder_allocResource (must return S_OK).
 ---
  dlls/comsvcs/main.c | 182 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 181 insertions(+), 1 deletion(-)
+ 1 file changed, 180 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index 6b7ec14..72e7770 100644
+index 6b7ec14..b2aabfd 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
-@@ -43,11 +43,186 @@ typedef struct dispensermanager
+@@ -43,11 +43,181 @@ typedef struct dispensermanager
  
  } dispensermanager;
  
@@ -83,15 +81,10 @@ index 6b7ec14..72e7770 100644
 +static HRESULT WINAPI holder_AllocResource(IHolder *iface, const RESTYPID typeid, RESID *resid)
 +{
 +    holder *This = impl_from_IHolder(iface);
-+    HRESULT hr;
-+    TIMEINSECS secs;
 +
 +    FIXME("(%p)->(%08lx, %p) stub\n", This, typeid, resid);
 +
-+    hr = IDispenserDriver_CreateResource(This->driver, typeid, resid, &secs);
-+
-+    FIXME("<- 0x%08x\n", hr);
-+    return S_OK;
++    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI holder_FreeResource(IHolder *iface, const RESID resid)
@@ -200,18 +193,22 @@ index 6b7ec14..72e7770 100644
  static HRESULT WINAPI dismanager_QueryInterface(IDispenserManager *iface, REFIID riid, void **object)
  {
      dispensermanager *This = impl_from_IDispenserManager(iface);
-@@ -95,10 +270,15 @@ static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDi
+@@ -95,10 +265,18 @@ static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDi
                          LPCOLESTR name, IHolder **dispenser)
  {
      dispensermanager *This = impl_from_IDispenserManager(iface);
 +    HRESULT hr;
  
-     FIXME("(%p)->(%p, %s, %p) stub\n", This, driver, debugstr_w(name), dispenser);
+-    FIXME("(%p)->(%p, %s, %p) stub\n", This, driver, debugstr_w(name), dispenser);
++    TRACE("(%p)->(%p, %s, %p)\n", This, driver, debugstr_w(name), dispenser);
  
 -    return E_NOTIMPL;
++    if(!dispenser)
++        return E_INVALIDARG;
++
 +    hr = create_holder(driver, dispenser);
 +
-+    FIXME("<-- %p\n", *dispenser);
++    TRACE("<-- 0x%08x, %p\n", hr, *dispenser);
 +
 +    return hr;
  }

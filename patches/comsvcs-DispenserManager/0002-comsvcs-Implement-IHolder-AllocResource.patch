@@ -1,0 +1,33 @@
+From 3d3d50153c42ece5d9cfcdfac71287f42693e4de Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Nov 2018 15:34:38 +1100
+Subject: [PATCH 2/2] comsvcs: Implement IHolder AllocResource
+
+---
+ dlls/comsvcs/main.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
+index b2aabfd..5a53f8e 100644
+--- a/dlls/comsvcs/main.c
++++ b/dlls/comsvcs/main.c
+@@ -109,10 +109,15 @@ static ULONG WINAPI holder_Release(IHolder *iface)
+ static HRESULT WINAPI holder_AllocResource(IHolder *iface, const RESTYPID typeid, RESID *resid)
+ {
+     holder *This = impl_from_IHolder(iface);
++    HRESULT hr;
++    TIMEINSECS secs;
+ 
+     FIXME("(%p)->(%08lx, %p) stub\n", This, typeid, resid);
+ 
+-    return E_NOTIMPL;
++    hr = IDispenserDriver_CreateResource(This->driver, typeid, resid, &secs);
++
++    FIXME("<- 0x%08x\n", hr);
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI holder_FreeResource(IHolder *iface, const RESID resid)
+-- 
+1.9.1
+
