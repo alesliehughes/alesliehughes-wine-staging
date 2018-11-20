@@ -1,17 +1,17 @@
-From 1381a27c0e765ffd3f80d9cceea4b615e2e51c05 Mon Sep 17 00:00:00 2001
+From 733bb386b816ccbf67a6775dfaefd6d45a75521d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2017 12:20:17 +1100
-Subject: [PATCH 1/2] comsvcs: Implement IDispenserManager RegisterDispenser
+Subject: [PATCH] comsvcs: Implement IDispenserManager RegisterDispenser
 
 ---
- dlls/comsvcs/main.c | 182 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 180 insertions(+), 2 deletions(-)
+ dlls/comsvcs/main.c | 183 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 181 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index 6b7ec14..b2aabfd 100644
+index 6b7ec14..252e3fb 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
-@@ -43,11 +43,181 @@ typedef struct dispensermanager
+@@ -43,11 +43,182 @@ typedef struct dispensermanager
  
  } dispensermanager;
  
@@ -138,6 +138,8 @@ index 6b7ec14..b2aabfd 100644
 +
 +    FIXME("(%p) stub\n", This);
 +
++    IDispenserDriver_Release(This->driver);
++
 +    return E_NOTIMPL;
 +}
 +
@@ -182,7 +184,6 @@ index 6b7ec14..b2aabfd 100644
 +    hold->IHolder_iface.lpVtbl = &holder_vtbl;
 +    hold->ref = 1;
 +    hold->driver = driver;
-+    IDispenserDriver_AddRef(driver);
 +
 +    ret = holder_QueryInterface(&hold->IHolder_iface, &IID_IHolder, (void**)object);
 +    holder_Release(&hold->IHolder_iface);
@@ -193,7 +194,7 @@ index 6b7ec14..b2aabfd 100644
  static HRESULT WINAPI dismanager_QueryInterface(IDispenserManager *iface, REFIID riid, void **object)
  {
      dispensermanager *This = impl_from_IDispenserManager(iface);
-@@ -95,10 +265,18 @@ static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDi
+@@ -95,10 +266,18 @@ static HRESULT WINAPI dismanager_RegisterDispenser(IDispenserManager *iface, IDi
                          LPCOLESTR name, IHolder **dispenser)
  {
      dispensermanager *This = impl_from_IDispenserManager(iface);
