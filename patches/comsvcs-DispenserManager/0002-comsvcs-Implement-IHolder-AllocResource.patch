@@ -1,14 +1,14 @@
-From 3d3d50153c42ece5d9cfcdfac71287f42693e4de Mon Sep 17 00:00:00 2001
+From cc254608f44850d3f07ed403eca4b99a29959f2f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Nov 2018 15:34:38 +1100
-Subject: [PATCH 2/2] comsvcs: Implement IHolder AllocResource
+Subject: [PATCH 2/3] comsvcs: Implement IHolder AllocResource
 
 ---
  dlls/comsvcs/main.c | 7 ++++++-
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index b2aabfd..5a53f8e 100644
+index 252e3fb..7a61d9a 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
 @@ -109,10 +109,15 @@ static ULONG WINAPI holder_Release(IHolder *iface)
