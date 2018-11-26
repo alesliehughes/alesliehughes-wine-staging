@@ -1,33 +1,51 @@
-From cc254608f44850d3f07ed403eca4b99a29959f2f Mon Sep 17 00:00:00 2001
+From 6e917242cbda1066b2049213d57f4c122a1ccec8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Nov 2018 15:34:38 +1100
 Subject: [PATCH 2/3] comsvcs: Implement IHolder AllocResource
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/comsvcs/main.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ dlls/comsvcs/main.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
-index 252e3fb..7a61d9a 100644
+index 21bdd67..d7831cf 100644
 --- a/dlls/comsvcs/main.c
 +++ b/dlls/comsvcs/main.c
-@@ -109,10 +109,15 @@ static ULONG WINAPI holder_Release(IHolder *iface)
+@@ -107,19 +107,29 @@ static ULONG WINAPI holder_Release(IHolder *iface)
  static HRESULT WINAPI holder_AllocResource(IHolder *iface, const RESTYPID typeid, RESID *resid)
  {
      holder *This = impl_from_IHolder(iface);
 +    HRESULT hr;
 +    TIMEINSECS secs;
  
-     FIXME("(%p)->(%08lx, %p) stub\n", This, typeid, resid);
+-    FIXME("(%p)->(%08lx, %p) stub\n", This, typeid, resid);
++    TRACE("(%p)->(%08lx, %p) stub\n", This, typeid, resid);
  
 -    return E_NOTIMPL;
 +    hr = IDispenserDriver_CreateResource(This->driver, typeid, resid, &secs);
 +
-+    FIXME("<- 0x%08x\n", hr);
-+    return S_OK;
++    TRACE("<- 0x%08x\n", hr);
++    return hr;
  }
  
  static HRESULT WINAPI holder_FreeResource(IHolder *iface, const RESID resid)
+ {
+     holder *This = impl_from_IHolder(iface);
++    HRESULT hr;
+ 
+-    FIXME("(%p)->(%08lx) stub\n", This, resid);
++    TRACE("(%p)->(%08lx) stub\n", This, resid);
+ 
+-    return E_NOTIMPL;
++    hr = IDispenserDriver_DestroyResource(This->driver, resid);
++
++    TRACE("<- 0x%08x\n", hr);
++
++    return hr;
+ }
+ 
+ static HRESULT WINAPI holder_TrackResource(IHolder *iface, const RESID resid)
 -- 
 1.9.1
 
