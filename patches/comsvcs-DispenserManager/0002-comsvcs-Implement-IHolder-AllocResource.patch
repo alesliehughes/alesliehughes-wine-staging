@@ -1,7 +1,7 @@
-From 6e917242cbda1066b2049213d57f4c122a1ccec8 Mon Sep 17 00:00:00 2001
+From 402524d1c20c466537136204280f1eee0d6c0c15 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Nov 2018 15:34:38 +1100
-Subject: [PATCH 2/3] comsvcs: Implement IHolder AllocResource
+Subject: [v2 PATCH 2/3] comsvcs: Implement IHolder Alloc/Free Resource
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
