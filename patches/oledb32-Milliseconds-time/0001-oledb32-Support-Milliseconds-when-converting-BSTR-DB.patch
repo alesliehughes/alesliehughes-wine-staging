@@ -1,4 +1,4 @@
-From 90daea11dae9f57ec5b6179321518eaf389b9e16 Mon Sep 17 00:00:00 2001
+From 593952f49cf84ad11fe81e1e29b3614b7dcd69d0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 19 Jun 2018 11:38:25 +1000
 Subject: [PATCH] oledb32: Support Milliseconds when converting BSTR ->
@@ -6,15 +6,15 @@ Subject: [PATCH] oledb32: Support Milliseconds when converting BSTR ->
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/oledb32/convert.c       | 39 +++++++++++++++++++++++++++++++++++++++
+ dlls/oledb32/convert.c       | 41 +++++++++++++++++++++++++++++++++++++++++
  dlls/oledb32/tests/convert.c |  8 ++++----
- 2 files changed, 43 insertions(+), 4 deletions(-)
+ 2 files changed, 45 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
-index 5bad105..4607ecb 100644
+index 5bad105..40ca3f2 100644
 --- a/dlls/oledb32/convert.c
 +++ b/dlls/oledb32/convert.c
-@@ -527,6 +527,45 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+@@ -527,6 +527,47 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
                  d->second = st.wSecond;
                  d->fraction = st.wMilliseconds * 1000000;
              }
@@ -38,22 +38,24 @@ index 5bad105..4607ecb 100644
 +                {
 +                    SYSTEMTIME st;
 +
-+                    hr = (VariantTimeToSystemTime( V_DATE(&var), &st) ? S_OK : E_FAIL);
-+                    d->year = st.wYear;
-+                    d->month = st.wMonth;
-+                    d->day = st.wDay;
-+                    d->hour = st.wHour;
-+                    d->minute = st.wMinute;
-+                    d->second = st.wSecond;
-+                    d->fraction = 0;
-+
-+                    VariantClear(&var);
-+                    V_VT(&var) = VT_BSTR;
-+                    V_BSTR(&var) = SysAllocString(de + (len+1));
-+                    if(VariantChangeType(&var, &var, 0, VT_I4) == S_OK)
++                    if ((hr = (VariantTimeToSystemTime( V_DATE(&var), &st) ? S_OK : E_FAIL))  == S_OK)
 +                    {
-+                        TRACE("Millseconds: %d\n", V_I4(&var));
-+                        d->fraction = V_I4(&var);
++                        d->year = st.wYear;
++                        d->month = st.wMonth;
++                        d->day = st.wDay;
++                        d->hour = st.wHour;
++                        d->minute = st.wMinute;
++                        d->second = st.wSecond;
++                        d->fraction = 0;
++
++                        VariantClear(&var);
++                        V_VT(&var) = VT_BSTR;
++                        V_BSTR(&var) = SysAllocString(de + (len+1));
++                        if(VariantChangeType(&var, &var, 0, VT_I4) == S_OK)
++                        {
++                            TRACE("Millseconds: %d\n", V_I4(&var));
++                            d->fraction = V_I4(&var);
++                        }
 +                    }
 +                }
 +            }
