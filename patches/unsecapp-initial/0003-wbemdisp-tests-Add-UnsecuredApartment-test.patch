@@ -1,9 +1,9 @@
-From 8ee94dde28f98d8351da4f081ca6b011293ffe60 Mon Sep 17 00:00:00 2001
+From 3f93aceb139c25ffd4663266c8fdad229ba45fd8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jun 2018 10:15:12 +1000
-Subject: [PATCH 2/4] wbemdisp/tests: Add UnsecuredApartment test
+Subject: [PATCH 3/3] wbemdisp/tests: Add UnsecuredApartment test
 
-For https://bugs.winehq.org/show_bug.cgi?id=30439
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=30439
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,10 +11,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 89 insertions(+)
 
 diff --git a/dlls/wbemdisp/tests/wbemdisp.c b/dlls/wbemdisp/tests/wbemdisp.c
-index 1ce0456..15562e9 100644
+index 57baf84..3c6d555 100644
 --- a/dlls/wbemdisp/tests/wbemdisp.c
 +++ b/dlls/wbemdisp/tests/wbemdisp.c
-@@ -370,12 +370,101 @@ static void test_locator(void)
+@@ -411,12 +411,101 @@ static void test_locator(void)
      ISWbemLocator_Release( locator );
  }
  

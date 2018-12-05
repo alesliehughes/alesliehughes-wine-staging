@@ -1,81 +1,24 @@
-From 55ec421f5922d5597601ab9f7eab7fd7d6e14394 Mon Sep 17 00:00:00 2001
+From bb18835f20a96da5dd8541d05660623f9e9001b3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 3 Sep 2018 14:06:08 +1000
-Subject: [PATCH 1/4] programs: Add unsecapp.exe
+Subject: [PATCH 1/3] programs: Add unsecapp.exe
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- configure                     | 16 +++-------------
+ configure                     |  1 +
  configure.ac                  |  1 +
  loader/wine.inf.in            |  2 ++
  programs/unsecapp/Makefile.in |  6 ++++++
- programs/unsecapp/main.c      | 35 +++++++++++++++++++++++++++++++++++
- 5 files changed, 47 insertions(+), 13 deletions(-)
+ programs/unsecapp/main.c      | 31 +++++++++++++++++++++++++++++++
+ 5 files changed, 41 insertions(+)
  create mode 100644 programs/unsecapp/Makefile.in
  create mode 100644 programs/unsecapp/main.c
 
 diff --git a/configure b/configure
-index 5d520f0..22eb789 100755
+index 23ba36c..99adcfb 100755
 --- a/configure
 +++ b/configure
-@@ -805,7 +805,6 @@ infodir
- docdir
- oldincludedir
- includedir
--runstatedir
- localstatedir
- sharedstatedir
- sysconfdir
-@@ -1731,6 +1730,7 @@ enable_taskmgr
- enable_termsv
- enable_uninstaller
- enable_unlodctr
-+enable_unsecapp
- enable_view
- enable_wevtutil
- enable_wineboot
-@@ -1872,7 +1872,6 @@ datadir='${datarootdir}'
- sysconfdir='${prefix}/etc'
- sharedstatedir='${prefix}/com'
- localstatedir='${prefix}/var'
--runstatedir='${localstatedir}/run'
- includedir='${prefix}/include'
- oldincludedir='/usr/include'
- docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
-@@ -2125,15 +2124,6 @@ do
-   | -silent | --silent | --silen | --sile | --sil)
-     silent=yes ;;
- 
--  -runstatedir | --runstatedir | --runstatedi | --runstated \
--  | --runstate | --runstat | --runsta | --runst | --runs \
--  | --run | --ru | --r)
--    ac_prev=runstatedir ;;
--  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
--  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
--  | --run=* | --ru=* | --r=*)
--    runstatedir=$ac_optarg ;;
--
-   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
-     ac_prev=sbindir ;;
-   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
-@@ -2271,7 +2261,7 @@ fi
- for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
- 		datadir sysconfdir sharedstatedir localstatedir includedir \
- 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
--		libdir localedir mandir runstatedir
-+		libdir localedir mandir
- do
-   eval ac_val=\$$ac_var
-   # Remove trailing slashes.
-@@ -2424,7 +2414,6 @@ Fine tuning of the installation directories:
-   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
-   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
-   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
--  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
-   --libdir=DIR            object code libraries [EPREFIX/lib]
-   --includedir=DIR        C header files [PREFIX/include]
-   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
-@@ -20088,6 +20077,7 @@ wine_fn_config_makefile programs/taskmgr enable_taskmgr
+@@ -20125,6 +20125,7 @@ wine_fn_config_makefile programs/taskmgr enable_taskmgr
  wine_fn_config_makefile programs/termsv enable_termsv
  wine_fn_config_makefile programs/uninstaller enable_uninstaller
  wine_fn_config_makefile programs/unlodctr enable_unlodctr
@@ -84,10 +27,10 @@ index 5d520f0..22eb789 100755
  wine_fn_config_makefile programs/wevtutil enable_wevtutil
  wine_fn_config_makefile programs/wineboot enable_wineboot
 diff --git a/configure.ac b/configure.ac
-index 2b63d6a..89959f4 100644
+index 8ec69fe..187101f 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3947,6 +3947,7 @@ WINE_CONFIG_MAKEFILE(programs/taskmgr)
+@@ -3965,6 +3965,7 @@ WINE_CONFIG_MAKEFILE(programs/taskmgr)
  WINE_CONFIG_MAKEFILE(programs/termsv)
  WINE_CONFIG_MAKEFILE(programs/uninstaller)
  WINE_CONFIG_MAKEFILE(programs/unlodctr)
@@ -96,10 +39,10 @@ index 2b63d6a..89959f4 100644
  WINE_CONFIG_MAKEFILE(programs/wevtutil)
  WINE_CONFIG_MAKEFILE(programs/wineboot)
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index 4f241c0..fae1062 100644
+index e8713d6..55eb4bb 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -2549,6 +2549,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -2550,6 +2550,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  11,gecko\plugin,npmshtml.dll
  11,Speech\Common,sapi.dll
  11,wbem,mofcomp.exe
@@ -107,7 +50,7 @@ index 4f241c0..fae1062 100644
  10,syswow64,stdole2.tlb
  11,,iexplore.exe
  11,,winetest.exe,-
-@@ -2626,6 +2627,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -2629,6 +2630,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  11,wbem,wbemprox.dll
  11,wbem,wmic.exe
  11,wbem,wmiutils.dll
@@ -129,10 +72,10 @@ index 0000000..46cda65
 +	main.c
 diff --git a/programs/unsecapp/main.c b/programs/unsecapp/main.c
 new file mode 100644
-index 0000000..a10f685
+index 0000000..b1d061a
 --- /dev/null
 +++ b/programs/unsecapp/main.c
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,31 @@
 +/*
 + * Copyright 2018 Alistair Leslie-Hughes
 + *
@@ -152,10 +95,6 @@ index 0000000..a10f685
 + */
 +
 +#include <windows.h>
-+#include <shellapi.h>
-+#include <setupapi.h>
-+#include <shlwapi.h>
-+#include <shlobj.h>
 +
 +#include "wine/unicode.h"
 +#include "wine/debug.h"

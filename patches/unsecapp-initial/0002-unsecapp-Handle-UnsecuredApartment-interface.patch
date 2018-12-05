@@ -1,12 +1,12 @@
-From 026459576a25ff7c61686e5939e77757032594c8 Mon Sep 17 00:00:00 2001
+From 5651c7cc556800b317de2d6b3602abebaf828131 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 3 Sep 2018 15:01:46 +1000
-Subject: [PATCH] unsecapp: Handle UnsecuredApartment interface
+Subject: [PATCH 2/3] unsecapp: Handle UnsecuredApartment interface
 
 ---
  programs/unsecapp/Makefile.in |  2 +-
- programs/unsecapp/main.c      | 95 ++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 91 insertions(+), 6 deletions(-)
+ programs/unsecapp/main.c      | 95 +++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 93 insertions(+), 4 deletions(-)
 
 diff --git a/programs/unsecapp/Makefile.in b/programs/unsecapp/Makefile.in
 index 46cda65..9c97238 100644
@@ -21,35 +21,34 @@ index 46cda65..9c97238 100644
  C_SRCS = \
  	main.c
 diff --git a/programs/unsecapp/main.c b/programs/unsecapp/main.c
-index a10f685..5bd5d18 100644
+index b1d061a..0a3ee0a 100644
 --- a/programs/unsecapp/main.c
 +++ b/programs/unsecapp/main.c
-@@ -15,21 +15,106 @@
+@@ -15,17 +15,106 @@
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
   */
 +#define COBJMACROS
  
  #include <windows.h>
--#include <shellapi.h>
--#include <setupapi.h>
--#include <shlwapi.h>
--#include <shlobj.h>
 +#include "ole2.h"
 +#include "objbase.h"
 +#include <wbemdisp.h>
- 
++ 
 +#include "initguid.h"
 +#include <wbemcli.h>
-+
+ 
 +#include "wine/heap.h"
  #include "wine/unicode.h"
  #include "wine/debug.h"
  
  WINE_DEFAULT_DEBUG_CHANNEL(unsecapp);
  
+-int PASCAL wWinMain(HINSTANCE hInstance, HINSTANCE prev, LPWSTR cmdline, int show)
 +static HRESULT WINAPI unsecappcf_QueryInterface(IClassFactory *iface, REFIID riid, void **object)
-+{
+ {
+-    FIXME("%p, %p, %s, %d\n", hInstance, prev, debugstr_w(cmdline), show);
+-   
 +    if (object == NULL) return E_POINTER;
 +
 +    if (IsEqualGUID(riid, &IID_IUnknown) ||
@@ -74,7 +73,7 @@ index a10f685..5bd5d18 100644
 +    return 1;
 +}
 +
-+static HRESULT WINAPI unsecappcf_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, LPVOID *object)
++static HRESULT WINAPI unsecappcf_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **object)
 +{
 +    *object = NULL;
 +    FIXME("%p, %p, %s, %p\n", iface, outer, debugstr_guid(riid), object);
@@ -99,13 +98,12 @@ index a10f685..5bd5d18 100644
 +
 +static IClassFactory UnsecuredApartmentCF = { &unsecappcf_vtbl };
 +
- int PASCAL wWinMain(HINSTANCE hInstance, HINSTANCE prev, LPWSTR cmdline, int show)
- {
++ int PASCAL wWinMain(HINSTANCE hInstance, HINSTANCE prev, LPWSTR cmdline, int show)
++ {
 +    HRESULT hr;
 +    DWORD cookie;
 +
-     FIXME("%p, %p, %s, %d\n", hInstance, prev, debugstr_w(cmdline), show);
--   
++    TRACE("%p, %p, %s, %d\n", hInstance, prev, debugstr_w(cmdline), show);
 +
 +    hr = CoInitialize( NULL );
 +    if (hr != S_OK)
