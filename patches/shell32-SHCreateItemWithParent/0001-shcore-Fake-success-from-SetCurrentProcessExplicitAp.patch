@@ -1,0 +1,26 @@
+From 4e740cc7d5bac9a0114863980e3265f1d95af118 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 17 Dec 2018 14:35:27 +1100
+Subject: [PATCH 1/2] shcore: Fake success from
+ SetCurrentProcessExplicitAppUserModelID
+
+---
+ dlls/shcore/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/shcore/main.c b/dlls/shcore/main.c
+index ac625fb..08ebc2a 100644
+--- a/dlls/shcore/main.c
++++ b/dlls/shcore/main.c
+@@ -239,7 +239,7 @@ HRESULT WINAPI IUnknown_SetSite(IUnknown *obj, IUnknown *site)
+ HRESULT WINAPI SetCurrentProcessExplicitAppUserModelID(const WCHAR *appid)
+ {
+     FIXME("%s: stub\n", debugstr_w(appid));
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ HRESULT WINAPI GetCurrentProcessExplicitAppUserModelID(const WCHAR **appid)
+-- 
+1.9.1
+
