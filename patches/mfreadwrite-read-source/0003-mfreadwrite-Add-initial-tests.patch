@@ -1,0 +1,175 @@
+From c67513e054157274817e63cec7c6b3405df8f0f6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 18 Dec 2018 16:26:16 +1100
+Subject: [PATCH 3/3] mfreadwrite: Add initial tests
+
+---
+ configure                          |   1 +
+ configure.ac                       |   1 +
+ dlls/mfplat/tests/mfplat.c         |   1 -
+ dlls/mfreadwrite/tests/Makefile.in |   5 ++
+ dlls/mfreadwrite/tests/mfplat.c    | 104 +++++++++++++++++++++++++++++
+ 5 files changed, 111 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/mfreadwrite/tests/Makefile.in
+ create mode 100644 dlls/mfreadwrite/tests/mfplat.c
+
+diff --git a/configure b/configure
+index dd1d347ecc..ef36489a07 100755
+--- a/configure
++++ b/configure
+@@ -19692,6 +19692,7 @@ wine_fn_config_makefile dlls/mf3216 enable_mf3216
+ wine_fn_config_makefile dlls/mfplat enable_mfplat
+ wine_fn_config_makefile dlls/mfplat/tests enable_tests
+ wine_fn_config_makefile dlls/mfreadwrite enable_mfreadwrite
++wine_fn_config_makefile dlls/mfreadwrite/tests enable_tests
+ wine_fn_config_makefile dlls/mfuuid enable_mfuuid
+ wine_fn_config_makefile dlls/mgmtapi enable_mgmtapi
+ wine_fn_config_makefile dlls/midimap enable_midimap
+diff --git a/configure.ac b/configure.ac
+index 119c4cef0e..1b425d22a2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3431,6 +3431,7 @@ WINE_CONFIG_MAKEFILE(dlls/mf3216)
+ WINE_CONFIG_MAKEFILE(dlls/mfplat)
+ WINE_CONFIG_MAKEFILE(dlls/mfplat/tests)
+ WINE_CONFIG_MAKEFILE(dlls/mfreadwrite)
++WINE_CONFIG_MAKEFILE(dlls/mfreadwrite/tests)
+ WINE_CONFIG_MAKEFILE(dlls/mfuuid)
+ WINE_CONFIG_MAKEFILE(dlls/mgmtapi)
+ WINE_CONFIG_MAKEFILE(dlls/midimap)
+diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
+index 3fa59f4816..ca4dd6eda4 100644
+--- a/dlls/mfplat/tests/mfplat.c
++++ b/dlls/mfplat/tests/mfplat.c
+@@ -28,7 +28,6 @@
+ #include "winuser.h"
+ #include "winreg.h"
+ 
+-#include "initguid.h"
+ #include "mfapi.h"
+ #include "mfidl.h"
+ #include "mferror.h"
+diff --git a/dlls/mfreadwrite/tests/Makefile.in b/dlls/mfreadwrite/tests/Makefile.in
+new file mode 100644
+index 0000000000..5c906a138a
+--- /dev/null
++++ b/dlls/mfreadwrite/tests/Makefile.in
+@@ -0,0 +1,5 @@
++TESTDLL   = mfreadwrite.dll
++IMPORTS   = ole32 mfplat mfreadwrite mfuuid
++
++C_SRCS = \
++	mfplat.c
+diff --git a/dlls/mfreadwrite/tests/mfplat.c b/dlls/mfreadwrite/tests/mfplat.c
+new file mode 100644
+index 0000000000..6046ade0b3
+--- /dev/null
++++ b/dlls/mfreadwrite/tests/mfplat.c
+@@ -0,0 +1,104 @@
++/*
++ * Copyright 2018 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include <stdarg.h>
++#include <string.h>
++
++#define COBJMACROS
++
++#include "windef.h"
++#include "winbase.h"
++#include "winuser.h"
++#include "winreg.h"
++
++#include "mfapi.h"
++#include "mfidl.h"
++#include "mferror.h"
++#include "mfreadwrite.h"
++
++#include "wine/test.h"
++
++static HRESULT (WINAPI *pMFCreateMFByteStreamOnStream)(IStream *stream, IMFByteStream **bytestream);
++
++static void init_functions(void)
++{
++    HMODULE mod = GetModuleHandleA("mfplat.dll");
++
++#define X(f) if (!(p##f = (void*)GetProcAddress(mod, #f))) return;
++    X(MFCreateMFByteStreamOnStream);
++#undef X
++}
++
++static void test_MFCreateSourceReaderFromByteStream(void)
++{
++    static const WCHAR audio[] = {'A','u','d','i','o',0};
++    IMFSourceReader *source;
++    IMFAttributes *attributes;
++    IMFByteStream *bytestream = NULL;
++    IStream *stream = NULL;
++    HRESULT hr;
++
++    if(!pMFCreateMFByteStreamOnStream)
++    {
++        win_skip("MFCreateMFByteStreamOnStream() not found\n");
++        return;
++    }
++
++    hr = MFCreateAttributes( &attributes, 3 );
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr =  IMFAttributes_SetString(attributes, &MF_READWRITE_MMCSS_CLASS_AUDIO, audio);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IMFAttributes_SetUINT32(attributes, &MF_READWRITE_MMCSS_PRIORITY_AUDIO, 0);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = CreateStreamOnHGlobal(NULL, TRUE, &stream);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = pMFCreateMFByteStreamOnStream(stream, &bytestream);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = MFCreateSourceReaderFromByteStream(bytestream, attributes, &source);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    if(stream)
++        IStream_Release(stream);
++    if(bytestream)
++        IMFByteStream_Release(bytestream);
++    IMFAttributes_Release(attributes);
++    IMFSourceReader_Release(source);
++}
++
++START_TEST(mfplat)
++{
++    HRESULT hr;
++
++    CoInitialize(NULL);
++
++    hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    init_functions();
++
++    test_MFCreateSourceReaderFromByteStream();
++
++    MFShutdown();
++
++    CoUninitialize();
++}
+-- 
+2.19.2
+
