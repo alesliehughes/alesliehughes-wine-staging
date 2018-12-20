@@ -1,20 +1,20 @@
-From c67513e054157274817e63cec7c6b3405df8f0f6 Mon Sep 17 00:00:00 2001
+From d6453a1bd71050682c02d015815b1a0e80e37c8a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 18 Dec 2018 16:26:16 +1100
-Subject: [PATCH 3/3] mfreadwrite: Add initial tests
+Subject: [PATCH] mfreadwrite: Add initial tests
 
 ---
  configure                          |   1 +
  configure.ac                       |   1 +
  dlls/mfplat/tests/mfplat.c         |   1 -
  dlls/mfreadwrite/tests/Makefile.in |   5 ++
- dlls/mfreadwrite/tests/mfplat.c    | 104 +++++++++++++++++++++++++++++
+ dlls/mfreadwrite/tests/mfplat.c    | 104 +++++++++++++++++++++++++++++++++++++
  5 files changed, 111 insertions(+), 1 deletion(-)
  create mode 100644 dlls/mfreadwrite/tests/Makefile.in
  create mode 100644 dlls/mfreadwrite/tests/mfplat.c
 
 diff --git a/configure b/configure
-index dd1d347ecc..ef36489a07 100755
+index dd1d347..ef36489 100755
 --- a/configure
 +++ b/configure
 @@ -19692,6 +19692,7 @@ wine_fn_config_makefile dlls/mf3216 enable_mf3216
@@ -26,7 +26,7 @@ index dd1d347ecc..ef36489a07 100755
  wine_fn_config_makefile dlls/mgmtapi enable_mgmtapi
  wine_fn_config_makefile dlls/midimap enable_midimap
 diff --git a/configure.ac b/configure.ac
-index 119c4cef0e..1b425d22a2 100644
+index 119c4ce..1b425d2 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -3431,6 +3431,7 @@ WINE_CONFIG_MAKEFILE(dlls/mf3216)
@@ -38,7 +38,7 @@ index 119c4cef0e..1b425d22a2 100644
  WINE_CONFIG_MAKEFILE(dlls/mgmtapi)
  WINE_CONFIG_MAKEFILE(dlls/midimap)
 diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
-index 3fa59f4816..ca4dd6eda4 100644
+index 3fa59f4..ca4dd6e 100644
 --- a/dlls/mfplat/tests/mfplat.c
 +++ b/dlls/mfplat/tests/mfplat.c
 @@ -28,7 +28,6 @@
@@ -51,7 +51,7 @@ index 3fa59f4816..ca4dd6eda4 100644
  #include "mferror.h"
 diff --git a/dlls/mfreadwrite/tests/Makefile.in b/dlls/mfreadwrite/tests/Makefile.in
 new file mode 100644
-index 0000000000..5c906a138a
+index 0000000..5c906a1
 --- /dev/null
 +++ b/dlls/mfreadwrite/tests/Makefile.in
 @@ -0,0 +1,5 @@
@@ -62,7 +62,7 @@ index 0000000000..5c906a138a
 +	mfplat.c
 diff --git a/dlls/mfreadwrite/tests/mfplat.c b/dlls/mfreadwrite/tests/mfplat.c
 new file mode 100644
-index 0000000000..6046ade0b3
+index 0000000..6046ade
 --- /dev/null
 +++ b/dlls/mfreadwrite/tests/mfplat.c
 @@ -0,0 +1,104 @@
@@ -171,5 +171,5 @@ index 0000000000..6046ade0b3
 +    CoUninitialize();
 +}
 -- 
-2.19.2
+1.9.1
 

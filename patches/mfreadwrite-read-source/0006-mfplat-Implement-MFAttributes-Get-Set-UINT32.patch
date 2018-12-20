@@ -1,0 +1,314 @@
+From 48724b4c3720b9208fd3dd53c9ef967e8daf6b00 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 28 Jul 2017 11:58:38 +1000
+Subject: [PATCH] mfplat: Implement MFAttributes Get/Set UINT32
+
+---
+ dlls/mfplat/Makefile.in       |   2 +-
+ dlls/mfplat/main.c            | 122 +++++++++++++++++++++++++++++++++++++++---
+ dlls/mfplat/tests/Makefile.in |   2 +-
+ dlls/mfplat/tests/mfplat.c    |  55 +++++++++++++++----
+ 4 files changed, 163 insertions(+), 18 deletions(-)
+
+diff --git a/dlls/mfplat/Makefile.in b/dlls/mfplat/Makefile.in
+index 76843f5..9a4e41c 100644
+--- a/dlls/mfplat/Makefile.in
++++ b/dlls/mfplat/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = mfplat.dll
+ IMPORTLIB = mfplat
+-IMPORTS   = advapi32 ole32
++IMPORTS   = advapi32 ole32 propsys
+ 
+ C_SRCS = \
+ 	main.c
+diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
+index c7c3465..b36d64f 100644
+--- a/dlls/mfplat/main.c
++++ b/dlls/mfplat/main.c
+@@ -31,6 +31,7 @@
+ #include "mfapi.h"
+ #include "mfidl.h"
+ #include "mferror.h"
++#include "propvarutil.h"
+ 
+ #include "wine/heap.h"
+ #include "wine/debug.h"
+@@ -448,12 +449,78 @@ HRESULT WINAPI MFCopyImage(BYTE *dest, LONG deststride, const BYTE *src, LONG sr
+     return E_NOTIMPL;
+ }
+ 
++struct attribute
++{
++    GUID key;
++    PROPVARIANT var;
++};
++
+ typedef struct _mfattributes
+ {
+     IMFAttributes IMFAttributes_iface;
+     LONG ref;
++
++    struct attribute **attributes;
++    DWORD attr_count;
++    DWORD attr_array_size;
+ } mfattributes;
+ 
++static struct attribute *find_attribute_entry(mfattributes *This, REFGUID key)
++{
++    struct attribute *entry = NULL;
++    int i;
++
++    for(i=0; i < This->attr_array_size; i++)
++    {
++        entry = This->attributes[i];
++        if(entry)
++        {
++            if(IsEqualGUID(&entry->key, key))
++            {
++                return entry;
++            }
++        }
++    }
++
++    return NULL;
++}
++
++static struct attribute *create_attribute_entry(mfattributes *This, REFGUID key)
++{
++    struct attribute *entry = NULL, *entry2;
++    int i;
++
++    entry = heap_alloc( sizeof(*entry) );
++    if(!entry)
++        return NULL;
++
++    entry->key = *key;
++
++    /* new attribute */
++    for(i=0; i < This->attr_array_size; i++)
++    {
++        entry2 = This->attributes[i];
++        if(!entry2)
++        {
++            This->attributes[i] = entry;
++            This->attr_count++;
++            return entry;
++        }
++    }
++
++    /* Allocated new array */
++    if(i == This->attr_array_size)
++    {
++        int size = sizeof(struct attribute *) * This->attr_array_size * 2;
++        This->attributes = heap_realloc(This->attributes, size);
++        This->attributes[This->attr_count] = entry;
++        This->attr_count++;
++        This->attr_array_size *= 2;
++    }
++
++    return entry;
++}
++
+ static inline mfattributes *impl_from_IMFAttributes(IMFAttributes *iface)
+ {
+     return CONTAINING_RECORD(iface, mfattributes, IMFAttributes_iface);
+@@ -500,6 +567,20 @@ static ULONG WINAPI mfattributes_Release(IMFAttributes *iface)
+ 
+     if (!ref)
+     {
++        struct attribute *entry;
++        DWORD i;
++
++        for (i=0; i < This->attr_array_size; i++)
++        {
++            entry = This->attributes[i];
++            if (entry)
++            {
++                PropVariantClear(&entry->var);
++                heap_free(entry);
++            }
++        }
++
++        heap_free(This->attributes);
+         HeapFree(GetProcessHeap(), 0, This);
+     }
+ 
+@@ -546,10 +627,15 @@ static HRESULT WINAPI mfattributes_Compare(IMFAttributes *iface, IMFAttributes *
+ static HRESULT WINAPI mfattributes_GetUINT32(IMFAttributes *iface, REFGUID key, UINT32 *value)
+ {
+     mfattributes *This = impl_from_IMFAttributes(iface);
++    struct attribute *entry;
+ 
+-    FIXME("%p, %s, %p\n", This, debugstr_guid(key), value);
++    TRACE("%p, %s, %p\n", This, debugstr_guid(key), value);
+ 
+-    return E_NOTIMPL;
++    entry = find_attribute_entry(This, key);
++    if(entry)
++        return PropVariantToUInt32(&entry->var, value);
++
++    return MF_E_ATTRIBUTENOTFOUND;
+ }
+ 
+ static HRESULT WINAPI mfattributes_GetUINT64(IMFAttributes *iface, REFGUID key, UINT64 *value)
+@@ -675,10 +761,25 @@ static HRESULT WINAPI mfattributes_DeleteAllItems(IMFAttributes *iface)
+ static HRESULT WINAPI mfattributes_SetUINT32(IMFAttributes *iface, REFGUID key, UINT32 value)
+ {
+     mfattributes *This = impl_from_IMFAttributes(iface);
++    struct attribute *entry;
+ 
+-    FIXME("%p, %s, %d\n", This, debugstr_guid(key), value);
++    TRACE("%p, %s, %d\n", This, debugstr_guid(key), value);
+ 
+-    return E_NOTIMPL;
++    entry = find_attribute_entry(This, key);
++    if(entry)
++    {
++        entry->var.ulVal = value;
++        return S_OK;
++    }
++
++    entry = create_attribute_entry(This, key);
++    if(!entry)
++        return E_OUTOFMEMORY;
++
++    entry->var.vt = VT_UI4;
++    entry->var.ulVal = value;
++    
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI mfattributes_SetUINT64(IMFAttributes *iface, REFGUID key, UINT64 value)
+@@ -757,12 +858,12 @@ static HRESULT WINAPI mfattributes_GetCount(IMFAttributes *iface, UINT32 *items)
+ {
+     mfattributes *This = impl_from_IMFAttributes(iface);
+ 
+-    FIXME("%p, %p\n", This, items);
++    TRACE("%p, %p\n", This, items);
+ 
+     if(items)
+-        *items = 0;
++        *items = This->attr_count;
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI mfattributes_GetItemByIndex(IMFAttributes *iface, UINT32 index, GUID *key, PROPVARIANT *value)
+@@ -824,6 +925,13 @@ static void init_attribute_object(mfattributes *object, UINT32 size)
+ {
+     object->ref = 1;
+     object->IMFAttributes_iface.lpVtbl = &mfattributes_vtbl;
++
++    if(!size)
++        size = 3;
++
++    object->attributes = heap_alloc_zero( sizeof(struct attribute *) * size );
++    object->attr_count = 0;
++    object->attr_array_size = size;
+ }
+ 
+ /***********************************************************************
+diff --git a/dlls/mfplat/tests/Makefile.in b/dlls/mfplat/tests/Makefile.in
+index 07cf328..e4c0552 100644
+--- a/dlls/mfplat/tests/Makefile.in
++++ b/dlls/mfplat/tests/Makefile.in
+@@ -1,5 +1,5 @@
+ TESTDLL   = mfplat.dll
+-IMPORTS   = ole32 mfplat
++IMPORTS   = ole32 mfplat mfuuid uuid
+ 
+ C_SRCS = \
+ 	mfplat.c
+diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
+index ca4dd6e..44696fd 100644
+--- a/dlls/mfplat/tests/mfplat.c
++++ b/dlls/mfplat/tests/mfplat.c
+@@ -35,12 +35,12 @@
+ 
+ #include "wine/test.h"
+ 
++#include "initguid.h"
++
+ static HRESULT (WINAPI *pMFCreateSourceResolver)(IMFSourceResolver **resolver);
+ static HRESULT (WINAPI *pMFCreateMFByteStreamOnStream)(IStream *stream, IMFByteStream **bytestream);
+ static HRESULT (WINAPI *pMFCreateMemoryBuffer)(DWORD max_length, IMFMediaBuffer **buffer);
+ 
+-DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
+-
+ DEFINE_GUID(MF_BYTESTREAM_CONTENT_TYPE, 0xfc358289,0x3cb6,0x460c,0xa4,0x24,0xb6,0x68,0x12,0x60,0x37,0x5a);
+ 
+ DEFINE_GUID(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 0xa634a91c, 0x822b, 0x41b9, 0xa4, 0x94, 0x4d, 0xe4, 0x64, 0x36, 0x12, 0xb0);
+@@ -408,24 +408,61 @@ static void test_MFCreateMediaEvent(void)
+ 
+ static void test_MFCreateAttributes(void)
+ {
+-    IMFAttributes *attributes;
++    IMFAttributes *attributes, *attr2;
+     HRESULT hr;
+-    UINT32 count;
++    UINT32 count, val;
++/*
++    hr = MFCreateAttributes( &attr2, 0 );
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IMFAttributes_SetUINT32(attr2, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 2);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
++    hr = IMFAttributes_GetUINT32(attr2, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, &val);
++    ok(val == 2, "got %u\n", val);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    IMFAttributes_Release(attr2);
++*/
+     hr = MFCreateAttributes( &attributes, 3 );
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+     count = 88;
+     hr = IMFAttributes_GetCount(attributes, &count);
+-    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
+     ok(count == 0, "got %d\n", count);
+ 
+-    hr = IMFAttributes_SetUINT32(attributes, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 0);
+-    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    val = 1234;
++    hr = IMFAttributes_GetUINT32(attributes, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, &val);
++    ok(hr == MF_E_ATTRIBUTENOTFOUND, "got 0x%08x\n", hr);
++    ok(val == 1234, "got %u\n", val);
++
++    hr = IMFAttributes_SetUINT32(attributes, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 3);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IMFAttributes_GetUINT32(attributes, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, &val);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(val == 3, "got %u\n", val);
++
++    hr = IMFAttributes_SetUINT32(attributes, &MF_MT_AVG_BITRATE, 800000);   
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IMFAttributes_SetUINT32(attributes, &MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive); 
++    ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+     hr = IMFAttributes_GetCount(attributes, &count);
+-    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
+-    todo_wine ok(count == 1, "got %d\n", count);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(count == 3, "got %d\n", count);
++
++    hr = IMFAttributes_SetUINT32(attributes, &DUMMY_GUID1, 800000);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IMFAttributes_SetUINT32(attributes, &DUMMY_GUID2, 800000);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IMFAttributes_GetCount(attributes, &count);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(count == 5, "got %d\n", count);
+ 
+     IMFAttributes_Release(attributes);
+ }
+-- 
+1.9.1
+

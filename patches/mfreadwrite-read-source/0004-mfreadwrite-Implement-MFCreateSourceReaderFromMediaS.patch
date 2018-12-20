@@ -1,0 +1,82 @@
+From 622f27c5149c31972abc0ea5f4ff05eaf3285268 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 20 Dec 2018 10:37:16 +1100
+Subject: [PATCH] mfreadwrite: Implement MFCreateSourceReaderFromMediaSource
+
+---
+ dlls/mfreadwrite/main.c | 43 ++++++++++++++++++++++++++++++-------------
+ 1 file changed, 30 insertions(+), 13 deletions(-)
+
+diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
+index e09120d..7732f71 100644
+--- a/dlls/mfreadwrite/main.c
++++ b/dlls/mfreadwrite/main.c
+@@ -45,15 +45,6 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+     return TRUE;
+ }
+ 
+-
+-HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAttributes *attributes,
+-                                                   IMFSourceReader **reader)
+-{
+-    FIXME("%p %p %p stub.\n", source, attributes, reader);
+-
+-    return E_NOTIMPL;
+-}
+-
+ typedef struct _srcreader
+ {
+     IMFSourceReader IMFSourceReader_iface;
+@@ -206,12 +197,10 @@ struct IMFSourceReaderVtbl srcreader_vtbl =
+     src_reader_GetPresentationAttribute
+ };
+ 
+-HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFByteStream *stream, IMFAttributes *attributes, IMFSourceReader **reader)
++static HRESULT create_source_reader(srcreader **ret)
+ {
+     srcreader *object;
+ 
+-    TRACE("%p, %p, %p\n", stream, attributes, reader);
+-
+     object = HeapAlloc( GetProcessHeap(), 0, sizeof(*object) );
+     if(!object)
+         return E_OUTOFMEMORY;
+@@ -219,6 +208,34 @@ HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFByteStream *stream, IMFAttr
+     object->ref = 1;
+     object->IMFSourceReader_iface.lpVtbl = &srcreader_vtbl;
+ 
+-    *reader = &object->IMFSourceReader_iface;
++    *ret = object;
++
+     return S_OK;
+ }
++
++HRESULT WINAPI MFCreateSourceReaderFromByteStream(IMFByteStream *stream, IMFAttributes *attributes, IMFSourceReader **reader)
++{
++    srcreader *object;
++    HRESULT hr;
++
++    TRACE("%p, %p, %p\n", stream, attributes, reader);
++
++    hr = create_source_reader(&object);
++
++    *reader = &object->IMFSourceReader_iface;
++    return hr;
++}
++
++HRESULT WINAPI MFCreateSourceReaderFromMediaSource(IMFMediaSource *source, IMFAttributes *attributes,
++                                                   IMFSourceReader **reader)
++{
++    srcreader *object;
++    HRESULT hr;
++
++    TRACE("%p, %p, %p\n", source, attributes, reader);
++
++    hr = create_source_reader(&object);
++
++    *reader = &object->IMFSourceReader_iface;
++    return hr;
++}
+-- 
+1.9.1
+

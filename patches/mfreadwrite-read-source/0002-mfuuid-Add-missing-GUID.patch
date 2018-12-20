@@ -1,14 +1,14 @@
-From 2cc1bdd02db4dcb8c4e23f4dccf059b670e5a68a Mon Sep 17 00:00:00 2001
+From 0036dc9a5541a479625cbef646e6e6c464c8278d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Dec 2018 10:16:10 +1100
-Subject: [PATCH 2/3] mfuuid: Add missing GUID.
+Subject: [PATCH] mfuuid: Add missing GUID.
 
 ---
  dlls/mfuuid/mfuuid.c | 4 ++++
  1 file changed, 4 insertions(+)
 
 diff --git a/dlls/mfuuid/mfuuid.c b/dlls/mfuuid/mfuuid.c
-index f9b1a8a4b4..addaf97ffa 100644
+index f9b1a8a..addaf97 100644
 --- a/dlls/mfuuid/mfuuid.c
 +++ b/dlls/mfuuid/mfuuid.c
 @@ -28,3 +28,7 @@
@@ -20,5 +20,5 @@ index f9b1a8a4b4..addaf97ffa 100644
 +DEFINE_GUID(MF_READWRITE_MMCSS_PRIORITY_AUDIO,0x273db885, 0x2de2, 0x4db2, 0xa6, 0xa7, 0xfd, 0xb6, 0x6f, 0xb4, 0x0b, 0x61);
 +
 -- 
-2.19.2
+1.9.1
 
