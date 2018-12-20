@@ -1,0 +1,32 @@
+From 91f2526a53ca99650a378dfaec4033aa68aa4634 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 20 Dec 2018 16:00:36 +1100
+Subject: [PATCH] include: Add MFSetAttributeSize/MFSetAttributeRatio inline
+ functions
+
+---
+ include/mfidl.idl | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/include/mfidl.idl b/include/mfidl.idl
+index 39dc394..37f780a 100644
+--- a/include/mfidl.idl
++++ b/include/mfidl.idl
+@@ -350,3 +350,14 @@ cpp_quote("#define MF_RESOLUTION_KEEP_BYTE_STREAM_ALIVE_ON_FAIL
+ cpp_quote("#define MF_RESOLUTION_READ                                                  0x00010000")
+ cpp_quote("#define MF_RESOLUTION_WRITE                                                 0x00020000")
+ cpp_quote("#define MF_RESOLUTION_DISABLE_LOCAL_PLUGINS                                 0x00000040")
++
++cpp_quote("#ifdef __cplusplus")
++cpp_quote("static inline HRESULT MFSetAttributeSize(IMFAttributes *attributes, REFGUID key, UINT32 width, UINT32 height)")
++cpp_quote("{")
++cpp_quote("    return attributes->SetUINT64(key, ((UINT64)width << 32) | height);")
++cpp_quote("}")
++cpp_quote("static inline HRESULT MFSetAttributeRatio(IMFAttributes *attributes, REFGUID key, UINT32 numerator, UINT32 denominator)")
++cpp_quote("{")
++cpp_quote("    return attributes->SetUINT64(key, ((UINT64)numerator << 32) | denominator);")
++cpp_quote("}")
++cpp_quote("#endif")
+-- 
+1.9.1
+

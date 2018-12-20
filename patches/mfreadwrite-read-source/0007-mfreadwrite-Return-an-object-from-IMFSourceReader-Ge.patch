@@ -1,0 +1,40 @@
+From dfeb813d0cac8bb6d68bc823e27254d06c27df65 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 20 Dec 2018 15:26:50 +1100
+Subject: [PATCH] mfreadwrite: Return an object from IMFSourceReader
+ GetNativeMediaType
+
+---
+ dlls/mfreadwrite/Makefile.in | 1 +
+ dlls/mfreadwrite/main.c      | 5 +++--
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/mfreadwrite/Makefile.in b/dlls/mfreadwrite/Makefile.in
+index 4b8ee82..3d2ce74 100644
+--- a/dlls/mfreadwrite/Makefile.in
++++ b/dlls/mfreadwrite/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE    = mfreadwrite.dll
++IMPORTS   = mfplat
+ IMPORTLIB = mfreadwrite
+ 
+ C_SRCS = \
+diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
+index 224fdd7..19702cc 100644
+--- a/dlls/mfreadwrite/main.c
++++ b/dlls/mfreadwrite/main.c
+@@ -124,8 +124,9 @@ static HRESULT WINAPI src_reader_GetNativeMediaType(IMFSourceReader *iface, DWOR
+             IMFMediaType **type)
+ {
+     srcreader *This = impl_from_IMFSourceReader(iface);
+-    FIXME("%p, 0x%08x, %d, %p\n", This, index, typeindex, type);
+-    return E_NOTIMPL;
++    FIXME("(%p, 0x%08x, %d, %p) stub\n", This, index, typeindex, type);
++
++    return MFCreateMediaType(type);
+ }
+ 
+ static HRESULT WINAPI src_reader_GetCurrentMediaType(IMFSourceReader *iface, DWORD index, IMFMediaType **type)
+-- 
+1.9.1
+
