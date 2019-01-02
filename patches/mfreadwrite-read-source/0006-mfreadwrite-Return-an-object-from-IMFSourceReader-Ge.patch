@@ -1,4 +1,4 @@
-From dfeb813d0cac8bb6d68bc823e27254d06c27df65 Mon Sep 17 00:00:00 2001
+From 95f81c4b22e35f11241b80de87df3b38e2dd8c3a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 20 Dec 2018 15:26:50 +1100
 Subject: [PATCH] mfreadwrite: Return an object from IMFSourceReader
@@ -6,8 +6,8 @@ Subject: [PATCH] mfreadwrite: Return an object from IMFSourceReader
 
 ---
  dlls/mfreadwrite/Makefile.in | 1 +
- dlls/mfreadwrite/main.c      | 5 +++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ dlls/mfreadwrite/main.c      | 6 ++++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/mfreadwrite/Makefile.in b/dlls/mfreadwrite/Makefile.in
 index 4b8ee82..3d2ce74 100644
@@ -20,10 +20,18 @@ index 4b8ee82..3d2ce74 100644
  
  C_SRCS = \
 diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
-index 224fdd7..19702cc 100644
+index 224fdd7..0c7fb52 100644
 --- a/dlls/mfreadwrite/main.c
 +++ b/dlls/mfreadwrite/main.c
-@@ -124,8 +124,9 @@ static HRESULT WINAPI src_reader_GetNativeMediaType(IMFSourceReader *iface, DWOR
+@@ -25,6 +25,7 @@
+ #include "windef.h"
+ #include "winbase.h"
+ #include "initguid.h"
++#include "mfapi.h"
+ #include "mfreadwrite.h"
+ 
+ #include "wine/debug.h"
+@@ -124,8 +125,9 @@ static HRESULT WINAPI src_reader_GetNativeMediaType(IMFSourceReader *iface, DWOR
              IMFMediaType **type)
  {
      srcreader *This = impl_from_IMFSourceReader(iface);

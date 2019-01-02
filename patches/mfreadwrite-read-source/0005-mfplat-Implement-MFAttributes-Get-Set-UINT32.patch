@@ -1,4 +1,4 @@
-From 48724b4c3720b9208fd3dd53c9ef967e8daf6b00 Mon Sep 17 00:00:00 2001
+From 22044a59b97a167f3819c3237cca5f56a802737f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 28 Jul 2017 11:58:38 +1000
 Subject: [PATCH] mfplat: Implement MFAttributes Get/Set UINT32
@@ -7,8 +7,8 @@ Subject: [PATCH] mfplat: Implement MFAttributes Get/Set UINT32
  dlls/mfplat/Makefile.in       |   2 +-
  dlls/mfplat/main.c            | 122 +++++++++++++++++++++++++++++++++++++++---
  dlls/mfplat/tests/Makefile.in |   2 +-
- dlls/mfplat/tests/mfplat.c    |  55 +++++++++++++++----
- 4 files changed, 163 insertions(+), 18 deletions(-)
+ dlls/mfplat/tests/mfplat.c    |  56 +++++++++++++++----
+ 4 files changed, 163 insertions(+), 19 deletions(-)
 
 diff --git a/dlls/mfplat/Makefile.in b/dlls/mfplat/Makefile.in
 index 76843f5..9a4e41c 100644
@@ -222,10 +222,18 @@ index 07cf328..e4c0552 100644
  C_SRCS = \
  	mfplat.c
 diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
-index ca4dd6e..44696fd 100644
+index 3fa59f4..359c20e 100644
 --- a/dlls/mfplat/tests/mfplat.c
 +++ b/dlls/mfplat/tests/mfplat.c
-@@ -35,12 +35,12 @@
+@@ -28,7 +28,6 @@
+ #include "winuser.h"
+ #include "winreg.h"
+ 
+-#include "initguid.h"
+ #include "mfapi.h"
+ #include "mfidl.h"
+ #include "mferror.h"
+@@ -36,12 +35,12 @@
  
  #include "wine/test.h"
  
@@ -240,7 +248,7 @@ index ca4dd6e..44696fd 100644
  DEFINE_GUID(MF_BYTESTREAM_CONTENT_TYPE, 0xfc358289,0x3cb6,0x460c,0xa4,0x24,0xb6,0x68,0x12,0x60,0x37,0x5a);
  
  DEFINE_GUID(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 0xa634a91c, 0x822b, 0x41b9, 0xa4, 0x94, 0x4d, 0xe4, 0x64, 0x36, 0x12, 0xb0);
-@@ -408,24 +408,61 @@ static void test_MFCreateMediaEvent(void)
+@@ -409,24 +408,61 @@ static void test_MFCreateMediaEvent(void)
  
  static void test_MFCreateAttributes(void)
  {
@@ -249,19 +257,19 @@ index ca4dd6e..44696fd 100644
      HRESULT hr;
 -    UINT32 count;
 +    UINT32 count, val;
-+/*
++
 +    hr = MFCreateAttributes( &attr2, 0 );
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
 +
 +    hr = IMFAttributes_SetUINT32(attr2, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 2);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
- 
++
 +    hr = IMFAttributes_GetUINT32(attr2, &MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, &val);
 +    ok(val == 2, "got %u\n", val);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
 +
 +    IMFAttributes_Release(attr2);
-+*/
+ 
      hr = MFCreateAttributes( &attributes, 3 );
      ok(hr == S_OK, "got 0x%08x\n", hr);
  

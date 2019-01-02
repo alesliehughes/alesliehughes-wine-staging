@@ -1,4 +1,4 @@
-From d6453a1bd71050682c02d015815b1a0e80e37c8a Mon Sep 17 00:00:00 2001
+From 7397d8e45bf15db8f543786824c7fa3dddfadf62 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 18 Dec 2018 16:26:16 +1100
 Subject: [PATCH] mfreadwrite: Add initial tests
@@ -6,15 +6,14 @@ Subject: [PATCH] mfreadwrite: Add initial tests
 ---
  configure                          |   1 +
  configure.ac                       |   1 +
- dlls/mfplat/tests/mfplat.c         |   1 -
  dlls/mfreadwrite/tests/Makefile.in |   5 ++
- dlls/mfreadwrite/tests/mfplat.c    | 104 +++++++++++++++++++++++++++++++++++++
- 5 files changed, 111 insertions(+), 1 deletion(-)
+ dlls/mfreadwrite/tests/mfplat.c    | 108 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 115 insertions(+)
  create mode 100644 dlls/mfreadwrite/tests/Makefile.in
  create mode 100644 dlls/mfreadwrite/tests/mfplat.c
 
 diff --git a/configure b/configure
-index dd1d347..ef36489 100755
+index 6026c2e..b88c8ee 100755
 --- a/configure
 +++ b/configure
 @@ -19692,6 +19692,7 @@ wine_fn_config_makefile dlls/mf3216 enable_mf3216
@@ -37,18 +36,6 @@ index 119c4ce..1b425d2 100644
  WINE_CONFIG_MAKEFILE(dlls/mfuuid)
  WINE_CONFIG_MAKEFILE(dlls/mgmtapi)
  WINE_CONFIG_MAKEFILE(dlls/midimap)
-diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
-index 3fa59f4..ca4dd6e 100644
---- a/dlls/mfplat/tests/mfplat.c
-+++ b/dlls/mfplat/tests/mfplat.c
-@@ -28,7 +28,6 @@
- #include "winuser.h"
- #include "winreg.h"
- 
--#include "initguid.h"
- #include "mfapi.h"
- #include "mfidl.h"
- #include "mferror.h"
 diff --git a/dlls/mfreadwrite/tests/Makefile.in b/dlls/mfreadwrite/tests/Makefile.in
 new file mode 100644
 index 0000000..5c906a1
@@ -62,10 +49,10 @@ index 0000000..5c906a1
 +	mfplat.c
 diff --git a/dlls/mfreadwrite/tests/mfplat.c b/dlls/mfreadwrite/tests/mfplat.c
 new file mode 100644
-index 0000000..6046ade
+index 0000000..700b61b
 --- /dev/null
 +++ b/dlls/mfreadwrite/tests/mfplat.c
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,108 @@
 +/*
 + * Copyright 2018 Alistair Leslie-Hughes
 + *
@@ -100,6 +87,10 @@ index 0000000..6046ade
 +#include "mfreadwrite.h"
 +
 +#include "wine/test.h"
++
++#include "initguid.h"
++DEFINE_GUID(MF_READWRITE_MMCSS_PRIORITY_AUDIO,0x273db885, 0x2de2, 0x4db2, 0xa6, 0xa7, 0xfd, 0xb6, 0x6f, 0xb4, 0x0b, 0x61);
++DEFINE_GUID(MF_READWRITE_MMCSS_CLASS_AUDIO,   0x430847da, 0x0890, 0x4b0e, 0x93, 0x8c, 0x05, 0x43, 0x32, 0xc5, 0x47, 0xe1);
 +
 +static HRESULT (WINAPI *pMFCreateMFByteStreamOnStream)(IStream *stream, IMFByteStream **bytestream);
 +

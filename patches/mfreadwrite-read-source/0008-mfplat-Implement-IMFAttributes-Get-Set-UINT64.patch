@@ -1,4 +1,4 @@
-From e426443a3842b37d3c7721f19e47f7f0aba29da1 Mon Sep 17 00:00:00 2001
+From aaea194cb1cefcc780870519a6ffc60fa2cf6295 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 21 Dec 2018 10:19:46 +1100
 Subject: [PATCH] mfplat: Implement IMFAttributes Get/Set UINT64
