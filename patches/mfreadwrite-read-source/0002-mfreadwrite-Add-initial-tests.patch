@@ -1,4 +1,4 @@
-From 7397d8e45bf15db8f543786824c7fa3dddfadf62 Mon Sep 17 00:00:00 2001
+From 57fba74026a3b9f479b2ffad4e32b1aceb08a77f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 18 Dec 2018 16:26:16 +1100
 Subject: [PATCH] mfreadwrite: Add initial tests

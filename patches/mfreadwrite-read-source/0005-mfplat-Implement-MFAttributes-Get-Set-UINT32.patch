@@ -1,4 +1,4 @@
-From 22044a59b97a167f3819c3237cca5f56a802737f Mon Sep 17 00:00:00 2001
+From 5eddeaf039a869abc1ea74c6a359194d5474d8c6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 28 Jul 2017 11:58:38 +1000
 Subject: [PATCH] mfplat: Implement MFAttributes Get/Set UINT32
@@ -23,7 +23,7 @@ index 76843f5..9a4e41c 100644
  C_SRCS = \
  	main.c
 diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
-index c7c3465..b36d64f 100644
+index c7c3465..ed4c237 100644
 --- a/dlls/mfplat/main.c
 +++ b/dlls/mfplat/main.c
 @@ -31,6 +31,7 @@
@@ -175,7 +175,7 @@ index c7c3465..b36d64f 100644
 +
 +    entry->var.vt = VT_UI4;
 +    entry->var.ulVal = value;
-+    
++
 +    return S_OK;
  }
  
@@ -222,7 +222,7 @@ index 07cf328..e4c0552 100644
  C_SRCS = \
  	mfplat.c
 diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
-index 3fa59f4..359c20e 100644
+index 3fa59f4..7f58c07 100644
 --- a/dlls/mfplat/tests/mfplat.c
 +++ b/dlls/mfplat/tests/mfplat.c
 @@ -28,7 +28,6 @@
@@ -293,10 +293,10 @@ index 3fa59f4..359c20e 100644
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
 +    ok(val == 3, "got %u\n", val);
 +
-+    hr = IMFAttributes_SetUINT32(attributes, &MF_MT_AVG_BITRATE, 800000);   
++    hr = IMFAttributes_SetUINT32(attributes, &MF_MT_AVG_BITRATE, 800000);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
 +
-+    hr = IMFAttributes_SetUINT32(attributes, &MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive); 
++    hr = IMFAttributes_SetUINT32(attributes, &MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
  
      hr = IMFAttributes_GetCount(attributes, &count);

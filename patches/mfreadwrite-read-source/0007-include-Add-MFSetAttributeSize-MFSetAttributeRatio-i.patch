@@ -1,4 +1,4 @@
-From fff114eabeb04350f20d07f1d412f91f6b36bb77 Mon Sep 17 00:00:00 2001
+From b57682594b1640f90889997fb438a3707b74de7c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 20 Dec 2018 16:00:36 +1100
 Subject: [PATCH] include: Add MFSetAttributeSize/MFSetAttributeRatio inline

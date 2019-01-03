@@ -1,4 +1,4 @@
-From aaea194cb1cefcc780870519a6ffc60fa2cf6295 Mon Sep 17 00:00:00 2001
+From 67c71faac3c19ba64bce8361fac5dbdc4e1df852 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 21 Dec 2018 10:19:46 +1100
 Subject: [PATCH] mfplat: Implement IMFAttributes Get/Set UINT64
@@ -9,7 +9,7 @@ TODO: Add some tests.
  1 file changed, 24 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
-index b36d64f..d8461b0 100644
+index ed4c237..fc7c7a2 100644
 --- a/dlls/mfplat/main.c
 +++ b/dlls/mfplat/main.c
 @@ -641,10 +641,15 @@ static HRESULT WINAPI mfattributes_GetUINT32(IMFAttributes *iface, REFGUID key,

@@ -1,4 +1,4 @@
-From cc6abffd8332bc8244034df4b5244dafd03b95f1 Mon Sep 17 00:00:00 2001
+From 05bfc3962041df956adb76a6a1912646917d2890 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 20 Dec 2018 10:41:20 +1100
 Subject: [PATCH] mfreadwrite: Store IMFAttributes interface as part of the

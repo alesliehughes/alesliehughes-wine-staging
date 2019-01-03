@@ -1,4 +1,4 @@
-From 95f81c4b22e35f11241b80de87df3b38e2dd8c3a Mon Sep 17 00:00:00 2001
+From 9b58c4eca60c1caccac9cf0222e596c483c105ad Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 20 Dec 2018 15:26:50 +1100
 Subject: [PATCH] mfreadwrite: Return an object from IMFSourceReader

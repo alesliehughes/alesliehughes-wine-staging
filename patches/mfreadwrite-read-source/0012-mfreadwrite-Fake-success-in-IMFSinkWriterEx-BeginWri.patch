@@ -1,0 +1,25 @@
+From 02d73eb6a747494d8acd0a349c3aae87ebff09e8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 3 Jan 2019 13:40:14 +1100
+Subject: [PATCH] mfreadwrite: Fake success in IMFSinkWriterEx BeginWriting
+
+---
+ dlls/mfreadwrite/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
+index 0c6335e..90a3c10 100644
+--- a/dlls/mfreadwrite/main.c
++++ b/dlls/mfreadwrite/main.c
+@@ -331,7 +331,7 @@ static HRESULT WINAPI mfsinkwriter_BeginWriting(IMFSinkWriterEx *iface)
+ {
+     struct mfsinkwriter *This = impl_from_IMFSinkWriterEx(iface);
+     FIXME("%p\n", This);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI mfsinkwriter_WriteSample(IMFSinkWriterEx *iface, DWORD index, IMFSample *sample)
+-- 
+1.9.1
+

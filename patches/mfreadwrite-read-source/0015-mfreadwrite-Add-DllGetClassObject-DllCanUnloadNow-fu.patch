@@ -1,0 +1,47 @@
+From 23c2c9dc93b141573ce1b21c5e27a8c11bd398a5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 4 Jan 2019 09:19:03 +1100
+Subject: [PATCH] mfreadwrite: Add DllGetClassObject/DllCanUnloadNow functions
+
+---
+ dlls/mfreadwrite/main.c           | 11 +++++++++++
+ dlls/mfreadwrite/mfreadwrite.spec |  4 ++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/mfreadwrite/main.c b/dlls/mfreadwrite/main.c
+index d7f585e..c526ac6 100644
+--- a/dlls/mfreadwrite/main.c
++++ b/dlls/mfreadwrite/main.c
+@@ -47,6 +47,17 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+     return TRUE;
+ }
+ 
++HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
++{
++    FIXME("(%s,%s,%p)\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
++    return CLASS_E_CLASSNOTAVAILABLE;
++}
++
++HRESULT WINAPI DllCanUnloadNow(void)
++{
++    return S_FALSE;
++}
++
+ typedef struct _srcreader
+ {
+     IMFSourceReader IMFSourceReader_iface;
+diff --git a/dlls/mfreadwrite/mfreadwrite.spec b/dlls/mfreadwrite/mfreadwrite.spec
+index 2d2cc99..22e8337 100644
+--- a/dlls/mfreadwrite/mfreadwrite.spec
++++ b/dlls/mfreadwrite/mfreadwrite.spec
+@@ -1,5 +1,5 @@
+-@ stub DllCanUnloadNow
+-@ stub DllGetClassObject
++@ stdcall -private DllCanUnloadNow()
++@ stdcall -private DllGetClassObject(ptr ptr ptr)
+ @ stub MFCreateSinkWriterFromMediaSink
+ @ stdcall MFCreateSinkWriterFromURL(wstr ptr ptr ptr)
+ @ stdcall MFCreateSourceReaderFromByteStream(ptr ptr ptr)
+-- 
+1.9.1
+
