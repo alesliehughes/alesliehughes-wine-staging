@@ -1,0 +1,102 @@
+From e395281173857f7437be482dbd59e0ced62a6174 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 22 Jan 2019 15:05:38 +1100
+Subject: [PATCH] programs: Add certutil.exe
+
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=46484
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                     |  2 ++
+ configure.ac                  |  1 +
+ programs/certutil/Makefile.in |  5 +++++
+ programs/certutil/main.c      | 33 +++++++++++++++++++++++++++++++++
+ 4 files changed, 41 insertions(+)
+ create mode 100644 programs/certutil/Makefile.in
+ create mode 100644 programs/certutil/main.c
+
+diff --git a/configure b/configure
+index f3c2920..7690341 100755
+--- a/configure
++++ b/configure
+@@ -1674,6 +1674,7 @@ enable_aspnet_regiis
+ enable_attrib
+ enable_cabarc
+ enable_cacls
++enable_certutil
+ enable_clock
+ enable_cmd
+ enable_conhost
+@@ -20167,6 +20168,7 @@ wine_fn_config_makefile programs/aspnet_regiis enable_aspnet_regiis
+ wine_fn_config_makefile programs/attrib enable_attrib
+ wine_fn_config_makefile programs/cabarc enable_cabarc
+ wine_fn_config_makefile programs/cacls enable_cacls
++wine_fn_config_makefile programs/certutil enable_certutil
+ wine_fn_config_makefile programs/clock enable_clock
+ wine_fn_config_makefile programs/cmd enable_cmd
+ wine_fn_config_makefile programs/cmd/tests enable_tests
+diff --git a/configure.ac b/configure.ac
+index 119c4ce..3a54817 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3906,6 +3906,7 @@ WINE_CONFIG_MAKEFILE(programs/aspnet_regiis)
+ WINE_CONFIG_MAKEFILE(programs/attrib)
+ WINE_CONFIG_MAKEFILE(programs/cabarc)
+ WINE_CONFIG_MAKEFILE(programs/cacls)
++WINE_CONFIG_MAKEFILE(programs/certutil)
+ WINE_CONFIG_MAKEFILE(programs/clock)
+ WINE_CONFIG_MAKEFILE(programs/cmd)
+ WINE_CONFIG_MAKEFILE(programs/cmd/tests)
+diff --git a/programs/certutil/Makefile.in b/programs/certutil/Makefile.in
+new file mode 100644
+index 0000000..4e8b1c9
+--- /dev/null
++++ b/programs/certutil/Makefile.in
+@@ -0,0 +1,5 @@
++MODULE    = certutil.exe
++APPMODE   = -mconsole -municode
++
++C_SRCS = \
++	main.c
+diff --git a/programs/certutil/main.c b/programs/certutil/main.c
+new file mode 100644
+index 0000000..32cdd25
+--- /dev/null
++++ b/programs/certutil/main.c
+@@ -0,0 +1,33 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(ngen);
++
++int wmain(int argc, WCHAR *argv[])
++{
++    int i;
++
++    WINE_FIXME("stub:");
++    for (i = 0; i < argc; i++)
++        WINE_FIXME(" %s", wine_dbgstr_w(argv[i]));
++    WINE_FIXME("\n");
++
++    return 0;
++}
+-- 
+1.9.1
+
