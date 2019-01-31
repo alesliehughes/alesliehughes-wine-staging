@@ -1,72 +1,98 @@
-From 593952f49cf84ad11fe81e1e29b3614b7dcd69d0 Mon Sep 17 00:00:00 2001
+From 9ae0cdfb98ff717a651db96bc4cea55b858742ed Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 19 Jun 2018 11:38:25 +1000
-Subject: [PATCH] oledb32: Support Milliseconds when converting BSTR ->
+Subject: [v2 PATCH] oledb32: Support Milliseconds when converting BSTR ->
  DBTIMESTAMP
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/oledb32/convert.c       | 41 +++++++++++++++++++++++++++++++++++++++++
- dlls/oledb32/tests/convert.c |  8 ++++----
- 2 files changed, 45 insertions(+), 4 deletions(-)
+ dlls/oledb32/convert.c       | 30 ++++++++++++++++++++++++++++++
+ dlls/oledb32/tests/convert.c | 29 +++++++++++++++++++++++++----
+ 2 files changed, 55 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
-index 5bad105..40ca3f2 100644
+index f18c756..22fe5af 100644
 --- a/dlls/oledb32/convert.c
 +++ b/dlls/oledb32/convert.c
-@@ -527,6 +527,47 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+@@ -30,11 +30,25 @@
+ 
+ #include "oledb_private.h"
+ 
++#include <stdio.h>
+ #include "wine/debug.h"
+ #include "wine/heap.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(oledb);
+ 
++static inline char *strdupWtoA( LPCWSTR str )
++{
++    LPSTR ret = NULL;
++    DWORD len;
++
++    if (!str) return ret;
++    len = WideCharToMultiByte( CP_ACP, 0, str, -1, NULL, 0, NULL, NULL);
++    ret = heap_alloc( len );
++    if (ret)
++        WideCharToMultiByte( CP_ACP, 0, str, -1, ret, len, NULL, NULL );
++    return ret;
++}
++
+ typedef struct
+ {
+     IDataConvert IDataConvert_iface;
+@@ -527,6 +541,22 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
                  d->second = st.wSecond;
                  d->fraction = st.wMilliseconds * 1000000;
              }
 +            else
 +            {
-+                WCHAR *de = s;
-+                DWORD len = SysStringLen(s);
++                char *buff = strdupWtoA(s);
++                static const char *format = "%d-%d-%d %d:%d:%d.%d";
 +
-+                TRACE("String with Millseconds: %s\n", debugstr_w(s));
-+
-+                VariantClear(&var);
-+
-+                while (len && de[len] != '.')
++                if(sscanf( buff, format, &d->year, &d->month, &d->day, &d->hour, &d->minute, &d->second, &d->fraction) != 7)
 +                {
-+                    len--;
++                    hr = DISP_E_TYPEMISMATCH;
++                    *dst_status = DBSTATUS_E_CANTCONVERTVALUE;
++                    *dst_len = get_length(dst_type);
 +                }
++                else
++                    hr = S_OK;
 +
-+                V_VT(&var) = VT_BSTR;
-+                V_BSTR(&var) = SysAllocStringLen(s, len);
-+                if ((hr = VariantChangeType(&var, &var, 0, VT_DATE)) == S_OK)
-+                {
-+                    SYSTEMTIME st;
-+
-+                    if ((hr = (VariantTimeToSystemTime( V_DATE(&var), &st) ? S_OK : E_FAIL))  == S_OK)
-+                    {
-+                        d->year = st.wYear;
-+                        d->month = st.wMonth;
-+                        d->day = st.wDay;
-+                        d->hour = st.wHour;
-+                        d->minute = st.wMinute;
-+                        d->second = st.wSecond;
-+                        d->fraction = 0;
-+
-+                        VariantClear(&var);
-+                        V_VT(&var) = VT_BSTR;
-+                        V_BSTR(&var) = SysAllocString(de + (len+1));
-+                        if(VariantChangeType(&var, &var, 0, VT_I4) == S_OK)
-+                        {
-+                            TRACE("Millseconds: %d\n", V_I4(&var));
-+                            d->fraction = V_I4(&var);
-+                        }
-+                    }
-+                }
++                heap_free(buff);
 +            }
  
              VariantClear(&var);
          }
 diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
-index 4416240..34b503d 100644
+index e79bb45..7cafeda 100644
 --- a/dlls/oledb32/tests/convert.c
 +++ b/dlls/oledb32/tests/convert.c
-@@ -3641,10 +3641,10 @@ static void test_converttotimestamp(void)
+@@ -3608,8 +3608,12 @@ static void test_converttovar(void)
+ static void test_converttotimestamp(void)
+ {
+     static const WCHAR strW[] = {'2','0','1','3','-','0','5','-','1','4',' ','0','2',':','0','4',':','1','2',0};
++    static const WCHAR str1W[] = {'2','0','1','3','/','0','5','/','1','4',' ','0','2','.','0','4','.','1','2',0};
+     static const WCHAR strFullW[] =  {'2','0','1','3','-','0','5','-','1','4',' ','0','2',':','0','4',':','1','2',
+                                        '.','0','1','7','0','0','0','0','0','0',0};
++    static const WCHAR strFull1W[] =  {'2','0','1','3','/','0','5','/','1','4',' ','0','2',':','0','4',':','1','2',
++                                       '.','0','1','7',0};
++
+     DBTIMESTAMP ts = {2013, 5, 14, 2, 4, 12, 0};
+     DBTIMESTAMP ts1 = {2013, 5, 14, 2, 4, 12, 17000000};
+     DATE date;
+@@ -3639,13 +3643,30 @@ static void test_converttotimestamp(void)
+     ok(!memcmp(&ts, &dst, sizeof(ts)), "Wrong timestamp\n");
+     SysFreeString(bstr);
+ 
++    bstr = SysAllocString(str1W);
++    dst_len = 0x1234;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
++    ok(hr == S_OK, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    ok(!memcmp(&ts, &dst, sizeof(ts)), "Wrong timestamp\n");
++    SysFreeString(bstr);
++
      bstr = SysAllocString(strFullW);
      dst_len = 0x1234;
      hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
@@ -78,6 +104,14 @@ index 4416240..34b503d 100644
 +    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
 +    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
 +    ok(!memcmp(&ts1, &dst, sizeof(ts1)), "Wrong timestamp\n");
++    SysFreeString(bstr);
++
++    bstr = SysAllocString(strFull1W);
++    dst_len = 0x1234;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
++    ok(hr == DISP_E_TYPEMISMATCH, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_E_CANTCONVERTVALUE, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
      SysFreeString(bstr);
  
      V_VT(&var) = VT_NULL;
