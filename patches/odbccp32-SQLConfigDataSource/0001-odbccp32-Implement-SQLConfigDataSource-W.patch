@@ -1,18 +1,28 @@
-From db5a2018eef29a09183d1860f526c77e65bf9159 Mon Sep 17 00:00:00 2001
+From 2796788149dbe9eab2eac29f63fb8e5cc2124ae4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Aug 2018 14:39:38 +1000
-Subject: [PATCH] odbccp32: Implement SQLConfigDataSource/W
+Subject: [PATCH v2] odbccp32: Implement SQLConfigDataSource/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 155 +++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 131 insertions(+), 24 deletions(-)
+ dlls/odbccp32/odbccp32.c | 142 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 118 insertions(+), 24 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 694a90c..4ad64c4 100644
+index 694a90c..c146122 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -102,6 +102,32 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
+@@ -69,6 +69,9 @@ static const WCHAR odbc_error_load_lib_failed[] = {'L','o','a','d',' ','L','i','
+ static const WCHAR odbc_error_request_failed[] = {'R','e','q','u','e','s','t',' ','F','a','i','l','e','d',0};
+ static const WCHAR odbc_error_invalid_keyword[] = {'I','n','v','a','l','i','d',' ','k','e','y','w','o','r','d',' ','v','a','l','u','e',0};
+ 
++static BOOL (WINAPI *pConfigDSN)(HWND hwnd, WORD request, const char *driver, const char *attr);
++static BOOL (WINAPI *pConfigDSNW)(HWND hwnd, WORD request, const WCHAR *driver, const WCHAR *attr);
++
+ /* Push an error onto the error stack, taking care of ranges etc. */
+ static void push_error(int code, LPCWSTR msg)
+ {
+@@ -102,6 +105,27 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
      return ret;
  }
  
@@ -24,7 +34,6 @@ index 694a90c..4ad64c4 100644
 +    {
 +        DWORD size = 0, len;
 +        const char *p;
-+        WCHAR *current;
 +
 +        for (p = str; *p; p += lstrlenA(p) + 1)
 +        {
@@ -32,12 +41,8 @@ index 694a90c..4ad64c4 100644
 +            size += len;
 +        }
 +
-+        current = ret = heap_alloc_zero( (size+1)*sizeof(WCHAR));
-+        for (p = str; *p; p += lstrlenA(p) + 1)
-+        {
-+            len = MultiByteToWideChar(CP_ACP, 0, p, -1, current, size);
-+            current += len;
-+        }
++        ret = heap_alloc_zero( (size+1)*sizeof(WCHAR));
++        MultiByteToWideChar(CP_ACP, 0, p, size, ret, size);
 +    }
 +    return ret;
 +}
@@ -45,7 +50,7 @@ index 694a90c..4ad64c4 100644
  
  BOOL WINAPI ODBCCPlApplet( LONG i, LONG j, LONG * p1, LONG * p2)
  {
-@@ -220,30 +246,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
+@@ -220,30 +244,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
      return success;
  }
  
@@ -76,52 +81,13 @@ index 694a90c..4ad64c4 100644
  static HMODULE load_config_driver(const WCHAR *driver)
  {
      static WCHAR reg_driver[] = {'d','r','i','v','e','r',0};
-@@ -360,6 +362,111 @@ fail:
+@@ -360,6 +360,100 @@ fail:
      return FALSE;
  }
  
-+static BOOL call_ConfigDSN(HANDLE mod, HWND hwnd, WORD request, const char *driverA, const char *attributesA, const WCHAR *driverW, const WCHAR *attributesW)
++BOOL WINAPI SQLConfigDataSourceW(HWND hwnd, WORD request, LPCWSTR driver, LPCWSTR attributes)
 +{
-+    BOOL (WINAPI *pConfigDSN)(HWND hwnd, WORD request, const char *driver, const char *attr);
-+    BOOL (WINAPI *pConfigDSNW)(HWND hwnd, WORD request, const WCHAR *driver, const WCHAR *attr);
-+    BOOL ret = FALSE;
-+
-+    TRACE("%p, %p, %d, %p, %p, %p %p\n", mod, hwnd, request, driverA, attributesA, driverW, attributesW);
-+
-+    pConfigDSN = (void*)GetProcAddress(mod, "ConfigDSN");
-+    pConfigDSNW = (void*)GetProcAddress(mod, "ConfigDSNW");
-+
-+    if (pConfigDSNW)
-+    {
-+        const WCHAR *attr = attributesW;
-+        if(!attr)
-+            attr = heap_attrdupAtoW(attributesA);
-+
-+        TRACE("Calling ConfigDSNW (%p)\n", pConfigDSNW);
-+
-+        ret = pConfigDSNW(hwnd, request, driverW, attr);
-+
-+        if(attr != attributesW)
-+            heap_free((WCHAR *)attr);
-+    }
-+    else if (pConfigDSN)
-+    {
-+        TRACE("Calling pConfigDSN (%p)\n", pConfigDSN);
-+        ret = pConfigDSN(hwnd, request, driverA, attributesA);
-+    }
-+    else
-+        ERR("Neither ConfigDSN or ConfigDSNW found.\n");
-+
-+    if (!ret)
-+        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
-+
-+    return ret;
-+}
-+
-+BOOL WINAPI SQLConfigDataSourceW(HWND hwnd, WORD request,
-+               LPCWSTR driver, LPCWSTR attributes)
-+{
-+    HMODULE hmod;
++    HMODULE mod;
 +    BOOL ret = FALSE;
 +
 +    TRACE("%p, %d, %s, %s\n", hwnd, request, debugstr_w(driver), debugstr_w(attributes));
@@ -134,21 +100,27 @@ index 694a90c..4ad64c4 100644
 +
 +    clear_errors();
 +
-+    hmod = load_config_driver(driver);
-+    if (!hmod)
++    mod = load_config_driver(driver);
++    if (!mod)
 +        return FALSE;
 +
-+    ret = call_ConfigDSN (hmod, hwnd, request, NULL, NULL, driver, attributes);
++    pConfigDSNW = (void*)GetProcAddress(mod, "ConfigDSNW");
++    if(pConfigDSNW)
++        ret = pConfigDSNW(hwnd, request, driver, attributes);
++    else
++        ERR("Failed to find ConfigDSNW\n");
 +
-+    FreeLibrary(hmod);
++    if (!ret)
++        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
++
++    FreeLibrary(mod);
 +
 +    return ret;
 +}
 +
-+BOOL WINAPI SQLConfigDataSource(HWND hwnd, WORD request,
-+               LPCSTR driver, LPCSTR attributes)
++BOOL WINAPI SQLConfigDataSource(HWND hwnd, WORD request, LPCSTR driver, LPCSTR attributes)
 +{
-+    HMODULE hmod;
++    HMODULE mod;
 +    BOOL ret = FALSE;
 +    WCHAR *driverW;
 +
@@ -170,17 +142,39 @@ index 694a90c..4ad64c4 100644
 +        return FALSE;
 +    }
 +
-+    hmod = load_config_driver(driverW);
-+    if (!hmod)
++    mod = load_config_driver(driverW);
++    if (!mod)
 +    {
 +        heap_free(driverW);
 +        return FALSE;
 +    }
 +
-+    ret = call_ConfigDSN (hmod, hwnd, request, driver, attributes, driverW, NULL);
-+    heap_free(driverW);
++    pConfigDSN = (void*)GetProcAddress(mod, "ConfigDSN");
++    if (pConfigDSN)
++    {
++        TRACE("Calling ConfigDSN\n");
++        ret = pConfigDSN(hwnd, request, driver, attributes);
++    }
++    else
++    {
++        pConfigDSNW = (void*)GetProcAddress(mod, "ConfigDSNW");
++        if (pConfigDSNW)
++        {
++            WCHAR *attr = NULL;
++            TRACE("Calling ConfigDSNW\n");
 +
-+    FreeLibrary(hmod);
++            attr = heap_attrdupAtoW(attributes);
++            if(attr)
++                ret = pConfigDSNW(hwnd, request, driverW, attr);
++            heap_free(attr);
++        }
++    }
++
++    if (!ret)
++        push_error(ODBC_ERROR_REQUEST_FAILED, odbc_error_request_failed);
++
++    heap_free(driverW);
++    FreeLibrary(mod);
 +
 +    return ret;
 +}
