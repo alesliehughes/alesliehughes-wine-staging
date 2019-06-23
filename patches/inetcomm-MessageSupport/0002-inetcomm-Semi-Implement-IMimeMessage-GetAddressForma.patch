@@ -1,18 +1,18 @@
-From dd5b2987a81f14e9bd36d979f6991b1c86e2ebbb Mon Sep 17 00:00:00 2001
+From 227481fb0039121c2718acc0720501f8cefe3f12 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 25 Jul 2016 15:24:15 +1000
-Subject: [PATCH 2/2] inetcomm: Implement IMimeMessage GetAddressFormat
+Subject: [PATCH] inetcomm: Semi-Implement IMimeMessage GetAddressFormat.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/inetcomm/mimeole.c | 36 ++++++++++++++++++++++++++++++++----
- 1 file changed, 32 insertions(+), 4 deletions(-)
+ dlls/inetcomm/mimeole.c | 40 ++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 36 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index ddde4af..12a604a 100644
+index 2c481ab0d5..ce4e340531 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
-@@ -2775,12 +2775,40 @@ static HRESULT WINAPI MimeMessage_GetAddressTypes(
+@@ -2984,12 +2984,44 @@ static HRESULT WINAPI MimeMessage_GetAddressTypes(
  
  static HRESULT WINAPI MimeMessage_GetAddressFormat(
      IMimeMessage *iface,
@@ -25,9 +25,9 @@ index ddde4af..12a604a 100644
 -    FIXME("(%p)->(%d, %d, %p)\n", iface, dwAdrTypes, format, ppszFormat);
 -    return E_NOTIMPL;
 +    PROPVARIANT prop;
-+    HRESULT hr;
++    HRESULT hr = MIME_E_NOT_FOUND;
 +
-+    TRACE("(%p)->(%d, %d, %p)\n", iface, addr_type, format, value);
++    TRACE("(%p)->(%d, %d, %p) semi-stub.\n", iface, addr_type, format, value);
 +
 +    PropVariantInit(&prop);
 +
@@ -45,18 +45,22 @@ index ddde4af..12a604a 100644
 +            break;
 +        default:
 +            FIXME("Unknown address type %d\n", addr_type);
-+            hr = MIME_E_NOT_FOUND;
 +    }
 +
 +    if(SUCCEEDED(hr))
-+        *value = prop.u.pszVal;
-+
-+FIXME("<- %s", debugstr_a(*value));
++    {
++        *value = CoTaskMemAlloc(strlen(prop.u.pszVal)+1 );
++        if(*value)
++            strcpy(*value, prop.u.pszVal);
++        else
++            hr = E_OUTOFMEMORY;
++    }
++    PropVariantClear(&prop);
 +
 +    return hr;
  }
  
  static HRESULT WINAPI MimeMessage_EnumAddressTypes(
 -- 
-1.9.1
+2.17.1
 
