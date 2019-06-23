@@ -1,0 +1,46 @@
+From aebe3e23378168c5850d19829b3fade2dc25ebc7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 21 Jun 2019 12:00:58 +1000
+Subject: [PATCH] dbghelp: Implement SymGetLineFromNameW64.
+
+WIP: Need to quuery actual module for filename.
+---
+ dlls/dbghelp/symbol.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dbghelp/symbol.c b/dlls/dbghelp/symbol.c
+index 3689500fa0..1818a3fa3d 100644
+--- a/dlls/dbghelp/symbol.c
++++ b/dlls/dbghelp/symbol.c
+@@ -2241,9 +2241,26 @@ BOOL WINAPI SymGetLineFromName64(HANDLE hProcess, PCSTR ModuleName, PCSTR FileNa
+ BOOL WINAPI SymGetLineFromNameW64(HANDLE hProcess, PCWSTR ModuleName, PCWSTR FileName,
+                 DWORD dwLineNumber, PLONG plDisplacement, PIMAGEHLP_LINEW64 Line)
+ {
+-    FIXME("(%p) (%s, %s, %d %p %p): stub\n", hProcess, debugstr_w(ModuleName), debugstr_w(FileName),
++    struct module_pair pair;
++
++    FIXME("(%p) (%s, %s, %d, %p, %p)\n", hProcess, debugstr_w(ModuleName), debugstr_w(FileName),
+                 dwLineNumber, plDisplacement, Line);
+-    return FALSE;
++
++    if (!(dbghelp_options & SYMOPT_LOAD_LINES)) return TRUE;
++
++    pair.pcs = process_find_by_handle(hProcess);
++    if (!pair.pcs) return FALSE;
++    pair.requested = module_find_by_nameW(pair.pcs, ModuleName);
++    if (!module_get_debug(&pair)) return FALSE;
++
++    Line->SizeOfStruct = sizeof(IMAGEHLP_LINEW64);
++    Line->Key = 0;
++    Line->LineNumber = dwLineNumber;
++    Line->FileName = fetch_buffer(pair.pcs, (lstrlenW(FileName)+1) * sizeof(WCHAR) );
++    lstrcpyW(Line->FileName, FileName);
++    Line->Address = 0;
++
++    return TRUE;
+ }
+ 
+ /******************************************************************
+-- 
+2.17.1
+
