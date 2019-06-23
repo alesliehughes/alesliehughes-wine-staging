@@ -702,8 +702,8 @@ index 0000000..20b8ad7
 +    DISPID_SRIsUISupported,
 +    DISPID_SRDisplayUI,
 +    DISPID_SRGetRecognizers,
-+	DISPID_SVGetAudioInputs,
-+	DISPID_SVGetProfiles
++    DISPID_SVGetAudioInputs,
++    DISPID_SVGetProfiles
 +} DISPID_SpeechRecognizer;
 +
 +
