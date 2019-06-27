@@ -1,18 +1,18 @@
-From 2796788149dbe9eab2eac29f63fb8e5cc2124ae4 Mon Sep 17 00:00:00 2001
+From 7d02ffc6236c80311add7102f89cd7b9504203f8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Aug 2018 14:39:38 +1000
-Subject: [PATCH v2] odbccp32: Implement SQLConfigDataSource/W
+Subject: [PATCH v3] odbccp32: Implement SQLConfigDataSource/W
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/odbccp32/odbccp32.c | 142 +++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 118 insertions(+), 24 deletions(-)
+ dlls/odbccp32/odbccp32.c | 121 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 97 insertions(+), 24 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 694a90c..c146122 100644
+index 283ed41a59..47dd8c14bd 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -69,6 +69,9 @@ static const WCHAR odbc_error_load_lib_failed[] = {'L','o','a','d',' ','L','i','
+@@ -68,6 +68,9 @@ static const WCHAR odbc_error_load_lib_failed[] = {'L','o','a','d',' ','L','i','
  static const WCHAR odbc_error_request_failed[] = {'R','e','q','u','e','s','t',' ','F','a','i','l','e','d',0};
  static const WCHAR odbc_error_invalid_keyword[] = {'I','n','v','a','l','i','d',' ','k','e','y','w','o','r','d',' ','v','a','l','u','e',0};
  
@@ -22,35 +22,7 @@ index 694a90c..c146122 100644
  /* Push an error onto the error stack, taking care of ranges etc. */
  static void push_error(int code, LPCWSTR msg)
  {
-@@ -102,6 +105,27 @@ static inline WCHAR *heap_strdupAtoW(const char *str)
-     return ret;
- }
- 
-+static inline WCHAR *heap_attrdupAtoW(const char *str)
-+{
-+    WCHAR *ret = NULL;
-+
-+    if (str)
-+    {
-+        DWORD size = 0, len;
-+        const char *p;
-+
-+        for (p = str; *p; p += lstrlenA(p) + 1)
-+        {
-+            len = MultiByteToWideChar(CP_ACP, 0, p, -1, NULL, 0);
-+            size += len;
-+        }
-+
-+        ret = heap_alloc_zero( (size+1)*sizeof(WCHAR));
-+        MultiByteToWideChar(CP_ACP, 0, p, size, ret, size);
-+    }
-+    return ret;
-+}
-+
- 
- BOOL WINAPI ODBCCPlApplet( LONG i, LONG j, LONG * p1, LONG * p2)
- {
-@@ -220,30 +244,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
+@@ -219,30 +222,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
      return success;
  }
  
@@ -81,7 +53,7 @@ index 694a90c..c146122 100644
  static HMODULE load_config_driver(const WCHAR *driver)
  {
      static WCHAR reg_driver[] = {'d','r','i','v','e','r',0};
-@@ -360,6 +360,100 @@ fail:
+@@ -359,6 +338,100 @@ fail:
      return FALSE;
  }
  
@@ -163,7 +135,7 @@ index 694a90c..c146122 100644
 +            WCHAR *attr = NULL;
 +            TRACE("Calling ConfigDSNW\n");
 +
-+            attr = heap_attrdupAtoW(attributes);
++            attr = SQLInstall_strdup_multi(attributes);
 +            if(attr)
 +                ret = pConfigDSNW(hwnd, request, driverW, attr);
 +            heap_free(attr);
@@ -183,5 +155,5 @@ index 694a90c..c146122 100644
                 LPCWSTR args, LPWSTR msg, WORD msgmax, WORD *msgout)
  {
 -- 
-1.9.1
+2.17.1
 
