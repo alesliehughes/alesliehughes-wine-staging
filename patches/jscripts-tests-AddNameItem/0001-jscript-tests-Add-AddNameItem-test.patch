@@ -1,0 +1,68 @@
+From 2a5114b4537468b3a3a5759107b7e22b0022aff8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 8 Jan 2019 15:50:57 +1100
+Subject: [PATCH] jscript/tests: Add AddNameItem test
+
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=37607
+---
+ dlls/jscript/tests/run.c | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+
+diff --git a/dlls/jscript/tests/run.c b/dlls/jscript/tests/run.c
+index 77cd74e..d8cfeaf 100644
+--- a/dlls/jscript/tests/run.c
++++ b/dlls/jscript/tests/run.c
+@@ -1616,6 +1616,42 @@ static HRESULT parse_script(DWORD flags, BSTR script_str)
+     return hres;
+ }
+ 
++static void test_add_named_items(void)
++{
++    IActiveScriptParse *parser;
++    IActiveScript *engine;
++    HRESULT hres;
++    SCRIPTSTATE state;
++
++    engine = create_script();
++    if(!engine)
++        return;
++
++    hres = IActiveScript_QueryInterface(engine, &IID_IActiveScriptParse, (void**)&parser);
++    ok(hres == S_OK, "Could not get IActiveScriptParse: %08x\n", hres);
++    if (FAILED(hres))
++    {
++        IActiveScript_Release(engine);
++        return;
++    }
++
++    hres = IActiveScript_SetScriptSite(engine, &ActiveScriptSite);
++    ok(hres == S_OK, "SetScriptSite failed: %08x\n", hres);
++
++    hres = IActiveScript_AddNamedItem(engine, testW, SCRIPTITEM_ISVISIBLE);
++    todo_wine ok(hres == S_OK, "AddNamedItem failed: %08x\n", hres);
++
++    hres = IActiveScript_SetScriptState(engine, SCRIPTSTATE_INITIALIZED);
++    ok(hres == E_UNEXPECTED, "got %08x\n", hres);
++
++    hres = IActiveScript_GetScriptState(engine, &state);
++    ok(hres == S_OK, "got %08x\n", hres);
++    ok(state == SCRIPTSTATE_UNINITIALIZED, "got: %08x\n", state);
++
++    IActiveScript_Release(engine);
++    IActiveScriptParse_Release(parser);
++}
++
+ static HRESULT invoke_procedure(const char *argsa, const char *sourcea, DISPPARAMS *dp)
+ {
+     IActiveScriptParseProcedure2 *parse_proc;
+@@ -2692,6 +2728,7 @@ static BOOL run_tests(void)
+     test_isvisible(TRUE);
+     test_start();
+     test_automagic();
++    test_add_named_items();
+ 
+     parse_script_af(0, "test.testThis2(this);");
+     parse_script_af(0, "(function () { test.testThis2(this); })();");
+-- 
+1.9.1
+
