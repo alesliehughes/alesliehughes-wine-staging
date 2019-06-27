@@ -1,0 +1,60 @@
+From d989a05d8d6b282af74a8bf69993945019fa245c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 25 Jun 2019 08:58:43 +1000
+Subject: [PATCH] mshtml: Support redraw when window is activatated.
+
+---
+ dlls/mshtml/mshtml_private.h | 1 +
+ dlls/mshtml/oleobj.c         | 3 +--
+ dlls/mshtml/view.c           | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/mshtml/mshtml_private.h b/dlls/mshtml/mshtml_private.h
+index 6bfce89698..b665525761 100644
+--- a/dlls/mshtml/mshtml_private.h
++++ b/dlls/mshtml/mshtml_private.h
+@@ -689,6 +689,7 @@ struct HTMLDocumentObj {
+ 
+     HWND hwnd;
+     HWND tooltips_hwnd;
++    HWND site_hwnd;
+ 
+     BOOL is_mhtml;
+     BOOL request_uiactivate;
+diff --git a/dlls/mshtml/oleobj.c b/dlls/mshtml/oleobj.c
+index 1d8d62669e..1b38f43308 100644
+--- a/dlls/mshtml/oleobj.c
++++ b/dlls/mshtml/oleobj.c
+@@ -257,7 +257,6 @@ static HRESULT WINAPI OleObject_SetClientSite(IOleObject *iface, IOleClientSite
+     IBrowserService *browser_service;
+     BOOL hostui_setup;
+     VARIANT silent;
+-    HWND hwnd;
+     HRESULT hres;
+ 
+     TRACE("(%p)->(%p)\n", This, pClientSite);
+@@ -371,7 +370,7 @@ static HRESULT WINAPI OleObject_SetClientSite(IOleObject *iface, IOleClientSite
+      * We don't have anything to do with it here (yet). */
+     hres = IOleClientSite_QueryInterface(pClientSite, &IID_IOleWindow, (void**)&ole_window);
+     if(SUCCEEDED(hres)) {
+-        IOleWindow_GetWindow(ole_window, &hwnd);
++        IOleWindow_GetWindow(ole_window, &This->doc_obj->site_hwnd);
+         IOleWindow_Release(ole_window);
+     }
+ 
+diff --git a/dlls/mshtml/view.c b/dlls/mshtml/view.c
+index bb24335cdc..75f0af6355 100644
+--- a/dlls/mshtml/view.c
++++ b/dlls/mshtml/view.c
+@@ -291,7 +291,7 @@ static HRESULT activate_window(HTMLDocumentObj *This)
+         hres = IOleInPlaceSiteEx_OnInPlaceActivateEx(ipsiteex, &redraw, 0);
+         IOleInPlaceSiteEx_Release(ipsiteex);
+         if(redraw)
+-            FIXME("unsupported redraw\n");
++            RedrawWindow(This->site_hwnd, NULL, NULL, RDW_INVALIDATE | RDW_NOERASE | RDW_ALLCHILDREN);
+     }else{
+         hres = IOleInPlaceSite_OnInPlaceActivate(This->ipsite);
+     }
+-- 
+2.17.1
+
