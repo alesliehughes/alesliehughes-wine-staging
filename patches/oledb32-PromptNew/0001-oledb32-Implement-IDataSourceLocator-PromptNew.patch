@@ -3,14 +3,12 @@ From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 24 Oct 2018 14:34:39 +1100
 Subject: [PATCH] oledb32: Implement IDataSourceLocator PromptNew
 
-TODO: Remove tests
 ---
  dlls/oledb32/Makefile.in      |   1 +
  dlls/oledb32/dslocator.c      | 130 +++++++++++++++++++++++++++++++++++++++++-
  dlls/oledb32/main.c           |   2 +-
  dlls/oledb32/oledb_private.h  |   2 +
  dlls/oledb32/resource.h       |  25 ++++++++
- dlls/oledb32/tests/database.c |  18 ++++--
  dlls/oledb32/version.rc       |  21 +++++++
  7 files changed, 191 insertions(+), 8 deletions(-)
  create mode 100644 dlls/oledb32/resource.h
@@ -244,48 +242,6 @@ index 0000000..5dc5704
 +
 +#define IDS_PROPSHEET_TITLE 2000
 +#define IDS_COL_PROVIDER    2001
-diff --git a/dlls/oledb32/tests/database.c b/dlls/oledb32/tests/database.c
-index 8ff55b9..a240ce5 100644
---- a/dlls/oledb32/tests/database.c
-+++ b/dlls/oledb32/tests/database.c
-@@ -939,6 +939,16 @@ static void test_dslocator(void)
- 
-         hr = IDataSourceLocator_QueryInterface(dslocator, &IID_IRpcOptions, (void **)&opts);
-         ok(hr == E_NOINTERFACE, "got %08x\n", hr);
-+        
-+        {
-+            IDispatch *disp;
-+
-+            hr = IDataSourceLocator_PromptNew(dslocator, NULL);
-+            ok(hr == E_INVALIDARG, "got %08x\n", hr);
-+
-+            hr = IDataSourceLocator_PromptNew(dslocator, &disp);
-+            ok(hr == S_OK, "got %08x\n", hr);
-+        }
- 
-         IDataInitialize_Release(datainit2);
-         IDataInitialize_Release(datainit);
-@@ -951,16 +961,16 @@ START_TEST(database)
- {
-     OleInitialize(NULL);
- 
--    test_database();
-+    /*test_database();
-     test_errorinfo();
--    test_initializationstring();
-+    test_initializationstring();*/
-     test_dslocator();
- 
-     /* row position */
--    test_rowposition();
-+    /*test_rowposition();
-     test_rowpos_initialize();
-     test_rowpos_clearrowposition();
--    test_rowpos_setrowposition();
-+    test_rowpos_setrowposition();*/
- 
-     OleUninitialize();
- }
 diff --git a/dlls/oledb32/version.rc b/dlls/oledb32/version.rc
 index e082acc..23bbee5 100644
 --- a/dlls/oledb32/version.rc
