@@ -1,16 +1,15 @@
-From 71d3616ebfe873827ef50d561f1ba7a3bb082f21 Mon Sep 17 00:00:00 2001
+From 706f5387a3b7da0aa89011185e1eb8c4b444b1bf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 10 Sep 2018 15:29:00 +1000
 Subject: [PATCH 1/2] include: Add SpSharedRecognizer coclass and support
  interfaces
 
-WIP:
 ---
- include/sapi.idl | 777 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 777 insertions(+)
+ include/sapi.idl | 802 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 802 insertions(+)
 
 diff --git a/include/sapi.idl b/include/sapi.idl
-index e138432..666b1b2 100644
+index e13843227e..dad014453b 100644
 --- a/include/sapi.idl
 +++ b/include/sapi.idl
 @@ -27,6 +27,72 @@ import "ocidl.idl";
@@ -86,7 +85,7 @@ index e138432..666b1b2 100644
  typedef [hidden] enum SPDATAKEYLOCATION
  {
      SPDKL_DefaultLocation = 0,
-@@ -35,6 +101,330 @@ typedef [hidden] enum SPDATAKEYLOCATION
+@@ -35,6 +101,355 @@ typedef [hidden] enum SPDATAKEYLOCATION
      SPDKL_CurrentConfig   = 5
  } SPDATAKEYLOCATION;
  
@@ -282,6 +281,31 @@ index e138432..666b1b2 100644
 +    SPAS_RUN
 +} SPAUDIOSTATE;
 +
++typedef [hidden] enum SPRUNSTATE
++{
++    SPRS_DONE        = (1L << 0),
++    SPRS_IS_SPEAKING = (1L << 1)
++} SPRUNSTATE;
++
++typedef [hidden] enum SPEAKFLAGS
++{
++    SPF_DEFAULT            = 0,
++    SPF_ASYNC              = (1L << 0),
++    SPF_PURGEBEFORESPEAK   = (1L << 1),
++    SPF_IS_FILENAME        = (1L << 2),
++    SPF_IS_XML             = (1L << 3),
++    SPF_IS_NOT_XML         = (1L << 4),
++    SPF_PERSIST_XML        = (1L << 5),
++    SPF_NLP_SPEAK_PUNC     = (1L << 6),
++    SPF_PARSE_SAPI         = (1L << 7),
++    SPF_PARSE_SSML         = (1L << 8),
++    SPF_PARSE_AUTODETECT   = 0,
++    SPF_NLP_MASK           = (SPF_NLP_SPEAK_PUNC),
++    SPF_PARSE_MASK         = (SPF_PARSE_SAPI|SPF_PARSE_SSML),
++    SPF_VOICE_MASK         = (SPF_ASYNC|SPF_PURGEBEFORESPEAK|SPF_IS_FILENAME|SPF_IS_XML|SPF_IS_NOT_XML|SPF_NLP_MASK|SPF_PERSIST_XML|SPF_PARSE_MASK),
++    SPF_UNUSED_FLAGS       = ~(SPF_VOICE_MASK)
++} SPEAKFLAGS;
++
 +typedef unsigned short SPPHONEID;
 +
 +typedef [restricted, hidden] struct SPPHRASEELEMENT
@@ -417,7 +441,7 @@ index e138432..666b1b2 100644
  cpp_quote("#if defined(__GNUC__)")
  
  cpp_quote("#define SPCAT_AUDIOOUT (const WCHAR []){ 'H','K','E','Y','_','L','O','C','A','L','_','M','A','C','H','I','N','E','\\\\','S','O','F','T','W','A','R','E','\\\\','M','i','c','r','o','s','o','f','t','\\\\','S','p','e','e','c','h','\\\\','A','u','d','i','o','O','u','t','p','u','t',0 }")
-@@ -56,6 +446,10 @@ cpp_quote("static const WCHAR SPCAT_VOICES[] = {'H','K','E','Y','_','L','O','C',
+@@ -56,6 +471,10 @@ cpp_quote("static const WCHAR SPCAT_VOICES[] = {'H','K','E','Y','_','L','O','C',
  cpp_quote("#endif")
  
  interface IEnumSpObjectTokens;
@@ -428,10 +452,11 @@ index e138432..666b1b2 100644
  
  [
      object,
-@@ -191,6 +585,380 @@ interface IEnumSpObjectTokens : IUnknown
+@@ -190,6 +609,380 @@ interface IEnumSpObjectTokens : IUnknown
+     HRESULT GetCount([out] ULONG *pCount);
  }
  
- [
++[
 +    object,
 +    uuid(1a5c0354-b621-4b5a-8791-d306ed379e53),
 +    local,
@@ -700,7 +725,7 @@ index e138432..666b1b2 100644
 +{
 +    HRESULT SetInterest([in] ULONGLONG event, [in] ULONGLONG queued);
 +    HRESULT GetEvents([in] ULONG count,
-+                    [out, size_is(ulCount)] SPEVENT *array,
++                    [out, size_is(count)] SPEVENT *array,
 +                    [out] ULONG *fetched);
 +    HRESULT GetInfo([out] SPEVENTSOURCEINFO *info);
 +};
@@ -805,11 +830,10 @@ index e138432..666b1b2 100644
 +    HRESULT EmulateRecognition([in] ISpPhrase *phrase);
 +};
 +
-+[
+ [
      helpstring("Speech Object Library"),
      uuid(c866ca3a-32f7-11d2-9602-00c04f8ee628),
-     version(5.4)
-@@ -210,4 +978,13 @@ library SpeechLib
+@@ -210,4 +1003,13 @@ library SpeechLib
      {
          interface ISpObjectTokenCategory;
      }
@@ -824,5 +848,5 @@ index e138432..666b1b2 100644
 +    };
  }
 -- 
-1.9.1
+2.17.1
 
