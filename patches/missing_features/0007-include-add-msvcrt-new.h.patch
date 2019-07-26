@@ -1,0 +1,56 @@
+From e616bbf016ddf3f4d6e202b8d4147ca885b2d1a7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 6 Jan 2017 13:50:00 +1100
+Subject: [PATCH] include: add msvcrt/new.h
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/Makefile.in  |  1 +
+ include/msvcrt/new.h | 23 +++++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+ create mode 100644 include/msvcrt/new.h
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 3fa8074bf5..691cd841ea 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -438,6 +438,7 @@ SOURCES = \
+ 	msvcrt/mbctype.h \
+ 	msvcrt/mbstring.h \
+ 	msvcrt/memory.h \
++	msvcrt/new.h \
+ 	msvcrt/process.h \
+ 	msvcrt/search.h \
+ 	msvcrt/setjmp.h \
+diff --git a/include/msvcrt/new.h b/include/msvcrt/new.h
+new file mode 100644
+index 0000000000..cafc770530
+--- /dev/null
++++ b/include/msvcrt/new.h
+@@ -0,0 +1,23 @@
++/*
++ * Copyright (C) 2017 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#ifndef __WINE_NEW_H__
++#define __WINE_NEW_H__
++
++
++#endif
+-- 
+2.17.1
+

@@ -1,0 +1,61 @@
+From 2ab5d55456e06b22cfbc31140f8f5fb0510c5c5f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 18 Jul 2019 13:41:07 +1000
+Subject: [PATCH] include: Added tpcshrd.h
+
+---
+ include/Makefile.in |  1 +
+ include/tpcshrd.h   | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
+ create mode 100644 include/tpcshrd.h
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 3f664ee6c9..3fa8074bf5 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -635,6 +635,7 @@ SOURCES = \
+ 	tlogstg.idl \
+ 	tmschema.h \
+ 	tom.idl \
++	tpcshrd.h \
+ 	traffic.h \
+ 	transact.idl \
+ 	twain.h \
+diff --git a/include/tpcshrd.h b/include/tpcshrd.h
+new file mode 100644
+index 0000000000..f1689a0030
+--- /dev/null
++++ b/include/tpcshrd.h
+@@ -0,0 +1,29 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef __WISPSHRD_H
++#define __WISPSHRD_H
++
++#define WM_TABLET_DEFBASE                  0x02C0
++#define WM_TABLET_MAXOFFSET                0x20
++#define WM_TABLET_ADDED                    (WM_TABLET_DEFBASE + 8)
++#define WM_TABLET_DELETED                  (WM_TABLET_DEFBASE + 9)
++#define WM_TABLET_FLICK                    (WM_TABLET_DEFBASE + 11)
++#define WM_TABLET_QUERYSYSTEMGESTURESTATUS (WM_TABLET_DEFBASE + 12)
++
++
++#endif /* __WISPSHRD_H */
+-- 
+2.17.1
+

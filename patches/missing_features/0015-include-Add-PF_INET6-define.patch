@@ -1,0 +1,32 @@
+From 3a462143b794cd787dd9c6e498178f3045e1edaa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 22 Jul 2019 11:58:37 +1000
+Subject: [PATCH] include: Add PF_INET6 define
+
+---
+ include/winsock2.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/winsock2.h b/include/winsock2.h
+index a2563f4df2..9f2b78978d 100644
+--- a/include/winsock2.h
++++ b/include/winsock2.h
+@@ -181,6 +181,7 @@ extern "C" {
+ #define WS_SIO_ADDRESS_LIST_CHANGE            _WSAIO(WS_IOC_WS2,23)
+ #define WS_SIO_QUERY_TARGET_PNP_HANDLE        _WSAIOR(WS_IOC_WS2,24)
+ #define WS_SIO_GET_INTERFACE_LIST             WS__IOR('t', 127, ULONG)
++#define WS_PF_INET6                AF_INET6
+ #else /* USE_WS_PREFIX */
+ #undef IOC_VOID
+ #undef IOC_IN
+@@ -217,6 +218,7 @@ extern "C" {
+ #define SIO_ADDRESS_LIST_CHANGE    _WSAIO(IOC_WS2,23)
+ #define SIO_QUERY_TARGET_PNP_HANDLE _WSAIOR(IOC_WS2,24)
+ #define SIO_GET_INTERFACE_LIST     _IOR ('t', 127, ULONG)
++#define PF_INET6                   AF_INET6
+ #endif /* USE_WS_PREFIX */
+ 
+ /* Constants for WSAIoctl() */
+-- 
+2.17.1
+

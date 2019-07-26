@@ -1,0 +1,48 @@
+From f506651a5f1bf16de1b8388b5e020402847ea252 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 22 Jul 2019 14:01:44 +1000
+Subject: [PATCH] include: Add gesture defines
+
+---
+ include/winuser.h | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/include/winuser.h b/include/winuser.h
+index abb6d5b5e9..c4ca858a1c 100644
+--- a/include/winuser.h
++++ b/include/winuser.h
+@@ -3316,6 +3316,31 @@ typedef struct
+ #define  MSGFLT_ADD    1
+ #define  MSGFLT_REMOVE 2
+ 
++/* Gesture */
++#define GC_PAN                                 0x00000001
++#define GC_PAN_WITH_SINGLE_FINGER_VERTICALLY   0x00000002
++#define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY 0x00000004
++#define GC_PAN_WITH_GUTTER                     0x00000008
++#define GC_PAN_WITH_INERTIA                    0x00000010
++
++#define GC_ALLGESTURES                         0x00000001
++#define GC_PRESSANDTAP                         0x00000001
++#define GC_ROLLOVER                            GC_PRESSANDTAP
++#define GC_ROTATE                              0x00000001
++#define GC_TWOFINGERTAP                        0x00000001
++#define GC_ZOOM                                0x00000001
++
++#define GESTURECONFIGMAXCOUNT                  256
++
++#define GID_BEGIN                              1
++#define GID_END                                2
++#define GID_ZOOM                               3
++#define GID_PAN                                4
++#define GID_ROTATE                             5
++#define GID_TWOFINGERTAP                       6
++#define GID_PRESSANDTAP                        7
++#define GID_ROLLOVER                           GID_PRESSANDTAP
++
+ /* ChangeWindowMessageFilterEx defines */
+ #define  MSGFLTINFO_NONE                     0
+ #define  MSGFLTINFO_ALREADYALLOWED_FORWND    1
+-- 
+2.17.1
+

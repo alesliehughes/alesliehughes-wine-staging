@@ -1,0 +1,65 @@
+From d32505565d948ff1a491f67301eb0f1eb44122e6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Jul 2019 15:17:20 +1000
+Subject: [PATCH] include: Add more _tcs* defines
+
+---
+ include/tchar.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/include/tchar.h b/include/tchar.h
+index 9e7a846f1c..ba0289a5ab 100644
+--- a/include/tchar.h
++++ b/include/tchar.h
+@@ -106,11 +106,13 @@ extern "C" {
+ #define _tchmod       WINE_tchar_routine(chmod,           _chmod,      _wchmod)
+ #define _tcreat       WINE_tchar_routine(creat,           _creat,      _wcreat)
+ #define _tcscat       WINE_tchar_routine(strcat,          _mbscat,     wcscat)
++#define _tcscat_s     WINE_tchar_routine(strncat_s,       _mbsncat_s,  wcsncat_s)
+ #define _tcschr       WINE_tchar_routine(strchr,          _mbschr,     wcschr)
+ #define _tcsclen      WINE_tchar_routine(strlen,          _mbslen,     wcslen)
+ #define _tcscmp       WINE_tchar_routine(strcmp,          _mbscmp,     wcscmp)
+ #define _tcscoll      WINE_tchar_routine(strcoll,         _mbscoll,    wcscoll)
+ #define _tcscpy       WINE_tchar_routine(strcpy,          _mbscpy,     wcscpy)
++#define _tcscpy_s     WINE_tchar_routine(strcpy_s,        _mbscpy_s,   wcscpy_s)
+ #define _tcscspn      WINE_tchar_routine(strcspn,         _mbscspn,    wcscspn)
+ #define _tcsdec       WINE_tchar_routine(_strdec,         _mbsdec,     _wcsdec)
+ #define _tcsdup       WINE_tchar_routine(strdup,          _mbsdup,     _wcsdup)
+@@ -120,15 +122,18 @@ extern "C" {
+ #define _tcsinc       WINE_tchar_routine(_strinc,         _mbsinc,     _wcsinc)
+ #define _tcslen       WINE_tchar_routine(strlen,          strlen,      wcslen)
+ #define _tcslwr       WINE_tchar_routine(_strlwr,         _mbslwr,     _wcslwr)
++#define _tcslwr_s     WINE_tchar_routine(_strlwr_s,       _mbslwr_s,   _wcslwr_s)
+ #define _tcsnbcnt     WINE_tchar_routine(_strncnt,        _mbsnbcnt,   _wcnscnt)
+ #define _tcsncat      WINE_tchar_routine(strncat,         _mbsnbcat,   wcsncat)
+ #define _tcsnccat     WINE_tchar_routine(strncat,         _mbsncat,    wcsncat)
+ #define _tcsncmp      WINE_tchar_routine(strncmp,         _mbsnbcmp,   wcsncmp)
++#define _tcsncpy      WINE_tchar_routine(strncpy,         _mbsncpy,    wcsncpy)
+ #define _tcsnccmp     WINE_tchar_routine(strncmp,         _mbsncmp,    wcsncmp)
+ #define _tcsnccnt     WINE_tchar_routine(_strncnt,        _mbsnccnt,   _wcsncnt)
+ #define _tcsnccpy     WINE_tchar_routine(strncpy,         _mbsncpy,    wcsncpy)
+ #define _tcsncicmp    WINE_tchar_routine(_strnicmp,       _mbsnicmp,   _wcsnicmp)
+ #define _tcsncpy      WINE_tchar_routine(strncpy,         _mbsnbcpy,   wcsncpy)
++#define _tcsncpy      WINE_tchar_routine(strncpy_s,       _mbsnbcpy_s, wcsncpy_s)
+ #define _tcsncset     WINE_tchar_routine(_strnset,        _mbsnset,    _wcsnset)
+ #define _tcsnextc     WINE_tchar_routine(_strnextc,       _mbsnextc,   _wcsnextc)
+ #define _tcsnicmp     WINE_tchar_routine(_strnicmp,       _mbsnicmp,   _wcsnicmp)
+@@ -148,6 +153,7 @@ extern "C" {
+ #define _tcstol       WINE_tchar_routine(strtol,          strtol,      wcstol)
+ #define _tcstoul      WINE_tchar_routine(strtoul,         strtoul,     wcstoul)
+ #define _tcsupr       WINE_tchar_routine(_strupr,         _mbsupr,     _wcsupr)
++#define _tcsupr_s     WINE_tchar_routine(_strupr_s,       _mbsupr_s,   _wcsupr_s)
+ #define _tcsxfrm      WINE_tchar_routine(strxfrm,         strxfrm,     wcsxfrm)
+ #define _tctime       WINE_tchar_routine(ctime,           ctime,       _wctime)
+ #define _tenviron     WINE_tchar_routine(_environ,        _environ,    _wenviron)
+@@ -196,6 +202,7 @@ extern "C" {
+ #define _tspawnvp     WINE_tchar_routine(_spawnvp,        _spawnvp,    _tspawnvp)
+ #define _tspawnvpe    WINE_tchar_routine(_spawnvpe,       _spawnvpe,   _tspawnvpe)
+ #define _tsplitpath   WINE_tchar_routine(_splitpath,      _splitpath,  _wsplitpath)
++#define _tsplitpath_s WINE_tchar_routine(_splitpath_s,    _splitpath_s,_wsplitpath_s)
+ #define _tstat        WINE_tchar_routine(_stat,           _stat,       _wstat)
+ #define _tstati64     WINE_tchar_routine(_stati64,        _stati64,    _wstati64)
+ #define _tstrdate     WINE_tchar_routine(_strdate,        _strdate,    _wstrdate)
+-- 
+2.17.1
+

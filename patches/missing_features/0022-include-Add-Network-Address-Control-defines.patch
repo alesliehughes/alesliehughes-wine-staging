@@ -1,0 +1,44 @@
+From e25497b6d223eaf3a043a06a3da1acbf4816e1bb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 23 Jul 2019 15:14:23 +1000
+Subject: [PATCH] include: Add Network Address Control defines
+
+---
+ include/shellapi.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/include/shellapi.h b/include/shellapi.h
+index 0e7d64c7ba..56899c59be 100644
+--- a/include/shellapi.h
++++ b/include/shellapi.h
+@@ -496,6 +496,27 @@ HRESULT     WINAPI SHQueryRecycleBinA(LPCSTR,LPSHQUERYRBINFO);
+ HRESULT     WINAPI SHQueryRecycleBinW(LPCWSTR,LPSHQUERYRBINFO);
+ #define     SHQueryRecycleBin WINELIB_NAME_AW(SHQueryRecycleBin)
+ 
++/******************************************
++ * Network Address Control
++ */
++typedef struct tagNC_ADDRESS
++{
++   struct NET_ADDRESS_INFO_ *pAddrInfo;
++   USHORT                   PortNumber;
++   BYTE                     PrefixLength;
++} NC_ADDRESS, *PNC_ADDRESS;
++
++#define NCM_GETADDRESS   (WM_USER+1)
++#define NCM_SETALLOWTYPE (WM_USER+2)
++#define NCM_GETALLOWTYPE (WM_USER+3)
++
++#define NetAddr_GetAddress(hwnd,addr) \
++    (HRESULT)SNDMSG(hwnd,NCM_GETADDRESS,0,(LPARAM)addr)
++#define NetAddr_SetAllowType(hwnd, mask) \
++    (HRESULT)SNDMSG(hwnd,NCM_SETALLOWTYPE,(WPARAM)mask,0)
++#define NetAddr_GetAllowType(hwnd) \
++    (DWORD)SNDMSG(hwnd,NCM_GETALLOWTYPE,0,0)
++
+ /******************************************
+  * Misc
+  */
+-- 
+2.17.1
+
