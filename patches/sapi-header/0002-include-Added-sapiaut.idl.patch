@@ -1,22 +1,20 @@
-From b1850527e75e3db053946dbb916597e969ebffd4 Mon Sep 17 00:00:00 2001
+From e90c5adaf6f28cf644d3f3b8fe53cd284d0e077c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 30 Oct 2018 16:03:34 +1100
+Date: Mon, 5 Aug 2019 13:52:12 +1000
 Subject: [PATCH 2/2] include: Added sapiaut.idl
 
-WIP:
 ---
  include/Makefile.in |    1 +
- include/sapi.idl    |   39 +-
- include/sapiaut.idl | 2121 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 2159 insertions(+), 2 deletions(-)
- mode change 100644 => 100755 include/sapi.idl
+ include/sapi.idl    |    2 +
+ include/sapiaut.idl | 2017 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 2020 insertions(+)
  create mode 100755 include/sapiaut.idl
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 7ca25e27ce..3648e79e30 100644
+index 856d52d8ea..a5a75baefc 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -569,6 +569,7 @@ SOURCES = \
+@@ -570,6 +570,7 @@ SOURCES = \
  	rtutils.h \
  	sal.h \
  	sapi.idl \
@@ -25,70 +23,10 @@ index 7ca25e27ce..3648e79e30 100644
  	scarderr.h \
  	schannel.h \
 diff --git a/include/sapi.idl b/include/sapi.idl
-old mode 100644
-new mode 100755
-index dad014453b..d6cd5be0c5
+index d6f904f29a..8e591bd3a0 100755
 --- a/include/sapi.idl
 +++ b/include/sapi.idl
-@@ -82,7 +82,8 @@ typedef [hidden] enum SPGRAMMARWORDTYPE
- {
-     SPWT_DISPLAY,
-     SPWT_LEXICAL,
--    SPWT_PRONUNCIATION
-+    SPWT_PRONUNCIATION,
-+	SPWT_LEXICAL_NO_SPECIAL_CHARS
- } SPGRAMMARWORDTYPE;
- 
- typedef [hidden] struct tagSPPROPERTYINFO
-@@ -111,7 +112,8 @@ typedef [hidden] enum SPRULESTATE
- {
-     SPRS_INACTIVE               = 0,
-     SPRS_ACTIVE                 = 1,
--    SPRS_ACTIVE_WITH_AUTO_PAUSE = 3
-+    SPRS_ACTIVE_WITH_AUTO_PAUSE = 3,
-+	SPRS_ACTIVE_USER_DELIMITED  = 4
- } SPRULESTATE;
- 
- typedef [hidden] enum SPGRAMMARSTATE
-@@ -318,6 +320,37 @@ typedef [hidden] enum SPEAKFLAGS
-     SPF_UNUSED_FLAGS       = ~(SPF_VOICE_MASK)
- } SPEAKFLAGS;
- 
-+typedef [hidden] enum SPCFGRULEATTRIBUTES
-+{
-+	SPRAF_TopLevel      = (1 << 0),
-+	SPRAF_Active        = (1 << 1),
-+	SPRAF_Export        = (1 << 2),
-+	SPRAF_Import        = (1 << 3),
-+	SPRAF_Interpreter   = (1 << 4),
-+	SPRAF_Dynamic       = (1 << 5),
-+	SPRAF_Root          = (1 << 6),
-+	SPRAF_AutoPause     = (1 << 16),
-+	SPRAF_UserDelimited = (1 << 17)
-+} SPCFGRULEATTRIBUTES;
-+
-+typedef [hidden] enum SPPHRASERNG
-+{
-+    SPPR_ALL_ELEMENTS = -1
-+} SPPHRASERNG;
-+
-+typedef [hidden] enum SPVALUETYPE
-+{
-+    SPDF_PROPERTY      = 0x00000001,
-+    SPDF_REPLACEMENT   = 0x00000002,
-+    SPDF_RULE          = 0x00000004,
-+    SPDF_DISPLAYTEXT   = 0x00000008,
-+    SPDF_LEXICALFORM   = 0x00000010,
-+    SPDF_PRONUNCIATION = 0x00000020,
-+    SPDF_AUDIO         = 0x00000040,
-+    SPDF_ALTERNATES    = 0x00000080,
-+    SPDF_ALL           = 0x000000ff
-+} SPVALUETYPE;
-+
- typedef unsigned short SPPHONEID;
- 
- typedef [restricted, hidden] struct SPPHRASEELEMENT
-@@ -992,6 +1025,8 @@ library SpeechLib
+@@ -1025,6 +1025,8 @@ library SpeechLib
  {
      importlib("stdole2.tlb");
  
@@ -99,10 +37,10 @@ index dad014453b..d6cd5be0c5
          helpstring("SpObjectTokenCategory Class"),
 diff --git a/include/sapiaut.idl b/include/sapiaut.idl
 new file mode 100755
-index 0000000000..65a28f58c5
+index 0000000000..d460bfa8c3
 --- /dev/null
 +++ b/include/sapiaut.idl
-@@ -0,0 +1,2121 @@
+@@ -0,0 +1,2017 @@
 +/*
 + *
 + * Copyright (C) 2018 Alistair Leslie-Hughes
@@ -121,6 +59,9 @@ index 0000000000..65a28f58c5
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
++#if 0
++#pragma makedep install
++#endif
 +
 +import "oaidl.idl";
 +import "ocidl.idl";
@@ -140,16 +81,16 @@ index 0000000000..65a28f58c5
 +
 +typedef enum SpeechLoadOption
 +{
-+	SLOStatic = SPLO_STATIC,
-+	SLODynamic = SPLO_DYNAMIC
++    SLOStatic  = SPLO_STATIC,
++    SLODynamic = SPLO_DYNAMIC
 +} SpeechLoadOption;
 +
 +typedef enum SpeechRuleState
 +{
-+	SGDSInactive            = SPRS_INACTIVE,
-+	SGDSActive              = SPRS_ACTIVE,
-+	SGDSActiveWithAutoPause = SPRS_ACTIVE_WITH_AUTO_PAUSE,
-+	SGDSActiveUserDelimited = SPRS_ACTIVE_USER_DELIMITED
++    SGDSInactive            = SPRS_INACTIVE,
++    SGDSActive              = SPRS_ACTIVE,
++    SGDSActiveWithAutoPause = SPRS_ACTIVE_WITH_AUTO_PAUSE,
++    SGDSActiveUserDelimited = SPRS_ACTIVE_USER_DELIMITED
 +} SpeechRuleState;
 +
 +typedef enum SpeechTokenShellFolder
@@ -212,33 +153,40 @@ index 0000000000..65a28f58c5
 +
 +typedef enum SpeechFormatType
 +{
-+	SFTInput    = SPWF_INPUT,
-+	SFTSREngine = SPWF_SRENGINE
++    SFTInput    = SPWF_INPUT,
++    SFTSREngine = SPWF_SRENGINE
 +} SpeechFormatType;
 +
 +typedef enum SpeechGrammarState
 +{
-+	SGSEnabled   = SPGS_ENABLED,
-+	SGSDisabled  = SPGS_DISABLED,
-+	SGSExclusive = SPGS_EXCLUSIVE,
++    SGSEnabled   = SPGS_ENABLED,
++    SGSDisabled  = SPGS_DISABLED,
++    SGSExclusive = SPGS_EXCLUSIVE,
 +} SpeechGrammarState;
 +
 +typedef enum SpeechRuleAttributes
 +{
-+	SRATopLevel        = SPRAF_TopLevel,
-+	SRADefaultToActive = SPRAF_Active,
-+	SRAExport          = SPRAF_Export,
-+	SRAImport          = SPRAF_Import,
-+	SRAInterpreter     = SPRAF_Interpreter,
-+	SRADynamic         = SPRAF_Dynamic,
-+	SRARoot            = SPRAF_Root
++    SRATopLevel        = SPRAF_TopLevel,
++    SRADefaultToActive = SPRAF_Active,
++    SRAExport          = SPRAF_Export,
++    SRAImport          = SPRAF_Import,
++    SRAInterpreter     = SPRAF_Interpreter,
++    SRADynamic         = SPRAF_Dynamic,
++    SRARoot            = SPRAF_Root
 +} SpeechRuleAttributes;
++
++typedef enum SpeechWordPronounceable
++{
++    SWPUnknownWordUnpronounceable = SPWP_UNKNOWN_WORD_UNPRONOUNCEABLE,
++    SWPUnknownWordPronounceable   = SPWP_UNKNOWN_WORD_PRONOUNCEABLE,
++    SWPKnownWordPronounceable     = SPWP_KNOWN_WORD_PRONOUNCEABLE
++} SpeechWordPronounceable;
 +
 +typedef enum SpeechSpecialTransitionType
 +{
-+	SSTTWildcard = 1,
-+	SSTTDictation,
-+	SSTTTextBuffer
++    SSTTWildcard = 1,
++    SSTTDictation,
++    SSTTTextBuffer
 +} SpeechSpecialTransitionType;
 +
 +typedef [hidden] enum DISPID_SpeechRecoContext
@@ -280,25 +228,25 @@ index 0000000000..65a28f58c5
 +
 +typedef [hidden] enum DISPIDSPRG
 +{
-+	DISPID_SRGId = 1,
-+	DISPID_SRGRecoContext,
-+	DISPID_SRGState,
-+	DISPID_SRGRules,
-+	DISPID_SRGReset,
-+	DISPID_SRGCommit,
-+	DISPID_SRGCmdLoadFromFile,
-+	DISPID_SRGCmdLoadFromObject,
-+	DISPID_SRGCmdLoadFromResource,
-+	DISPID_SRGCmdLoadFromMemory,
-+	DISPID_SRGCmdLoadFromProprietaryGrammar,
-+	DISPID_SRGCmdSetRuleState,
-+	DISPID_SRGCmdSetRuleIdState,
-+	DISPID_SRGDictationLoad,
-+	DISPID_SRGDictationUnload,
-+	DISPID_SRGDictationSetState,
-+	DISPID_SRGSetWordSequenceData,
-+	DISPID_SRGSetTextSelection,
-+	DISPID_SRGIsPronounceable
++    DISPID_SRGId = 1,
++    DISPID_SRGRecoContext,
++    DISPID_SRGState,
++    DISPID_SRGRules,
++    DISPID_SRGReset,
++    DISPID_SRGCommit,
++    DISPID_SRGCmdLoadFromFile,
++    DISPID_SRGCmdLoadFromObject,
++    DISPID_SRGCmdLoadFromResource,
++    DISPID_SRGCmdLoadFromMemory,
++    DISPID_SRGCmdLoadFromProprietaryGrammar,
++    DISPID_SRGCmdSetRuleState,
++    DISPID_SRGCmdSetRuleIdState,
++    DISPID_SRGDictationLoad,
++    DISPID_SRGDictationUnload,
++    DISPID_SRGDictationSetState,
++    DISPID_SRGSetWordSequenceData,
++    DISPID_SRGSetTextSelection,
++    DISPID_SRGIsPronounceable
 +} DISPIDSPRG;
 +
 +typedef enum SpeechInterference
@@ -348,10 +296,10 @@ index 0000000000..65a28f58c5
 +
 +typedef enum SpeechGrammarWordType
 +{
-+	SGDisplay               = SPWT_DISPLAY,
-+	SGLexical               = SPWT_LEXICAL,
-+	SGPronounciation        = SPWT_PRONUNCIATION,
-+	SGLexicalNoSpecialChars = SPWT_LEXICAL_NO_SPECIAL_CHARS
++    SGDisplay               = SPWT_DISPLAY,
++    SGLexical               = SPWT_LEXICAL,
++    SGPronounciation        = SPWT_PRONUNCIATION,
++    SGLexicalNoSpecialChars = SPWT_LEXICAL_NO_SPECIAL_CHARS
 +} SpeechGrammarWordType;
 +
 +typedef enum SpeechRecoEvents
@@ -826,19 +774,19 @@ index 0000000000..65a28f58c5
 +]
 +interface ISpeechAudioStatus : IDispatch
 +{
-+    [propget, helpstring("FreeBufferSpace"), id(DISPID_SASFreeBufferSpace)]
++    [propget, id(DISPID_SASFreeBufferSpace)]
 +    HRESULT FreeBufferSpace([out,retval] long *space);
 +
-+    [propget, helpstring("NonBlockingIO"), id(DISPID_SASNonBlockingIO)]
++    [propget, id(DISPID_SASNonBlockingIO)]
 +    HRESULT NonBlockingIO([out,retval] long *nonblocking);
 +
-+    [propget, helpstring("State"), id(DISPID_SASState)]
++    [propget, id(DISPID_SASState)]
 +    HRESULT State([out, retval] SpeechAudioState *state);
 +
-+    [propget, helpstring("CurrentSeekPosition"), id(DISPID_SASCurrentSeekPosition)]
++    [propget, id(DISPID_SASCurrentSeekPosition)]
 +    HRESULT CurrentSeekPosition([out,retval] VARIANT *position);
 +
-+    [propget, helpstring("CurrentDevicePosition"), id(DISPID_SASCurrentDevicePosition)]
++    [propget, id(DISPID_SASCurrentDevicePosition)]
 +    HRESULT CurrentDevicePosition([out,retval] VARIANT *position);
 +};
 +
@@ -1612,430 +1560,316 @@ index 0000000000..65a28f58c5
 +    [id(DISPID_SRRDiscardResultInfo)]
 +    HRESULT DiscardResultInfo([in] SpeechDiscardType types);
 +};
-+/****************************/
++
 +typedef [hidden] enum DISPID_SpeechGrammarRule
 +{
-+	DISPID_SGRAttributes = 1,
-+	DISPID_SGRInitialState,
-+	DISPID_SGRName,
-+	DISPID_SGRId,
-+	DISPID_SGRClear,
-+	DISPID_SGRAddResource,
-+	DISPID_SGRAddState
++    DISPID_SGRAttributes = 1,
++    DISPID_SGRInitialState,
++    DISPID_SGRName,
++    DISPID_SGRId,
++    DISPID_SGRClear,
++    DISPID_SGRAddResource,
++    DISPID_SGRAddState
 +} DISPID_SpeechGrammarRule;
 +
 +typedef [hidden] enum DISPID_SpeechGrammarRuleStateTransitions
 +{
-+	DISPID_SGRSTsCount = 1,
-+	DISPID_SGRSTsItem = DISPID_VALUE,
-+	DISPID_SGRSTs_NewEnum = DISPID_NEWENUM
++    DISPID_SGRSTsCount = 1,
++    DISPID_SGRSTsItem = DISPID_VALUE,
++    DISPID_SGRSTs_NewEnum = DISPID_NEWENUM
 +} DISPID_SpeechGrammarRuleStateTransitions;
 +
 +typedef enum SpeechGrammarRuleStateTransitionType
 +{
-+	SGRSTTEpsilon = 0,
-+	SGRSTTWord,
-+	SGRSTTRule,
-+	SGRSTTDictation,
-+	SGRSTTWildcard,
-+	SGRSTTTextBuffer
++    SGRSTTEpsilon = 0,
++    SGRSTTWord,
++    SGRSTTRule,
++    SGRSTTDictation,
++    SGRSTTWildcard,
++    SGRSTTTextBuffer
 +} SpeechGrammarRuleStateTransitionType;
 +
 +typedef [hidden] enum DISPID_SpeechGrammarRuleStateTransition
 +{
-+	DISPID_SGRSTType = 1,
-+	DISPID_SGRSTText,
-+	DISPID_SGRSTRule,
-+	DISPID_SGRSTWeight,
-+	DISPID_SGRSTPropertyName,
-+	DISPID_SGRSTPropertyId,
-+	DISPID_SGRSTPropertyValue,
-+	DISPID_SGRSTNextState
++    DISPID_SGRSTType = 1,
++    DISPID_SGRSTText,
++    DISPID_SGRSTRule,
++    DISPID_SGRSTWeight,
++    DISPID_SGRSTPropertyName,
++    DISPID_SGRSTPropertyId,
++    DISPID_SGRSTPropertyValue,
++    DISPID_SGRSTNextState
 +} DISPID_SpeechGrammarRuleStateTransition;
 +
 +[
-+	object,
-+	uuid(CAFD1DB1-41D1-4a06-9863-E2E81DA17A9A),
-+	dual,
-+	helpstring("ISpeechGrammarRuleStateTransition Interface"),
-+	pointer_default(unique)
++    object,
++    uuid(cafd1db1-41d1-4a06-9863-e2e81da17a9a),
++    dual,
++    pointer_default(unique)
 +]
 +interface ISpeechGrammarRuleStateTransition : IDispatch
 +{
-+	// Properties
++    [propget, id(DISPID_SGRSTType)]
++    HRESULT Type([out, retval] SpeechGrammarRuleStateTransitionType *type);
 +
-+	// Type
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Type"), id(DISPID_SGRSTType)]
-+	HRESULT Type([out, retval] SpeechGrammarRuleStateTransitionType* Type);
++    [propget, id(DISPID_SGRSTText)]
++    HRESULT Text([out, retval] BSTR *text);
 +
-+	// Text
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Text"), id(DISPID_SGRSTText)]
-+	HRESULT Text([out, retval] BSTR* Text);
++    [propget, id(DISPID_SGRSTRule)]
++    HRESULT Rule([out, retval] ISpeechGrammarRule **rule);
 +
-+	// Rule
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Rule"), id(DISPID_SGRSTRule)]
-+	HRESULT Rule([out, retval] ISpeechGrammarRule ** Rule);
++    [propget, id(DISPID_SGRSTWeight)]
++    HRESULT Weight([out, retval] VARIANT *weight);
 +
-+	// Weight
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Weight"), id(DISPID_SGRSTWeight)]
-+	HRESULT Weight([out, retval] VARIANT * Weight);
++    [propget, id(DISPID_SGRSTPropertyName)]
++    HRESULT PropertyName([out, retval] BSTR *name);
 +
-+	// PropertyName
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("PropertyName"), id(DISPID_SGRSTPropertyName)]
-+	HRESULT PropertyName([out, retval] BSTR * PropertyName);
++    [propget, id(DISPID_SGRSTPropertyId)]
++    HRESULT PropertyId([out, retval] long *id);
 +
-+	// PropertyId
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("PropertyId"), id(DISPID_SGRSTPropertyId)]
-+	HRESULT PropertyId([out, retval] long * PropertyId);
++    [propget, id(DISPID_SGRSTPropertyValue)]
++    HRESULT PropertyValue([out, retval] VARIANT *value);
 +
-+	// PropertyValue
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("PropertyValue"), id(DISPID_SGRSTPropertyValue)]
-+	HRESULT PropertyValue([out, retval] VARIANT * PropertyValue);
-+
-+	// NextState
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("NextState"), id(DISPID_SGRSTNextState)]
-+	HRESULT NextState([out, retval] ISpeechGrammarRuleState ** NextState);
++    [propget, id(DISPID_SGRSTNextState)]
++    HRESULT NextState([out, retval] ISpeechGrammarRuleState **state);
 +};
 +
 +[
-+	object,
-+	uuid(EABCE657-75BC-44a2-AA7F-C56476742963),
-+	dual,
-+	helpstring("ISpeechGrammarRuleStateTransitions Interface"),
-+	pointer_default(unique)
++    object,
++    uuid(EABCE657-75BC-44a2-AA7F-C56476742963),
++    dual,
++    pointer_default(unique)
 +]
 +interface ISpeechGrammarRuleStateTransitions : IDispatch
 +{
-+	// Properties
++    [propget, id(DISPID_SGRSTsCount)]
++    HRESULT Count([out, retval] long *count);
 +
-+	// Count
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Count"), id(DISPID_SGRSTsCount)]
-+	HRESULT Count([out, retval] long* Count);
++    [id(DISPID_SGRSTsItem)]
++    HRESULT Item([in] long index, [out, retval]ISpeechGrammarRuleStateTransition **Transition);
 +
-+	// Methods
-+
-+	// Item
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("Item"), id(DISPID_SGRSTsItem)]
-+	HRESULT Item([in] long Index, [out, retval]ISpeechGrammarRuleStateTransition** Transition);
-+
-+	// _NewEnum
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[propget, helpstring("Enumerates the transitions"), restricted, id(DISPID_SGRSTs_NewEnum)]
-+	HRESULT _NewEnum([out, retval] IUnknown** EnumVARIANT);
++    [propget, restricted, id(DISPID_SGRSTs_NewEnum)]
++    HRESULT _NewEnum([out, retval] IUnknown **enum_var);
 +};
 +
 +typedef [hidden] enum DISPID_SpeechGrammarRuleState
 +{
-+	DISPID_SGRSRule = 1,
-+	DISPID_SGRSTransitions,
-+	DISPID_SGRSAddWordTransition,
-+	DISPID_SGRSAddRuleTransition,
-+	DISPID_SGRSAddSpecialTransition
++    DISPID_SGRSRule = 1,
++    DISPID_SGRSTransitions,
++    DISPID_SGRSAddWordTransition,
++    DISPID_SGRSAddRuleTransition,
++    DISPID_SGRSAddSpecialTransition
 +} DISPID_SpeechGrammarRuleState;
 +
 +[
-+	object,
-+	uuid(D4286F2C-EE67-45ae-B928-28D695362EDA),
-+	dual,
-+	helpstring("ISpeechGrammarRuleState Interface"),
-+	pointer_default(unique)
++    object,
++    uuid(d4286f2c-ee67-45ae-b928-28d695362eda),
++    dual,
++    pointer_default(unique)
 +]
 +interface ISpeechGrammarRuleState : IDispatch
 +{
-+	// Properties
++    [propget, id(DISPID_SGRSRule)]
++    HRESULT Rule([out, retval] ISpeechGrammarRule **rule);
 +
-+	// Rule
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Rule"), id(DISPID_SGRSRule)]
-+	HRESULT Rule([out, retval] ISpeechGrammarRule** Rule);
++    [propget, id(DISPID_SGRSTransitions)]
++    HRESULT Transitions([out, retval] ISpeechGrammarRuleStateTransitions **transitions);
 +
-+	// Transitions
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Transitions"), id(DISPID_SGRSTransitions)]
-+	HRESULT Transitions([out, retval] ISpeechGrammarRuleStateTransitions** Transitions);
++    [id(DISPID_SGRSAddWordTransition)]
++    HRESULT AddWordTransition([in] ISpeechGrammarRuleState *state, [in] const BSTR Words,
++            [in, defaultvalue(" ")] const BSTR separators, [in, defaultvalue(SGLexical)] SpeechGrammarWordType type,
++            [in, defaultvalue("")] const BSTR name, [in, defaultvalue(0)] long id,
++            [in, defaultvalue(0)] VARIANT *value,  [in, defaultvalue(1)] float weight);
 +
-+	// Methods
++    [id(DISPID_SGRSAddRuleTransition)]
++    HRESULT AddRuleTransition([in] ISpeechGrammarRuleState *state, [in] ISpeechGrammarRule *rule,
++            [in, defaultvalue("")] const BSTR name, [in, defaultvalue(0)] long id,
++            [in, defaultvalue(0)] VARIANT *value, [in, defaultvalue(1)] float weight);
 +
-+	// AddWordTransition
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("AddWordTransition"), id(DISPID_SGRSAddWordTransition)]
-+	HRESULT AddWordTransition([in]ISpeechGrammarRuleState* DestState,
-+		[in]const BSTR Words,
-+		[in, defaultvalue(" ")]const BSTR Separators,
-+		[in, defaultvalue(SGLexical)]SpeechGrammarWordType Type,
-+		[in, defaultvalue("")]const BSTR PropertyName,
-+		[in, defaultvalue(0)]long PropertyId,
-+		[in, defaultvalue(0)]VARIANT* PropertyValue,
-+		[in, defaultvalue(1.0)]float Weight);
-+
-+	// AddRuleTransition
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("AddRuleTransition"), id(DISPID_SGRSAddRuleTransition)]
-+	HRESULT AddRuleTransition([in]ISpeechGrammarRuleState* DestinationState,
-+		[in]ISpeechGrammarRule* Rule,
-+		[in, defaultvalue("")]const BSTR PropertyName,
-+		[in, defaultvalue(0)]long PropertyId,
-+		[in, defaultvalue(0)]VARIANT* PropertyValue,
-+		[in, defaultvalue(1.0)]float Weight);
-+
-+	// AddSpecialTransition
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("AddSpecialTransition"), id(DISPID_SGRSAddSpecialTransition)]
-+	HRESULT AddSpecialTransition([in]ISpeechGrammarRuleState* DestinationState,
-+		[in]SpeechSpecialTransitionType Type,
-+		[in, defaultvalue("")]const BSTR PropertyName,
-+		[in, defaultvalue(0)]long PropertyId,
-+		[in, defaultvalue(0)]VARIANT* PropertyValue,
-+		[in, defaultvalue(1.0)]float Weight);
-+
++    [id(DISPID_SGRSAddSpecialTransition)]
++    HRESULT AddSpecialTransition([in] ISpeechGrammarRuleState *state, [in] SpeechSpecialTransitionType type,
++            [in, defaultvalue("")] const BSTR name, [in, defaultvalue(0)] long id,
++            [in, defaultvalue(0)] VARIANT* value, [in, defaultvalue(1)] float weight);
 +};
 +
 +[
-+	object,
-+	uuid(AFE719CF-5DD1-44f2-999C-7A399F1CFCCC),
-+	dual,
-+	helpstring("ISpeechGrammarRule Interface"),
-+	pointer_default(unique)
++    object,
++    uuid(afe719cf-5dd1-44f2-999c-7a399f1cfccc),
++    dual,
++    pointer_default(unique)
 +]
 +interface ISpeechGrammarRule : IDispatch
 +{
-+	// Properties
++    [propget, id(DISPID_SGRAttributes)]
++    HRESULT Attributes([out, retval] SpeechRuleAttributes *attributes);
 +
-+	// RuleAttributes
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("RuleAttributes"), id(DISPID_SGRAttributes)]
-+	HRESULT Attributes([out, retval] SpeechRuleAttributes* Attributes);
++    [propget, id(DISPID_SGRInitialState)]
++    HRESULT InitialState([out, retval] ISpeechGrammarRuleState **state);
 +
-+	// InitialState
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("InitialState"), id(DISPID_SGRInitialState)]
-+	HRESULT InitialState([out, retval] ISpeechGrammarRuleState** State);
++    [propget, id(DISPID_SGRName)]
++    HRESULT Name([out, retval] BSTR *name);
 +
-+	// Name
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Name"), id(DISPID_SGRName)]
-+	HRESULT Name([out, retval] BSTR* Name);
++    [propget, id(DISPID_SGRId)]
++    HRESULT Id([out, retval] long *id);
 +
-+	// Id
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Id"), id(DISPID_SGRId)]
-+	HRESULT Id([out, retval] long* Id);
++    [id(DISPID_SGRClear)]
++    HRESULT Clear();
 +
-+	// Methods
++    [id(DISPID_SGRAddResource)]
++    HRESULT AddResource([in] const BSTR name, [in] const BSTR value);
 +
-+	// Clear
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("Clear"), id(DISPID_SGRClear)]
-+	HRESULT Clear();
++    [id(DISPID_SGRAddState)]
++    HRESULT AddState([out, retval] ISpeechGrammarRuleState **state);
++};
 +
-+	// AddResource
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("AddResource"), id(DISPID_SGRAddResource)]
-+	HRESULT AddResource([in]const BSTR ResourceName, [in]const BSTR ResourceValue);
++typedef [hidden] enum DISPIDSPTSI
++{
++    DISPIDSPTSI_ActiveOffset = 1,
++    DISPIDSPTSI_ActiveLength,
++    DISPIDSPTSI_SelectionOffset,
++    DISPIDSPTSI_SelectionLength
++} DISPIDSPTSI;
 +
-+	// AddState
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("AddState"), id(DISPID_SGRAddState)]
-+	HRESULT AddState([out, retval] ISpeechGrammarRuleState** State);
++[
++    object,
++    uuid(3b9c7e7a-6eee-4ded-9092-11657279adbe),
++    dual,
++    pointer_default(unique)
++]
++interface ISpeechTextSelectionInformation : IDispatch
++{
++    [propput, id(DISPIDSPTSI_ActiveOffset)]
++    HRESULT ActiveOffset([in] long offset);
++    [propget, id(DISPIDSPTSI_ActiveOffset)]
++    HRESULT ActiveOffset([out, retval] long *offset);
++
++    [propput, id(DISPIDSPTSI_ActiveLength)]
++    HRESULT ActiveLength([in] long length);
++    [propget, id(DISPIDSPTSI_ActiveLength)]
++    HRESULT ActiveLength([out, retval] long *length);
++
++    [propput, id(DISPIDSPTSI_SelectionOffset)]
++    HRESULT SelectionOffset([in] long offset);
++    [propget, id(DISPIDSPTSI_SelectionOffset)]
++    HRESULT SelectionOffset([out, retval] long *offset);
++
++    [propput, id(DISPIDSPTSI_SelectionLength)]
++    HRESULT SelectionLength([in] long length);
++    [propget, id(DISPIDSPTSI_SelectionLength)]
++    HRESULT SelectionLength([out, retval] long* length);
 +};
 +
 +typedef [hidden] enum DISPID_SpeechGrammarRules
 +{
-+	DISPID_SGRsCount = 1,
-+	DISPID_SGRsDynamic,
-+	DISPID_SGRsAdd,
-+	DISPID_SGRsCommit,
-+	DISPID_SGRsCommitAndSave,
-+	DISPID_SGRsFindRule,
-+	DISPID_SGRsItem = DISPID_VALUE,
-+	DISPID_SGRs_NewEnum = DISPID_NEWENUM
++    DISPID_SGRsCount = 1,
++    DISPID_SGRsDynamic,
++    DISPID_SGRsAdd,
++    DISPID_SGRsCommit,
++    DISPID_SGRsCommitAndSave,
++    DISPID_SGRsFindRule,
++    DISPID_SGRsItem = DISPID_VALUE,
++    DISPID_SGRs_NewEnum = DISPID_NEWENUM
 +} DISPID_SpeechGrammarRules;
 +
 +[
-+	object,
-+	uuid(6FFA3B44-FC2D-40d1-8AFC-32911C7F1AD1),
-+	dual,
-+	helpstring("ISpeechGrammarRules Interface"),
-+	pointer_default(unique)
++    object,
++    uuid(6ffa3b44-fc2d-40d1-8afc-32911c7f1ad1),
++    dual,
++    pointer_default(unique)
 +]
 +interface ISpeechGrammarRules : IDispatch
 +{
-+	// Properties
++    [propget, id(DISPID_SGRsCount)]
++    HRESULT Count([out, retval] long *count);
 +
-+	// RuleAttributes
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Count"), id(DISPID_SGRsCount)]
-+	HRESULT Count([out, retval] long* Count);
++    [id(DISPID_SGRsFindRule)]
++    HRESULT FindRule([in] VARIANT id, [out, retval] ISpeechGrammarRule **rule);
 +
-+	// FindRule
-+	//  SAPI C++ Only Interface Equivalent:
-+	// NOTE: This returns S_OK with NULL Rule if rule is not found.
-+	[helpstring("FindRule"), id(DISPID_SGRsFindRule)]
-+	HRESULT FindRule([in]VARIANT RuleNameOrId, [out, retval]ISpeechGrammarRule** Rule);
++    [id(DISPID_SGRsItem)]
++    HRESULT Item([in] long index, [out, retval] ISpeechGrammarRule **rule);
 +
-+	// Item
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[id(DISPID_SGRsItem), helpstring("Item")]
-+	HRESULT Item([in] long Index, [out, retval]ISpeechGrammarRule** Rule);
++    [id(DISPID_SGRs_NewEnum), propget, restricted]
++    HRESULT _NewEnum([out, retval] IUnknown **enum_var);
 +
-+	// _NewEnum
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[id(DISPID_SGRs_NewEnum), propget, helpstring("Enumerates the alternates"), restricted]
-+	HRESULT _NewEnum([out, retval] IUnknown** EnumVARIANT);
++    [propget, id(DISPID_SGRsDynamic)]
++    HRESULT Dynamic([out, retval] VARIANT_BOOL *dynamic);
 +
-+	// Dynamic
-+	//  SAPI C++ Only Interface Equivalent:
-+	//  Default: 
-+	//
-+	[propget, helpstring("Dynamic"), id(DISPID_SGRsDynamic)]
-+	HRESULT Dynamic([out, retval] VARIANT_BOOL *Dynamic);
++    [id(DISPID_SGRsAdd)]
++    HRESULT Add([in] BSTR name, [in] SpeechRuleAttributes attributes,
++            [in, defaultvalue(0)] long id, [out, retval] ISpeechGrammarRule **rule);
 +
-+	// Methods
++    [id(DISPID_SGRsCommit)]
++    HRESULT Commit(void);
 +
-+	// Add
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("Add"), id(DISPID_SGRsAdd)]
-+	HRESULT Add([in] BSTR RuleName,
-+		[in] SpeechRuleAttributes Attributes,
-+		[in, defaultvalue(0)] long RuleId,
-+		[out, retval] ISpeechGrammarRule** Rule);
-+
-+	// Commit
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("Commit"), id(DISPID_SGRsCommit)]
-+	HRESULT Commit(void);
-+
-+	// CommitAndSave
-+	//  SAPI C++ Only Interface Equivalent:
-+	//
-+	[helpstring("CommitAndSave"), id(DISPID_SGRsCommitAndSave)]
-+	HRESULT CommitAndSave([out] BSTR* ErrorText, [out, retval] VARIANT* SaveStream);
++    [id(DISPID_SGRsCommitAndSave)]
++    HRESULT CommitAndSave([out] BSTR *text, [out, retval] VARIANT *stream);
 +};
 +
-+
-+/***********************************************/
-+
 +[
-+	object,
-+	uuid(b6d6f79f-2158-4e50-b5bc-9a9ccd852a09),
-+	dual,
-+	pointer_default(unique)
++    object,
++    uuid(b6d6f79f-2158-4e50-b5bc-9a9ccd852a09),
++    dual,
++    pointer_default(unique)
 +]
 +interface ISpeechRecoGrammar : IDispatch
 +{
-+	[propget, id(DISPID_SRGId)]
-+	HRESULT Id([out, retval] VARIANT *id);
++    [propget, id(DISPID_SRGId)]
++    HRESULT Id([out, retval] VARIANT *id);
 +
-+	[propget, id(DISPID_SRGRecoContext)]
-+	HRESULT RecoContext([out, retval] ISpeechRecoContext **context);
++    [propget, id(DISPID_SRGRecoContext)]
++    HRESULT RecoContext([out, retval] ISpeechRecoContext **context);
 +
-+	[propput, id(DISPID_SRGState)]
-+	HRESULT State([in] SpeechGrammarState state);
-+	[propget, id(DISPID_SRGState)]
-+	HRESULT State([out, retval] SpeechGrammarState *state);
++    [propput, id(DISPID_SRGState)]
++    HRESULT State([in] SpeechGrammarState state);
++    [propget, id(DISPID_SRGState)]
++    HRESULT State([out, retval] SpeechGrammarState *state);
 +
-+	[propget, id(DISPID_SRGRules)]
-+	HRESULT Rules([out, retval] ISpeechGrammarRules **rules);
++    [propget, id(DISPID_SRGRules)]
++    HRESULT Rules([out, retval] ISpeechGrammarRules **rules);
 +
-+	[id(DISPID_SRGReset)]
-+	HRESULT Reset([in, defaultvalue(0)] SpeechLanguageId language);
++    [id(DISPID_SRGReset)]
++    HRESULT Reset([in, defaultvalue(0)] SpeechLanguageId language);
 +
-+	[id(DISPID_SRGCmdLoadFromFile)]
-+	HRESULT CmdLoadFromFile([in] const BSTR filename, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
++    [id(DISPID_SRGCmdLoadFromFile)]
++    HRESULT CmdLoadFromFile([in] const BSTR filename, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
 +
-+	[id(DISPID_SRGCmdLoadFromObject)]
-+	HRESULT CmdLoadFromObject([in]const BSTR classid, [in] const BSTR grammarname, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
++    [id(DISPID_SRGCmdLoadFromObject)]
++    HRESULT CmdLoadFromObject([in]const BSTR classid, [in] const BSTR grammarname, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
 +
-+	[id(DISPID_SRGCmdLoadFromResource)]
-+	HRESULT CmdLoadFromResource([in]long mod, [in] VARIANT name, [in] VARIANT yype, [in] SpeechLanguageId language,
-+                [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
++    [id(DISPID_SRGCmdLoadFromResource)]
++    HRESULT CmdLoadFromResource([in]long mod, [in] VARIANT name, [in] VARIANT yype, [in] SpeechLanguageId language,
++            [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
 +
-+	[id(DISPID_SRGCmdLoadFromMemory)]
-+	HRESULT CmdLoadFromMemory([in] VARIANT data, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
++    [id(DISPID_SRGCmdLoadFromMemory)]
++    HRESULT CmdLoadFromMemory([in] VARIANT data, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
 +
-+	[id(DISPID_SRGCmdLoadFromProprietaryGrammar)]
-+	HRESULT CmdLoadFromProprietaryGrammar([in] const BSTR guid, [in] const BSTR string, [in] VARIANT data,
-+		        [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
++    [id(DISPID_SRGCmdLoadFromProprietaryGrammar)]
++    HRESULT CmdLoadFromProprietaryGrammar([in] const BSTR guid, [in] const BSTR string, [in] VARIANT data,
++                    [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
 +
-+	[id(DISPID_SRGCmdSetRuleState)]
-+	HRESULT CmdSetRuleState([in] const BSTR name, [in] SpeechRuleState state);
++    [id(DISPID_SRGCmdSetRuleState)]
++    HRESULT CmdSetRuleState([in] const BSTR name, [in] SpeechRuleState state);
 +
-+	[id(DISPID_SRGCmdSetRuleIdState)]
-+	HRESULT CmdSetRuleIdState([in] long rule, [in] SpeechRuleState State);
++    [id(DISPID_SRGCmdSetRuleIdState)]
++    HRESULT CmdSetRuleIdState([in] long rule, [in] SpeechRuleState State);
 +
-+	[id(DISPID_SRGDictationLoad)]
-+	HRESULT DictationLoad([in, defaultvalue("")] const BSTR topic, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
++    [id(DISPID_SRGDictationLoad)]
++    HRESULT DictationLoad([in, defaultvalue("")] const BSTR topic, [in, defaultvalue(SLOStatic)] SpeechLoadOption option);
 +
-+	id(DISPID_SRGDictationUnload)]
-+	HRESULT DictationUnload(void);
++    [id(DISPID_SRGDictationUnload)]
++    HRESULT DictationUnload(void);
 +
-+	[id(DISPID_SRGDictationSetState)]
-+	HRESULT DictationSetState([in] SpeechRuleState State);
++    [id(DISPID_SRGDictationSetState)]
++    HRESULT DictationSetState([in] SpeechRuleState State);
 +
-+	[id(DISPID_SRGSetWordSequenceData)]
-+	HRESULT SetWordSequenceData([in] const BSTR text, [in] long length, [in] ISpeechTextSelectionInformation *info);
++    [id(DISPID_SRGSetWordSequenceData)]
++    HRESULT SetWordSequenceData([in] const BSTR text, [in] long length, [in] ISpeechTextSelectionInformation *info);
 +
-+	[id(DISPID_SRGSetTextSelection)]
-+	HRESULT SetTextSelection([in] ISpeechTextSelectionInformation *info);
++    [id(DISPID_SRGSetTextSelection)]
++    HRESULT SetTextSelection([in] ISpeechTextSelectionInformation *info);
 +
-+	[id(DISPID_SRGIsPronounceable)]
-+	HRESULT IsPronounceable([in] const BSTR word, [out, retval] SpeechWordPronounceable *pronounceable);
++    [id(DISPID_SRGIsPronounceable)]
++    HRESULT IsPronounceable([in] const BSTR word, [out, retval] SpeechWordPronounceable *pronounceable);
 +};
 +
 +[

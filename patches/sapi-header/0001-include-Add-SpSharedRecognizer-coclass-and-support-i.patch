@@ -1,18 +1,21 @@
-From 706f5387a3b7da0aa89011185e1eb8c4b444b1bf Mon Sep 17 00:00:00 2001
+From cde19cc9709ef652e3df7e02d4e016091b043a90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 10 Sep 2018 15:29:00 +1000
 Subject: [PATCH 1/2] include: Add SpSharedRecognizer coclass and support
  interfaces
 
 ---
- include/sapi.idl | 802 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 802 insertions(+)
+ include/sapi.idl | 835 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 835 insertions(+)
+ mode change 100644 => 100755 include/sapi.idl
 
 diff --git a/include/sapi.idl b/include/sapi.idl
-index e13843227e..dad014453b 100644
+old mode 100644
+new mode 100755
+index e13843227e..d6f904f29a
 --- a/include/sapi.idl
 +++ b/include/sapi.idl
-@@ -27,6 +27,72 @@ import "ocidl.idl";
+@@ -27,6 +27,73 @@ import "ocidl.idl";
  #define vi_progid(str)
  #endif
  
@@ -71,7 +74,8 @@ index e13843227e..dad014453b 100644
 +{
 +    SPWT_DISPLAY,
 +    SPWT_LEXICAL,
-+    SPWT_PRONUNCIATION
++    SPWT_PRONUNCIATION,
++    SPWT_LEXICAL_NO_SPECIAL_CHARS
 +} SPGRAMMARWORDTYPE;
 +
 +typedef [hidden] struct tagSPPROPERTYINFO
@@ -85,7 +89,7 @@ index e13843227e..dad014453b 100644
  typedef [hidden] enum SPDATAKEYLOCATION
  {
      SPDKL_DefaultLocation = 0,
-@@ -35,6 +101,355 @@ typedef [hidden] enum SPDATAKEYLOCATION
+@@ -35,6 +102,387 @@ typedef [hidden] enum SPDATAKEYLOCATION
      SPDKL_CurrentConfig   = 5
  } SPDATAKEYLOCATION;
  
@@ -99,7 +103,8 @@ index e13843227e..dad014453b 100644
 +{
 +    SPRS_INACTIVE               = 0,
 +    SPRS_ACTIVE                 = 1,
-+    SPRS_ACTIVE_WITH_AUTO_PAUSE = 3
++    SPRS_ACTIVE_WITH_AUTO_PAUSE = 3,
++    SPRS_ACTIVE_USER_DELIMITED  = 4
 +} SPRULESTATE;
 +
 +typedef [hidden] enum SPGRAMMARSTATE
@@ -306,6 +311,37 @@ index e13843227e..dad014453b 100644
 +    SPF_UNUSED_FLAGS       = ~(SPF_VOICE_MASK)
 +} SPEAKFLAGS;
 +
++typedef [hidden] enum SPCFGRULEATTRIBUTES
++{
++    SPRAF_TopLevel      = (1 << 0),
++    SPRAF_Active        = (1 << 1),
++    SPRAF_Export        = (1 << 2),
++    SPRAF_Import        = (1 << 3),
++    SPRAF_Interpreter   = (1 << 4),
++    SPRAF_Dynamic       = (1 << 5),
++    SPRAF_Root          = (1 << 6),
++    SPRAF_AutoPause     = (1 << 16),
++    SPRAF_UserDelimited = (1 << 17)
++} SPCFGRULEATTRIBUTES;
++
++typedef [hidden] enum SPPHRASERNG
++{
++    SPPR_ALL_ELEMENTS = -1
++} SPPHRASERNG;
++
++typedef [hidden] enum SPVALUETYPE
++{
++    SPDF_PROPERTY      = 0x00000001,
++    SPDF_REPLACEMENT   = 0x00000002,
++    SPDF_RULE          = 0x00000004,
++    SPDF_DISPLAYTEXT   = 0x00000008,
++    SPDF_LEXICALFORM   = 0x00000010,
++    SPDF_PRONUNCIATION = 0x00000020,
++    SPDF_AUDIO         = 0x00000040,
++    SPDF_ALTERNATES    = 0x00000080,
++    SPDF_ALL           = 0x000000ff
++} SPVALUETYPE;
++
 +typedef unsigned short SPPHONEID;
 +
 +typedef [restricted, hidden] struct SPPHRASEELEMENT
@@ -441,7 +477,7 @@ index e13843227e..dad014453b 100644
  cpp_quote("#if defined(__GNUC__)")
  
  cpp_quote("#define SPCAT_AUDIOOUT (const WCHAR []){ 'H','K','E','Y','_','L','O','C','A','L','_','M','A','C','H','I','N','E','\\\\','S','O','F','T','W','A','R','E','\\\\','M','i','c','r','o','s','o','f','t','\\\\','S','p','e','e','c','h','\\\\','A','u','d','i','o','O','u','t','p','u','t',0 }")
-@@ -56,6 +471,10 @@ cpp_quote("static const WCHAR SPCAT_VOICES[] = {'H','K','E','Y','_','L','O','C',
+@@ -56,6 +504,10 @@ cpp_quote("static const WCHAR SPCAT_VOICES[] = {'H','K','E','Y','_','L','O','C',
  cpp_quote("#endif")
  
  interface IEnumSpObjectTokens;
@@ -452,7 +488,7 @@ index e13843227e..dad014453b 100644
  
  [
      object,
-@@ -190,6 +609,380 @@ interface IEnumSpObjectTokens : IUnknown
+@@ -190,6 +642,380 @@ interface IEnumSpObjectTokens : IUnknown
      HRESULT GetCount([out] ULONG *pCount);
  }
  
@@ -833,7 +869,7 @@ index e13843227e..dad014453b 100644
  [
      helpstring("Speech Object Library"),
      uuid(c866ca3a-32f7-11d2-9602-00c04f8ee628),
-@@ -210,4 +1003,13 @@ library SpeechLib
+@@ -210,4 +1036,13 @@ library SpeechLib
      {
          interface ISpObjectTokenCategory;
      }
