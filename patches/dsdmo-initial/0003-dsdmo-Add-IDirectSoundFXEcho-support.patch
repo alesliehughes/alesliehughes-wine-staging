@@ -1,0 +1,144 @@
+From 8f713b6927482bfc7b09de01dc24609acf908747 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 20 Aug 2019 11:41:06 +1000
+Subject: [PATCH 03/10] dsdmo: Add IDirectSoundFXEcho support
+
+---
+ dlls/dsdmo/Makefile.in       |  3 +-
+ dlls/dsdmo/dsdmo_classes.idl | 10 ++++++
+ dlls/dsdmo/main.c            | 61 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 73 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
+index fa26d7d666..cb4f8f8a4b 100644
+--- a/dlls/dsdmo/Makefile.in
++++ b/dlls/dsdmo/Makefile.in
+@@ -1,8 +1,9 @@
+ MODULE    = dsdmo.dll
+-
++IMPORTS   = uuid
+ EXTRADLLFLAGS = -mno-cygwin
+ 
+ C_SRCS = \
++	echo.c \
+ 	main.c
+ 
+ IDL_SRCS = dsdmo_classes.idl
+diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
+index 35fd548078..a71a50fe7e 100644
+--- a/dlls/dsdmo/dsdmo_classes.idl
++++ b/dlls/dsdmo/dsdmo_classes.idl
+@@ -47,6 +47,16 @@ coclass DirectSoundFlangerDMO
+ {
+ }
+ 
++[
++    uuid(EF3E932C-D40B-4F51-8CCF-3F98F1B29D5D),
++    threading(both),
++    progid("Microsoft.DirectSoundEchoDMO.1"),
++    vi_progid("Microsoft.DirectSoundEchoDMO")
++]
++coclass DirectSoundEchoDMO
++{
++}
++
+ [
+     uuid(ef114c90-cd1d-484e-96e5-09cfaf912a21),
+     threading(both),
+diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
+index 61a67f44d8..79f09af4e9 100644
+--- a/dlls/dsdmo/main.c
++++ b/dlls/dsdmo/main.c
+@@ -17,15 +17,24 @@
+  */
+ #define COBJMACROS
+ 
++#include "windows.h"
++#include "mmsystem.h"
+ #include "ole2.h"
+ #include "rpcproxy.h"
+ 
++#include "wine/heap.h"
+ #include "wine/debug.h"
+ 
++#include "initguid.h"
++#include "dsound.h"
++#include "mediaobj.h"
++
+ WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
+ 
+ static HINSTANCE dsdmo_instance;
+ 
++extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)  DECLSPEC_HIDDEN;
++
+ /******************************************************************
+  *     DllMain
+  */
+@@ -49,12 +58,64 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpv)
+     return TRUE;
+ }
+ 
++static HRESULT WINAPI ClassFactory_QueryInterface(IClassFactory *iface, REFIID riid, void **ppv)
++{
++    *ppv = NULL;
++
++    if(IsEqualGUID(&IID_IUnknown, riid) || IsEqualGUID(&IID_IClassFactory, riid)) {
++        *ppv = iface;
++    }
++
++    if(*ppv) {
++        IUnknown_AddRef((IUnknown*)*ppv);
++        return S_OK;
++    }
++
++    WARN("(%p)->(%s %p)\n", iface, debugstr_guid(riid), ppv);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI ClassFactory_AddRef(IClassFactory *iface)
++{
++    TRACE("(%p)\n", iface);
++    return 2;
++}
++
++static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
++{
++    TRACE("(%p)\n", iface);
++    return 1;
++}
++
++static HRESULT WINAPI ClassFactory_LockServer(IClassFactory *iface, BOOL fLock)
++{
++    TRACE("(%p)->(%x)\n", iface, fLock);
++    return S_OK;
++}
++
++static const IClassFactoryVtbl EchoFactoryVtbl = {
++    ClassFactory_QueryInterface,
++    ClassFactory_AddRef,
++    ClassFactory_Release,
++    EchoFactory_CreateInstance,
++    ClassFactory_LockServer
++};
++
++static IClassFactory echofx_factory = { &EchoFactoryVtbl };
++
+ /***********************************************************************
+  *      DllGetClassObject
+  */
+ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+ {
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
++
++    if(IsEqualGUID(&GUID_DSFX_STANDARD_ECHO, rclsid))
++    {
++        TRACE("GUID_DSFX_STANDARD_ECHO\n");
++        return IClassFactory_QueryInterface(&echofx_factory, riid, ppv);
++    }
++
+     return CLASS_E_CLASSNOTAVAILABLE;
+ }
+ 
+-- 
+2.17.1
+
