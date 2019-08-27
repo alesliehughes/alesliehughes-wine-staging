@@ -1,4 +1,4 @@
-From 39991a5de50f3f5f91ea6bedc941f9af452832fe Mon Sep 17 00:00:00 2001
+From fbeec691f7999a87a33f967194a49d3f023e4a8f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 15:00:07 +1000
 Subject: [PATCH 06/10] dsdmo: Add IDirectSoundFXDistortion support
@@ -349,7 +349,7 @@ index 0000000000..e18e453823
 +        return E_NOINTERFACE;
 +    }
 +
-+    IUnknown_AddRef( (IUnknown*)*ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
 +
 +    return S_OK;
 +}
@@ -427,7 +427,7 @@ index 0000000000..e18e453823
 +    return ret;
 +}
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index f369b012ba..50ea981f77 100644
+index eaa8743ba4..9ac189fca7 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
 @@ -36,6 +36,7 @@ static HINSTANCE dsdmo_instance;
@@ -467,8 +467,8 @@ index f369b012ba..50ea981f77 100644
 +        return IClassFactory_QueryInterface(&distortionfx_factory, riid, ppv);
 +    }
  
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
      return CLASS_E_CLASSNOTAVAILABLE;
- }
 -- 
 2.17.1
 

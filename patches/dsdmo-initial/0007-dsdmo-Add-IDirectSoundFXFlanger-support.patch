@@ -1,4 +1,4 @@
-From ba5e8c163252b2b6b0721d522e2fd56758bd23e1 Mon Sep 17 00:00:00 2001
+From de4119c058b6168b62f6bec0ff3971e3bc242ba0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 16:51:33 +1000
 Subject: [PATCH 07/10] dsdmo: Add IDirectSoundFXFlanger support
@@ -349,7 +349,7 @@ index 0000000000..821147ad40
 +        return E_NOINTERFACE;
 +    }
 +
-+    IUnknown_AddRef( (IUnknown*)*ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
 +
 +    return S_OK;
 +}
@@ -427,7 +427,7 @@ index 0000000000..821147ad40
 +    return ret;
 +}
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index 50ea981f77..7d97f87f79 100644
+index 9ac189fca7..5752aae55d 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
 @@ -37,6 +37,7 @@ extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown
@@ -468,8 +468,8 @@ index 50ea981f77..7d97f87f79 100644
 +        return IClassFactory_QueryInterface(&flangerfx_factory, riid, ppv);
 +    }
  
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
      return CLASS_E_CLASSNOTAVAILABLE;
- }
 -- 
 2.17.1
 

@@ -1,4 +1,4 @@
-From cd53d6e097fa48074783f627eaf6814658ffad9c Mon Sep 17 00:00:00 2001
+From f54c45cbfc182c3ac5e7930e2c0df27510250ebc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:03:54 +1000
 Subject: [PATCH 08/10] dsdmo: Add IDirectSoundFXGargle support.
@@ -349,7 +349,7 @@ index 0000000000..68872db836
 +        return E_NOINTERFACE;
 +    }
 +
-+    IUnknown_AddRef( (IUnknown*)*ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
 +
 +    return S_OK;
 +}
@@ -427,7 +427,7 @@ index 0000000000..68872db836
 +    return ret;
 +}
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index 7d97f87f79..f09a952d86 100644
+index 5752aae55d..7cdf0b4438 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
 @@ -38,6 +38,7 @@ extern HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknow
@@ -469,8 +469,8 @@ index 7d97f87f79..f09a952d86 100644
 +        return IClassFactory_QueryInterface(&garglefx_factory, riid, ppv);
 +    }
  
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
      return CLASS_E_CLASSNOTAVAILABLE;
- }
 -- 
 2.17.1
 

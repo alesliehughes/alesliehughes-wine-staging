@@ -1,4 +1,4 @@
-From 9ee073b32070c2f5188f5120ade4580b769d956d Mon Sep 17 00:00:00 2001
+From 37dacc876aa28ce52e03fa6a2d1885eea00442da Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:21:32 +1000
 Subject: [PATCH 10/10] dsdmo: Add IDirectSoundFXWavesReverb support
@@ -24,7 +24,7 @@ index da7f3d719a..4e36fd165e 100644
  
  IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index a963e6e391..6986031105 100644
+index a8d4ce272d..886ab5c42b 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
 @@ -40,6 +40,7 @@ extern HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUn
@@ -68,8 +68,8 @@ index a963e6e391..6986031105 100644
 +        return IClassFactory_QueryInterface(&reverbfx_factory, riid, ppv);
 +    }
  
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
      return CLASS_E_CLASSNOTAVAILABLE;
- }
 diff --git a/dlls/dsdmo/reverb.c b/dlls/dsdmo/reverb.c
 new file mode 100644
 index 0000000000..ce3461151f
@@ -397,7 +397,7 @@ index 0000000000..ce3461151f
 +        return E_NOINTERFACE;
 +    }
 +
-+    IUnknown_AddRef( (IUnknown*)*ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
 +
 +    return S_OK;
 +}

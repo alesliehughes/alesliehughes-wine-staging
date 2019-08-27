@@ -1,4 +1,4 @@
-From bae89ed82445c1ed01cffb048eb3cf7632bc42a3 Mon Sep 17 00:00:00 2001
+From fb2ba411a32037e0bb0b7ce97dc1c83b3f0d8898 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:23:38 +1000
 Subject: [PATCH 04/10] dsdmo: Add IDirectSoundFXChorus support
@@ -349,7 +349,7 @@ index 0000000000..a1a617a9d0
 +        return E_NOINTERFACE;
 +    }
 +
-+    IUnknown_AddRef( (IUnknown*)*ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
 +
 +    return S_OK;
 +}
@@ -427,7 +427,7 @@ index 0000000000..a1a617a9d0
 +    return ret;
 +}
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index 79f09af4e9..c44fd893c4 100644
+index e90ff8827b..f5ee21c4cc 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
 @@ -34,6 +34,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
@@ -465,8 +465,8 @@ index 79f09af4e9..c44fd893c4 100644
 +        return IClassFactory_QueryInterface(&chorusfx_factory, riid, ppv);
 +    }
  
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
      return CLASS_E_CLASSNOTAVAILABLE;
- }
 -- 
 2.17.1
 

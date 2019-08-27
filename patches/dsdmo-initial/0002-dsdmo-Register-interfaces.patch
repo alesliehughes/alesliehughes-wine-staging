@@ -1,4 +1,4 @@
-From 56b3696c1a02d8bf2c18e2357a7520048f29b570 Mon Sep 17 00:00:00 2001
+From d82b1f7fbab4d56ac9c067cf97d21e0d98afba0a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Aug 2019 14:23:21 +1000
 Subject: [PATCH 02/10] dsdmo: Register interfaces

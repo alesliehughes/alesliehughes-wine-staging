@@ -1,4 +1,4 @@
-From c4b548fbd53a4dab0d8854205a9d1d0269df9174 Mon Sep 17 00:00:00 2001
+From a27bddb50279ab9ca04f9bd17f40e7ba676ac17f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:40:39 +1000
 Subject: [PATCH 05/10] dsdmo: Add IDirectSoundFXCompressor support
@@ -349,7 +349,7 @@ index 0000000000..a314fe18d2
 +        return E_NOINTERFACE;
 +    }
 +
-+    IUnknown_AddRef( (IUnknown*)*ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
 +
 +    return S_OK;
 +}
@@ -427,7 +427,7 @@ index 0000000000..a314fe18d2
 +    return ret;
 +}
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index c44fd893c4..f369b012ba 100644
+index f5ee21c4cc..eaa8743ba4 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
 @@ -35,6 +35,7 @@ static HINSTANCE dsdmo_instance;
@@ -466,8 +466,8 @@ index c44fd893c4..f369b012ba 100644
 +        return IClassFactory_QueryInterface(&compressorfx_factory, riid, ppv);
 +    }
  
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
      return CLASS_E_CLASSNOTAVAILABLE;
- }
 -- 
 2.17.1
 
