@@ -1,7 +1,7 @@
-From de4119c058b6168b62f6bec0ff3971e3bc242ba0 Mon Sep 17 00:00:00 2001
+From 6db1dd729aefa890b5d3ab4707d217eefaa7b8dd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 16:51:33 +1000
-Subject: [PATCH 07/10] dsdmo: Add IDirectSoundFXFlanger support
+Subject: [PATCH 07/20] dsdmo: Add IDirectSoundFXFlanger support
 
 ---
  dlls/dsdmo/Makefile.in |   1 +
@@ -24,7 +24,7 @@ index 2bf8958560..3a54f4631c 100644
  IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/flanger.c b/dlls/dsdmo/flanger.c
 new file mode 100644
-index 0000000000..821147ad40
+index 0000000000..34631b716e
 --- /dev/null
 +++ b/dlls/dsdmo/flanger.c
 @@ -0,0 +1,398 @@

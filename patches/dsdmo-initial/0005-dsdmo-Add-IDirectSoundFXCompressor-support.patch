@@ -1,7 +1,7 @@
-From a27bddb50279ab9ca04f9bd17f40e7ba676ac17f Mon Sep 17 00:00:00 2001
+From 4245150523f52788586ec3e81abb27b8781010a2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:40:39 +1000
-Subject: [PATCH 05/10] dsdmo: Add IDirectSoundFXCompressor support
+Subject: [PATCH 05/20] dsdmo: Add IDirectSoundFXCompressor support
 
 ---
  dlls/dsdmo/Makefile.in  |   1 +
@@ -24,7 +24,7 @@ index 34d0e89bf1..d0b10ac4f9 100644
  
 diff --git a/dlls/dsdmo/compressor.c b/dlls/dsdmo/compressor.c
 new file mode 100644
-index 0000000000..a314fe18d2
+index 0000000000..b7a13f62d6
 --- /dev/null
 +++ b/dlls/dsdmo/compressor.c
 @@ -0,0 +1,398 @@

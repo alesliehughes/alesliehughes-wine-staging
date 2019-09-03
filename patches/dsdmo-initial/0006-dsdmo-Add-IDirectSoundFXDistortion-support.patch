@@ -1,7 +1,7 @@
-From fbeec691f7999a87a33f967194a49d3f023e4a8f Mon Sep 17 00:00:00 2001
+From 760ec5e1fc8caa6dc79d6321d43784d7a264be00 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 15:00:07 +1000
-Subject: [PATCH 06/10] dsdmo: Add IDirectSoundFXDistortion support
+Subject: [PATCH 06/20] dsdmo: Add IDirectSoundFXDistortion support
 
 ---
  dlls/dsdmo/Makefile.in  |   1 +
@@ -24,7 +24,7 @@ index d0b10ac4f9..2bf8958560 100644
  	main.c
 diff --git a/dlls/dsdmo/distortion.c b/dlls/dsdmo/distortion.c
 new file mode 100644
-index 0000000000..e18e453823
+index 0000000000..1ea2f2432c
 --- /dev/null
 +++ b/dlls/dsdmo/distortion.c
 @@ -0,0 +1,398 @@

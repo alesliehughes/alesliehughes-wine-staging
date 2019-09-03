@@ -1,7 +1,7 @@
-From f54c45cbfc182c3ac5e7930e2c0df27510250ebc Mon Sep 17 00:00:00 2001
+From 4cd75bcc004de76456c39b3e6647883c057b5610 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:03:54 +1000
-Subject: [PATCH 08/10] dsdmo: Add IDirectSoundFXGargle support.
+Subject: [PATCH 08/20] dsdmo: Add IDirectSoundFXGargle support.
 
 ---
  dlls/dsdmo/Makefile.in |   1 +
@@ -24,7 +24,7 @@ index 3a54f4631c..24b53f03ae 100644
  IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/gargle.c b/dlls/dsdmo/gargle.c
 new file mode 100644
-index 0000000000..68872db836
+index 0000000000..5784ae4bcc
 --- /dev/null
 +++ b/dlls/dsdmo/gargle.c
 @@ -0,0 +1,398 @@

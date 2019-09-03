@@ -1,7 +1,7 @@
-From fb2ba411a32037e0bb0b7ce97dc1c83b3f0d8898 Mon Sep 17 00:00:00 2001
+From ad0fe1281ef65c51d95ce3841982a742a677e9e4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:23:38 +1000
-Subject: [PATCH 04/10] dsdmo: Add IDirectSoundFXChorus support
+Subject: [PATCH 04/20] dsdmo: Add IDirectSoundFXChorus support
 
 ---
  dlls/dsdmo/Makefile.in |   1 +
@@ -24,7 +24,7 @@ index cb4f8f8a4b..34d0e89bf1 100644
  
 diff --git a/dlls/dsdmo/chorus.c b/dlls/dsdmo/chorus.c
 new file mode 100644
-index 0000000000..a1a617a9d0
+index 0000000000..3b9cf8f19f
 --- /dev/null
 +++ b/dlls/dsdmo/chorus.c
 @@ -0,0 +1,398 @@

@@ -1,7 +1,7 @@
-From 7936430fb11dbc77eeebf34e04272f47730e092e Mon Sep 17 00:00:00 2001
+From b0230c884e7c244823a887713fb94c03e5c96fb7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Aug 2019 11:41:06 +1000
-Subject: [PATCH 03/10] dsdmo: Add IDirectSoundFXEcho support
+Subject: [PATCH 03/20] dsdmo: Add IDirectSoundFXEcho support
 
 ---
  dlls/dsdmo/Makefile.in       |   3 +-
@@ -27,7 +27,7 @@ index fa26d7d666..cb4f8f8a4b 100644
  
  IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
-index 35fd548078..a71a50fe7e 100644
+index 35fd548078..3f98e7e522 100644
 --- a/dlls/dsdmo/dsdmo_classes.idl
 +++ b/dlls/dsdmo/dsdmo_classes.idl
 @@ -47,6 +47,16 @@ coclass DirectSoundFlangerDMO
@@ -49,7 +49,7 @@ index 35fd548078..a71a50fe7e 100644
      threading(both),
 diff --git a/dlls/dsdmo/echo.c b/dlls/dsdmo/echo.c
 new file mode 100644
-index 0000000000..afc889f3a8
+index 0000000000..b4fdae7aa0
 --- /dev/null
 +++ b/dlls/dsdmo/echo.c
 @@ -0,0 +1,398 @@

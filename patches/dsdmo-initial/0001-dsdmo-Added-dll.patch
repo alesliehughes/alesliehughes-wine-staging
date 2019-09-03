@@ -1,7 +1,7 @@
-From 58fc32f7302b83a54ef5c4c776db1ebcc2f172cb Mon Sep 17 00:00:00 2001
+From f53f4ec9a42513487449617538f0094669e620e1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Aug 2019 12:17:08 +1000
-Subject: [PATCH 01/10] dsdmo: Added dll
+Subject: [PATCH 01/20] dsdmo: Added dll
 
 ---
  configure              |  2 +
@@ -15,10 +15,10 @@ Subject: [PATCH 01/10] dsdmo: Added dll
  create mode 100644 dlls/dsdmo/main.c
 
 diff --git a/configure b/configure
-index c06bc4f079..48673b82e2 100755
+index a52e346b68..9a7fc23f95 100755
 --- a/configure
 +++ b/configure
-@@ -1252,6 +1252,7 @@ enable_dpnlobby
+@@ -1257,6 +1257,7 @@ enable_dpnlobby
  enable_dpvoice
  enable_dpwsockx
  enable_drmclien
@@ -26,7 +26,7 @@ index c06bc4f079..48673b82e2 100755
  enable_dsound
  enable_dsquery
  enable_dssenh
-@@ -20205,6 +20206,7 @@ wine_fn_config_makefile dlls/dpvoice enable_dpvoice
+@@ -20314,6 +20315,7 @@ wine_fn_config_makefile dlls/dpvoice enable_dpvoice
  wine_fn_config_makefile dlls/dpvoice/tests enable_tests
  wine_fn_config_makefile dlls/dpwsockx enable_dpwsockx
  wine_fn_config_makefile dlls/drmclien enable_drmclien
@@ -35,10 +35,10 @@ index c06bc4f079..48673b82e2 100755
  wine_fn_config_makefile dlls/dsound/tests enable_tests
  wine_fn_config_makefile dlls/dsquery enable_dsquery
 diff --git a/configure.ac b/configure.ac
-index e58a924239..c262d76a7b 100644
+index 1592812bf7..93499a7eea 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3185,6 +3185,7 @@ WINE_CONFIG_MAKEFILE(dlls/dpvoice)
+@@ -3220,6 +3220,7 @@ WINE_CONFIG_MAKEFILE(dlls/dpvoice)
  WINE_CONFIG_MAKEFILE(dlls/dpvoice/tests)
  WINE_CONFIG_MAKEFILE(dlls/dpwsockx)
  WINE_CONFIG_MAKEFILE(dlls/drmclien)
