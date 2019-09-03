@@ -1,7 +1,7 @@
 From 19851ca1b3a0b3f2d5ffd7db19c3173195682218 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:24:45 +1000
-Subject: [PATCH 14/20] dsdmo: Implement IDirectSoundFXGargle GetAllParameters
+Subject: [PATCH 14/21] dsdmo: Implement IDirectSoundFXGargle GetAllParameters
 
 ---
  dlls/dsdmo/gargle.c         | 15 +++++++++++++--

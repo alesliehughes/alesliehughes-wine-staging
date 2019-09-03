@@ -1,7 +1,7 @@
 From b840c9a763c657105a440d9b8b99941699a9a754 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:21:32 +1000
-Subject: [PATCH 10/20] dsdmo: Add IDirectSoundFXWavesReverb support
+Subject: [PATCH 10/21] dsdmo: Add IDirectSoundFXWavesReverb support
 
 ---
  dlls/dsdmo/Makefile.in |   3 +-

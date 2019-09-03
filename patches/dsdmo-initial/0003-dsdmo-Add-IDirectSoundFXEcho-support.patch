@@ -1,7 +1,7 @@
 From b0230c884e7c244823a887713fb94c03e5c96fb7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Aug 2019 11:41:06 +1000
-Subject: [PATCH 03/20] dsdmo: Add IDirectSoundFXEcho support
+Subject: [PATCH 03/21] dsdmo: Add IDirectSoundFXEcho support
 
 ---
  dlls/dsdmo/Makefile.in       |   3 +-

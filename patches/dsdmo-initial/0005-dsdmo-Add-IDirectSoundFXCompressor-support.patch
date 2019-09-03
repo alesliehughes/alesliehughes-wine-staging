@@ -1,7 +1,7 @@
 From 4245150523f52788586ec3e81abb27b8781010a2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:40:39 +1000
-Subject: [PATCH 05/20] dsdmo: Add IDirectSoundFXCompressor support
+Subject: [PATCH 05/21] dsdmo: Add IDirectSoundFXCompressor support
 
 ---
  dlls/dsdmo/Makefile.in  |   1 +

@@ -1,7 +1,7 @@
 From 612fc6e496bc61523e890924bcae03681f16d367 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:38:33 +1000
-Subject: [PATCH 17/20] dsdmo: Implemnet IDirectSoundFXDistortion
+Subject: [PATCH 17/21] dsdmo: Implemnet IDirectSoundFXDistortion
  GetAllParameters
 
 ---

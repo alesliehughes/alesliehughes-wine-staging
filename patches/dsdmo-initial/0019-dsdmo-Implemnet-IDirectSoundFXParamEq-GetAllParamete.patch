@@ -1,7 +1,7 @@
 From 45e2a8baa5ba086b222e20539e21878687fe1481 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:44:41 +1000
-Subject: [PATCH 19/20] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
+Subject: [PATCH 19/21] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
 
 ---
  dlls/dsdmo/parameq.c        | 16 ++++++++++++++--

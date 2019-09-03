@@ -1,7 +1,7 @@
 From ad0fe1281ef65c51d95ce3841982a742a677e9e4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:23:38 +1000
-Subject: [PATCH 04/20] dsdmo: Add IDirectSoundFXChorus support
+Subject: [PATCH 04/21] dsdmo: Add IDirectSoundFXChorus support
 
 ---
  dlls/dsdmo/Makefile.in |   1 +

@@ -1,7 +1,7 @@
 From be6c8afc2844817dbaaa1e57d8e400a7ae3bdf80 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 30 Aug 2019 12:22:26 +1000
-Subject: [PATCH 12/20] dsound/tests: Add effect parameters tests.
+Subject: [PATCH 12/21] dsound/tests: Add effect parameters tests.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

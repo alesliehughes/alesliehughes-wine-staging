@@ -1,7 +1,7 @@
 From 4cd75bcc004de76456c39b3e6647883c057b5610 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:03:54 +1000
-Subject: [PATCH 08/20] dsdmo: Add IDirectSoundFXGargle support.
+Subject: [PATCH 08/21] dsdmo: Add IDirectSoundFXGargle support.
 
 ---
  dlls/dsdmo/Makefile.in |   1 +

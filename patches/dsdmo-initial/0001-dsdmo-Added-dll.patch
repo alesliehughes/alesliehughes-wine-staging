@@ -1,7 +1,7 @@
 From f53f4ec9a42513487449617538f0094669e620e1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Aug 2019 12:17:08 +1000
-Subject: [PATCH 01/20] dsdmo: Added dll
+Subject: [PATCH 01/21] dsdmo: Added dll
 
 ---
  configure              |  2 +

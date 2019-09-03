@@ -1,7 +1,7 @@
 From 8b70025d996d553adfda47d4e6938da2e26a36aa Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:34:36 +1000
-Subject: [PATCH 16/20] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
+Subject: [PATCH 16/21] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
 
 ---
  dlls/dsdmo/flanger.c        | 20 ++++++++++++++++++--

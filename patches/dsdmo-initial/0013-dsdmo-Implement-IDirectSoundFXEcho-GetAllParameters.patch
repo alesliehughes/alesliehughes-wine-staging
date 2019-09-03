@@ -1,7 +1,7 @@
 From bce2ec916e8563f04d79383455e9833b0b595dc1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:03:16 +1000
-Subject: [PATCH 13/20] dsdmo: Implement IDirectSoundFXEcho GetAllParameters.
+Subject: [PATCH 13/21] dsdmo: Implement IDirectSoundFXEcho GetAllParameters.
 
 ---
  dlls/dsdmo/echo.c           | 18 ++++++++++++++++--

@@ -1,7 +1,7 @@
 From 6db1dd729aefa890b5d3ab4707d217eefaa7b8dd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 16:51:33 +1000
-Subject: [PATCH 07/20] dsdmo: Add IDirectSoundFXFlanger support
+Subject: [PATCH 07/21] dsdmo: Add IDirectSoundFXFlanger support
 
 ---
  dlls/dsdmo/Makefile.in |   1 +

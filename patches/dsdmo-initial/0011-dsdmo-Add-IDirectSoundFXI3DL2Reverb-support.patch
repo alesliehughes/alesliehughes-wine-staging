@@ -1,7 +1,7 @@
 From 577630d6e0d9bff9a26ae3d359886eabb6eeab26 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 28 Aug 2019 09:35:44 +1000
-Subject: [PATCH 11/20] dsdmo: Add IDirectSoundFXI3DL2Reverb support
+Subject: [PATCH 11/21] dsdmo: Add IDirectSoundFXI3DL2Reverb support
 
 ---
  dlls/dsdmo/Makefile.in |   3 +-

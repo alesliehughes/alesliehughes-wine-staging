@@ -1,7 +1,7 @@
 From 0eddeeac0a8088d747b45c41f1596dbb7c63029c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:32:02 +1000
-Subject: [PATCH 15/20] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
+Subject: [PATCH 15/21] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
 
 ---
  dlls/dsdmo/chorus.c         | 20 ++++++++++++++++++--
