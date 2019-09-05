@@ -1,7 +1,7 @@
-From 8b70025d996d553adfda47d4e6938da2e26a36aa Mon Sep 17 00:00:00 2001
+From edfc28caa5848305d344dfb421170e9e3cee40db Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:34:36 +1000
-Subject: [PATCH 16/21] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
+Subject: [PATCH 15/20] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
 
 ---
  dlls/dsdmo/flanger.c        | 20 ++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 16/21] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
  2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/flanger.c b/dlls/dsdmo/flanger.c
-index 34631b716e..b698b95c82 100644
+index 62d30092e3..cf4477e966 100644
 --- a/dlls/dsdmo/flanger.c
 +++ b/dlls/dsdmo/flanger.c
 @@ -34,6 +34,8 @@ struct dmo_flangerfx
@@ -21,7 +21,7 @@ index 34631b716e..b698b95c82 100644
  };
  
  static inline struct dmo_flangerfx *impl_from_IDirectSoundFXFlanger(IDirectSoundFXFlanger *iface)
-@@ -359,9 +361,15 @@ static HRESULT WINAPI flangerfx_SetAllParameters(IDirectSoundFXFlanger *iface, c
+@@ -361,9 +363,15 @@ static HRESULT WINAPI flangerfx_SetAllParameters(IDirectSoundFXFlanger *iface, c
  static HRESULT WINAPI flangerfx_GetAllParameters(IDirectSoundFXFlanger *iface, DSFXFlanger *flanger)
  {
      struct dmo_flangerfx *This = impl_from_IDirectSoundFXFlanger(iface);
@@ -39,7 +39,7 @@ index 34631b716e..b698b95c82 100644
  }
  
  static const struct IDirectSoundFXFlangerVtbl flangerfxVtbl =
-@@ -391,6 +399,14 @@ HRESULT WINAPI FlangerFactory_CreateInstance(IClassFactory *iface, IUnknown *out
+@@ -393,6 +401,14 @@ HRESULT WINAPI FlangerFactory_CreateInstance(IClassFactory *iface, IUnknown *out
      object->IMediaObjectInPlace_iface.lpVtbl = &flanger_mediainplaceVtbl;
      object->ref = 1;
  
@@ -55,16 +55,16 @@ index 34631b716e..b698b95c82 100644
      flangerfx_Release(&object->IDirectSoundFXFlanger_iface);
  
 diff --git a/dlls/dsound/tests/dsound8.c b/dlls/dsound/tests/dsound8.c
-index ef82956a84..ca90d016f5 100644
+index 17026f81f5..bd417d03af 100644
 --- a/dlls/dsound/tests/dsound8.c
 +++ b/dlls/dsound/tests/dsound8.c
-@@ -1464,7 +1464,7 @@ static void test_flanger_parameters(LPDIRECTSOUNDBUFFER8 secondary8)
+@@ -1464,7 +1464,7 @@ static void test_flanger_parameters(IDirectSoundBuffer8 *secondary8)
          DSFXFlanger params;
  
          rc = IDirectSoundFXFlanger_GetAllParameters(flanger, &params);
--        todo_wine ok(rc==DS_OK,"Failed: %08x\n", rc);
-+        ok(rc==DS_OK,"Failed: %08x\n", rc);
-         if (rc==DS_OK)
+-        todo_wine ok(rc == DS_OK, "Failed: %08x\n", rc);
++        ok(rc == DS_OK, "Failed: %08x\n", rc);
+         if (rc == DS_OK)
          {
              ok(params.fWetDryMix == 50.0f, "got %f\n", params.fWetDryMix);
 -- 

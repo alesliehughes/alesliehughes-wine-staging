@@ -1,7 +1,7 @@
-From 0eddeeac0a8088d747b45c41f1596dbb7c63029c Mon Sep 17 00:00:00 2001
+From b9c289895bce472f6dbefd060df75ef379cd8f04 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:32:02 +1000
-Subject: [PATCH 15/21] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
+Subject: [PATCH 14/20] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
 
 ---
  dlls/dsdmo/chorus.c         | 20 ++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 15/21] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
  2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/chorus.c b/dlls/dsdmo/chorus.c
-index 3b9cf8f19f..a640dd2eef 100644
+index f4745b8364..2585d474ab 100644
 --- a/dlls/dsdmo/chorus.c
 +++ b/dlls/dsdmo/chorus.c
 @@ -34,6 +34,8 @@ struct dmo_chorusfx
@@ -21,7 +21,7 @@ index 3b9cf8f19f..a640dd2eef 100644
  };
  
  static inline struct dmo_chorusfx *impl_from_IDirectSoundFXChorus(IDirectSoundFXChorus *iface)
-@@ -359,9 +361,15 @@ static HRESULT WINAPI chrousfx_SetAllParameters(IDirectSoundFXChorus *iface, con
+@@ -361,9 +363,15 @@ static HRESULT WINAPI chrousfx_SetAllParameters(IDirectSoundFXChorus *iface, con
  static HRESULT WINAPI chrousfx_GetAllParameters(IDirectSoundFXChorus *iface, DSFXChorus *chorus)
  {
      struct dmo_chorusfx *This = impl_from_IDirectSoundFXChorus(iface);
@@ -39,7 +39,7 @@ index 3b9cf8f19f..a640dd2eef 100644
  }
  
  static const struct IDirectSoundFXChorusVtbl chorusfxVtbl =
-@@ -391,6 +399,14 @@ HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *oute
+@@ -393,6 +401,14 @@ HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *oute
      object->IMediaObjectInPlace_iface.lpVtbl = &echo_mediainplaceVtbl;
      object->ref = 1;
  
@@ -55,16 +55,16 @@ index 3b9cf8f19f..a640dd2eef 100644
      chrousfx_Release(&object->IDirectSoundFXChorus_iface);
  
 diff --git a/dlls/dsound/tests/dsound8.c b/dlls/dsound/tests/dsound8.c
-index 3516801077..ef82956a84 100644
+index 2b066ef756..17026f81f5 100644
 --- a/dlls/dsound/tests/dsound8.c
 +++ b/dlls/dsound/tests/dsound8.c
-@@ -1436,7 +1436,7 @@ static void test_chorus_parameters(LPDIRECTSOUNDBUFFER8 secondary8)
+@@ -1436,7 +1436,7 @@ static void test_chorus_parameters(IDirectSoundBuffer8 *secondary8)
          DSFXChorus params;
  
          rc = IDirectSoundFXChorus_GetAllParameters(chorus, &params);
--        todo_wine ok(rc==DS_OK,"Failed: %08x\n", rc);
-+        ok(rc==DS_OK,"Failed: %08x\n", rc);
-         if (rc==DS_OK)
+-        todo_wine ok(rc == DS_OK, "Failed: %08x\n", rc);
++        ok(rc == DS_OK, "Failed: %08x\n", rc);
+         if (rc == DS_OK)
          {
              ok(params.fWetDryMix == 50.0f, "got %f\n", params.fWetDryMix);
 -- 

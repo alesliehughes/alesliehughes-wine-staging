@@ -1,7 +1,7 @@
-From 45e2a8baa5ba086b222e20539e21878687fe1481 Mon Sep 17 00:00:00 2001
+From 07337100d8d0d49872ad055293c97a4f5022f495 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:44:41 +1000
-Subject: [PATCH 19/21] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
+Subject: [PATCH 18/20] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
 
 ---
  dlls/dsdmo/parameq.c        | 16 ++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 19/21] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
  2 files changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/parameq.c b/dlls/dsdmo/parameq.c
-index 50df16e687..c537ff53d5 100644
+index fd66705605..191b08a3fa 100644
 --- a/dlls/dsdmo/parameq.c
 +++ b/dlls/dsdmo/parameq.c
 @@ -34,6 +34,8 @@ struct dmo_parameqfx
@@ -21,7 +21,7 @@ index 50df16e687..c537ff53d5 100644
  };
  
  static inline struct dmo_parameqfx *impl_from_IDirectSoundFXParamEq(IDirectSoundFXParamEq *iface)
-@@ -359,9 +361,15 @@ static HRESULT WINAPI parameqfx_SetAllParameters(IDirectSoundFXParamEq *iface, c
+@@ -361,9 +363,15 @@ static HRESULT WINAPI parameqfx_SetAllParameters(IDirectSoundFXParamEq *iface, c
  static HRESULT WINAPI parameqfx_GetAllParameters(IDirectSoundFXParamEq *iface, DSFXParamEq *param)
  {
      struct dmo_parameqfx *This = impl_from_IDirectSoundFXParamEq(iface);
@@ -39,7 +39,7 @@ index 50df16e687..c537ff53d5 100644
  }
  
  static const struct IDirectSoundFXParamEqVtbl parameqfxVtbl =
-@@ -391,6 +399,10 @@ HRESULT WINAPI ParamEqFactory_CreateInstance(IClassFactory *iface, IUnknown *out
+@@ -393,6 +401,10 @@ HRESULT WINAPI ParamEqFactory_CreateInstance(IClassFactory *iface, IUnknown *out
      object->IMediaObjectInPlace_iface.lpVtbl = &parameq_mediainplaceVtbl;
      object->ref = 1;
  
@@ -51,16 +51,16 @@ index 50df16e687..c537ff53d5 100644
      parameqfx_Release(&object->IDirectSoundFXParamEq_iface);
  
 diff --git a/dlls/dsound/tests/dsound8.c b/dlls/dsound/tests/dsound8.c
-index 4d5e369fba..970d07d229 100644
+index c624fcd6d2..e812130324 100644
 --- a/dlls/dsound/tests/dsound8.c
 +++ b/dlls/dsound/tests/dsound8.c
-@@ -1544,7 +1544,7 @@ static void test_parameq_parameters(LPDIRECTSOUNDBUFFER8 secondary8)
+@@ -1544,7 +1544,7 @@ static void test_parameq_parameters(IDirectSoundBuffer8 *secondary8)
          DSFXParamEq params;
  
          rc = IDirectSoundFXParamEq_GetAllParameters(parameq, &params);
--        todo_wine ok(rc==DS_OK,"Failed: %08x\n", rc);
-+        ok(rc==DS_OK,"Failed: %08x\n", rc);
-         if (rc==DS_OK)
+-        todo_wine ok(rc == DS_OK, "Failed: %08x\n", rc);
++        ok(rc == DS_OK, "Failed: %08x\n", rc);
+         if (rc == DS_OK)
          {
              ok(params.fCenter == 3675.0f, "got %f\n", params.fCenter);
 -- 

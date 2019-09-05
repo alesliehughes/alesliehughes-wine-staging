@@ -1,13 +1,13 @@
-From ad0fe1281ef65c51d95ce3841982a742a677e9e4 Mon Sep 17 00:00:00 2001
+From f90eade5f965275565436d26a7a057d5f57b9b31 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:23:38 +1000
-Subject: [PATCH 04/21] dsdmo: Add IDirectSoundFXChorus support
+Subject: [PATCH 04/20] dsdmo: Add IDirectSoundFXChorus support
 
 ---
  dlls/dsdmo/Makefile.in |   1 +
- dlls/dsdmo/chorus.c    | 398 +++++++++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/chorus.c    | 400 +++++++++++++++++++++++++++++++++++++++++
  dlls/dsdmo/main.c      |  15 ++
- 3 files changed, 414 insertions(+)
+ 3 files changed, 416 insertions(+)
  create mode 100644 dlls/dsdmo/chorus.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +24,10 @@ index cb4f8f8a4b..34d0e89bf1 100644
  
 diff --git a/dlls/dsdmo/chorus.c b/dlls/dsdmo/chorus.c
 new file mode 100644
-index 0000000000..3b9cf8f19f
+index 0000000000..f4745b8364
 --- /dev/null
 +++ b/dlls/dsdmo/chorus.c
-@@ -0,0 +1,398 @@
+@@ -0,0 +1,400 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -87,13 +87,13 @@ index 0000000000..3b9cf8f19f
 +    return IDirectSoundFXChorus_QueryInterface(&This->IDirectSoundFXChorus_iface, riid, obj);
 +}
 +
-+static ULONG chorus_mediaobj_AddRef(IMediaObject *iface)
++static ULONG WINAPI chorus_mediaobj_AddRef(IMediaObject *iface)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXChorus_AddRef(&This->IDirectSoundFXChorus_iface);
 +}
 +
-+static ULONG chorus_mediaobj_Release(IMediaObject *iface)
++static ULONG WINAPI chorus_mediaobj_Release(IMediaObject *iface)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXChorus_Release(&This->IDirectSoundFXChorus_iface);
@@ -186,7 +186,7 @@ index 0000000000..3b9cf8f19f
 +static HRESULT WINAPI chorus_mediaobj_SetInputMaxLatency(IMediaObject *iface, DWORD index, REFERENCE_TIME latency)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %d\n", This, index, latency);
++    FIXME("%p, %d, %s\n", This, index, wine_dbgstr_longlong(latency));
 +    return E_NOTIMPL;
 +}
 +
@@ -229,7 +229,7 @@ index 0000000000..3b9cf8f19f
 +                DWORD flags, REFERENCE_TIME timestamp, REFERENCE_TIME length)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %p, %x, %d, %d\n", This, index, buffer, flags, timestamp, length);
++    FIXME("%p, %d, %p, %x, %s, %s\n", This, index, buffer, flags, wine_dbgstr_longlong(timestamp), wine_dbgstr_longlong(length));
 +    return E_NOTIMPL;
 +}
 +
@@ -282,13 +282,13 @@ index 0000000000..3b9cf8f19f
 +    return IDirectSoundFXChorus_QueryInterface(&This->IDirectSoundFXChorus_iface, riid, obj);
 +}
 +
-+static ULONG chorus_mediainplace_AddRef(IMediaObjectInPlace *iface)
++static ULONG WINAPI chorus_mediainplace_AddRef(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXChorus_AddRef(&This->IDirectSoundFXChorus_iface);
 +}
 +
-+static ULONG chorus_mediainplace_Release(IMediaObjectInPlace *iface)
++static ULONG WINAPI chorus_mediainplace_Release(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXChorus_Release(&This->IDirectSoundFXChorus_iface);
@@ -297,7 +297,7 @@ index 0000000000..3b9cf8f19f
 +static HRESULT WINAPI chorus_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_chorusfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %d, %x\n", This, size, data, start, flags);
++    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +
@@ -328,6 +328,8 @@ index 0000000000..3b9cf8f19f
 +static HRESULT WINAPI chrousfx_QueryInterface(IDirectSoundFXChorus *iface, REFIID riid, void **ppv)
 +{
 +    struct dmo_chorusfx *This = impl_from_IDirectSoundFXChorus(iface);
++
++    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
 +
 +    if (IsEqualGUID(riid, &IID_IUnknown) ||
 +        IsEqualGUID(riid, &IID_IDirectSoundFXChorus))

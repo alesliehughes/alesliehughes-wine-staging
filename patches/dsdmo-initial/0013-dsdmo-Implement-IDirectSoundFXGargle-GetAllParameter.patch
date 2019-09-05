@@ -1,7 +1,7 @@
-From 19851ca1b3a0b3f2d5ffd7db19c3173195682218 Mon Sep 17 00:00:00 2001
+From 841965e0dd05d2ce9cfdee65303e009bf3307c48 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:24:45 +1000
-Subject: [PATCH 14/21] dsdmo: Implement IDirectSoundFXGargle GetAllParameters
+Subject: [PATCH 13/20] dsdmo: Implement IDirectSoundFXGargle GetAllParameters
 
 ---
  dlls/dsdmo/gargle.c         | 15 +++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 14/21] dsdmo: Implement IDirectSoundFXGargle GetAllParameters
  2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/gargle.c b/dlls/dsdmo/gargle.c
-index 5784ae4bcc..f6bc042000 100644
+index f9d2ae2940..8a8be8cacb 100644
 --- a/dlls/dsdmo/gargle.c
 +++ b/dlls/dsdmo/gargle.c
 @@ -34,6 +34,8 @@ struct dmo_garglefx
@@ -21,7 +21,7 @@ index 5784ae4bcc..f6bc042000 100644
  };
  
  static inline struct dmo_garglefx *impl_from_IDirectSoundFXGargle(IDirectSoundFXGargle *iface)
-@@ -359,9 +361,15 @@ static HRESULT WINAPI garglefx_SetAllParameters(IDirectSoundFXGargle *iface, con
+@@ -361,9 +363,15 @@ static HRESULT WINAPI garglefx_SetAllParameters(IDirectSoundFXGargle *iface, con
  static HRESULT WINAPI garglefx_GetAllParameters(IDirectSoundFXGargle *iface, DSFXGargle *gargle)
  {
      struct dmo_garglefx *This = impl_from_IDirectSoundFXGargle(iface);
@@ -39,7 +39,7 @@ index 5784ae4bcc..f6bc042000 100644
  }
  
  static const struct IDirectSoundFXGargleVtbl garglefxVtbl =
-@@ -391,6 +399,9 @@ HRESULT WINAPI GargleFactory_CreateInstance(IClassFactory *iface, IUnknown *oute
+@@ -393,6 +401,9 @@ HRESULT WINAPI GargleFactory_CreateInstance(IClassFactory *iface, IUnknown *oute
      object->IMediaObjectInPlace_iface.lpVtbl = &gargle_mediainplaceVtbl;
      object->ref = 1;
  
@@ -50,16 +50,16 @@ index 5784ae4bcc..f6bc042000 100644
      garglefx_Release(&object->IDirectSoundFXGargle_iface);
  
 diff --git a/dlls/dsound/tests/dsound8.c b/dlls/dsound/tests/dsound8.c
-index 82d6096e2e..3516801077 100644
+index 244f2f98e8..2b066ef756 100644
 --- a/dlls/dsound/tests/dsound8.c
 +++ b/dlls/dsound/tests/dsound8.c
-@@ -1413,7 +1413,7 @@ static void test_gargle_parameters(LPDIRECTSOUNDBUFFER8 secondary8)
+@@ -1413,7 +1413,7 @@ static void test_gargle_parameters(IDirectSoundBuffer8 *secondary8)
          DSFXGargle params;
  
          rc = IDirectSoundFXGargle_GetAllParameters(gargle, &params);
--        todo_wine ok(rc==DS_OK,"Failed: %08x\n", rc);
-+        ok(rc==DS_OK,"Failed: %08x\n", rc);
-         if (rc==DS_OK)
+-        todo_wine ok(rc == DS_OK, "Failed: %08x\n", rc);
++        ok(rc == DS_OK, "Failed: %08x\n", rc);
+         if (rc == DS_OK)
          {
              ok(params.dwRateHz == 20, "got %d\n", params.dwRateHz);
 -- 

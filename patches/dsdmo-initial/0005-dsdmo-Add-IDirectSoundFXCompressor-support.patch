@@ -1,13 +1,13 @@
-From 4245150523f52788586ec3e81abb27b8781010a2 Mon Sep 17 00:00:00 2001
+From 3bc24ad66f2544fe63272434b719bb4ad5c185c1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:40:39 +1000
-Subject: [PATCH 05/21] dsdmo: Add IDirectSoundFXCompressor support
+Subject: [PATCH 05/20] dsdmo: Add IDirectSoundFXCompressor support
 
 ---
  dlls/dsdmo/Makefile.in  |   1 +
- dlls/dsdmo/compressor.c | 398 ++++++++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/compressor.c | 400 ++++++++++++++++++++++++++++++++++++++++
  dlls/dsdmo/main.c       |  15 ++
- 3 files changed, 414 insertions(+)
+ 3 files changed, 416 insertions(+)
  create mode 100644 dlls/dsdmo/compressor.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +24,10 @@ index 34d0e89bf1..d0b10ac4f9 100644
  
 diff --git a/dlls/dsdmo/compressor.c b/dlls/dsdmo/compressor.c
 new file mode 100644
-index 0000000000..b7a13f62d6
+index 0000000000..6bfb3f3d1e
 --- /dev/null
 +++ b/dlls/dsdmo/compressor.c
-@@ -0,0 +1,398 @@
+@@ -0,0 +1,400 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -87,13 +87,13 @@ index 0000000000..b7a13f62d6
 +    return IDirectSoundFXCompressor_QueryInterface(&This->IDirectSoundFXCompressor_iface, riid, obj);
 +}
 +
-+static ULONG compressor_mediaobj_AddRef(IMediaObject *iface)
++static ULONG WINAPI compressor_mediaobj_AddRef(IMediaObject *iface)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXCompressor_AddRef(&This->IDirectSoundFXCompressor_iface);
 +}
 +
-+static ULONG compressor_mediaobj_Release(IMediaObject *iface)
++static ULONG WINAPI compressor_mediaobj_Release(IMediaObject *iface)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXCompressor_Release(&This->IDirectSoundFXCompressor_iface);
@@ -186,7 +186,7 @@ index 0000000000..b7a13f62d6
 +static HRESULT WINAPI compressor_mediaobj_SetInputMaxLatency(IMediaObject *iface, DWORD index, REFERENCE_TIME latency)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %d\n", This, index, latency);
++    FIXME("%p, %d, %s\n", This, index,  wine_dbgstr_longlong(latency));
 +    return E_NOTIMPL;
 +}
 +
@@ -229,7 +229,7 @@ index 0000000000..b7a13f62d6
 +                DWORD flags, REFERENCE_TIME timestamp, REFERENCE_TIME length)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %p, %x, %d, %d\n", This, index, buffer, flags, timestamp, length);
++    FIXME("%p, %d, %p, %x, %s, %s\n", This, index, buffer, flags, wine_dbgstr_longlong(timestamp), wine_dbgstr_longlong(length));
 +    return E_NOTIMPL;
 +}
 +
@@ -282,13 +282,13 @@ index 0000000000..b7a13f62d6
 +    return IDirectSoundFXCompressor_QueryInterface(&This->IDirectSoundFXCompressor_iface, riid, obj);
 +}
 +
-+static ULONG echo_mediainplace_AddRef(IMediaObjectInPlace *iface)
++static ULONG WINAPI echo_mediainplace_AddRef(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXCompressor_AddRef(&This->IDirectSoundFXCompressor_iface);
 +}
 +
-+static ULONG echo_mediainplace_Release(IMediaObjectInPlace *iface)
++static ULONG WINAPI echo_mediainplace_Release(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXCompressor_Release(&This->IDirectSoundFXCompressor_iface);
@@ -297,7 +297,7 @@ index 0000000000..b7a13f62d6
 +static HRESULT WINAPI echo_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %d, %x\n", This, size, data, start, flags);
++    FIXME("%p, %d, %p, %s, %x\n", This, size, data,  wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +
@@ -328,6 +328,8 @@ index 0000000000..b7a13f62d6
 +static HRESULT WINAPI compressorfx_QueryInterface(IDirectSoundFXCompressor *iface, REFIID riid, void **ppv)
 +{
 +    struct dmo_compressorfx *This = impl_from_IDirectSoundFXCompressor(iface);
++
++    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
 +
 +    if (IsEqualGUID(riid, &IID_IUnknown) ||
 +        IsEqualGUID(riid, &IID_IDirectSoundFXCompressor))

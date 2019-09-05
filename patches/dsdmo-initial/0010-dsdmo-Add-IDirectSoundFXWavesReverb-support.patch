@@ -1,13 +1,13 @@
-From b840c9a763c657105a440d9b8b99941699a9a754 Mon Sep 17 00:00:00 2001
+From 677b928c369cdb46e2c0545483b5f95567ac56c9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:21:32 +1000
-Subject: [PATCH 10/21] dsdmo: Add IDirectSoundFXWavesReverb support
+Subject: [PATCH 10/20] dsdmo: Add IDirectSoundFXWavesReverb support
 
 ---
  dlls/dsdmo/Makefile.in |   3 +-
  dlls/dsdmo/main.c      |  15 ++
- dlls/dsdmo/reverb.c    | 398 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 415 insertions(+), 1 deletion(-)
+ dlls/dsdmo/reverb.c    | 400 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 417 insertions(+), 1 deletion(-)
  create mode 100644 dlls/dsdmo/reverb.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -72,10 +72,10 @@ index a8d4ce272d..886ab5c42b 100644
      return CLASS_E_CLASSNOTAVAILABLE;
 diff --git a/dlls/dsdmo/reverb.c b/dlls/dsdmo/reverb.c
 new file mode 100644
-index 0000000000..d346500522
+index 0000000000..fcac4f1f6c
 --- /dev/null
 +++ b/dlls/dsdmo/reverb.c
-@@ -0,0 +1,398 @@
+@@ -0,0 +1,400 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -135,13 +135,13 @@ index 0000000000..d346500522
 +    return IDirectSoundFXWavesReverb_QueryInterface(&This->IDirectSoundFXWavesReverb_iface, riid, obj);
 +}
 +
-+static ULONG reverb_mediaobj_AddRef(IMediaObject *iface)
++static ULONG WINAPI reverb_mediaobj_AddRef(IMediaObject *iface)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXWavesReverb_AddRef(&This->IDirectSoundFXWavesReverb_iface);
 +}
 +
-+static ULONG reverb_mediaobj_Release(IMediaObject *iface)
++static ULONG WINAPI reverb_mediaobj_Release(IMediaObject *iface)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXWavesReverb_Release(&This->IDirectSoundFXWavesReverb_iface);
@@ -234,7 +234,7 @@ index 0000000000..d346500522
 +static HRESULT WINAPI reverb_mediaobj_SetInputMaxLatency(IMediaObject *iface, DWORD index, REFERENCE_TIME latency)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %d\n", This, index, latency);
++    FIXME("%p, %d, %s\n", This, index, wine_dbgstr_longlong(latency));
 +    return E_NOTIMPL;
 +}
 +
@@ -277,7 +277,7 @@ index 0000000000..d346500522
 +                DWORD flags, REFERENCE_TIME timestamp, REFERENCE_TIME length)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %p, %x, %d, %d\n", This, index, buffer, flags, timestamp, length);
++    FIXME("%p, %d, %p, %x, %s, %s\n", This, index, buffer, flags, wine_dbgstr_longlong(timestamp), wine_dbgstr_longlong(length));
 +    return E_NOTIMPL;
 +}
 +
@@ -330,13 +330,13 @@ index 0000000000..d346500522
 +    return IDirectSoundFXWavesReverb_QueryInterface(&This->IDirectSoundFXWavesReverb_iface, riid, obj);
 +}
 +
-+static ULONG reverb_mediainplace_AddRef(IMediaObjectInPlace *iface)
++static ULONG WINAPI reverb_mediainplace_AddRef(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXWavesReverb_AddRef(&This->IDirectSoundFXWavesReverb_iface);
 +}
 +
-+static ULONG reverb_mediainplace_Release(IMediaObjectInPlace *iface)
++static ULONG WINAPI reverb_mediainplace_Release(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXWavesReverb_Release(&This->IDirectSoundFXWavesReverb_iface);
@@ -345,7 +345,7 @@ index 0000000000..d346500522
 +static HRESULT WINAPI reverb_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %d, %x\n", This, size, data, start, flags);
++    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +
@@ -376,6 +376,8 @@ index 0000000000..d346500522
 +static HRESULT WINAPI reverbfx_QueryInterface(IDirectSoundFXWavesReverb *iface, REFIID riid, void **ppv)
 +{
 +    struct dmo_reverbfx *This = impl_from_IDirectSoundFXWavesReverb(iface);
++
++    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
 +
 +    if (IsEqualGUID(riid, &IID_IUnknown) ||
 +        IsEqualGUID(riid, &IID_IDirectSoundFXWavesReverb))

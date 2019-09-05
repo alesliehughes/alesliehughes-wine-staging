@@ -1,13 +1,13 @@
-From 4cd75bcc004de76456c39b3e6647883c057b5610 Mon Sep 17 00:00:00 2001
+From 90dd5be7da94f3dbc01976222ff394db2050a658 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:03:54 +1000
-Subject: [PATCH 08/21] dsdmo: Add IDirectSoundFXGargle support.
+Subject: [PATCH 08/20] dsdmo: Add IDirectSoundFXGargle support.
 
 ---
  dlls/dsdmo/Makefile.in |   1 +
- dlls/dsdmo/gargle.c    | 398 +++++++++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/gargle.c    | 400 +++++++++++++++++++++++++++++++++++++++++
  dlls/dsdmo/main.c      |  15 ++
- 3 files changed, 414 insertions(+)
+ 3 files changed, 416 insertions(+)
  create mode 100644 dlls/dsdmo/gargle.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +24,10 @@ index 3a54f4631c..24b53f03ae 100644
  IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/gargle.c b/dlls/dsdmo/gargle.c
 new file mode 100644
-index 0000000000..5784ae4bcc
+index 0000000000..f9d2ae2940
 --- /dev/null
 +++ b/dlls/dsdmo/gargle.c
-@@ -0,0 +1,398 @@
+@@ -0,0 +1,400 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -87,13 +87,13 @@ index 0000000000..5784ae4bcc
 +    return IDirectSoundFXGargle_QueryInterface(&This->IDirectSoundFXGargle_iface, riid, obj);
 +}
 +
-+static ULONG gargle_mediaobj_AddRef(IMediaObject *iface)
++static ULONG WINAPI gargle_mediaobj_AddRef(IMediaObject *iface)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXGargle_AddRef(&This->IDirectSoundFXGargle_iface);
 +}
 +
-+static ULONG gargle_mediaobj_Release(IMediaObject *iface)
++static ULONG WINAPI gargle_mediaobj_Release(IMediaObject *iface)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObject(iface);
 +    return IDirectSoundFXGargle_Release(&This->IDirectSoundFXGargle_iface);
@@ -186,7 +186,7 @@ index 0000000000..5784ae4bcc
 +static HRESULT WINAPI gargle_mediaobj_SetInputMaxLatency(IMediaObject *iface, DWORD index, REFERENCE_TIME latency)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %d\n", This, index, latency);
++    FIXME("%p, %d, %s\n", This, index, wine_dbgstr_longlong(latency));
 +    return E_NOTIMPL;
 +}
 +
@@ -229,7 +229,7 @@ index 0000000000..5784ae4bcc
 +                DWORD flags, REFERENCE_TIME timestamp, REFERENCE_TIME length)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObject(iface);
-+    FIXME("%p, %d, %p, %x, %d, %d\n", This, index, buffer, flags, timestamp, length);
++    FIXME("%p, %d, %p, %x, %s, %s\n", This, index, buffer, flags, wine_dbgstr_longlong(timestamp), wine_dbgstr_longlong(length));
 +    return E_NOTIMPL;
 +}
 +
@@ -282,13 +282,13 @@ index 0000000000..5784ae4bcc
 +    return IDirectSoundFXGargle_QueryInterface(&This->IDirectSoundFXGargle_iface, riid, obj);
 +}
 +
-+static ULONG gargle_mediainplace_AddRef(IMediaObjectInPlace *iface)
++static ULONG WINAPI gargle_mediainplace_AddRef(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXGargle_AddRef(&This->IDirectSoundFXGargle_iface);
 +}
 +
-+static ULONG gargle_mediainplace_Release(IMediaObjectInPlace *iface)
++static ULONG WINAPI gargle_mediainplace_Release(IMediaObjectInPlace *iface)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObjectInPlace(iface);
 +    return IDirectSoundFXGargle_Release(&This->IDirectSoundFXGargle_iface);
@@ -297,7 +297,7 @@ index 0000000000..5784ae4bcc
 +static HRESULT WINAPI gargle_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %d, %x\n", This, size, data, start, flags);
++    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +
@@ -328,6 +328,8 @@ index 0000000000..5784ae4bcc
 +static HRESULT WINAPI garglefx_QueryInterface(IDirectSoundFXGargle *iface, REFIID riid, void **ppv)
 +{
 +    struct dmo_garglefx *This = impl_from_IDirectSoundFXGargle(iface);
++
++    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
 +
 +    if (IsEqualGUID(riid, &IID_IUnknown) ||
 +        IsEqualGUID(riid, &IID_IDirectSoundFXGargle))
