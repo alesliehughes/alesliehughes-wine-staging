@@ -1,13 +1,13 @@
-From c595d9cc86abc3862332c06951149f1baf44a9f2 Mon Sep 17 00:00:00 2001
+From b1feddb6b747889884ed31ffaa8953aeafa64c53 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 15:00:07 +1000
-Subject: [PATCH 06/20] dsdmo: Add IDirectSoundFXDistortion support
+Subject: [PATCH] dsdmo: Add IDirectSoundFXDistortion support
 
 ---
  dlls/dsdmo/Makefile.in  |   1 +
- dlls/dsdmo/distortion.c | 400 ++++++++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/distortion.c | 404 ++++++++++++++++++++++++++++++++++++++++
  dlls/dsdmo/main.c       |  15 ++
- 3 files changed, 416 insertions(+)
+ 3 files changed, 420 insertions(+)
  create mode 100644 dlls/dsdmo/distortion.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +24,10 @@ index d0b10ac4f9..2bf8958560 100644
  	main.c
 diff --git a/dlls/dsdmo/distortion.c b/dlls/dsdmo/distortion.c
 new file mode 100644
-index 0000000000..6ae9629c20
+index 0000000000..316e555159
 --- /dev/null
 +++ b/dlls/dsdmo/distortion.c
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,404 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -297,7 +297,11 @@ index 0000000000..6ae9629c20
 +static HRESULT WINAPI distortionfx_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_distortionfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    static BOOL once = 0;
++    if(!once++)
++        FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    else
++        TRACE("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +

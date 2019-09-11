@@ -1,7 +1,7 @@
-From b9c289895bce472f6dbefd060df75ef379cd8f04 Mon Sep 17 00:00:00 2001
+From ae875a08788132c0521e7574d0d8983e8f447618 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:32:02 +1000
-Subject: [PATCH 14/20] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
+Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
 
 ---
  dlls/dsdmo/chorus.c         | 20 ++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 14/20] dsdmo: Implemnet IDirectSoundFXChorus GetAllParameters
  2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/chorus.c b/dlls/dsdmo/chorus.c
-index f4745b8364..2585d474ab 100644
+index 91a01abea2..b47a1c5f2c 100644
 --- a/dlls/dsdmo/chorus.c
 +++ b/dlls/dsdmo/chorus.c
 @@ -34,6 +34,8 @@ struct dmo_chorusfx
@@ -21,7 +21,7 @@ index f4745b8364..2585d474ab 100644
  };
  
  static inline struct dmo_chorusfx *impl_from_IDirectSoundFXChorus(IDirectSoundFXChorus *iface)
-@@ -361,9 +363,15 @@ static HRESULT WINAPI chrousfx_SetAllParameters(IDirectSoundFXChorus *iface, con
+@@ -365,9 +367,15 @@ static HRESULT WINAPI chrousfx_SetAllParameters(IDirectSoundFXChorus *iface, con
  static HRESULT WINAPI chrousfx_GetAllParameters(IDirectSoundFXChorus *iface, DSFXChorus *chorus)
  {
      struct dmo_chorusfx *This = impl_from_IDirectSoundFXChorus(iface);
@@ -39,7 +39,7 @@ index f4745b8364..2585d474ab 100644
  }
  
  static const struct IDirectSoundFXChorusVtbl chorusfxVtbl =
-@@ -393,6 +401,14 @@ HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *oute
+@@ -397,6 +405,14 @@ HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *oute
      object->IMediaObjectInPlace_iface.lpVtbl = &echo_mediainplaceVtbl;
      object->ref = 1;
  

@@ -1,0 +1,2 @@
+Fixes: [35478] - Multiple applications and games need dsdmo.dll (DirectSound Effects)
+Fixes: [10603] - IDirectSoundBufferImpl_SetFX needed for sound effects in several games.

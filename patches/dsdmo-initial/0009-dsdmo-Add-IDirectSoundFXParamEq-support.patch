@@ -1,13 +1,13 @@
-From 4b17d6c1b16d7eea5eaa4685e42895db5d2cff7d Mon Sep 17 00:00:00 2001
+From 703990bdba2fe770614f09abf7ab98ea8dc6af06 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:11:30 +1000
-Subject: [PATCH 09/20] dsdmo: Add IDirectSoundFXParamEq support
+Subject: [PATCH] dsdmo: Add IDirectSoundFXParamEq support
 
 ---
  dlls/dsdmo/Makefile.in |   3 +-
  dlls/dsdmo/main.c      |  15 ++
- dlls/dsdmo/parameq.c   | 400 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 417 insertions(+), 1 deletion(-)
+ dlls/dsdmo/parameq.c   | 404 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 421 insertions(+), 1 deletion(-)
  create mode 100644 dlls/dsdmo/parameq.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -71,10 +71,10 @@ index 7cdf0b4438..a8d4ce272d 100644
      return CLASS_E_CLASSNOTAVAILABLE;
 diff --git a/dlls/dsdmo/parameq.c b/dlls/dsdmo/parameq.c
 new file mode 100644
-index 0000000000..fd66705605
+index 0000000000..19a89f1806
 --- /dev/null
 +++ b/dlls/dsdmo/parameq.c
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,404 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -344,7 +344,11 @@ index 0000000000..fd66705605
 +static HRESULT WINAPI parameq_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_parameqfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    static BOOL once = 0;
++    if(!once++)
++        FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    else
++        TRACE("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +

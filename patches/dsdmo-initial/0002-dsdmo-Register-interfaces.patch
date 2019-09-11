@@ -1,7 +1,7 @@
-From 5874d71f8fb13ee4ff121d229552648fb615d07c Mon Sep 17 00:00:00 2001
+From bbbf8cf13ed507bb6a1eba3fc026befea40b8d0e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Aug 2019 14:23:21 +1000
-Subject: [PATCH 02/20] dsdmo: Register interfaces
+Subject: [PATCH] dsdmo: Register interfaces
 
 Echo is not registered to stop tests from failing.
 ---

@@ -1,7 +1,7 @@
-From eacd4d4ec52d2c90c177d3cdf625307f84fe07fb Mon Sep 17 00:00:00 2001
+From 63833d1061f41949be647f7d78d935d707356fb8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:03:16 +1000
-Subject: [PATCH 12/20] dsdmo: Implement IDirectSoundFXEcho GetAllParameters.
+Subject: [PATCH] dsdmo: Implement IDirectSoundFXEcho GetAllParameters.
 
 ---
  dlls/dsdmo/echo.c           | 18 ++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 12/20] dsdmo: Implement IDirectSoundFXEcho GetAllParameters.
  2 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/echo.c b/dlls/dsdmo/echo.c
-index 5aa004f3a7..4b9c9f2ef3 100644
+index 69ae3709ca..05c9fa9b61 100644
 --- a/dlls/dsdmo/echo.c
 +++ b/dlls/dsdmo/echo.c
 @@ -34,6 +34,8 @@ struct dmo_echofx
@@ -21,7 +21,7 @@ index 5aa004f3a7..4b9c9f2ef3 100644
  };
  
  static inline struct dmo_echofx *impl_from_IDirectSoundFXEcho(IDirectSoundFXEcho *iface)
-@@ -361,9 +363,15 @@ static HRESULT WINAPI echofx_SetAllParameters(IDirectSoundFXEcho *iface, const D
+@@ -365,9 +367,15 @@ static HRESULT WINAPI echofx_SetAllParameters(IDirectSoundFXEcho *iface, const D
  static HRESULT WINAPI echofx_GetAllParameters(IDirectSoundFXEcho *iface, DSFXEcho *echo)
  {
      struct dmo_echofx *This = impl_from_IDirectSoundFXEcho(iface);
@@ -39,7 +39,7 @@ index 5aa004f3a7..4b9c9f2ef3 100644
  }
  
  static const struct IDirectSoundFXEchoVtbl echofxVtbl =
-@@ -393,6 +401,12 @@ HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer,
+@@ -397,6 +405,12 @@ HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer,
      object->IMediaObjectInPlace_iface.lpVtbl = &echo_mediainplaceVtbl;
      object->ref = 1;
  

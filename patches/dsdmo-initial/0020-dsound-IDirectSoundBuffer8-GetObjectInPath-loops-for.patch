@@ -1,8 +1,8 @@
-From 049cbe78a6863d179a3265e008c6108e92d7f0a4 Mon Sep 17 00:00:00 2001
+From 60b0ed5b913a9dfd25ad9d1e743e61b5f5938d02 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 11:44:55 +1000
-Subject: [PATCH 20/20] dsound: IDirectSoundBuffer8 GetObjectInPath loops for
- the requested interface
+Subject: [PATCH] dsound: IDirectSoundBuffer8 GetObjectInPath loops for the
+ requested interface
 
 ---
  dlls/dsound/buffer.c        | 19 +++++++++++++++++++
@@ -10,10 +10,10 @@ Subject: [PATCH 20/20] dsound: IDirectSoundBuffer8 GetObjectInPath loops for
  2 files changed, 26 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/dsound/buffer.c b/dlls/dsound/buffer.c
-index dacd63957c..e76d113e63 100644
+index f600652914..ad0f549f20 100644
 --- a/dlls/dsound/buffer.c
 +++ b/dlls/dsound/buffer.c
-@@ -853,6 +853,25 @@ static HRESULT WINAPI IDirectSoundBufferImpl_GetObjectInPath(IDirectSoundBuffer8
+@@ -872,6 +872,25 @@ static HRESULT WINAPI IDirectSoundBufferImpl_GetObjectInPath(IDirectSoundBuffer8
  	if (!ppObject)
  		return E_INVALIDARG;
  

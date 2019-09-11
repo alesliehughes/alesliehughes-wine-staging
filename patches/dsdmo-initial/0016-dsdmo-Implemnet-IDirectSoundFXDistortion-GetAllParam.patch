@@ -1,8 +1,7 @@
-From 5bf0f79789e0c5204a922b156c48e29e10f512b6 Mon Sep 17 00:00:00 2001
+From 8789fc48a21cfb46c5fb2f6f5e56410b341714a1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:38:33 +1000
-Subject: [PATCH 16/20] dsdmo: Implemnet IDirectSoundFXDistortion
- GetAllParameters
+Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXDistortion GetAllParameters
 
 ---
  dlls/dsdmo/distortion.c     | 18 ++++++++++++++++--
@@ -10,7 +9,7 @@ Subject: [PATCH 16/20] dsdmo: Implemnet IDirectSoundFXDistortion
  2 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/distortion.c b/dlls/dsdmo/distortion.c
-index 6ae9629c20..666c4d496c 100644
+index 316e555159..aa1f0813b4 100644
 --- a/dlls/dsdmo/distortion.c
 +++ b/dlls/dsdmo/distortion.c
 @@ -34,6 +34,8 @@ struct dmo_distortionfx
@@ -22,7 +21,7 @@ index 6ae9629c20..666c4d496c 100644
  };
  
  static inline struct dmo_distortionfx *impl_from_IDirectSoundFXDistortion(IDirectSoundFXDistortion *iface)
-@@ -361,9 +363,15 @@ static HRESULT WINAPI distortionfx_SetAllParameters(IDirectSoundFXDistortion *if
+@@ -365,9 +367,15 @@ static HRESULT WINAPI distortionfx_SetAllParameters(IDirectSoundFXDistortion *if
  static HRESULT WINAPI distortionfx_GetAllParameters(IDirectSoundFXDistortion *iface, DSFXDistortion *distortion)
  {
      struct dmo_distortionfx *This = impl_from_IDirectSoundFXDistortion(iface);
@@ -40,7 +39,7 @@ index 6ae9629c20..666c4d496c 100644
  }
  
  static const struct IDirectSoundFXDistortionVtbl distortionfxVtbl =
-@@ -393,6 +401,12 @@ HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUnknown *
+@@ -397,6 +405,12 @@ HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUnknown *
      object->IMediaObjectInPlace_iface.lpVtbl = &distortionfx_mediainplaceVtbl;
      object->ref = 1;
  

@@ -1,13 +1,13 @@
-From 3bc24ad66f2544fe63272434b719bb4ad5c185c1 Mon Sep 17 00:00:00 2001
+From 64f93e9ee136f864bb36cd697046c825dcd78695 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:40:39 +1000
-Subject: [PATCH 05/20] dsdmo: Add IDirectSoundFXCompressor support
+Subject: [PATCH] dsdmo: Add IDirectSoundFXCompressor support
 
 ---
  dlls/dsdmo/Makefile.in  |   1 +
- dlls/dsdmo/compressor.c | 400 ++++++++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/compressor.c | 404 ++++++++++++++++++++++++++++++++++++++++
  dlls/dsdmo/main.c       |  15 ++
- 3 files changed, 416 insertions(+)
+ 3 files changed, 420 insertions(+)
  create mode 100644 dlls/dsdmo/compressor.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +24,10 @@ index 34d0e89bf1..d0b10ac4f9 100644
  
 diff --git a/dlls/dsdmo/compressor.c b/dlls/dsdmo/compressor.c
 new file mode 100644
-index 0000000000..6bfb3f3d1e
+index 0000000000..25150f823e
 --- /dev/null
 +++ b/dlls/dsdmo/compressor.c
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,404 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -297,7 +297,11 @@ index 0000000000..6bfb3f3d1e
 +static HRESULT WINAPI echo_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_compressorfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %s, %x\n", This, size, data,  wine_dbgstr_longlong(start), flags);
++    static BOOL once = 0;
++    if(!once++)
++        FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    else
++        TRACE("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +

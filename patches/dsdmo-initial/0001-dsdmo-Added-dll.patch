@@ -1,7 +1,7 @@
-From b947840bdd6f176a4c23a36025cb5bc2b4ea77f8 Mon Sep 17 00:00:00 2001
+From 9c312edce82392ddb9be3120f4437d68d54fa32e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 14 Aug 2019 12:17:08 +1000
-Subject: [PATCH 01/20] dsdmo: Added dll
+Subject: [PATCH] dsdmo: Added dll
 
 ---
  configure              |  2 +
@@ -15,7 +15,7 @@ Subject: [PATCH 01/20] dsdmo: Added dll
  create mode 100644 dlls/dsdmo/main.c
 
 diff --git a/configure b/configure
-index 0c54e27f5f..6a2f914ee5 100755
+index 83d8591c1d..7cae62b356 100755
 --- a/configure
 +++ b/configure
 @@ -1257,6 +1257,7 @@ enable_dpnlobby
@@ -26,7 +26,7 @@ index 0c54e27f5f..6a2f914ee5 100755
  enable_dsound
  enable_dsquery
  enable_dssenh
-@@ -20354,6 +20355,7 @@ wine_fn_config_makefile dlls/dpvoice enable_dpvoice
+@@ -20364,6 +20365,7 @@ wine_fn_config_makefile dlls/dpvoice enable_dpvoice
  wine_fn_config_makefile dlls/dpvoice/tests enable_tests
  wine_fn_config_makefile dlls/dpwsockx enable_dpwsockx
  wine_fn_config_makefile dlls/drmclien enable_drmclien

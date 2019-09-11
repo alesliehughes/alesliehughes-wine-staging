@@ -1,13 +1,13 @@
-From 90dd5be7da94f3dbc01976222ff394db2050a658 Mon Sep 17 00:00:00 2001
+From 777ffc748e5693ec78a92aaf997632bc5a2e7980 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:03:54 +1000
-Subject: [PATCH 08/20] dsdmo: Add IDirectSoundFXGargle support.
+Subject: [PATCH] dsdmo: Add IDirectSoundFXGargle support.
 
 ---
  dlls/dsdmo/Makefile.in |   1 +
- dlls/dsdmo/gargle.c    | 400 +++++++++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/gargle.c    | 404 +++++++++++++++++++++++++++++++++++++++++
  dlls/dsdmo/main.c      |  15 ++
- 3 files changed, 416 insertions(+)
+ 3 files changed, 420 insertions(+)
  create mode 100644 dlls/dsdmo/gargle.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +24,10 @@ index 3a54f4631c..24b53f03ae 100644
  IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/gargle.c b/dlls/dsdmo/gargle.c
 new file mode 100644
-index 0000000000..f9d2ae2940
+index 0000000000..2a853c8213
 --- /dev/null
 +++ b/dlls/dsdmo/gargle.c
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,404 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -297,7 +297,11 @@ index 0000000000..f9d2ae2940
 +static HRESULT WINAPI gargle_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_garglefx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    static BOOL once = 0;
++    if(!once++)
++        FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    else
++        TRACE("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +

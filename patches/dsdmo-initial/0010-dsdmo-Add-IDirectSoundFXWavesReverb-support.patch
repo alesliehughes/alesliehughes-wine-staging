@@ -1,13 +1,13 @@
-From 677b928c369cdb46e2c0545483b5f95567ac56c9 Mon Sep 17 00:00:00 2001
+From 369f162d0e13cbeca6edb6a3f9bc39310009a5e7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:21:32 +1000
-Subject: [PATCH 10/20] dsdmo: Add IDirectSoundFXWavesReverb support
+Subject: [PATCH] dsdmo: Add IDirectSoundFXWavesReverb support
 
 ---
  dlls/dsdmo/Makefile.in |   3 +-
  dlls/dsdmo/main.c      |  15 ++
- dlls/dsdmo/reverb.c    | 400 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 417 insertions(+), 1 deletion(-)
+ dlls/dsdmo/reverb.c    | 404 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 421 insertions(+), 1 deletion(-)
  create mode 100644 dlls/dsdmo/reverb.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -72,10 +72,10 @@ index a8d4ce272d..886ab5c42b 100644
      return CLASS_E_CLASSNOTAVAILABLE;
 diff --git a/dlls/dsdmo/reverb.c b/dlls/dsdmo/reverb.c
 new file mode 100644
-index 0000000000..fcac4f1f6c
+index 0000000000..48e3e4dc5b
 --- /dev/null
 +++ b/dlls/dsdmo/reverb.c
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,404 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -345,7 +345,11 @@ index 0000000000..fcac4f1f6c
 +static HRESULT WINAPI reverb_mediainplace_Process(IMediaObjectInPlace *iface, ULONG size, BYTE *data, REFERENCE_TIME start, DWORD flags)
 +{
 +    struct dmo_reverbfx *This = impl_from_IMediaObjectInPlace(iface);
-+    FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    static BOOL once = 0;
++    if(!once++)
++        FIXME("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
++    else
++        TRACE("%p, %d, %p, %s, %x\n", This, size, data, wine_dbgstr_longlong(start), flags);
 +    return E_NOTIMPL;
 +}
 +
