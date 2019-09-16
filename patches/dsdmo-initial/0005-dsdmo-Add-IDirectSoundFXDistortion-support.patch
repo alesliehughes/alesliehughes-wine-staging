@@ -1,13 +1,15 @@
-From b1feddb6b747889884ed31ffaa8953aeafa64c53 Mon Sep 17 00:00:00 2001
+From 86f3a335ce83732f58c53440bd69b1394ca53638 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Aug 2019 15:00:07 +1000
-Subject: [PATCH] dsdmo: Add IDirectSoundFXDistortion support
+Subject: [PATCH 05/28] dsdmo: Add IDirectSoundFXDistortion support
 
 ---
- dlls/dsdmo/Makefile.in  |   1 +
- dlls/dsdmo/distortion.c | 404 ++++++++++++++++++++++++++++++++++++++++
- dlls/dsdmo/main.c       |  15 ++
- 3 files changed, 420 insertions(+)
+ dlls/dsdmo/Makefile.in       |   1 +
+ dlls/dsdmo/distortion.c      | 397 +++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/dsdmo_classes.idl |  10 +
+ dlls/dsdmo/dsdmo_private.h   |   1 +
+ dlls/dsdmo/main.c            |  14 ++
+ 5 files changed, 423 insertions(+)
  create mode 100644 dlls/dsdmo/distortion.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +26,10 @@ index d0b10ac4f9..2bf8958560 100644
  	main.c
 diff --git a/dlls/dsdmo/distortion.c b/dlls/dsdmo/distortion.c
 new file mode 100644
-index 0000000000..316e555159
+index 0000000000..92e498b6f1
 --- /dev/null
 +++ b/dlls/dsdmo/distortion.c
-@@ -0,0 +1,404 @@
+@@ -0,0 +1,397 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -47,14 +49,7 @@ index 0000000000..316e555159
 + */
 +#define COBJMACROS
 +
-+#include "windows.h"
-+#include "mmsystem.h"
-+#include "mediaobj.h"
-+
-+#include "wine/heap.h"
-+#include "wine/debug.h"
-+
-+#include "dsound.h"
++#include "dsdmo_private.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
 +
@@ -432,19 +427,40 @@ index 0000000000..316e555159
 +
 +    return ret;
 +}
-diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index eaa8743ba4..9ac189fca7 100644
---- a/dlls/dsdmo/main.c
-+++ b/dlls/dsdmo/main.c
-@@ -36,6 +36,7 @@ static HINSTANCE dsdmo_instance;
+diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
+index 17a785584c..cd5915abb3 100644
+--- a/dlls/dsdmo/dsdmo_classes.idl
++++ b/dlls/dsdmo/dsdmo_classes.idl
+@@ -47,3 +47,13 @@ coclass DirectSoundCompressorDMO
+ {
+ }
+ 
++[
++    uuid(ef114c90-cd1d-484e-96e5-09cfaf912a21),
++    threading(both),
++    progid("Microsoft.DirectSoundDistortionDMO.1"),
++    vi_progid("Microsoft.DirectSoundDistortionDMO")
++]
++coclass DirectSoundDistortionDMO
++{
++}
++
+diff --git a/dlls/dsdmo/dsdmo_private.h b/dlls/dsdmo/dsdmo_private.h
+index 96c0c061ee..03186366c6 100644
+--- a/dlls/dsdmo/dsdmo_private.h
++++ b/dlls/dsdmo/dsdmo_private.h
+@@ -30,5 +30,6 @@
  extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)  DECLSPEC_HIDDEN;
  extern HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  extern HRESULT WINAPI CompressorFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
 +extern HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  
- /******************************************************************
-  *     DllMain
-@@ -119,9 +120,18 @@ static const IClassFactoryVtbl CompressorFactoryVtbl = {
+ #endif
+diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
+index 13d4af7adc..ee994350d5 100644
+--- a/dlls/dsdmo/main.c
++++ b/dlls/dsdmo/main.c
+@@ -110,9 +110,18 @@ static const IClassFactoryVtbl CompressorFactoryVtbl = {
      ClassFactory_LockServer
  };
  
@@ -463,7 +479,7 @@ index eaa8743ba4..9ac189fca7 100644
  
  /***********************************************************************
   *      DllGetClassObject
-@@ -145,6 +155,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+@@ -136,6 +145,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
          TRACE("GUID_DSFX_STANDARD_COMPRESSOR\n");
          return IClassFactory_QueryInterface(&compressorfx_factory, riid, ppv);
      }

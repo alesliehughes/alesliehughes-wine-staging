@@ -1,7 +1,8 @@
-From d3584d31be69ebf7a974d48f8063105bf6aa5c10 Mon Sep 17 00:00:00 2001
+From e4a3ab76d6c4a005b59990c9a53f7d18424fab94 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:41:54 +1000
-Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXCompressor GetAllParameters
+Subject: [PATCH 16/28] dsdmo: Implemnet IDirectSoundFXCompressor
+ GetAllParameters
 
 ---
  dlls/dsdmo/compressor.c     | 18 ++++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXCompressor GetAllParameters
  2 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/compressor.c b/dlls/dsdmo/compressor.c
-index 25150f823e..8973290ea6 100644
+index 1cf26c7437..36f8c198d0 100644
 --- a/dlls/dsdmo/compressor.c
 +++ b/dlls/dsdmo/compressor.c
-@@ -34,6 +34,8 @@ struct dmo_compressorfx
+@@ -27,6 +27,8 @@ struct dmo_compressorfx
      IMediaObject        IMediaObject_iface;
      IMediaObjectInPlace IMediaObjectInPlace_iface;
      LONG ref;
@@ -21,7 +22,7 @@ index 25150f823e..8973290ea6 100644
  };
  
  static inline struct dmo_compressorfx *impl_from_IDirectSoundFXCompressor(IDirectSoundFXCompressor *iface)
-@@ -365,9 +367,15 @@ static HRESULT WINAPI compressorfx_SetAllParameters(IDirectSoundFXCompressor *if
+@@ -358,9 +360,15 @@ static HRESULT WINAPI compressorfx_SetAllParameters(IDirectSoundFXCompressor *if
  static HRESULT WINAPI compressorfx_GetAllParameters(IDirectSoundFXCompressor *iface, DSFXCompressor *compressor)
  {
      struct dmo_compressorfx *This = impl_from_IDirectSoundFXCompressor(iface);
@@ -39,7 +40,7 @@ index 25150f823e..8973290ea6 100644
  }
  
  static const struct IDirectSoundFXCompressorVtbl echofxVtbl =
-@@ -397,6 +405,12 @@ HRESULT WINAPI CompressorFactory_CreateInstance(IClassFactory *iface, IUnknown *
+@@ -390,6 +398,12 @@ HRESULT WINAPI CompressorFactory_CreateInstance(IClassFactory *iface, IUnknown *
      object->IMediaObjectInPlace_iface.lpVtbl = &compressor_mediainplaceVtbl;
      object->ref = 1;
  

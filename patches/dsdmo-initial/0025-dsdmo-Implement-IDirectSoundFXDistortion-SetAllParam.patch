@@ -1,7 +1,8 @@
-From b3c9c2a5366eec4b5ea8d6a804f352548970543d Mon Sep 17 00:00:00 2001
+From d2861221cfa4036437e73650708ae6ef6d216eb2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 13:57:45 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXDistortion SetAllParameters.
+Subject: [PATCH 25/28] dsdmo: Implement IDirectSoundFXDistortion
+ SetAllParameters.
 
 ---
  dlls/dsdmo/distortion.c     | 19 +++++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXDistortion SetAllParameters.
  2 files changed, 46 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/distortion.c b/dlls/dsdmo/distortion.c
-index aa1f0813b4..5ac44c6b47 100644
+index e6952c3fe1..d5014adce0 100644
 --- a/dlls/dsdmo/distortion.c
 +++ b/dlls/dsdmo/distortion.c
-@@ -359,9 +359,24 @@ static ULONG WINAPI distortionfx_Release(IDirectSoundFXDistortion *iface)
+@@ -352,9 +352,24 @@ static ULONG WINAPI distortionfx_Release(IDirectSoundFXDistortion *iface)
  static HRESULT WINAPI distortionfx_SetAllParameters(IDirectSoundFXDistortion *iface, const DSFXDistortion *distortion)
  {
      struct dmo_distortionfx *This = impl_from_IDirectSoundFXDistortion(iface);

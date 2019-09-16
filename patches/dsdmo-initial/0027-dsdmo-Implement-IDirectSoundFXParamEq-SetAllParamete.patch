@@ -1,7 +1,8 @@
-From bbf2842f25f7e7047d1b356432d4e4c673ae9664 Mon Sep 17 00:00:00 2001
+From ce271b6e0fbb4820dcc154c094fc19600669dc61 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 14:32:24 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXParamEq SetAllParameters.
+Subject: [PATCH 27/28] dsdmo: Implement IDirectSoundFXParamEq
+ SetAllParameters.
 
 ---
  dlls/dsdmo/parameq.c        | 17 +++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXParamEq SetAllParameters.
  2 files changed, 41 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/parameq.c b/dlls/dsdmo/parameq.c
-index ba7d6f6cf5..2428bfc659 100644
+index 5b6a066fd3..b8e2addf9f 100644
 --- a/dlls/dsdmo/parameq.c
 +++ b/dlls/dsdmo/parameq.c
-@@ -359,9 +359,22 @@ static ULONG WINAPI parameqfx_Release(IDirectSoundFXParamEq *iface)
+@@ -352,9 +352,22 @@ static ULONG WINAPI parameqfx_Release(IDirectSoundFXParamEq *iface)
  static HRESULT WINAPI parameqfx_SetAllParameters(IDirectSoundFXParamEq *iface, const DSFXParamEq *param)
  {
      struct dmo_parameqfx *This = impl_from_IDirectSoundFXParamEq(iface);

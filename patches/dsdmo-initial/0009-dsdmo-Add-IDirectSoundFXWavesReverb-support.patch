@@ -1,13 +1,15 @@
-From 369f162d0e13cbeca6edb6a3f9bc39310009a5e7 Mon Sep 17 00:00:00 2001
+From 075c1d207eea5348da1d5161e0fe06223633f4d5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Aug 2019 09:21:32 +1000
-Subject: [PATCH] dsdmo: Add IDirectSoundFXWavesReverb support
+Subject: [PATCH 09/28] dsdmo: Add IDirectSoundFXWavesReverb support
 
 ---
- dlls/dsdmo/Makefile.in |   3 +-
- dlls/dsdmo/main.c      |  15 ++
- dlls/dsdmo/reverb.c    | 404 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 421 insertions(+), 1 deletion(-)
+ dlls/dsdmo/Makefile.in       |   3 +-
+ dlls/dsdmo/dsdmo_classes.idl |   9 +
+ dlls/dsdmo/dsdmo_private.h   |   1 +
+ dlls/dsdmo/main.c            |  14 ++
+ dlls/dsdmo/reverb.c          | 397 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 423 insertions(+), 1 deletion(-)
  create mode 100644 dlls/dsdmo/reverb.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -23,19 +25,39 @@ index da7f3d719a..4e36fd165e 100644
 +	reverb.c
  
  IDL_SRCS = dsdmo_classes.idl
-diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index a8d4ce272d..886ab5c42b 100644
---- a/dlls/dsdmo/main.c
-+++ b/dlls/dsdmo/main.c
-@@ -40,6 +40,7 @@ extern HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUn
+diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
+index 1da1a1e629..bf54fc846c 100644
+--- a/dlls/dsdmo/dsdmo_classes.idl
++++ b/dlls/dsdmo/dsdmo_classes.idl
+@@ -87,3 +87,12 @@ coclass DirectSoundParamEqDMO
+ {
+ }
+ 
++[
++    uuid(87fc0268-9a55-4360-95aa-004a1d9de26c),
++    threading(both),
++    progid("Microsoft.DirectSoundWavesReverbDMO.1"),
++    vi_progid("Microsoft.DirectSoundWavesReverbDMO")
++]
++coclass DirectSoundWavesReverbDMO
++{
++}
+diff --git a/dlls/dsdmo/dsdmo_private.h b/dlls/dsdmo/dsdmo_private.h
+index 28ac94b726..667539f9ae 100644
+--- a/dlls/dsdmo/dsdmo_private.h
++++ b/dlls/dsdmo/dsdmo_private.h
+@@ -34,5 +34,6 @@ extern HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUn
  extern HRESULT WINAPI FlangerFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  extern HRESULT WINAPI GargleFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  extern HRESULT WINAPI ParamEqFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
 +extern HRESULT WINAPI ReverbFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  
- /******************************************************************
-  *     DllMain
-@@ -155,6 +156,14 @@ static const IClassFactoryVtbl ParamEqFactoryVtbl = {
+ #endif
+diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
+index 1aadb1d74f..c7647101b1 100644
+--- a/dlls/dsdmo/main.c
++++ b/dlls/dsdmo/main.c
+@@ -142,6 +142,14 @@ static const IClassFactoryVtbl ParamEqFactoryVtbl = {
      ClassFactory_LockServer
  };
  
@@ -50,7 +72,7 @@ index a8d4ce272d..886ab5c42b 100644
  static IClassFactory echofx_factory = { &EchoFactoryVtbl };
  static IClassFactory chorusfx_factory = { &ChrousFactoryVtbl };
  static IClassFactory compressorfx_factory = { &CompressorFactoryVtbl };
-@@ -162,6 +171,7 @@ static IClassFactory distortionfx_factory = { &DistortionFactoryVtbl };
+@@ -149,6 +157,7 @@ static IClassFactory distortionfx_factory = { &DistortionFactoryVtbl };
  static IClassFactory flangerfx_factory = { &FlangerFactoryVtbl };
  static IClassFactory garglefx_factory = { &GargleFactoryVtbl };
  static IClassFactory parameqfx_factory = { &ParamEqFactoryVtbl };
@@ -58,7 +80,7 @@ index a8d4ce272d..886ab5c42b 100644
  
  /***********************************************************************
   *      DllGetClassObject
-@@ -205,6 +215,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+@@ -192,6 +201,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
          TRACE("GUID_DSFX_STANDARD_PARAMEQ\n");
          return IClassFactory_QueryInterface(&parameqfx_factory, riid, ppv);
      }
@@ -72,10 +94,10 @@ index a8d4ce272d..886ab5c42b 100644
      return CLASS_E_CLASSNOTAVAILABLE;
 diff --git a/dlls/dsdmo/reverb.c b/dlls/dsdmo/reverb.c
 new file mode 100644
-index 0000000000..48e3e4dc5b
+index 0000000000..f3b894186e
 --- /dev/null
 +++ b/dlls/dsdmo/reverb.c
-@@ -0,0 +1,404 @@
+@@ -0,0 +1,397 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -95,14 +117,7 @@ index 0000000000..48e3e4dc5b
 + */
 +#define COBJMACROS
 +
-+#include "windows.h"
-+#include "mmsystem.h"
-+#include "mediaobj.h"
-+
-+#include "wine/heap.h"
-+#include "wine/debug.h"
-+
-+#include "dsound.h"
++#include "dsdmo_private.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
 +

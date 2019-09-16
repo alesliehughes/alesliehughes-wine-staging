@@ -1,7 +1,7 @@
-From f7e69cb59f90ab1604e04ff37cf5117554f8ec65 Mon Sep 17 00:00:00 2001
+From a6e92e124285b80c205f09e32880b534be1047a7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:34:36 +1000
-Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
+Subject: [PATCH 14/28] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
 
 ---
  dlls/dsdmo/flanger.c        | 20 ++++++++++++++++++--
@@ -9,10 +9,10 @@ Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXFlanger GetAllParameters
  2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/flanger.c b/dlls/dsdmo/flanger.c
-index c5d8ddfb7e..43e6609e54 100644
+index 6fbc836dcd..a647c862fa 100644
 --- a/dlls/dsdmo/flanger.c
 +++ b/dlls/dsdmo/flanger.c
-@@ -34,6 +34,8 @@ struct dmo_flangerfx
+@@ -27,6 +27,8 @@ struct dmo_flangerfx
      IMediaObject        IMediaObject_iface;
      IMediaObjectInPlace IMediaObjectInPlace_iface;
      LONG ref;
@@ -21,7 +21,7 @@ index c5d8ddfb7e..43e6609e54 100644
  };
  
  static inline struct dmo_flangerfx *impl_from_IDirectSoundFXFlanger(IDirectSoundFXFlanger *iface)
-@@ -365,9 +367,15 @@ static HRESULT WINAPI flangerfx_SetAllParameters(IDirectSoundFXFlanger *iface, c
+@@ -358,9 +360,15 @@ static HRESULT WINAPI flangerfx_SetAllParameters(IDirectSoundFXFlanger *iface, c
  static HRESULT WINAPI flangerfx_GetAllParameters(IDirectSoundFXFlanger *iface, DSFXFlanger *flanger)
  {
      struct dmo_flangerfx *This = impl_from_IDirectSoundFXFlanger(iface);
@@ -39,7 +39,7 @@ index c5d8ddfb7e..43e6609e54 100644
  }
  
  static const struct IDirectSoundFXFlangerVtbl flangerfxVtbl =
-@@ -397,6 +405,14 @@ HRESULT WINAPI FlangerFactory_CreateInstance(IClassFactory *iface, IUnknown *out
+@@ -390,6 +398,14 @@ HRESULT WINAPI FlangerFactory_CreateInstance(IClassFactory *iface, IUnknown *out
      object->IMediaObjectInPlace_iface.lpVtbl = &flanger_mediainplaceVtbl;
      object->ref = 1;
  

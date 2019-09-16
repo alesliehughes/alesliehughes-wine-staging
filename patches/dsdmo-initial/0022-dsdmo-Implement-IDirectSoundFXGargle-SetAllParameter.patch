@@ -1,7 +1,7 @@
-From 5aebedd5186a74411a3634e0c4429db988a3d0e8 Mon Sep 17 00:00:00 2001
+From 64bdd81e0070360b2f68d53fe4830e872ae4b673 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 11:06:11 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXGargle SetAllParameters.
+Subject: [PATCH 22/28] dsdmo: Implement IDirectSoundFXGargle SetAllParameters.
 
 ---
  dlls/dsdmo/gargle.c         | 17 +++++++++++++++--
@@ -9,10 +9,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXGargle SetAllParameters.
  2 files changed, 42 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/gargle.c b/dlls/dsdmo/gargle.c
-index beed6f9ff9..7442bbc6d7 100644
+index 458ca8a323..03358ec535 100644
 --- a/dlls/dsdmo/gargle.c
 +++ b/dlls/dsdmo/gargle.c
-@@ -359,9 +359,22 @@ static ULONG WINAPI garglefx_Release(IDirectSoundFXGargle *iface)
+@@ -352,9 +352,22 @@ static ULONG WINAPI garglefx_Release(IDirectSoundFXGargle *iface)
  static HRESULT WINAPI garglefx_SetAllParameters(IDirectSoundFXGargle *iface, const DSFXGargle *gargle)
  {
      struct dmo_garglefx *This = impl_from_IDirectSoundFXGargle(iface);

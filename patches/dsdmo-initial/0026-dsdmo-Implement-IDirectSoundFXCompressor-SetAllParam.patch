@@ -1,7 +1,8 @@
-From 4df65a04a7d3488896a3341c52c6563d7240de71 Mon Sep 17 00:00:00 2001
+From 586d9f81a38762e4fe031f2a9f89f937e3d91851 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 14:13:30 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXCompressor SetAllParameters.
+Subject: [PATCH 26/28] dsdmo: Implement IDirectSoundFXCompressor
+ SetAllParameters.
 
 ---
  dlls/dsdmo/compressor.c     | 19 +++++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXCompressor SetAllParameters.
  2 files changed, 46 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/compressor.c b/dlls/dsdmo/compressor.c
-index 8973290ea6..20e43746f1 100644
+index 36f8c198d0..71005b1fa3 100644
 --- a/dlls/dsdmo/compressor.c
 +++ b/dlls/dsdmo/compressor.c
-@@ -359,9 +359,24 @@ static ULONG WINAPI compressorfx_Release(IDirectSoundFXCompressor *iface)
+@@ -352,9 +352,24 @@ static ULONG WINAPI compressorfx_Release(IDirectSoundFXCompressor *iface)
  static HRESULT WINAPI compressorfx_SetAllParameters(IDirectSoundFXCompressor *iface, const DSFXCompressor *compressor)
  {
      struct dmo_compressorfx *This = impl_from_IDirectSoundFXCompressor(iface);

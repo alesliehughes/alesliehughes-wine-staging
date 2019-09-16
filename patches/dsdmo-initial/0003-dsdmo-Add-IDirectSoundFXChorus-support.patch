@@ -1,13 +1,15 @@
-From 6d967c45fadcf9602eeb0f622f840530f3dbaa76 Mon Sep 17 00:00:00 2001
+From 832e5dc6282e03bf6f4a8465cc02fd5a548e08a5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:23:38 +1000
-Subject: [PATCH] dsdmo: Add IDirectSoundFXChorus support
+Subject: [PATCH 03/28] dsdmo: Add IDirectSoundFXChorus support
 
 ---
- dlls/dsdmo/Makefile.in |   1 +
- dlls/dsdmo/chorus.c    | 404 +++++++++++++++++++++++++++++++++++++++++
- dlls/dsdmo/main.c      |  15 ++
- 3 files changed, 420 insertions(+)
+ dlls/dsdmo/Makefile.in       |   1 +
+ dlls/dsdmo/chorus.c          | 397 +++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/dsdmo_classes.idl |  10 +
+ dlls/dsdmo/dsdmo_private.h   |   1 +
+ dlls/dsdmo/main.c            |  14 ++
+ 5 files changed, 423 insertions(+)
  create mode 100644 dlls/dsdmo/chorus.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +26,10 @@ index cb4f8f8a4b..34d0e89bf1 100644
  
 diff --git a/dlls/dsdmo/chorus.c b/dlls/dsdmo/chorus.c
 new file mode 100644
-index 0000000000..91a01abea2
+index 0000000000..6d4076bcba
 --- /dev/null
 +++ b/dlls/dsdmo/chorus.c
-@@ -0,0 +1,404 @@
+@@ -0,0 +1,397 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -47,14 +49,7 @@ index 0000000000..91a01abea2
 + */
 +#define COBJMACROS
 +
-+#include "windows.h"
-+#include "mmsystem.h"
-+#include "mediaobj.h"
-+
-+#include "wine/heap.h"
-+#include "wine/debug.h"
-+
-+#include "dsound.h"
++#include "dsdmo_private.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
 +
@@ -432,19 +427,40 @@ index 0000000000..91a01abea2
 +
 +    return ret;
 +}
-diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index e90ff8827b..f5ee21c4cc 100644
---- a/dlls/dsdmo/main.c
-+++ b/dlls/dsdmo/main.c
-@@ -34,6 +34,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
- static HINSTANCE dsdmo_instance;
+diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
+index 3d458d4b1e..f3ff0eb21e 100644
+--- a/dlls/dsdmo/dsdmo_classes.idl
++++ b/dlls/dsdmo/dsdmo_classes.idl
+@@ -27,3 +27,13 @@ coclass DirectSoundEchoDMO
+ {
+ }
+ 
++[
++    uuid(efe6629c-81f7-4281-bd91-c9d604a95af6),
++    threading(both),
++    progid("Microsoft.DirectSoundChorusDMO.1"),
++    vi_progid("Microsoft.DirectSoundChorusDMO")
++]
++coclass DirectSoundChorusDMO
++{
++}
++
+diff --git a/dlls/dsdmo/dsdmo_private.h b/dlls/dsdmo/dsdmo_private.h
+index 4abe5a9f60..cbe906e472 100644
+--- a/dlls/dsdmo/dsdmo_private.h
++++ b/dlls/dsdmo/dsdmo_private.h
+@@ -28,5 +28,6 @@
+ #include "dsound.h"
  
  extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)  DECLSPEC_HIDDEN;
 +extern HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  
- /******************************************************************
-  *     DllMain
-@@ -101,7 +102,16 @@ static const IClassFactoryVtbl EchoFactoryVtbl = {
+ #endif
+diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
+index d751f90dc9..5a89eaff39 100644
+--- a/dlls/dsdmo/main.c
++++ b/dlls/dsdmo/main.c
+@@ -94,7 +94,16 @@ static const IClassFactoryVtbl EchoFactoryVtbl = {
      ClassFactory_LockServer
  };
  
@@ -461,7 +477,7 @@ index e90ff8827b..f5ee21c4cc 100644
  
  /***********************************************************************
   *      DllGetClassObject
-@@ -115,6 +125,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+@@ -108,6 +117,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
          TRACE("GUID_DSFX_STANDARD_ECHO\n");
          return IClassFactory_QueryInterface(&echofx_factory, riid, ppv);
      }

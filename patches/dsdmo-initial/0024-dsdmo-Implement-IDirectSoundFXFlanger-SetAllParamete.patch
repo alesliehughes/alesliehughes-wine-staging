@@ -1,7 +1,8 @@
-From bfb23b1ebf724104ae41270c8f8bc7de134a673f Mon Sep 17 00:00:00 2001
+From abc42798637f37bc5f7ca7bb44c9f7b91271ca4d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 13:44:41 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXFlanger SetAllParameters.
+Subject: [PATCH 24/28] dsdmo: Implement IDirectSoundFXFlanger
+ SetAllParameters.
 
 ---
  dlls/dsdmo/flanger.c        | 21 +++++++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXFlanger SetAllParameters.
  2 files changed, 50 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/flanger.c b/dlls/dsdmo/flanger.c
-index 43e6609e54..0a2c764906 100644
+index a647c862fa..e1012b8d1c 100644
 --- a/dlls/dsdmo/flanger.c
 +++ b/dlls/dsdmo/flanger.c
-@@ -359,9 +359,26 @@ static ULONG WINAPI flangerfx_Release(IDirectSoundFXFlanger *iface)
+@@ -352,9 +352,26 @@ static ULONG WINAPI flangerfx_Release(IDirectSoundFXFlanger *iface)
  static HRESULT WINAPI flangerfx_SetAllParameters(IDirectSoundFXFlanger *iface, const DSFXFlanger *flanger)
  {
      struct dmo_flangerfx *This = impl_from_IDirectSoundFXFlanger(iface);

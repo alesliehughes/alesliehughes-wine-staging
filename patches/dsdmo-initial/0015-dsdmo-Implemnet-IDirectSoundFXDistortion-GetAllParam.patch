@@ -1,7 +1,8 @@
-From 8789fc48a21cfb46c5fb2f6f5e56410b341714a1 Mon Sep 17 00:00:00 2001
+From f29ea7ca4ceaa5bede274c27c8c14ee16bb8101a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:38:33 +1000
-Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXDistortion GetAllParameters
+Subject: [PATCH 15/28] dsdmo: Implemnet IDirectSoundFXDistortion
+ GetAllParameters
 
 ---
  dlls/dsdmo/distortion.c     | 18 ++++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXDistortion GetAllParameters
  2 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/distortion.c b/dlls/dsdmo/distortion.c
-index 316e555159..aa1f0813b4 100644
+index 92e498b6f1..e6952c3fe1 100644
 --- a/dlls/dsdmo/distortion.c
 +++ b/dlls/dsdmo/distortion.c
-@@ -34,6 +34,8 @@ struct dmo_distortionfx
+@@ -27,6 +27,8 @@ struct dmo_distortionfx
      IMediaObject        IMediaObject_iface;
      IMediaObjectInPlace IMediaObjectInPlace_iface;
      LONG ref;
@@ -21,7 +22,7 @@ index 316e555159..aa1f0813b4 100644
  };
  
  static inline struct dmo_distortionfx *impl_from_IDirectSoundFXDistortion(IDirectSoundFXDistortion *iface)
-@@ -365,9 +367,15 @@ static HRESULT WINAPI distortionfx_SetAllParameters(IDirectSoundFXDistortion *if
+@@ -358,9 +360,15 @@ static HRESULT WINAPI distortionfx_SetAllParameters(IDirectSoundFXDistortion *if
  static HRESULT WINAPI distortionfx_GetAllParameters(IDirectSoundFXDistortion *iface, DSFXDistortion *distortion)
  {
      struct dmo_distortionfx *This = impl_from_IDirectSoundFXDistortion(iface);
@@ -39,7 +40,7 @@ index 316e555159..aa1f0813b4 100644
  }
  
  static const struct IDirectSoundFXDistortionVtbl distortionfxVtbl =
-@@ -397,6 +405,12 @@ HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUnknown *
+@@ -390,6 +398,12 @@ HRESULT WINAPI DistortionFactory_CreateInstance(IClassFactory *iface, IUnknown *
      object->IMediaObjectInPlace_iface.lpVtbl = &distortionfx_mediainplaceVtbl;
      object->ref = 1;
  

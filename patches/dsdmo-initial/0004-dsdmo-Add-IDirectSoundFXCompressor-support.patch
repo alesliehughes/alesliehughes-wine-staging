@@ -1,13 +1,15 @@
-From 64f93e9ee136f864bb36cd697046c825dcd78695 Mon Sep 17 00:00:00 2001
+From b54a8dac188bbda3bb19693c5900790c7da9180e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Aug 2019 18:40:39 +1000
-Subject: [PATCH] dsdmo: Add IDirectSoundFXCompressor support
+Subject: [PATCH 04/28] dsdmo: Add IDirectSoundFXCompressor support
 
 ---
- dlls/dsdmo/Makefile.in  |   1 +
- dlls/dsdmo/compressor.c | 404 ++++++++++++++++++++++++++++++++++++++++
- dlls/dsdmo/main.c       |  15 ++
- 3 files changed, 420 insertions(+)
+ dlls/dsdmo/Makefile.in       |   1 +
+ dlls/dsdmo/compressor.c      | 397 +++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/dsdmo_classes.idl |  10 +
+ dlls/dsdmo/dsdmo_private.h   |   1 +
+ dlls/dsdmo/main.c            |  14 ++
+ 5 files changed, 423 insertions(+)
  create mode 100644 dlls/dsdmo/compressor.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
@@ -24,10 +26,10 @@ index 34d0e89bf1..d0b10ac4f9 100644
  
 diff --git a/dlls/dsdmo/compressor.c b/dlls/dsdmo/compressor.c
 new file mode 100644
-index 0000000000..25150f823e
+index 0000000000..1cf26c7437
 --- /dev/null
 +++ b/dlls/dsdmo/compressor.c
-@@ -0,0 +1,404 @@
+@@ -0,0 +1,397 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -47,14 +49,7 @@ index 0000000000..25150f823e
 + */
 +#define COBJMACROS
 +
-+#include "windows.h"
-+#include "mmsystem.h"
-+#include "mediaobj.h"
-+
-+#include "wine/heap.h"
-+#include "wine/debug.h"
-+
-+#include "dsound.h"
++#include "dsdmo_private.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
 +
@@ -432,19 +427,40 @@ index 0000000000..25150f823e
 +
 +    return ret;
 +}
-diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index f5ee21c4cc..eaa8743ba4 100644
---- a/dlls/dsdmo/main.c
-+++ b/dlls/dsdmo/main.c
-@@ -35,6 +35,7 @@ static HINSTANCE dsdmo_instance;
+diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
+index f3ff0eb21e..17a785584c 100644
+--- a/dlls/dsdmo/dsdmo_classes.idl
++++ b/dlls/dsdmo/dsdmo_classes.idl
+@@ -37,3 +37,13 @@ coclass DirectSoundChorusDMO
+ {
+ }
+ 
++[
++    uuid(ef011f79-4000-406d-87af-bffb3fc39d57),
++    threading(both),
++    progid("Microsoft.DirectSoundCompressorDMO.1"),
++    vi_progid("Microsoft.DirectSoundCompressorDMO")
++]
++coclass DirectSoundCompressorDMO
++{
++}
++
+diff --git a/dlls/dsdmo/dsdmo_private.h b/dlls/dsdmo/dsdmo_private.h
+index cbe906e472..96c0c061ee 100644
+--- a/dlls/dsdmo/dsdmo_private.h
++++ b/dlls/dsdmo/dsdmo_private.h
+@@ -29,5 +29,6 @@
  
  extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)  DECLSPEC_HIDDEN;
  extern HRESULT WINAPI ChrousFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
 +extern HRESULT WINAPI CompressorFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv) DECLSPEC_HIDDEN;
  
- /******************************************************************
-  *     DllMain
-@@ -110,8 +111,17 @@ static const IClassFactoryVtbl ChrousFactoryVtbl = {
+ #endif
+diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
+index 5a89eaff39..13d4af7adc 100644
+--- a/dlls/dsdmo/main.c
++++ b/dlls/dsdmo/main.c
+@@ -102,8 +102,17 @@ static const IClassFactoryVtbl ChrousFactoryVtbl = {
      ClassFactory_LockServer
  };
  
@@ -462,7 +478,7 @@ index f5ee21c4cc..eaa8743ba4 100644
  
  /***********************************************************************
   *      DllGetClassObject
-@@ -130,6 +140,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+@@ -122,6 +131,11 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
          TRACE("GUID_DSFX_STANDARD_CHORUS\n");
          return IClassFactory_QueryInterface(&chorusfx_factory, riid, ppv);
      }

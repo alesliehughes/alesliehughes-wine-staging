@@ -1,7 +1,8 @@
-From 388f8afd3692d1fb90296d7235f3dd76b111ce8c Mon Sep 17 00:00:00 2001
+From 8e495402dc5b90103535bdd290354a1057b8f8b1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 14:53:58 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXI3DL2Reverb SetAllParameters.
+Subject: [PATCH 28/28] dsdmo: Implement IDirectSoundFXI3DL2Reverb
+ SetAllParameters.
 
 ---
  dlls/dsdmo/reverb2.c        | 24 ++++++++++++++++++++++--
@@ -9,10 +10,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXI3DL2Reverb SetAllParameters.
  2 files changed, 55 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/reverb2.c b/dlls/dsdmo/reverb2.c
-index 4098363cae..2408755513 100644
+index daf9532abb..02fcacdbcb 100644
 --- a/dlls/dsdmo/reverb2.c
 +++ b/dlls/dsdmo/reverb2.c
-@@ -359,9 +359,29 @@ static ULONG WINAPI reverb2_Release(IDirectSoundFXI3DL2Reverb *iface)
+@@ -352,9 +352,29 @@ static ULONG WINAPI reverb2_Release(IDirectSoundFXI3DL2Reverb *iface)
  static HRESULT WINAPI reverb2_SetAllParameters(IDirectSoundFXI3DL2Reverb *iface, const DSFXI3DL2Reverb *reverb)
  {
      struct dmo_reverb2fx *This = impl_from_IDirectSoundFXI3DL2Reverb(iface);

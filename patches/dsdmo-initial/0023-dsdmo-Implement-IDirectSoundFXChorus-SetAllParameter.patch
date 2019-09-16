@@ -1,7 +1,7 @@
-From 11e526badac06ac3643220c8579886780833db69 Mon Sep 17 00:00:00 2001
+From e180705c93957f372b7f6e5a521981cee8594fd1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 11:48:31 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXChorus SetAllParameters.
+Subject: [PATCH 23/28] dsdmo: Implement IDirectSoundFXChorus SetAllParameters.
 
 ---
  dlls/dsdmo/chorus.c         | 22 ++++++++++++++++++++--
@@ -9,10 +9,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXChorus SetAllParameters.
  2 files changed, 51 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/chorus.c b/dlls/dsdmo/chorus.c
-index b47a1c5f2c..46c63b3712 100644
+index 03195d247d..979074f2f5 100644
 --- a/dlls/dsdmo/chorus.c
 +++ b/dlls/dsdmo/chorus.c
-@@ -359,9 +359,27 @@ static ULONG WINAPI chrousfx_Release(IDirectSoundFXChorus *iface)
+@@ -352,9 +352,27 @@ static ULONG WINAPI chrousfx_Release(IDirectSoundFXChorus *iface)
  static HRESULT WINAPI chrousfx_SetAllParameters(IDirectSoundFXChorus *iface, const DSFXChorus *chorus)
  {
      struct dmo_chorusfx *This = impl_from_IDirectSoundFXChorus(iface);

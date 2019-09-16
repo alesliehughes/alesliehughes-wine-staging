@@ -1,7 +1,7 @@
-From 807799b18814d534fb6539d5a172085810e9d09c Mon Sep 17 00:00:00 2001
+From 690a3c298c697037438cb19b9b94e6bc9205a06d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Sep 2019 09:44:41 +1000
-Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
+Subject: [PATCH 17/28] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
 
 ---
  dlls/dsdmo/parameq.c        | 16 ++++++++++++++--
@@ -9,10 +9,10 @@ Subject: [PATCH] dsdmo: Implemnet IDirectSoundFXParamEq GetAllParameters
  2 files changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/dsdmo/parameq.c b/dlls/dsdmo/parameq.c
-index 19a89f1806..ba7d6f6cf5 100644
+index dc6d84fa08..5b6a066fd3 100644
 --- a/dlls/dsdmo/parameq.c
 +++ b/dlls/dsdmo/parameq.c
-@@ -34,6 +34,8 @@ struct dmo_parameqfx
+@@ -27,6 +27,8 @@ struct dmo_parameqfx
      IMediaObject        IMediaObject_iface;
      IMediaObjectInPlace IMediaObjectInPlace_iface;
      LONG ref;
@@ -21,7 +21,7 @@ index 19a89f1806..ba7d6f6cf5 100644
  };
  
  static inline struct dmo_parameqfx *impl_from_IDirectSoundFXParamEq(IDirectSoundFXParamEq *iface)
-@@ -365,9 +367,15 @@ static HRESULT WINAPI parameqfx_SetAllParameters(IDirectSoundFXParamEq *iface, c
+@@ -358,9 +360,15 @@ static HRESULT WINAPI parameqfx_SetAllParameters(IDirectSoundFXParamEq *iface, c
  static HRESULT WINAPI parameqfx_GetAllParameters(IDirectSoundFXParamEq *iface, DSFXParamEq *param)
  {
      struct dmo_parameqfx *This = impl_from_IDirectSoundFXParamEq(iface);
@@ -39,7 +39,7 @@ index 19a89f1806..ba7d6f6cf5 100644
  }
  
  static const struct IDirectSoundFXParamEqVtbl parameqfxVtbl =
-@@ -397,6 +405,10 @@ HRESULT WINAPI ParamEqFactory_CreateInstance(IClassFactory *iface, IUnknown *out
+@@ -390,6 +398,10 @@ HRESULT WINAPI ParamEqFactory_CreateInstance(IClassFactory *iface, IUnknown *out
      object->IMediaObjectInPlace_iface.lpVtbl = &parameq_mediainplaceVtbl;
      object->ref = 1;
  

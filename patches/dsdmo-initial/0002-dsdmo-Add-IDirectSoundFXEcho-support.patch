@@ -1,21 +1,24 @@
-From c16d4c6d9053b15168c5753e62d025d50648cb47 Mon Sep 17 00:00:00 2001
+From e10144ba33ca596dab05f11dfff67fe3d0a26f7d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 20 Aug 2019 11:41:06 +1000
-Subject: [PATCH] dsdmo: Add IDirectSoundFXEcho support
+Date: Wed, 14 Aug 2019 14:23:21 +1000
+Subject: [PATCH 02/28] dsdmo: Add IDirectSoundFXEcho support
 
 ---
- dlls/dsdmo/Makefile.in       |   3 +-
- dlls/dsdmo/dsdmo_classes.idl |  10 +
- dlls/dsdmo/echo.c            | 404 +++++++++++++++++++++++++++++++++++
- dlls/dsdmo/main.c            |  62 ++++++
- 4 files changed, 478 insertions(+), 1 deletion(-)
+ dlls/dsdmo/Makefile.in       |   5 +-
+ dlls/dsdmo/dsdmo_classes.idl |  29 +++
+ dlls/dsdmo/dsdmo_private.h   |  32 +++
+ dlls/dsdmo/echo.c            | 397 +++++++++++++++++++++++++++++++++++
+ dlls/dsdmo/main.c            |  57 ++++-
+ 5 files changed, 518 insertions(+), 2 deletions(-)
+ create mode 100644 dlls/dsdmo/dsdmo_classes.idl
+ create mode 100644 dlls/dsdmo/dsdmo_private.h
  create mode 100644 dlls/dsdmo/echo.c
 
 diff --git a/dlls/dsdmo/Makefile.in b/dlls/dsdmo/Makefile.in
-index fa26d7d666..cb4f8f8a4b 100644
+index 99816ae0c0..cb4f8f8a4b 100644
 --- a/dlls/dsdmo/Makefile.in
 +++ b/dlls/dsdmo/Makefile.in
-@@ -1,8 +1,9 @@
+@@ -1,6 +1,9 @@
  MODULE    = dsdmo.dll
 -
 +IMPORTS   = uuid
@@ -24,16 +27,33 @@ index fa26d7d666..cb4f8f8a4b 100644
  C_SRCS = \
 +	echo.c \
  	main.c
- 
- IDL_SRCS = dsdmo_classes.idl
++
++IDL_SRCS = dsdmo_classes.idl
 diff --git a/dlls/dsdmo/dsdmo_classes.idl b/dlls/dsdmo/dsdmo_classes.idl
-index 35fd548078..3f98e7e522 100644
---- a/dlls/dsdmo/dsdmo_classes.idl
+new file mode 100644
+index 0000000000..3d458d4b1e
+--- /dev/null
 +++ b/dlls/dsdmo/dsdmo_classes.idl
-@@ -47,6 +47,16 @@ coclass DirectSoundFlangerDMO
- {
- }
- 
+@@ -0,0 +1,29 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#pragma makedep register
++
 +[
 +    uuid(ef3e932c-d40b-4f51-8ccf-3f98f1b29d5d),
 +    threading(both),
@@ -44,15 +64,50 @@ index 35fd548078..3f98e7e522 100644
 +{
 +}
 +
- [
-     uuid(ef114c90-cd1d-484e-96e5-09cfaf912a21),
-     threading(both),
+diff --git a/dlls/dsdmo/dsdmo_private.h b/dlls/dsdmo/dsdmo_private.h
+new file mode 100644
+index 0000000000..4abe5a9f60
+--- /dev/null
++++ b/dlls/dsdmo/dsdmo_private.h
+@@ -0,0 +1,32 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef WINE_DSDMO_PRIVATE
++#define WINE_DSDMO_PRIVATE
++
++#include "windows.h"
++#include "mmsystem.h"
++#include "mediaobj.h"
++
++#include "wine/heap.h"
++#include "wine/debug.h"
++
++#include "dsound.h"
++
++extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)  DECLSPEC_HIDDEN;
++
++#endif
 diff --git a/dlls/dsdmo/echo.c b/dlls/dsdmo/echo.c
 new file mode 100644
-index 0000000000..69ae3709ca
+index 0000000000..3e8b0be115
 --- /dev/null
 +++ b/dlls/dsdmo/echo.c
-@@ -0,0 +1,404 @@
+@@ -0,0 +1,397 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -72,14 +127,7 @@ index 0000000000..69ae3709ca
 + */
 +#define COBJMACROS
 +
-+#include "windows.h"
-+#include "mmsystem.h"
-+#include "mediaobj.h"
-+
-+#include "wine/heap.h"
-+#include "wine/debug.h"
-+
-+#include "dsound.h"
++#include "dsdmo_private.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
 +
@@ -458,35 +506,24 @@ index 0000000000..69ae3709ca
 +    return ret;
 +}
 diff --git a/dlls/dsdmo/main.c b/dlls/dsdmo/main.c
-index 61a67f44d8..e90ff8827b 100644
+index 61a67f44d8..d751f90dc9 100644
 --- a/dlls/dsdmo/main.c
 +++ b/dlls/dsdmo/main.c
-@@ -17,15 +17,24 @@
+@@ -17,10 +17,12 @@
   */
  #define COBJMACROS
  
 +#include "windows.h"
-+#include "mmsystem.h"
  #include "ole2.h"
  #include "rpcproxy.h"
  
-+#include "wine/heap.h"
- #include "wine/debug.h"
- 
+-#include "wine/debug.h"
 +#include "initguid.h"
-+#include "dsound.h"
-+#include "mediaobj.h"
-+
++#include "dsdmo_private.h"
+ 
  WINE_DEFAULT_DEBUG_CHANNEL(dsdmo);
  
- static HINSTANCE dsdmo_instance;
- 
-+extern HRESULT WINAPI EchoFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)  DECLSPEC_HIDDEN;
-+
- /******************************************************************
-  *     DllMain
-  */
-@@ -49,11 +58,64 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpv)
+@@ -49,11 +51,64 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpv)
      return TRUE;
  }
  

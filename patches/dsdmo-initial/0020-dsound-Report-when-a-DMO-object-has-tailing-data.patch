@@ -1,7 +1,7 @@
-From 80431dfd39764b6aadbfa167b104caed25f95807 Mon Sep 17 00:00:00 2001
+From 8a25e0b5f2be1ff3b711c4495edcf39b3c4ed1f8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 6 Sep 2019 16:22:32 +1000
-Subject: [PATCH] dsound: Report when a DMO object has tailing data.
+Subject: [PATCH 20/28] dsound: Report when a DMO object has tailing data.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

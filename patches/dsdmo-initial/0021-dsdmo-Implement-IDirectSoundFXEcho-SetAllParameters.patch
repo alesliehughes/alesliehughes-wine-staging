@@ -1,7 +1,7 @@
-From e32a46009e6f62014bea9db603cbd426e6ef3890 Mon Sep 17 00:00:00 2001
+From 2ae0f61f76b5ab59eebc2f4e5582e2c0eb506511 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 9 Sep 2019 10:20:50 +1000
-Subject: [PATCH] dsdmo: Implement IDirectSoundFXEcho SetAllParameters.
+Subject: [PATCH 21/28] dsdmo: Implement IDirectSoundFXEcho SetAllParameters.
 
 ---
  dlls/dsdmo/echo.c           | 20 ++++++++++++++++++--
@@ -9,10 +9,10 @@ Subject: [PATCH] dsdmo: Implement IDirectSoundFXEcho SetAllParameters.
  2 files changed, 49 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dsdmo/echo.c b/dlls/dsdmo/echo.c
-index 05c9fa9b61..3cab96945d 100644
+index e9add8a019..f0084dca24 100644
 --- a/dlls/dsdmo/echo.c
 +++ b/dlls/dsdmo/echo.c
-@@ -359,9 +359,25 @@ static ULONG WINAPI echofx_Release(IDirectSoundFXEcho *iface)
+@@ -352,9 +352,25 @@ static ULONG WINAPI echofx_Release(IDirectSoundFXEcho *iface)
  static HRESULT WINAPI echofx_SetAllParameters(IDirectSoundFXEcho *iface, const DSFXEcho *echo)
  {
      struct dmo_echofx *This = impl_from_IDirectSoundFXEcho(iface);
