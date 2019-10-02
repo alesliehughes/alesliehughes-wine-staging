@@ -1,4 +1,4 @@
-From 0c3f4f0956828fefe23d6faaf5b9ea9a5a2b7fbe Mon Sep 17 00:00:00 2001
+From f0d6439b7f7eb954d86ca20eda210377b328cb9e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 9 Dec 2016 14:55:29 +1100
 Subject: [PATCH 09/43] dpnet: Support userdata in EnumHost request
@@ -9,10 +9,10 @@ Subject: [PATCH 09/43] dpnet: Support userdata in EnumHost request
  2 files changed, 35 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 623c064..8e14aac 100644
+index d57e8b6214f..fb9c483e9c6 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -409,22 +409,40 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+@@ -408,22 +408,40 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
      return sender;
  }
  
@@ -61,7 +61,7 @@ index 623c064..8e14aac 100644
      return err;
  }
  
-@@ -456,7 +474,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+@@ -455,7 +473,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
          {
              TRACE("Sending Request.\n");
  
@@ -71,24 +71,24 @@ index 623c064..8e14aac 100644
  
              starttime = GetTickCount();
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index 2a11aaa..3716be9 100644
+index 2a11aaac6e5..3716be9538e 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
-@@ -35,6 +35,14 @@ struct ENUM_QUERY
-     BYTE command;
-     WORD payload;
-     BYTE type;
-+};
-+
-+struct ENUM_QUERY_GUID
+@@ -30,6 +30,14 @@ struct ENUM_HEADER
+ };
+ 
+ struct ENUM_QUERY
 +{
 +    BYTE lead;
 +    BYTE command;
 +    WORD payload;
 +    BYTE type;
-     GUID application;
- };
- 
++};
++
++struct ENUM_QUERY_GUID
+ {
+     BYTE lead;
+     BYTE command;
 -- 
-1.9.1
+2.23.0
 

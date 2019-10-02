@@ -1,4 +1,4 @@
-From 72083a5aef4bceb6761baab6bd6979c5ec26665b Mon Sep 17 00:00:00 2001
+From 298b5d69fe47dc78d8ee083249ee14c00bffe7d2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 23 Feb 2017 20:43:08 +1100
 Subject: [PATCH 40/43] dpnet: Support wide string in dpaddress_to_sockaddr
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 24 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index cf1304d..2cd50c1 100644
+index 9c750cea2c2..2fa787dc7d0 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -110,6 +110,20 @@ SOCKET find_free_socket(void)
+@@ -109,6 +109,20 @@ SOCKET find_free_socket(void)
      return sock;
  }
  
@@ -33,7 +33,7 @@ index cf1304d..2cd50c1 100644
  BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
  {
      DWORD size, type, port = DPNA_DPNSVR_PORT;
-@@ -150,7 +164,16 @@ BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
+@@ -149,7 +163,16 @@ BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
              return FALSE;
          }
  
@@ -52,5 +52,5 @@ index cf1304d..2cd50c1 100644
      }
      else if(hr != DPNERR_DOESNOTEXIST)
 -- 
-1.9.1
+2.23.0
 

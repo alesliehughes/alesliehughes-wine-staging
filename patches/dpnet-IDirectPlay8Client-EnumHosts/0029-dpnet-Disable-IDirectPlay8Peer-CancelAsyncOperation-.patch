@@ -1,4 +1,4 @@
-From f86b0c3713503c7b13ac2d95906972fa80086627 Mon Sep 17 00:00:00 2001
+From b2ac146d8665d7937c051d7bda35df5dd14cad35 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 20:08:15 +1100
 Subject: [PATCH 29/43] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
@@ -11,10 +11,10 @@ Subject: [PATCH 29/43] dpnet: Disable IDirectPlay8Peer CancelAsyncOperation
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 81c4c98..9908066 100644
+index ccd4132daa3..883bf7507f1 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -1096,7 +1096,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+@@ -1095,7 +1095,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
              {
                  struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
  
@@ -24,10 +24,10 @@ index 81c4c98..9908066 100644
                  switch(dframe->type)
                  {
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index d23baf3..dbfae22 100644
+index 0ae4b659e26..48257608810 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -265,11 +265,11 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+@@ -264,11 +264,11 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
  static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer *iface,
          const DPNHANDLE hAsyncHandle, const DWORD dwFlags)
  {
@@ -41,7 +41,7 @@ index d23baf3..dbfae22 100644
      {
          SetEvent(This->cancelevent);
          CloseHandle(This->cancelevent);
-@@ -278,7 +278,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer
+@@ -277,7 +277,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer
  
          CloseHandle(This->enumthread);
          This->enumthread = NULL;
@@ -51,5 +51,5 @@ index d23baf3..dbfae22 100644
      return DPN_OK;
  }
 -- 
-1.9.1
+2.23.0
 

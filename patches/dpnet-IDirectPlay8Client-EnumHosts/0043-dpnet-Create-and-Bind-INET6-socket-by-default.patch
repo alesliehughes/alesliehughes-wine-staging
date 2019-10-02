@@ -1,20 +1,20 @@
-From 70d63e84b306b12b4fa081db4baf4bb4285da2bd Mon Sep 17 00:00:00 2001
+From 264244edf0caabb18aaae1798151f0d460315cd5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 3 Apr 2017 12:41:37 +1000
 Subject: [PATCH 43/43] dpnet: Create and Bind INET6 socket by default
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 88 +++++++++++++++++++++++++++++++---------------
+ dlls/dpnet/client.c        | 88 +++++++++++++++++++++++++-------------
  dlls/dpnet/dpnet_private.h |  2 +-
- dlls/dpnet/peer.c          |  4 +--
+ dlls/dpnet/peer.c          |  4 +-
  3 files changed, 62 insertions(+), 32 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 81e7c1c..4fd42fc 100644
+index 3e1f392d986..3dd89bd4b80 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -60,54 +60,84 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+@@ -59,54 +59,84 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
  }
  
  /*
@@ -126,7 +126,7 @@ index 81e7c1c..4fd42fc 100644
      return sock;
  }
  
-@@ -876,7 +906,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -875,7 +905,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
  
      if(This->sock == INVALID_SOCKET)
      {
@@ -135,7 +135,7 @@ index 81e7c1c..4fd42fc 100644
          if(This->sock == INVALID_SOCKET)
              return DPNERR_USERCANCEL; /* Pretend the user cancalled this operation. */
      }
-@@ -1419,7 +1449,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -1418,7 +1448,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
  
      if(This->sock == INVALID_SOCKET)
      {
@@ -145,10 +145,10 @@ index 81e7c1c..4fd42fc 100644
          {
              hr = DPNERR_USERCANCEL;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 0c33091..b6a77c1 100644
+index cfa2d3f8110..085c8aafbc1 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -81,7 +81,7 @@ struct connect_data
+@@ -78,7 +78,7 @@ struct connect_data
  extern DWORD WINAPI enumhost_thread(void *threaddata) DECLSPEC_HIDDEN;
  extern void process_enumhost(SOCKET sock, struct sockaddr_storage *host, size_t host_size, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent, void *context, void *userdata, DWORD userdata_size) DECLSPEC_HIDDEN;
@@ -158,10 +158,10 @@ index 0c33091..b6a77c1 100644
  extern BOOL dpaddress_to_sockstorage(IDirectPlay8Address *host, SOCKADDR_STORAGE *addr, size_t *size) DECLSPEC_HIDDEN;
  extern HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addr_size, DWORD session,
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 4d0536e..0585c5d 100644
+index 854ca9db4e0..2eee9f8c4c1 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -315,7 +315,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -314,7 +314,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
  
      if(This->sock == INVALID_SOCKET)
      {
@@ -170,7 +170,7 @@ index 4d0536e..0585c5d 100644
          if(This->sock == INVALID_SOCKET)
          {
              hr = DPNERR_USERCANCEL;
-@@ -643,7 +643,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -642,7 +642,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
  
      if(This->sock == INVALID_SOCKET)
      {
@@ -180,5 +180,5 @@ index 4d0536e..0585c5d 100644
              return DPNERR_USERCANCEL; /* Pretend the user cancalled this operation. */
      }
 -- 
-1.9.1
+2.23.0
 

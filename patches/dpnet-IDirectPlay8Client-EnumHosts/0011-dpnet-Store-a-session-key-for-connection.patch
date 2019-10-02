@@ -1,4 +1,4 @@
-From e8f7466dd3486ba52c93286af41ece9a79fcd226 Mon Sep 17 00:00:00 2001
+From f8f9edb0aebf5b753afcaddd869121ad408eee49 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:17:02 +1100
 Subject: [PATCH 11/43] dpnet: Store a session key for connection.
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 951ea1c..3c53067 100644
+index 05aa64d04fa..ee6288f510d 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -29,6 +29,7 @@
+@@ -28,6 +28,7 @@
  #include "wingdi.h"
  #include "winuser.h"
  #include "objbase.h"
@@ -21,7 +21,7 @@ index 951ea1c..3c53067 100644
  #include "wine/debug.h"
  
  #include "dpnet_private.h"
-@@ -903,7 +904,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -902,7 +903,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
  
      if(flags & DPNCONNECT_SYNC)
      {
@@ -30,7 +30,7 @@ index 951ea1c..3c53067 100644
      }
      else
      {
-@@ -912,7 +913,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -911,7 +912,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          tdata->sock        = This->sock;
          tdata->msghandler  = This->msghandler;
          tdata->app_guid    = app_desc->guidApplication;
@@ -39,7 +39,7 @@ index 951ea1c..3c53067 100644
          tdata->addr        = This->serveraddr;
          tdata->app_desc    = app_desc;
          tdata->username    = This->username;
-@@ -1155,6 +1156,9 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -1162,6 +1163,9 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
  
      init_dpn_sp_caps(&client->spcaps);
  
@@ -50,10 +50,10 @@ index 951ea1c..3c53067 100644
      IDirectPlay8ClientImpl_Release(&client->IDirectPlay8Client_iface);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index be876ad..600f79b 100644
+index 626eb84eadf..45b8cb4cb32 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -71,6 +71,7 @@ struct IDirectPlay8ClientImpl
+@@ -68,6 +68,7 @@ struct IDirectPlay8ClientImpl
  
      struct sockaddr_in serveraddr;
      HANDLE connectthread;
@@ -62,5 +62,5 @@ index be876ad..600f79b 100644
  
  /* ------------------- */
 -- 
-1.9.1
+2.23.0
 

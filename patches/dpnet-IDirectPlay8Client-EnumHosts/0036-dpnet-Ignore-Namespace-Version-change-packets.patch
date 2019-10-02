@@ -1,4 +1,4 @@
-From b435625d4aec03dd678b7accdbc13e233201bc25 Mon Sep 17 00:00:00 2001
+From e11cf5a5bfefe6c1839a5c2751e07b68073340e3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Feb 2017 10:03:30 +1100
 Subject: [PATCH 36/43] dpnet: Ignore Namespace Version change packets.
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 19 insertions(+)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 66a0ff1..7f6130f 100644
+index 73c6e4e8865..db22a1adf3b 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -1127,6 +1127,13 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+@@ -1126,6 +1126,13 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
                          FIXME("DN_MSG_INTERNAL_INSTRUCT_CONNECT dpnid 0x%08x, version 0x%08x\n", instruct->dpnid, instruct->version);
                          break;
                      }
@@ -28,7 +28,7 @@ index 66a0ff1..7f6130f 100644
                          /* System Messages */
                          if(packet->command & PACKET_COMMAND_USER_1)
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index c01960a..16d2013 100644
+index c01960ae528..16d2013d162 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -192,6 +192,15 @@ struct DN_NAMETABLE_ENTRY_INFO
@@ -58,5 +58,5 @@ index c01960a..16d2013 100644
  #define DP_OBECT_TYPE_PEER        0x00000004
  
 -- 
-1.9.1
+2.23.0
 

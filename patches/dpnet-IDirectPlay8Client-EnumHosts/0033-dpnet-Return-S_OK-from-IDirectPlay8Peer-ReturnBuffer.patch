@@ -1,4 +1,4 @@
-From afe91c080e971084d045aec573797c8134e8780e Mon Sep 17 00:00:00 2001
+From 3a4f52b36da979927975e6944864bcf1982cfb53 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 21 Jan 2017 11:09:45 +1100
 Subject: [PATCH 33/43] dpnet: Return S_OK from IDirectPlay8Peer ReturnBuffer
@@ -12,10 +12,10 @@ eg. Called ReturnBuffer
  2 files changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 31e0c56..b749e92 100644
+index e822b9d19cc..0f24c17304c 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -1205,6 +1205,11 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+@@ -1204,6 +1204,11 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
                                      received.dwReceiveFlags     = 0;
  
                                      hr = msghandler(NULL, DPN_MSGID_RECEIVE, &received);
@@ -28,10 +28,10 @@ index 31e0c56..b749e92 100644
                                          ERR("Message Handle for DPNMSG_RECEIVE failed (0x%08x).\n", hr);
  
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index dbfae22..e25487c 100644
+index 48257608810..7b0d2e299bc 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -716,7 +716,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_ReturnBuffer(IDirectPlay8Peer *iface,
+@@ -715,7 +715,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_ReturnBuffer(IDirectPlay8Peer *iface,
  {
      FIXME("(%p)->(%x,%x): stub\n", iface, hBufferHandle, dwFlags);
  
@@ -41,5 +41,5 @@ index dbfae22..e25487c 100644
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_GetPlayerContext(IDirectPlay8Peer *iface, const DPNID dpnid,
 -- 
-1.9.1
+2.23.0
 

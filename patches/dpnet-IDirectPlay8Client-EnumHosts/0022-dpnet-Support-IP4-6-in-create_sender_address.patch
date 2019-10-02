@@ -1,4 +1,4 @@
-From 2814cf10a49243816f794323d0d09c793c86988f Mon Sep 17 00:00:00 2001
+From d6a5ebf4f85e9f6624b9becadee2b69d58f24bc2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 14:06:48 +1100
 Subject: [PATCH 22/43] dpnet: Support IP4/6 in create_sender_address
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 14 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 5d56508..6c9ec27 100644
+index 78cb954db00..34f39124fa0 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -435,7 +435,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -434,7 +434,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
      return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
  }
  
@@ -21,7 +21,7 @@ index 5d56508..6c9ec27 100644
  {
      IDirectPlay8Address *sender = NULL;
      char ip[INET6_ADDRSTRLEN] = {0};
-@@ -446,9 +446,18 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
+@@ -445,9 +445,18 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in6 *addr)
      if(FAILED(hr))
          return sender;
  
@@ -43,7 +43,7 @@ index 5d56508..6c9ec27 100644
  
      if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip)+1, DPNA_DATATYPE_STRING_ANSI)))
      {
-@@ -508,7 +517,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -507,7 +516,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
      char buffer[1024];
      int buflen = sizeof(buffer);
      DWORD starttime = 0;
@@ -53,5 +53,5 @@ index 5d56508..6c9ec27 100644
      int received = 0;
      HRESULT hr = DPN_OK;
 -- 
-1.9.1
+2.23.0
 

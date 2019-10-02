@@ -1,17 +1,17 @@
-From 61ccd06582278c57b3bbd6a069ab25b29aa2cdea Mon Sep 17 00:00:00 2001
+From d71e2b73d7e75e39f7f7c479e61576667e90c890 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 21 Jan 2017 07:46:12 +1100
 Subject: [PATCH 32/43] dpnet: join multiple user data into one + INSTRUCT fix
 
 ---
- dlls/dpnet/client.c | 90 +++++++++++++++++++++++++++++++++++++----------------
+ dlls/dpnet/client.c | 90 ++++++++++++++++++++++++++++++++-------------
  1 file changed, 64 insertions(+), 26 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index d69561e..31e0c56 100644
+index 3d43014e456..e822b9d19cc 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -959,7 +959,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+@@ -958,7 +958,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
                      }
                      case DN_MSG_INTERNAL_CONNECT_FAILED:
                      {
@@ -20,7 +20,7 @@ index d69561e..31e0c56 100644
  
                          WARN("DN_MSG_INTERNAL_CONNECT_FAILED (0x%08x)\n", failed->hres);
  
-@@ -990,21 +990,30 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+@@ -989,21 +989,30 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
                          }
                          else
                          {
@@ -63,7 +63,7 @@ index d69561e..31e0c56 100644
                          }
                      }
                  }
-@@ -1102,7 +1111,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+@@ -1101,7 +1110,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
                  {
                      case DN_MSG_INTERNAL_INSTRUCT_CONNECT:
                      {
@@ -72,7 +72,7 @@ index d69561e..31e0c56 100644
  
                          FIXME("DN_MSG_INTERNAL_INSTRUCT_CONNECT dpnid 0x%08x, version 0x%08x\n", instruct->dpnid, instruct->version);
                          break;
-@@ -1162,21 +1171,50 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+@@ -1161,21 +1170,50 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
                              }
                              else
                              {
@@ -136,5 +136,5 @@ index d69561e..31e0c56 100644
  
                          }
 -- 
-1.9.1
+2.23.0
 

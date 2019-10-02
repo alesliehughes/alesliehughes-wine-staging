@@ -1,28 +1,28 @@
-From 8627666a4520d928dd5a20f8cdab1435762fad1f Mon Sep 17 00:00:00 2001
+From 9de2be07a996901104a93908d5b3159f7c682022 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Jan 2017 09:42:29 +1100
 Subject: [PATCH 23/43] dpnet: IPeer support tcp4/6 in Connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 87 ++++++++++++++++++++++++++++++++++++++++++++++
+ dlls/dpnet/client.c        | 87 ++++++++++++++++++++++++++++++++++++++
  dlls/dpnet/dpnet_private.h |  1 +
- dlls/dpnet/peer.c          |  9 ++---
+ dlls/dpnet/peer.c          |  9 ++--
  3 files changed, 93 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 6c9ec27..193c8de 100644
+index 34f39124fa0..bd23e009223 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -22,6 +22,7 @@
- #include "config.h"
+@@ -21,6 +21,7 @@
+ 
  
  #include <stdarg.h>
 +#include <stdio.h>
  
  #define COBJMACROS
  #include "windef.h"
-@@ -171,6 +172,92 @@ done:
+@@ -170,6 +171,92 @@ done:
      return TRUE;
  }
  
@@ -116,10 +116,10 @@ index 6c9ec27..193c8de 100644
  {
      struct DN_MESSAGE_CONNECT packet;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index e18396b..a4ef428 100644
+index 3da2dd4ecb7..66ca4975ab0 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -77,6 +77,7 @@ extern void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+@@ -74,6 +74,7 @@ extern void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent) DECLSPEC_HIDDEN;
  extern SOCKET find_free_socket(void) DECLSPEC_HIDDEN;
  extern BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr) DECLSPEC_HIDDEN;
@@ -128,10 +128,10 @@ index e18396b..a4ef428 100644
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index eb1e479..8729ad6 100644
+index 616be20ea2c..23852fa5cc8 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -58,7 +58,8 @@ typedef struct IDirectPlay8PeerImpl
+@@ -57,7 +57,8 @@ typedef struct IDirectPlay8PeerImpl
      HANDLE enumthread;
      HANDLE cancelevent;
  
@@ -141,7 +141,7 @@ index eb1e479..8729ad6 100644
      HANDLE connectthread;
      DWORD session;
  } IDirectPlay8PeerImpl;
-@@ -319,7 +320,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -318,7 +319,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
          }
      }
  
@@ -150,7 +150,7 @@ index eb1e479..8729ad6 100644
      {
          hr = DPNERR_INVALIDHOSTADDRESS;
          goto cleanup;
-@@ -327,7 +328,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -326,7 +327,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
  
      if(flags & DPNCONNECT_SYNC)
      {
@@ -159,7 +159,7 @@ index eb1e479..8729ad6 100644
      }
      else
      {
-@@ -338,7 +339,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -337,7 +338,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
          tdata->app_guid    = app_desc->guidApplication;
          tdata->session     = This->session;
          tdata->addr        = &This->serveraddr;
@@ -169,5 +169,5 @@ index eb1e479..8729ad6 100644
          tdata->username    = This->username;
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
 -- 
-1.9.1
+2.23.0
 

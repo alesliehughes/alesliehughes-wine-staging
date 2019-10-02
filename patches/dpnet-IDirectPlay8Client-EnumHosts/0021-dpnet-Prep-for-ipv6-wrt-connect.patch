@@ -1,20 +1,20 @@
-From a3d1c08d403795eb9a30e0005514f8fbd1459078 Mon Sep 17 00:00:00 2001
+From 9fabdca4be3f2d64894e18acd8653ac33f52431b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 Jan 2017 11:49:18 +1100
 Subject: [PATCH 21/43] dpnet: Prep for ipv6 wrt connect
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 54 ++++++++++++++++++++++++----------------------
- dlls/dpnet/dpnet_private.h |  5 +++--
- dlls/dpnet/peer.c          |  5 +++--
+ dlls/dpnet/client.c        | 54 ++++++++++++++++++++------------------
+ dlls/dpnet/dpnet_private.h |  5 ++--
+ dlls/dpnet/peer.c          |  5 ++--
  3 files changed, 34 insertions(+), 30 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 003228b..5d56508 100644
+index cffe3140935..78cb954db00 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -171,7 +171,7 @@ done:
+@@ -170,7 +170,7 @@ done:
      return TRUE;
  }
  
@@ -23,7 +23,7 @@ index 003228b..5d56508 100644
  {
      struct DN_MESSAGE_CONNECT packet;
      int err;
-@@ -184,7 +184,7 @@ static int init_packet_connect(SOCKET sock, DWORD session, struct sockaddr_in *a
+@@ -183,7 +183,7 @@ static int init_packet_connect(SOCKET sock, DWORD session, struct sockaddr_in *a
      packet.session  = session;
      packet.timestamp = GetTickCount();
  
@@ -32,7 +32,7 @@ index 003228b..5d56508 100644
      if(err == -1)
          ERR("Sendto failed (%d).\n", WSAGetLastError());
      else
-@@ -193,7 +193,7 @@ static int init_packet_connect(SOCKET sock, DWORD session, struct sockaddr_in *a
+@@ -192,7 +192,7 @@ static int init_packet_connect(SOCKET sock, DWORD session, struct sockaddr_in *a
      return err;
  }
  
@@ -41,7 +41,7 @@ index 003228b..5d56508 100644
  {
      struct DN_MESSAGE_CONNECT packet;
      int err;
-@@ -206,7 +206,7 @@ static int dn_packet_connected(SOCKET sock, DWORD session, DWORD msgid, struct s
+@@ -205,7 +205,7 @@ static int dn_packet_connected(SOCKET sock, DWORD session, DWORD msgid, struct s
      packet.session  = session;
      packet.timestamp = GetTickCount();
  
@@ -50,7 +50,7 @@ index 003228b..5d56508 100644
      if(err == -1)
           ERR("Sendto failed (%d).\n", WSAGetLastError());
      else
-@@ -215,7 +215,7 @@ static int dn_packet_connected(SOCKET sock, DWORD session, DWORD msgid, struct s
+@@ -214,7 +214,7 @@ static int dn_packet_connected(SOCKET sock, DWORD session, DWORD msgid, struct s
       return err;
  }
  
@@ -59,7 +59,7 @@ index 003228b..5d56508 100644
  {
      struct DFRAME_PACKET_KEEPALIVE packet;
      int err = -1;
-@@ -228,7 +228,7 @@ static int dframe_packet_keepalive(SOCKET sock, DWORD session, struct sockaddr_i
+@@ -227,7 +227,7 @@ static int dframe_packet_keepalive(SOCKET sock, DWORD session, struct sockaddr_i
      packet.nseq    = 0;
      packet.session = session;
  
@@ -68,7 +68,7 @@ index 003228b..5d56508 100644
      if(err == -1)
          ERR("Sendto failed (%d).\n", WSAGetLastError());
      else
-@@ -237,7 +237,7 @@ static int dframe_packet_keepalive(SOCKET sock, DWORD session, struct sockaddr_i
+@@ -236,7 +236,7 @@ static int dframe_packet_keepalive(SOCKET sock, DWORD session, struct sockaddr_i
      return err;
  }
  
@@ -77,7 +77,7 @@ index 003228b..5d56508 100644
  {
      struct DFRAME_PACKET *packet;
      struct DN_ACK_CONNECT_INFO *info;
-@@ -260,7 +260,7 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
+@@ -259,7 +259,7 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
      info = (struct DN_ACK_CONNECT_INFO *)(((char*)packet) + sizeof(struct DFRAME_PACKET));
      info->type    = DN_MSG_INTERNAL_ACK_CONNECT_INFO;
  
@@ -86,7 +86,7 @@ index 003228b..5d56508 100644
      if(err == -1)
          ERR("Sendto failed (%d).\n", WSAGetLastError());
      else
-@@ -270,7 +270,7 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
+@@ -269,7 +269,7 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
      return err;
  }
  
@@ -95,7 +95,7 @@ index 003228b..5d56508 100644
  {
      struct SACK_PACKET sack;
      int err;
-@@ -284,7 +284,7 @@ static int dframe_packet_sack_ack(SOCKET sock, struct sockaddr_in *addr, int nse
+@@ -283,7 +283,7 @@ static int dframe_packet_sack_ack(SOCKET sock, struct sockaddr_in *addr, int nse
      sack.padding = 0;
      sack.timestamp = GetTickCount();
  
@@ -104,7 +104,7 @@ index 003228b..5d56508 100644
      if(err == -1)
          ERR("Sendto failed (%d).\n", WSAGetLastError());
      else
-@@ -295,7 +295,7 @@ static int dframe_packet_sack_ack(SOCKET sock, struct sockaddr_in *addr, int nse
+@@ -294,7 +294,7 @@ static int dframe_packet_sack_ack(SOCKET sock, struct sockaddr_in *addr, int nse
  
  /* 2.2.1.2 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX */
  static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, const DPN_APPLICATION_DESC * const app_desc,
@@ -113,7 +113,7 @@ index 003228b..5d56508 100644
  {
      struct DFRAME_PACKET *packet;
      struct DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX *info;
-@@ -326,7 +326,7 @@ static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, cons
+@@ -325,7 +325,7 @@ static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, cons
  
      lstrcpyW( (WCHAR*)(((char*)info)+sizeof(*info)), name);
  
@@ -122,7 +122,7 @@ index 003228b..5d56508 100644
      if(err == -1)
          ERR("Sendto failed (%d).\n", WSAGetLastError());
      else
-@@ -768,7 +768,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
+@@ -767,7 +767,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_CancelAsyncOperation(IDirectPlay8Cl
      return DPN_OK;
  }
  
@@ -131,7 +131,7 @@ index 003228b..5d56508 100644
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
          PFNDPNMESSAGEHANDLER msghandler)
  {
-@@ -781,7 +781,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
+@@ -780,7 +780,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
      int fromlen = sizeof(from);
      int ack = TRUE;
  
@@ -140,7 +140,7 @@ index 003228b..5d56508 100644
      {
          ERR("init_packet_connect\n");
          hr = DPNERR_USERCANCEL;
-@@ -821,7 +821,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
+@@ -820,7 +820,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
                          struct DN_SEND_CONNECT_INFO *info = (struct DN_SEND_CONNECT_INFO *)temp;
  
                          TRACE("DN_MSG_INTERNAL_SEND_CONNECT_INFO\n");
@@ -149,7 +149,7 @@ index 003228b..5d56508 100644
                          {
                              ERR("dframe_packet_session_ack\n");
                              hr = DPNERR_USERCANCEL;
-@@ -886,17 +886,17 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
+@@ -885,17 +885,17 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
                  {
                      struct DN_MESSAGE_CONNECT *connected = (struct DN_MESSAGE_CONNECT *)temp;
  
@@ -170,7 +170,7 @@ index 003228b..5d56508 100644
                      {
                          ERR("dframe_packet_player_connect_info_ex\n");
                          hr = DPNERR_USERCANCEL;
-@@ -919,7 +919,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
+@@ -918,7 +918,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
  
              if(FALSE && ack && (packet->command | PACKET_COMMAND_POLL))
              {
@@ -179,7 +179,7 @@ index 003228b..5d56508 100644
              }
          }
      }
-@@ -927,7 +927,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
+@@ -926,7 +926,7 @@ HRESULT dplay_connect(SOCKET sock, struct sockaddr_in *serveraddr, DWORD session
      return hr;
  }
  
@@ -188,7 +188,7 @@ index 003228b..5d56508 100644
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
          PFNDPNMESSAGEHANDLER msghandler)
  {
-@@ -1006,7 +1006,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -1005,7 +1005,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
  
                                  FIXME("PACKET_CONTROL_END_STREAM\n");
  
@@ -197,7 +197,7 @@ index 003228b..5d56508 100644
  
                                  term.dwSize = sizeof(DPNMSG_TERMINATE_SESSION);
                                  term.hResultCode = S_OK;
-@@ -1070,7 +1070,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -1069,7 +1069,7 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
  
              if(ack && (packet->command | PACKET_COMMAND_POLL))
              {
@@ -206,7 +206,7 @@ index 003228b..5d56508 100644
              }
          }
      }
-@@ -1082,11 +1082,11 @@ DWORD WINAPI connect_thread(void *threaddata)
+@@ -1081,11 +1081,11 @@ DWORD WINAPI connect_thread(void *threaddata)
  {
      struct connect_data *tdata = (struct connect_data *)threaddata;
  
@@ -220,7 +220,7 @@ index 003228b..5d56508 100644
              tdata->cancelevent, tdata->msghandler);
      }
  
-@@ -1143,7 +1143,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -1142,7 +1142,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
  
      if(flags & DPNCONNECT_SYNC)
      {
@@ -230,7 +230,7 @@ index 003228b..5d56508 100644
      }
      else
      {
-@@ -1153,7 +1154,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -1152,7 +1153,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          tdata->msghandler  = This->msghandler;
          tdata->app_guid    = app_desc->guidApplication;
          tdata->session     = This->session;
@@ -241,10 +241,10 @@ index 003228b..5d56508 100644
          tdata->username    = This->username;
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 77b5108..e18396b 100644
+index 93bb16a41dd..3da2dd4ecb7 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -63,7 +63,8 @@ struct connect_data
+@@ -60,7 +60,8 @@ struct connect_data
      SOCKET sock;
      GUID   app_guid;
      DWORD  session;
@@ -254,7 +254,7 @@ index 77b5108..e18396b 100644
      const DPN_APPLICATION_DESC *app_desc;
      WCHAR *username;
  
-@@ -76,7 +77,7 @@ extern void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+@@ -73,7 +74,7 @@ extern void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent) DECLSPEC_HIDDEN;
  extern SOCKET find_free_socket(void) DECLSPEC_HIDDEN;
  extern BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr) DECLSPEC_HIDDEN;
@@ -264,10 +264,10 @@ index 77b5108..e18396b 100644
          PFNDPNMESSAGEHANDLER msghandler) DECLSPEC_HIDDEN;
  extern DWORD WINAPI connect_thread(void *threaddata) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index ed95867..eb1e479 100644
+index 4f7ec6e1799..616be20ea2c 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -327,7 +327,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -326,7 +326,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
  
      if(flags & DPNCONNECT_SYNC)
      {
@@ -276,7 +276,7 @@ index ed95867..eb1e479 100644
      }
      else
      {
-@@ -337,7 +337,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
+@@ -336,7 +336,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
          tdata->msghandler  = This->msghandler;
          tdata->app_guid    = app_desc->guidApplication;
          tdata->session     = This->session;
@@ -287,5 +287,5 @@ index ed95867..eb1e479 100644
          tdata->username    = This->username;
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
 -- 
-1.9.1
+2.23.0
 

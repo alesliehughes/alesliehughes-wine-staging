@@ -1,20 +1,20 @@
-From d2573bc231562e3fe166e529a81a1f0bf4a5bed0 Mon Sep 17 00:00:00 2001
+From 4295f262b7a7b4dabb8b75c28bce785f59d0e40c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 25 Mar 2017 19:01:09 +1100
 Subject: [PATCH 41/43] dpnet: Changes to support Proper Name Resolve - These
  need to be bad ported for the initial EnumHost patch
 
 ---
- dlls/dpnet/client.c        | 130 +++++++++++++++++++++++++++++++++------------
- dlls/dpnet/dpnet_private.h |  12 +++--
- dlls/dpnet/peer.c          |   9 ++--
+ dlls/dpnet/client.c        | 130 +++++++++++++++++++++++++++----------
+ dlls/dpnet/dpnet_private.h |  12 ++--
+ dlls/dpnet/peer.c          |   9 +--
  3 files changed, 109 insertions(+), 42 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 2cd50c1..d5b1bdb 100644
+index 2fa787dc7d0..c2bd480fe50 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -66,12 +66,13 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+@@ -65,12 +65,13 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
  SOCKET find_free_socket(void)
  {
      SOCKET sock;
@@ -31,7 +31,7 @@ index 2cd50c1..d5b1bdb 100644
      if(sock == INVALID_SOCKET)
      {
          ERR("Cannot create socket.\n");
-@@ -79,12 +80,12 @@ SOCKET find_free_socket(void)
+@@ -78,12 +79,12 @@ SOCKET find_free_socket(void)
      }
  
      memset(&addr, 0, sizeof(addr));
@@ -48,7 +48,7 @@ index 2cd50c1..d5b1bdb 100644
  
      value = 1;
      setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char *)&value, sizeof(value));
-@@ -97,8 +98,8 @@ SOCKET find_free_socket(void)
+@@ -96,8 +97,8 @@ SOCKET find_free_socket(void)
             return sock;
         }
         if(WSAGetLastError() == WSAEADDRINUSE)
@@ -59,7 +59,7 @@ index 2cd50c1..d5b1bdb 100644
         else
             break;
      }
-@@ -124,7 +125,7 @@ static inline char *heap_strdupWtoA(LPCWSTR str)
+@@ -123,7 +124,7 @@ static inline char *heap_strdupWtoA(LPCWSTR str)
      return ret;
  }
  
@@ -68,7 +68,7 @@ index 2cd50c1..d5b1bdb 100644
  {
      DWORD size, type, port = DPNA_DPNSVR_PORT;
      char *buffer = NULL;
-@@ -187,12 +188,53 @@ BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
+@@ -186,12 +187,53 @@ BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in *addr)
  done:
      memset(addr, 0, sizeof(*addr));
  
@@ -126,7 +126,7 @@ index 2cd50c1..d5b1bdb 100644
  
      return TRUE;
  }
-@@ -570,12 +612,12 @@ static IDirectPlay8Address *create_sender_address(SOCKADDR_STORAGE *addr)
+@@ -569,12 +611,12 @@ static IDirectPlay8Address *create_sender_address(SOCKADDR_STORAGE *addr)
      if(addr->ss_family == AF_INET6)
      {
          inet_ntop(addr->ss_family, &(((struct sockaddr_in6 *)addr)->sin6_addr), ip, sizeof(ip));
@@ -141,7 +141,7 @@ index 2cd50c1..d5b1bdb 100644
      }
  
      TRACE("Server IP address %s port (%d)\n", ip, port);
-@@ -605,12 +647,23 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+@@ -604,12 +646,23 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
      int err;
      int size = sizeof(struct ENUM_QUERY) + data_size;
      int offset = sizeof(struct ENUM_QUERY);
@@ -165,7 +165,7 @@ index 2cd50c1..d5b1bdb 100644
      packet = heap_alloc(size);
  
      query = (struct ENUM_QUERY_GUID*)packet;
-@@ -632,8 +685,8 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+@@ -631,8 +684,8 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
      return err;
  }
  
@@ -176,7 +176,7 @@ index 2cd50c1..d5b1bdb 100644
  {
      char buffer[1024];
      int buflen = sizeof(buffer);
-@@ -642,13 +695,13 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -641,13 +694,13 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
      int fromlen = sizeof(from);
      int received = 0;
      HRESULT hr = DPN_OK;
@@ -192,7 +192,7 @@ index 2cd50c1..d5b1bdb 100644
      setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
  
      while(TRUE)
-@@ -666,7 +719,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -665,7 +718,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
          {
              TRACE("Sending Request.\n");
  
@@ -201,7 +201,7 @@ index 2cd50c1..d5b1bdb 100644
                  break;
  
              starttime = GetTickCount();
-@@ -729,23 +782,31 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -728,23 +781,31 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
                              response.pAddressSender          = sender;
                              response.pApplicationDescription = &desc;
                              response.pAddressDevice          = device;
@@ -237,7 +237,7 @@ index 2cd50c1..d5b1bdb 100644
                              IDirectPlay8Address_Release(sender);
  
                              if(retrycnt != INFINITE)
-@@ -769,7 +830,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -768,7 +829,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
              }
          }
  
@@ -246,7 +246,7 @@ index 2cd50c1..d5b1bdb 100644
          if(!retrycnt || hr != DPN_OK)
              break;
      }
-@@ -779,8 +840,8 @@ DWORD WINAPI enumhost_thread(void *threaddata)
+@@ -778,8 +839,8 @@ DWORD WINAPI enumhost_thread(void *threaddata)
  {
      struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
  
@@ -257,7 +257,7 @@ index 2cd50c1..d5b1bdb 100644
  
      heap_free(threaddata);
  
-@@ -797,7 +858,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -796,7 +857,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
      IDirectPlay8Address *device = NULL;
      HRESULT hr;
@@ -267,7 +267,7 @@ index 2cd50c1..d5b1bdb 100644
  
      TRACE("(%p):(%p,%p,%p,%p,%u,%u,%u,%u,%p,%p,%x)\n", This, pApplicationDesc, pAddrHost, pDeviceInfo,
          pUserEnumData, dwUserEnumDataSize, dwEnumCount, dwRetryInterval, dwTimeOut, pvUserContext, pAsyncHandle,
-@@ -830,7 +892,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -829,7 +891,9 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          return E_OUTOFMEMORY;
      }
  
@@ -278,7 +278,7 @@ index 2cd50c1..d5b1bdb 100644
  
      if(dwFlags & DPNENUMHOSTS_SYNC)
      {
-@@ -838,8 +902,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -837,8 +901,8 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          DWORD retrytime = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
          DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
  
@@ -289,7 +289,7 @@ index 2cd50c1..d5b1bdb 100644
  
          IDirectPlay8Address_Release(device);
      }
-@@ -1374,7 +1438,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
+@@ -1373,7 +1437,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_Connect(IDirectPlay8Client *iface,
          This->connect_size = data_size;
      }
  
@@ -299,10 +299,10 @@ index 2cd50c1..d5b1bdb 100644
          hr = DPNERR_INVALIDHOSTADDRESS;
          goto cleanup;
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 1872e29..522edc7 100644
+index 86310ca1b4a..60b73b2cea9 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -47,7 +47,8 @@ typedef struct IDirectPlay8ThreadPoolImpl IDirectPlay8ThreadPoolImpl;
+@@ -44,7 +44,8 @@ typedef struct IDirectPlay8ThreadPoolImpl IDirectPlay8ThreadPoolImpl;
  struct dpthread_data
  {
      SOCKET sock;
@@ -312,7 +312,7 @@ index 1872e29..522edc7 100644
      IDirectPlay8Address *device;
      DWORD retrycnt;
      DWORD retrytime;
-@@ -77,10 +78,10 @@ struct connect_data
+@@ -74,10 +75,10 @@ struct connect_data
  };
  
  extern DWORD WINAPI enumhost_thread(void *threaddata) DECLSPEC_HIDDEN;
@@ -326,7 +326,7 @@ index 1872e29..522edc7 100644
  extern BOOL dpaddress_to_sockstorage(IDirectPlay8Address *host, SOCKADDR_STORAGE *addr, size_t *size) DECLSPEC_HIDDEN;
  extern HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addr_size, DWORD session,
          const DPN_APPLICATION_DESC * const app_desc, WCHAR *username, HANDLE cancelevent,
-@@ -114,7 +115,8 @@ struct IDirectPlay8ClientImpl
+@@ -111,7 +112,8 @@ struct IDirectPlay8ClientImpl
      HANDLE enumthread;
      HANDLE cancelevent;
  
@@ -337,10 +337,10 @@ index 1872e29..522edc7 100644
      DWORD session;
  
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index 45e1670..db850ca 100644
+index ca7099b1003..5cafd7ae800 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -625,7 +625,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -624,7 +624,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
      IDirectPlay8PeerImpl* This = impl_from_IDirectPlay8Peer(iface);
      IDirectPlay8Address *device = NULL;
      HRESULT hr;
@@ -350,7 +350,7 @@ index 45e1670..db850ca 100644
  
      FIXME("(%p)->(%p,%p,%p,%p,%x,%x,%x,%x,%p,%p,%x): stub\n",
              This, pApplicationDesc, pAddrHost, pDeviceInfo, pUserEnumData, dwUserEnumDataSize, dwEnumCount,
-@@ -658,7 +659,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -657,7 +658,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
          return E_OUTOFMEMORY;
      }
  
@@ -359,7 +359,7 @@ index 45e1670..db850ca 100644
  
      if(dwFlags & DPNENUMHOSTS_SYNC)
      {
-@@ -666,8 +667,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -665,8 +666,8 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
          DWORD retrytime = !dwRetryInterval ? This->spcaps.dwDefaultEnumRetryInterval : dwRetryInterval;
          DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
  
@@ -371,5 +371,5 @@ index 45e1670..db850ca 100644
          IDirectPlay8Address_Release(device);
      }
 -- 
-1.9.1
+2.23.0
 

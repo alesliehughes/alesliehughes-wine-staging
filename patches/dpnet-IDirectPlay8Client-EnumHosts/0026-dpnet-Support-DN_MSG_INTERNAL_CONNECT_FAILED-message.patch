@@ -1,4 +1,4 @@
-From fb9112a9cdc9ea3db2a97b124ed7468f09b0568e Mon Sep 17 00:00:00 2001
+From 159c5a72d1b7aed9aaf12ca1211de21cf7976bf5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 12:47:47 +1100
 Subject: [PATCH 26/43] dpnet: Support DN_MSG_INTERNAL_CONNECT_FAILED message
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 36 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 49167f6..3762edc 100644
+index d320835edb5..f1fdab2d6c3 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -955,6 +955,31 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+@@ -954,6 +954,31 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
                          TRACE("dpnid %08x\n", info->dpnid);
                          break;
                      }
@@ -45,7 +45,7 @@ index 49167f6..3762edc 100644
                      default:
                      {
                          if(packet->control & PACKET_CONTROL_KEEPALIVE_OR_CORRELATE)
-@@ -977,7 +1002,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
+@@ -976,7 +1001,7 @@ HRESULT dplay_connect(SOCKET sock, void *serveraddr, size_t addrsize, DWORD sess
  
                              hr = msghandler(NULL, DPN_MSGID_RECEIVE, &received);
                              if(hr != S_OK)
@@ -55,7 +55,7 @@ index 49167f6..3762edc 100644
                      }
                  }
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
-index e4cfa43..cd61e1f 100644
+index e4cfa43e92c..cd61e1f1bf1 100644
 --- a/dlls/dpnet/dppacket.h
 +++ b/dlls/dpnet/dppacket.h
 @@ -149,6 +149,14 @@ struct DN_ACK_CONNECT_INFO
@@ -83,5 +83,5 @@ index e4cfa43..cd61e1f 100644
  #define DP_OBECT_TYPE_PEER        0x00000004
  
 -- 
-1.9.1
+2.23.0
 

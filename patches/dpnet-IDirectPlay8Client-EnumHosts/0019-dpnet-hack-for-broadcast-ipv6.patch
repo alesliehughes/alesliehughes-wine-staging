@@ -1,4 +1,4 @@
-From 8a93ad88b14d8146763fc007b9b73a8706c71f7a Mon Sep 17 00:00:00 2001
+From d272edf7d9fbb4c1d15b85f6aab0fcbc7c5835bb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Jan 2017 14:09:06 +1100
 Subject: [PATCH 19/43] dpnet: hack for broadcast ipv6
@@ -8,10 +8,10 @@ Subject: [PATCH 19/43] dpnet: hack for broadcast ipv6
  1 file changed, 27 insertions(+), 14 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f6048e7..14244bc 100644
+index cf9659bb4fc..c491acb132b 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -63,11 +63,12 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+@@ -62,11 +62,12 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
  SOCKET find_free_socket(void)
  {
      SOCKET sock;
@@ -26,7 +26,7 @@ index f6048e7..14244bc 100644
      if(sock == INVALID_SOCKET)
      {
          ERR("Cannot create socket.\n");
-@@ -75,9 +76,12 @@ SOCKET find_free_socket(void)
+@@ -74,9 +75,12 @@ SOCKET find_free_socket(void)
      }
  
      memset(&addr, 0, sizeof(addr));
@@ -40,7 +40,7 @@ index f6048e7..14244bc 100644
  
      value = 1;
      setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char *)&value, sizeof(value));
-@@ -90,7 +94,8 @@ SOCKET find_free_socket(void)
+@@ -89,7 +93,8 @@ SOCKET find_free_socket(void)
             return sock;
         }
         if(WSAGetLastError() == WSAEADDRINUSE)
@@ -50,7 +50,7 @@ index f6048e7..14244bc 100644
         else
             break;
      }
-@@ -430,7 +435,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -429,7 +434,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
      return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
  }
  
@@ -59,7 +59,7 @@ index f6048e7..14244bc 100644
  {
      IDirectPlay8Address *sender = NULL;
      char ip[INET6_ADDRSTRLEN] = {0};
-@@ -441,9 +446,9 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+@@ -440,9 +445,9 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
      if(FAILED(hr))
          return sender;
  
@@ -72,7 +72,7 @@ index f6048e7..14244bc 100644
  
      if(FAILED(IDirectPlay8Address_AddComponent(sender, DPNA_KEY_HOSTNAME, &ip, strlen(ip)+1, DPNA_DATATYPE_STRING_ANSI)))
      {
-@@ -461,10 +466,9 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
+@@ -460,10 +465,9 @@ static IDirectPlay8Address *create_sender_address(struct sockaddr_in *addr)
      return sender;
  }
  
@@ -84,7 +84,7 @@ index f6048e7..14244bc 100644
      struct ENUM_QUERY_GUID *query;
      static DWORD payloadvalue = 0;
      BOOL has_guid = !IsEqualGUID(&application, &IID_NULL);
-@@ -489,7 +493,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+@@ -488,7 +492,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
      if(data_size)
          memcpy( packet + offset, data, data_size);
  
@@ -93,7 +93,7 @@ index f6048e7..14244bc 100644
      if(err == -1)
          ERR("Sendto failed (%d).\n", WSAGetLastError());
  
-@@ -504,10 +508,16 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -503,10 +507,16 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
      char buffer[1024];
      int buflen = sizeof(buffer);
      DWORD starttime = 0;
@@ -111,7 +111,7 @@ index f6048e7..14244bc 100644
  
      setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
  
-@@ -526,7 +536,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -525,7 +535,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
          {
              TRACE("Sending Request.\n");
  
@@ -120,7 +120,7 @@ index f6048e7..14244bc 100644
                  break;
  
              starttime = GetTickCount();
-@@ -555,7 +565,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -554,7 +564,7 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
                      {
                          struct ENUM_QUERY_RESPONSE *data = (struct ENUM_QUERY_RESPONSE *)header;
  
@@ -129,7 +129,7 @@ index f6048e7..14244bc 100644
  
                          if(received <= sizeof(struct ENUM_QUERY_RESPONSE))
                          {
-@@ -581,7 +591,10 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
+@@ -580,7 +590,10 @@ void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8Address
                               */
                              sender = create_sender_address(&from);
                              if(!sender)
@@ -141,5 +141,5 @@ index f6048e7..14244bc 100644
                              response.pAddressSender          = sender;
                              response.pApplicationDescription = &desc;
 -- 
-1.9.1
+2.23.0
 

@@ -1,20 +1,20 @@
-From 24e8f7e7c09eb1bf78b2329e32bf0bf186ec4203 Mon Sep 17 00:00:00 2001
+From 31338ffe6f8ecb4e3a4f5879622ac71951a5a808 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 16 Feb 2017 09:56:57 +1100
 Subject: [PATCH 18/43] dpnet: Implement IDirectPlay8Peer EnumHosts
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        |  28 +++++--------
- dlls/dpnet/dpnet_private.h |  21 ++++++++++
- dlls/dpnet/peer.c          | 100 ++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c        |  28 ++++-------
+ dlls/dpnet/dpnet_private.h |  21 ++++++++
+ dlls/dpnet/peer.c          | 100 ++++++++++++++++++++++++++++++++++++-
  3 files changed, 129 insertions(+), 20 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index f38ec5d..f6048e7 100644
+index 97f3af47837..cf9659bb4fc 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -60,7 +60,7 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+@@ -59,7 +59,7 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
   * Direct Play clients bind to a port between 2300-2400.  Even though it's not a requirement,
   *  Network Analysers fail to detect them as directplay packets when not in this range.
   */
@@ -23,7 +23,7 @@ index f38ec5d..f6048e7 100644
  {
      SOCKET sock;
      struct sockaddr_in addr;
-@@ -102,12 +102,17 @@ static SOCKET find_free_socket(void)
+@@ -101,12 +101,17 @@ static SOCKET find_free_socket(void)
      return sock;
  }
  
@@ -42,7 +42,7 @@ index f38ec5d..f6048e7 100644
      size = sizeof(port);
      hr = IDirectPlay8Address_GetComponentByName(host, DPNA_KEY_PORT, &port, &size, &type);
      if(FAILED(hr) && hr != DPNERR_DOESNOTEXIST)
-@@ -148,6 +153,7 @@ static BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in
+@@ -147,6 +152,7 @@ static BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_in
  
      TRACE("Found %s:%d\n", debugstr_a(buffer), port);
  
@@ -50,7 +50,7 @@ index f38ec5d..f6048e7 100644
      memset(addr, 0, sizeof(*addr));
  
      addr->sin_family = AF_INET;
-@@ -492,7 +498,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+@@ -491,7 +497,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
      return err;
  }
  
@@ -59,7 +59,7 @@ index f38ec5d..f6048e7 100644
          DWORD retrycnt, DWORD retrytime, DWORD timeout, HANDLE cancelevent)
  {
      char buffer[1024];
-@@ -626,21 +632,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
+@@ -625,21 +631,7 @@ static void process_enumhost(SOCKET sock, struct sockaddr_in host, IDirectPlay8A
      }
  }
  
@@ -83,10 +83,10 @@ index f38ec5d..f6048e7 100644
      struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 600f79b..c74dd11 100644
+index 45b8cb4cb32..18197261097 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -43,6 +43,27 @@ typedef struct IDirectPlay8AddressImpl IDirectPlay8AddressImpl;
+@@ -40,6 +40,27 @@ typedef struct IDirectPlay8AddressImpl IDirectPlay8AddressImpl;
  typedef struct IDirectPlay8LobbiedApplicationImpl IDirectPlay8LobbiedApplicationImpl;
  typedef struct IDirectPlay8ThreadPoolImpl IDirectPlay8ThreadPoolImpl;
  
@@ -115,10 +115,10 @@ index 600f79b..c74dd11 100644
  /* IDirectPlay8Client */
  /* ------------------ */
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index e8a60c3..3f3ba57 100644
+index f935b2a3133..ce69c6e1029 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -52,6 +52,10 @@ typedef struct IDirectPlay8PeerImpl
+@@ -51,6 +51,10 @@ typedef struct IDirectPlay8PeerImpl
      DWORD datasize;
  
      DPN_SP_CAPS spcaps;
@@ -129,7 +129,7 @@ index e8a60c3..3f3ba57 100644
  } IDirectPlay8PeerImpl;
  
  static inline IDirectPlay8PeerImpl *impl_from_IDirectPlay8Peer(IDirectPlay8Peer *iface)
-@@ -96,6 +100,10 @@ static ULONG WINAPI IDirectPlay8PeerImpl_Release(IDirectPlay8Peer *iface)
+@@ -95,6 +99,10 @@ static ULONG WINAPI IDirectPlay8PeerImpl_Release(IDirectPlay8Peer *iface)
  
      if(!RefCount)
      {
@@ -140,7 +140,7 @@ index e8a60c3..3f3ba57 100644
          heap_free(This->username);
          heap_free(This->data);
  
-@@ -248,9 +256,22 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
+@@ -247,9 +255,22 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumServiceProviders(IDirectPlay8Peer
  static HRESULT WINAPI IDirectPlay8PeerImpl_CancelAsyncOperation(IDirectPlay8Peer *iface,
          const DPNHANDLE hAsyncHandle, const DWORD dwFlags)
  {
@@ -165,7 +165,7 @@ index e8a60c3..3f3ba57 100644
  }
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_Connect(IDirectPlay8Peer *iface,
-@@ -446,8 +467,18 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetLocalHostAddresses(IDirectPlay8Pee
+@@ -445,8 +466,18 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_GetLocalHostAddresses(IDirectPlay8Pee
  
  static HRESULT WINAPI IDirectPlay8PeerImpl_Close(IDirectPlay8Peer *iface, const DWORD dwFlags)
  {
@@ -184,7 +184,7 @@ index e8a60c3..3f3ba57 100644
      return DPN_OK;
  }
  
-@@ -458,6 +489,9 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -457,6 +488,9 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
          const DWORD dwTimeOut, void * const pvUserContext, DPNHANDLE * const pAsyncHandle, const DWORD dwFlags)
  {
      IDirectPlay8PeerImpl* This = impl_from_IDirectPlay8Peer(iface);
@@ -194,7 +194,7 @@ index e8a60c3..3f3ba57 100644
  
      FIXME("(%p)->(%p,%p,%p,%p,%x,%x,%x,%x,%p,%p,%x): stub\n",
              This, pApplicationDesc, pAddrHost, pDeviceInfo, pUserEnumData, dwUserEnumDataSize, dwEnumCount,
-@@ -472,6 +506,67 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -471,6 +505,67 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
      if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
          return DPNERR_ENUMQUERYTOOLARGE;
  
@@ -262,7 +262,7 @@ index e8a60c3..3f3ba57 100644
      return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
  }
  
-@@ -650,6 +745,7 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
+@@ -657,6 +752,7 @@ HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, R
      Client->usercontext = NULL;
      Client->msghandler = NULL;
      Client->flags = 0;
@@ -271,5 +271,5 @@ index e8a60c3..3f3ba57 100644
      init_dpn_sp_caps(&Client->spcaps);
  
 -- 
-1.9.1
+2.23.0
 

@@ -1,4 +1,4 @@
-From d4a34067b22b787d2c42e1323df1f26e3395abe5 Mon Sep 17 00:00:00 2001
+From 822e4c34ffaab1c284414639a01692b6eca4c650 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 5 Dec 2016 11:59:01 +1100
 Subject: [PATCH 02/43] dpnet: Implement IDirectPlay8Client Enumhost when
@@ -6,17 +6,17 @@ Subject: [PATCH 02/43] dpnet: Implement IDirectPlay8Client Enumhost when
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c        | 263 ++++++++++++++++++++++++++++++++++++++++++++-
- dlls/dpnet/dpnet_private.h |   4 +
- dlls/dpnet/dppacket.h      |  80 ++++++++++++++
- 3 files changed, 345 insertions(+), 2 deletions(-)
+ dlls/dpnet/client.c        | 263 ++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/dpnet_private.h |   5 +
+ dlls/dpnet/dppacket.h      |  80 +++++++++++
+ 3 files changed, 346 insertions(+), 2 deletions(-)
  create mode 100644 dlls/dpnet/dppacket.h
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index a8050c5..b227e28 100644
+index e7024e1c013..fabc9bdaee1 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -55,6 +55,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
+@@ -54,6 +54,52 @@ static inline IDirectPlay8ClientImpl *impl_from_IDirectPlay8Client(IDirectPlay8C
      return CONTAINING_RECORD(iface, IDirectPlay8ClientImpl, IDirectPlay8Client_iface);
  }
  
@@ -69,7 +69,7 @@ index a8050c5..b227e28 100644
  /* IDirectPlay8Client IUnknown parts follow: */
  static HRESULT WINAPI IDirectPlay8ClientImpl_QueryInterface(IDirectPlay8Client *iface, REFIID riid,
          void **ppobj)
-@@ -91,6 +137,8 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
+@@ -90,6 +136,8 @@ static ULONG WINAPI IDirectPlay8ClientImpl_Release(IDirectPlay8Client *iface)
  
      if (!ref)
      {
@@ -78,7 +78,7 @@ index a8050c5..b227e28 100644
          heap_free(This->username);
          heap_free(This->data);
          heap_free(This);
-@@ -137,6 +185,181 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
+@@ -136,6 +184,181 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumServiceProviders(IDirectPlay8Cl
      return enum_services_providers(pguidServiceProvider, pSPInfoBuffer, pcbEnumData, pcReturned);
  }
  
@@ -260,7 +260,7 @@ index a8050c5..b227e28 100644
  static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface,
          PDPN_APPLICATION_DESC const pApplicationDesc, IDirectPlay8Address * const pAddrHost,
          IDirectPlay8Address * const pDeviceInfo, void * const pUserEnumData,
-@@ -145,9 +368,12 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -144,9 +367,12 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          const DWORD dwFlags)
  {
      IDirectPlay8ClientImpl *This = impl_from_IDirectPlay8Client(iface);
@@ -275,7 +275,7 @@ index a8050c5..b227e28 100644
  
      if(!This->msghandler)
          return DPNERR_UNINITIALIZED;
-@@ -158,6 +384,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -157,6 +383,38 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
      if(dwUserEnumDataSize > This->spcaps.dwMaxEnumPayloadSize)
          return DPNERR_ENUMQUERYTOOLARGE;
  
@@ -314,7 +314,7 @@ index a8050c5..b227e28 100644
      return (dwFlags & DPNENUMHOSTS_SYNC) ? DPN_OK : DPNSUCCESS_PENDING;
  }
  
-@@ -395,6 +653,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
+@@ -402,6 +660,7 @@ HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter,
  
      client->IDirectPlay8Client_iface.lpVtbl = &DirectPlay8Client_Vtbl;
      client->ref = 1;
@@ -323,23 +323,24 @@ index a8050c5..b227e28 100644
      init_dpn_sp_caps(&client->spcaps);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 44ff289d..6531915 100644
+index 9458a5123aa..8a9eeac17a0 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -27,10 +27,12 @@
+@@ -23,10 +23,13 @@
  
+ #include "wine/heap.h"
  #include <wine/list.h>
- #include "winsock2.h"
 +#include "ws2tcpip.h"
- #include "wine/unicode.h"
+ #include "winsock2.h"
  
  #include "dplay8.h"
  #include "dplobby8.h"
 +#include "dppacket.h"
++
  /*
   *#include "dplay8sp.h"
   */
-@@ -62,6 +64,8 @@ struct IDirectPlay8ClientImpl
+@@ -58,6 +61,8 @@ struct IDirectPlay8ClientImpl
      DWORD datasize;
  
      DPN_SP_CAPS spcaps;
@@ -350,7 +351,7 @@ index 44ff289d..6531915 100644
  /* ------------------- */
 diff --git a/dlls/dpnet/dppacket.h b/dlls/dpnet/dppacket.h
 new file mode 100644
-index 0000000..f3ca955
+index 00000000000..f3ca955f516
 --- /dev/null
 +++ b/dlls/dpnet/dppacket.h
 @@ -0,0 +1,80 @@
@@ -435,5 +436,5 @@ index 0000000..f3ca955
 +
 +#endif
 -- 
-1.9.1
+2.23.0
 

@@ -1,18 +1,18 @@
-From 055fcdbe15874d0841750d7ec1078e55845f3dac Mon Sep 17 00:00:00 2001
+From f7da77b3de34b6679334e04490c2c68c1f4a2d40 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Dec 2016 12:36:29 +1100
 Subject: [PATCH 13/43] dpnet: Handle PACKET_CONTROL_END_STREAM message
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/client.c | 47 ++++++++++++++++++++++++++++++++++++++++++++++-
+ dlls/dpnet/client.c | 47 ++++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 46 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 29f8264..4593ddf 100644
+index 743458c805f..1f12c892e92 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -237,6 +237,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
+@@ -236,6 +236,29 @@ static int dframe_packet_session_ack(SOCKET sock, struct sockaddr_in *addr, DWOR
      return err;
  }
  
@@ -42,7 +42,7 @@ index 29f8264..4593ddf 100644
  /* 2.2.1.2 DN_INTERNAL_MESSAGE_PLAYER_CONNECT_INFO_EX */
  static int dframe_packet_player_connect_info_ex(SOCKET sock, DWORD session, const DPN_APPLICATION_DESC * const app_desc,
                              WCHAR *name, struct sockaddr_in *addr)
-@@ -841,8 +864,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -840,8 +863,9 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
      DWORD buflen;
      struct sockaddr_in from;
      int fromlen = sizeof(from);
@@ -53,7 +53,7 @@ index 29f8264..4593ddf 100644
      {
          if(cancelevent)
          {
-@@ -899,6 +923,27 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
+@@ -898,6 +922,27 @@ static HRESULT dplay_connected(SOCKET sock, struct sockaddr_in *serveraddr, DWOR
                                  else
                                      FIXME("sack sent %d\n", err);
                              }
@@ -82,5 +82,5 @@ index 29f8264..4593ddf 100644
                              {
                                  FIXME("data not support.... command 0x%02x, control 0x%04x, seq 0x%08x, nseq 0x%04x, type %08x\n", packet->command, packet->control, packet->seq, packet->nseq, dframe->type);
 -- 
-1.9.1
+2.23.0
 

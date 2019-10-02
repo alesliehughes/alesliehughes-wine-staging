@@ -1,4 +1,4 @@
-From 85b94afe190d62c01c71d2936d5381e66c153b53 Mon Sep 17 00:00:00 2001
+From 4a3afc8fe74beec990267bab9563dbdc07d92930 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 27 Mar 2017 11:11:07 +1100
 Subject: [PATCH 42/43] dpnet: Use the user context from Initialize when
@@ -12,10 +12,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  3 files changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index d5b1bdb..81e7c1c 100644
+index c2bd480fe50..3e1f392d986 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -686,7 +686,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
+@@ -685,7 +685,7 @@ static int send_packet_enum_query(SOCKET sock, GUID application, char *data, DWO
  }
  
  void process_enumhost(SOCKET sock, struct sockaddr_storage *host, size_t host_size, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
@@ -24,7 +24,7 @@ index d5b1bdb..81e7c1c 100644
  {
      char buffer[1024];
      int buflen = sizeof(buffer);
-@@ -805,7 +805,7 @@ FIXME("offset %d\n", data->session_offset);
+@@ -804,7 +804,7 @@ FIXME("offset %d\n", data->session_offset);
                              if(data->session_offset && data->session_offset < received)
                                  desc.pwszSessionName  = (WCHAR*)(((char*)data)+data->session_offset+sizeof(struct ENUM_HEADER));
  FIXME("msghandler Pre %s\n", debugstr_w(desc.pwszSessionName));
@@ -33,7 +33,7 @@ index d5b1bdb..81e7c1c 100644
  FIXME("msghandler ret = 0x%08x\n", hr);
                              IDirectPlay8Address_Release(sender);
  
-@@ -841,7 +841,7 @@ DWORD WINAPI enumhost_thread(void *threaddata)
+@@ -840,7 +840,7 @@ DWORD WINAPI enumhost_thread(void *threaddata)
      struct dpthread_data *tdata = (struct dpthread_data *)threaddata;
  
      process_enumhost(tdata->sock, &tdata->host, tdata->host_size, tdata->device, tdata->msghandler, tdata->app_guid,
@@ -42,7 +42,7 @@ index d5b1bdb..81e7c1c 100644
  
      heap_free(threaddata);
  
-@@ -903,7 +903,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -902,7 +902,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
  
          process_enumhost(This->sock, &host, host_size, device, This->msghandler, pApplicationDesc->guidApplication,
@@ -51,7 +51,7 @@ index d5b1bdb..81e7c1c 100644
  
          IDirectPlay8Address_Release(device);
      }
-@@ -928,6 +928,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
+@@ -927,6 +927,7 @@ static HRESULT WINAPI IDirectPlay8ClientImpl_EnumHosts(IDirectPlay8Client *iface
          tdata->msghandler  = This->msghandler;
          tdata->device      = device;
          tdata->host        = host;
@@ -60,10 +60,10 @@ index d5b1bdb..81e7c1c 100644
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
  
 diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
-index 522edc7..0c33091 100644
+index 60b73b2cea9..cfa2d3f8110 100644
 --- a/dlls/dpnet/dpnet_private.h
 +++ b/dlls/dpnet/dpnet_private.h
-@@ -54,6 +54,7 @@ struct dpthread_data
+@@ -51,6 +51,7 @@ struct dpthread_data
      DWORD retrytime;
      DWORD timeout;
      GUID  app_guid;
@@ -71,7 +71,7 @@ index 522edc7..0c33091 100644
  
      HANDLE cancelevent;
      PFNDPNMESSAGEHANDLER msghandler;
-@@ -79,7 +80,7 @@ struct connect_data
+@@ -76,7 +77,7 @@ struct connect_data
  
  extern DWORD WINAPI enumhost_thread(void *threaddata) DECLSPEC_HIDDEN;
  extern void process_enumhost(SOCKET sock, struct sockaddr_storage *host, size_t host_size, IDirectPlay8Address *device, PFNDPNMESSAGEHANDLER msghandler, GUID application,
@@ -81,10 +81,10 @@ index 522edc7..0c33091 100644
  extern BOOL dpaddress_to_sockaddr(IDirectPlay8Address *host, struct sockaddr_storage *addr, size_t *addr_size) DECLSPEC_HIDDEN;
  extern BOOL dpaddress_to_sockstorage(IDirectPlay8Address *host, SOCKADDR_STORAGE *addr, size_t *size) DECLSPEC_HIDDEN;
 diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
-index db850ca..4d0536e 100644
+index 5cafd7ae800..854ca9db4e0 100644
 --- a/dlls/dpnet/peer.c
 +++ b/dlls/dpnet/peer.c
-@@ -668,7 +668,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -667,7 +667,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
          DWORD timeout   = dwTimeOut == INFINITE ? This->spcaps.dwDefaultEnumTimeout : dwTimeOut;
  
          process_enumhost(This->sock, &host, host_size, device, This->msghandler, pApplicationDesc->guidApplication,
@@ -93,7 +93,7 @@ index db850ca..4d0536e 100644
  
          IDirectPlay8Address_Release(device);
      }
-@@ -693,6 +693,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
+@@ -692,6 +692,7 @@ static HRESULT WINAPI IDirectPlay8PeerImpl_EnumHosts(IDirectPlay8Peer *iface,
          tdata->msghandler  = This->msghandler;
          tdata->device      = device;
          tdata->host        = host;
@@ -102,5 +102,5 @@ index db850ca..4d0536e 100644
          tdata->cancelevent = This->cancelevent = CreateEventA( NULL, TRUE, FALSE, NULL);
  
 -- 
-1.9.1
+2.23.0
 

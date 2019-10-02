@@ -1,4 +1,4 @@
-From 7f5dc37f6ce98f8e4f03dc51bd0037493fc86f2e Mon Sep 17 00:00:00 2001
+From 7c47462d6073d049658ec1f156e3658a2990c05b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Jan 2017 22:22:15 +1100
 Subject: [PATCH 30/43] dpnet: temp
@@ -8,10 +8,10 @@ Subject: [PATCH 30/43] dpnet: temp
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
-index 9908066..b9411da 100644
+index 883bf7507f1..68befb5586c 100644
 --- a/dlls/dpnet/client.c
 +++ b/dlls/dpnet/client.c
-@@ -1096,7 +1096,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
+@@ -1095,7 +1095,7 @@ static HRESULT dplay_connected(SOCKET sock, void *serveraddr, size_t addrsize, D
              {
                  struct DFRAME_PACKET_TYPE *dframe = (struct DFRAME_PACKET_TYPE *)temp;
  
@@ -21,5 +21,5 @@ index 9908066..b9411da 100644
                  switch(dframe->type)
                  {
 -- 
-1.9.1
+2.23.0
 
