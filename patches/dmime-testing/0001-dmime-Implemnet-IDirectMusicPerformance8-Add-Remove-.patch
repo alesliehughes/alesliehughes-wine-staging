@@ -1,0 +1,257 @@
+From fa1f165bca093b501ff908b7fe1f9a11f24d5a71 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 4 Oct 2019 09:54:52 +1000
+Subject: [PATCH] dmime: Implemnet IDirectMusicPerformance8 Add/Remove
+ NotificationType
+
+This is wrong,  Add/Remove NotificationType needs to go though all
+track/segments and set the notifcaionType.
+
+Only test_performance_add_remove_notification can be used here.
+
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dmime/performance.c       |  77 +++++++++++++++++++++++--
+ dlls/dmime/tests/performance.c | 102 +++++++++++++++++++++++++++++++++
+ 2 files changed, 173 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/dmime/performance.c b/dlls/dmime/performance.c
+index fbf0856106a..7934314b4f9 100644
+--- a/dlls/dmime/performance.c
++++ b/dlls/dmime/performance.c
+@@ -22,6 +22,16 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dmime);
+ 
++enum eNotifyType {
++    notify_chord        = 0x01,
++    notify_command      = 0x02,
++    notify_measurement  = 0x04,
++    notify_performance  = 0x08,
++    notify_recompose    = 0x10,
++    notify_segment      = 0x20,
++    notify_custom       = 0x40
++};
++
+ typedef struct IDirectMusicPerformance8Impl {
+     IDirectMusicPerformance8 IDirectMusicPerformance8_iface;
+     LONG ref;
+@@ -50,6 +60,9 @@ typedef struct IDirectMusicPerformance8Impl {
+     CRITICAL_SECTION safe;
+     struct DMUS_PMSGItem *head;
+     struct DMUS_PMSGItem *imm_head;
++
++    DWORD notifications;
++    GUID custom_guid;
+ } IDirectMusicPerformance8Impl;
+ 
+ typedef struct DMUS_PMSGItem DMUS_PMSGItem;
+@@ -550,19 +563,70 @@ static HRESULT WINAPI IDirectMusicPerformance8Impl_GetNotificationPMsg(IDirectMu
+ static HRESULT WINAPI IDirectMusicPerformance8Impl_AddNotificationType(IDirectMusicPerformance8 *iface,
+         REFGUID rguidNotificationType)
+ {
+-        IDirectMusicPerformance8Impl *This = impl_from_IDirectMusicPerformance8(iface);
++    IDirectMusicPerformance8Impl *This = impl_from_IDirectMusicPerformance8(iface);
++    enum eNotifyType type;
++
++    TRACE("(%p, %s)\n", This, debugstr_dmguid(rguidNotificationType));
++
++    if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_CHORD))
++        type = notify_chord;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_COMMAND))
++        type = notify_command;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_MEASUREANDBEAT))
++        type = notify_measurement;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_PERFORMANCE))
++        type = notify_performance;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_RECOMPOSE))
++        type = notify_recompose;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_SEGMENT))
++        type = notify_segment;
++    else {
++        type = notify_custom;
++        if (This->notifications & notify_custom)
++            WARN("Only one custom notification currently supported\n");
++        This->custom_guid = *rguidNotificationType;
++    }
+ 
+-	FIXME("(%p, %s): stub\n", This, debugstr_dmguid(rguidNotificationType));
+-	return S_OK;
++    if (This->notifications & type)
++        return S_FALSE;
++
++    This->notifications |= type;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectMusicPerformance8Impl_RemoveNotificationType(IDirectMusicPerformance8 *iface,
+         REFGUID rguidNotificationType)
+ {
+-        IDirectMusicPerformance8Impl *This = impl_from_IDirectMusicPerformance8(iface);
++    IDirectMusicPerformance8Impl *This = impl_from_IDirectMusicPerformance8(iface);
++    enum eNotifyType type;
++
++    TRACE("(%p, %s)\n", This, debugstr_dmguid(rguidNotificationType));
++
++    if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_CHORD))
++        type = notify_chord;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_COMMAND))
++        type = notify_command;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_MEASUREANDBEAT))
++        type = notify_measurement;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_PERFORMANCE))
++        type = notify_performance;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_RECOMPOSE))
++        type = notify_recompose;
++    else if (IsEqualGUID (rguidNotificationType, &GUID_NOTIFICATION_SEGMENT))
++        type = notify_segment;
++    else {
++        type = notify_custom;
++        if (!IsEqualGUID (&This->custom_guid, rguidNotificationType))
++            WARN("Trying to remove an unknown custom notification\n");
++    }
+ 
+-	FIXME("(%p, %s): stub\n", This, debugstr_dmguid(rguidNotificationType));
+-	return S_OK;
++    if (!(This->notifications & type))
++        return S_FALSE;
++
++    This->notifications &= ~type;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectMusicPerformance8Impl_AddPort(IDirectMusicPerformance8 *iface,
+@@ -1216,6 +1280,7 @@ HRESULT WINAPI create_dmperformance(REFIID lpcGUID, void **ppobj)
+         obj->rtLatencyTime  = 100;  /* 100 ms TO FIX */
+         obj->dwBumperLength =   50; /* 50 ms default */
+         obj->dwPrepareTime  = 1000; /* 1000 ms default */
++        obj->custom_guid = GUID_NULL;
+         return IDirectMusicPerformance8Impl_QueryInterface(&obj->IDirectMusicPerformance8_iface,
+                                                            lpcGUID, ppobj);
+ }
+diff --git a/dlls/dmime/tests/performance.c b/dlls/dmime/tests/performance.c
+index 073625f04b1..6b98f8d71b4 100644
+--- a/dlls/dmime/tests/performance.c
++++ b/dlls/dmime/tests/performance.c
+@@ -486,6 +486,106 @@ static void test_notification_type(void)
+     IDirectMusicPerformance8_Release(perf);
+ }
+ 
++static void test_performance_add_remove_notification(void)
++{
++    IDirectMusicPerformance8 *perf;
++    HRESULT hr;
++    GUID notifications[] = {
++            GUID_NOTIFICATION_SEGMENT,
++            GUID_NOTIFICATION_CHORD,
++            GUID_NOTIFICATION_COMMAND,
++            GUID_NOTIFICATION_MEASUREANDBEAT,
++            GUID_NOTIFICATION_PERFORMANCE,
++            GUID_NOTIFICATION_RECOMPOSE,
++        };
++    int i;
++
++    hr = CoCreateInstance(&CLSID_DirectMusicPerformance, NULL,
++            CLSCTX_INPROC_SERVER, &IID_IDirectMusicPerformance8, (void**)&perf);
++    ok(hr == S_OK, "CoCreateInstance failed: %08x\n", hr);
++
++    for (i=0; i < ARRAY_SIZE(notifications); i++) {
++        hr = IDirectMusicPerformance8_AddNotificationType(perf, &notifications[i]);
++        ok(hr == S_OK, "Failed: %08x\n", hr);
++
++        hr = IDirectMusicPerformance8_AddNotificationType(perf, &notifications[i]);
++        ok(hr == S_FALSE, "Failed: %08x\n", hr);
++
++        hr = IDirectMusicPerformance8_RemoveNotificationType(perf, &notifications[i]);
++        ok(hr == S_OK, "Failed: %08x\n", hr);
++
++        hr = IDirectMusicPerformance8_RemoveNotificationType(perf, &notifications[i]);
++        ok(hr == S_FALSE, "Failed: %08x\n", hr);
++    }
++
++    IDirectMusicPerformance8_Release(perf);
++}
++
++static void test_track_add_remove_notification(void)
++{
++    IDirectMusicTrack *track;
++    HRESULT hr;
++    GUID notifications[] = {
++            GUID_NOTIFICATION_SEGMENT,
++            GUID_NOTIFICATION_CHORD,
++            GUID_NOTIFICATION_COMMAND,
++            GUID_NOTIFICATION_MEASUREANDBEAT,
++            GUID_NOTIFICATION_PERFORMANCE,
++            GUID_NOTIFICATION_RECOMPOSE,
++        };
++    int i, test;
++    static struct
++    {
++        const GUID *clsid;
++        HRESULT expected;
++        BOOL todo2; /* AddNotificationType Failure */
++    } track_notify_tests[] = {
++        {&CLSID_DirectMusicLyricsTrack,       E_NOTIMPL, FALSE},
++        {&CLSID_DirectMusicMarkerTrack,       S_FALSE,   FALSE},
++        {&CLSID_DirectMusicParamControlTrack, E_NOTIMPL, FALSE},
++        {&CLSID_DirectMusicSegTriggerTrack,   E_NOTIMPL, FALSE},
++        {&CLSID_DirectMusicSeqTrack,          E_NOTIMPL, FALSE},
++        {&CLSID_DirectMusicSysExTrack,        E_NOTIMPL, FALSE},
++        {&CLSID_DirectMusicTempoTrack,        E_NOTIMPL, TRUE},
++        {&CLSID_DirectMusicTimeSigTrack,      S_OK,      FALSE},
++        {&CLSID_DirectMusicWaveTrack,         E_NOTIMPL, FALSE}
++    };
++
++    for (test = 0; test < ARRAY_SIZE(track_notify_tests); test++) {
++        hr = CoCreateInstance(track_notify_tests[test].clsid, NULL, CLSCTX_INPROC_SERVER,
++                    &IID_IDirectMusicTrack, (void**)&track);
++        ok(hr == S_OK, "%s - Failed: %08x\n", wine_dbgstr_guid(track_notify_tests[test].clsid), hr);
++        if (FAILED(hr))
++            continue;
++
++        for (i = 0; i < ARRAY_SIZE(notifications); i++) {
++            hr = IDirectMusicTrack_AddNotificationType(track, &notifications[i]);
++            todo_wine_if(track_notify_tests[test].todo2)
++            ok(hr == track_notify_tests[test].expected ||
++                broken(track_notify_tests[test].expected == S_OK && hr == S_FALSE), "%s: Failed: %08x\n",
++                        wine_dbgstr_guid(track_notify_tests[test].clsid), hr);
++            if (hr == E_NOTIMPL)
++                continue;
++
++            hr = IDirectMusicTrack_AddNotificationType(track, &notifications[i]);
++            todo_wine ok(hr == S_FALSE || hr == S_OK, "%s: Failed: %08x\n",
++                        wine_dbgstr_guid(track_notify_tests[test].clsid), hr);
++
++            hr = IDirectMusicTrack_RemoveNotificationType(track, &notifications[i]);
++            todo_wine_if(track_notify_tests[test].todo2)
++            ok(hr == track_notify_tests[test].expected ||
++                broken(track_notify_tests[test].expected == S_OK && hr == S_FALSE), "%s: Failed: %08x\n",
++                        wine_dbgstr_guid(track_notify_tests[test].clsid), hr);
++
++            hr = IDirectMusicTrack_RemoveNotificationType(track, &notifications[i]);
++            todo_wine ok(hr == S_FALSE || hr == S_OK, "%s: Failed: %08x\n",
++                        wine_dbgstr_guid(track_notify_tests[test].clsid), hr);
++        }
++
++        IDirectMusicTrack_Release(track);
++    }
++}
++
+ START_TEST( performance )
+ {
+     HRESULT hr;
+@@ -505,6 +605,8 @@ START_TEST( performance )
+     test_COM();
+     test_createport();
+     test_notification_type();
++    test_performance_add_remove_notification();
++    test_track_add_remove_notification();
+ 
+     CoUninitialize();
+ }
+-- 
+2.23.0
+
