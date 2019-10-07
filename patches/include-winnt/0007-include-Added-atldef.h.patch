@@ -1,0 +1,96 @@
+From 7fedacdef3f7c31322bb4a46238de133067c58d0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 30 Jul 2019 09:37:34 +1000
+Subject: [PATCH] include: Added atldef.h
+
+---
+ include/Makefile.in |  1 +
+ include/atldef.h    | 64 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 65 insertions(+)
+ create mode 100644 include/atldef.h
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index d13ef5c139..405f5e576d 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -22,6 +22,7 @@ SOURCES = \
+ 	asysta.idl \
+ 	atlbase.h \
+ 	atlcom.h \
++	atldef.h \
+ 	atliface.idl \
+ 	atlthunk.h \
+ 	atlwin.h \
+diff --git a/include/atldef.h b/include/atldef.h
+new file mode 100644
+index 0000000000..a93a53c09b
+--- /dev/null
++++ b/include/atldef.h
+@@ -0,0 +1,64 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef __ATLDEF_H__
++#define __ATLDEF_H__
++
++
++#include "sal.h"
++
++#ifndef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
++#define _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
++#endif
++
++#ifndef ATLPREFAST_SUPPRESS
++#define ATLPREFAST_SUPPRESS(x)
++#endif
++
++#ifndef ATLPREFAST_UNSUPPRESS
++#define ATLPREFAST_UNSUPPRESS(x)
++#endif
++
++#ifndef ATLASSERT
++#define ATLASSERT(x)
++#endif
++
++#ifndef _FormatMessage_format_string_
++#define _FormatMessage_format_string_
++#endif
++
++#define ATLAPI HRESULT __stdcall
++#define ATLAPI_(x) x __stdcall
++
++#define AtlThrow ATL::AtlThrowImpl
++
++#ifdef __cplusplus
++
++namespace ATL
++{
++    template <typename T>
++    inline T* SAL_Assume_notnull_for_opt_z_(T* buf)
++    {
++	    ATLASSUME(buf!=0);
++    	return buf;
++    }	
++}
++
++#endif
++
++
++#endif /* __ATLDEF_H__ */
+-- 
+2.17.1
+

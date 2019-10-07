@@ -1,35 +1,34 @@
-From 7af343a4a18da9beef35b242d523d0da9120c078 Mon Sep 17 00:00:00 2001
+From 1a1734fab8d55feb238d947641de98a796c46f96 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Fri, 6 Jan 2017 13:50:00 +1100
-Subject: [PATCH] include: add msvcrt/new.h
+Date: Thu, 18 Jul 2019 13:40:01 +1000
+Subject: [PATCH] include: Added d2d1helper.h
 
-Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  include/Makefile.in  |  1 +
- include/msvcrt/new.h | 23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+)
- create mode 100644 include/msvcrt/new.h
+ include/d2d1helper.h | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+ create mode 100644 include/d2d1helper.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 40a0b3a820..d13ef5c139 100644
+index 08ea07f5cb..06d2f25965 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -438,6 +438,7 @@ SOURCES = \
- 	msvcrt/mbctype.h \
- 	msvcrt/mbstring.h \
- 	msvcrt/memory.h \
-+	msvcrt/new.h \
- 	msvcrt/process.h \
- 	msvcrt/search.h \
- 	msvcrt/setjmp.h \
-diff --git a/include/msvcrt/new.h b/include/msvcrt/new.h
+@@ -83,6 +83,7 @@ SOURCES = \
+ 	d2d1.idl \
+ 	d2d1_1.idl \
+ 	d2d1_2.idl \
++	d2d1helper.h \
+ 	d2dbasetypes.h \
+ 	d2derr.h \
+ 	d3d.h \
+diff --git a/include/d2d1helper.h b/include/d2d1helper.h
 new file mode 100644
-index 0000000000..cafc770530
+index 0000000000..3430b5b04e
 --- /dev/null
-+++ b/include/msvcrt/new.h
-@@ -0,0 +1,23 @@
++++ b/include/d2d1helper.h
+@@ -0,0 +1,30 @@
 +/*
-+ * Copyright (C) 2017 Alistair Leslie-Hughes
++ * Copyright 2019 Alistair Leslie-Hughes
 + *
 + * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
@@ -46,11 +45,18 @@ index 0000000000..cafc770530
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
 +
-+#ifndef __WINE_NEW_H__
-+#define __WINE_NEW_H__
++#ifndef _D2D1_HELPER_H_
++#define _D2D1_HELPER_H_
 +
++#include <d2d1.h>
 +
-+#endif
++#ifndef D2D_USE_C_DEFINITIONS
++
++/* TODO */
++
++#endif /* D2D_USE_C_DEFINITIONS */
++
++#endif /* _D2D1_HELPER_H_ */
 -- 
 2.17.1
 

@@ -1,0 +1,96 @@
+From 1b48e019dd301e0581c144ee238c85e622b814d0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 30 Jul 2019 09:38:09 +1000
+Subject: [PATCH] include: Addd atlexcept.h
+
+---
+ include/Makefile.in |  1 +
+ include/atlbase.h   |  1 +
+ include/atlexcept.h | 51 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+)
+ create mode 100644 include/atlexcept.h
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 405f5e576d..5b4dac5ebe 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -23,6 +23,7 @@ SOURCES = \
+ 	atlbase.h \
+ 	atlcom.h \
+ 	atldef.h \
++	atlexcept.h \
+ 	atliface.idl \
+ 	atlthunk.h \
+ 	atlwin.h \
+diff --git a/include/atlbase.h b/include/atlbase.h
+index 1e0d76082f..2056835d61 100644
+--- a/include/atlbase.h
++++ b/include/atlbase.h
+@@ -22,6 +22,7 @@
+ #define __WINE_ATLBASE_H__
+ 
+ #include <atliface.h>
++#include <atlexcept.h>
+ #include <comcat.h>
+ 
+ /* Wine extension: we (ab)use _ATL_VER to handle struct layout differences between ATL versions. */
+diff --git a/include/atlexcept.h b/include/atlexcept.h
+new file mode 100644
+index 0000000000..7360a48ddb
+--- /dev/null
++++ b/include/atlexcept.h
+@@ -0,0 +1,51 @@
++/*
++ * Copyright (C) 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef __ATLEXCEPT_H__
++#define __ATLEXCEPT_H__
++
++#include "atldef.h"
++
++#ifdef __cplusplus
++namespace ATL
++{
++    inline void _AtlRaiseException(DWORD exception, DWORD flags = EXCEPTION_NONCONTINUABLE)
++    {
++        RaiseException(exception, flags, 0, NULL);
++    }
++
++#endif
++
++    inline void WINAPI AtlThrowImpl(HRESULT hr)
++    {
++        DWORD dwExceptionCode;
++	    switch(hr)
++	    {
++	    case E_OUTOFMEMORY:
++		    dwExceptionCode = STATUS_NO_MEMORY;
++		    break;
++	    default:
++		    dwExceptionCode = EXCEPTION_ILLEGAL_INSTRUCTION;
++	    }
++        RaiseException( dwExceptionCode, EXCEPTION_NONCONTINUABLE, 0, NULL );
++    };
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __ATLEXCEPT_H__ */
++
+-- 
+2.17.1
+
