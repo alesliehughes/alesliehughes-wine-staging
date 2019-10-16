@@ -1,0 +1,207 @@
+From 59688b03194074339951aac4451428bfa6238376 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 15 Oct 2019 19:32:07 +1100
+Subject: [PATCH] wmvcore: Implement IWMReader Open.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/wmvcore/reader.c        |  37 +++++++++++-
+ dlls/wmvcore/tests/wmvcore.c | 105 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 140 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/wmvcore/reader.c b/dlls/wmvcore/reader.c
+index 6041c567e9..77d8ba6f41 100644
+--- a/dlls/wmvcore/reader.c
++++ b/dlls/wmvcore/reader.c
+@@ -39,6 +39,10 @@ typedef struct {
+     IWMProfile3 IWMProfile3_iface;
+     IWMPacketSize2 IWMPacketSize2_iface;
+     LONG ref;
++
++    HANDLE filehandle;
++    IWMReaderCallback *callback;
++    void *context;
+ } WMReader;
+ 
+ static inline WMReader *impl_from_IWMReader(IWMReader *iface)
+@@ -153,7 +157,13 @@ static ULONG WINAPI WMReader_Release(IWMReader *iface)
+     TRACE("(%p) ref=%d\n", This, ref);
+ 
+     if(!ref)
++    {
++        if (This->callback)
++            IWMReaderCallback_Release(This->callback);
++        if (This->filehandle != INVALID_HANDLE_VALUE)
++            CloseHandle(This->filehandle);
+         heap_free(This);
++    }
+ 
+     return ref;
+ }
+@@ -161,8 +171,27 @@ static ULONG WINAPI WMReader_Release(IWMReader *iface)
+ static HRESULT WINAPI WMReader_Open(IWMReader *iface, const WCHAR *url, IWMReaderCallback *callback, void *context)
+ {
+     WMReader *This = impl_from_IWMReader(iface);
+-    FIXME("(%p)->(%s %p %p)\n", This, debugstr_w(url), callback, context);
+-    return E_NOTIMPL;
++    DWORD value = 0;
++
++    TRACE("(%p)->(%s, %p, %p)\n", This, debugstr_w(url), callback, context);
++
++    if (!callback)
++        return E_INVALIDARG;
++
++    if (This->filehandle != INVALID_HANDLE_VALUE)
++        CloseHandle(This->filehandle);
++
++    This->callback = callback;
++    IWMReaderCallback_AddRef(This->callback);
++    This->context = context;
++
++    This->filehandle = CreateFileW(url, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
++
++    /* Result from OnStatus isn't passed back to the application. */
++    IWMReaderCallback_OnStatus(This->callback, WMT_OPENED, HRESULT_FROM_WIN32(GetLastError()),
++                                WMT_TYPE_DWORD, (BYTE*)&value, This->context);
++    
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI WMReader_Close(IWMReader *iface)
+@@ -2054,6 +2083,10 @@ HRESULT WINAPI WMCreateReader(IUnknown *reserved, DWORD rights, IWMReader **ret_
+     reader->IWMPacketSize2_iface.lpVtbl = &WMPacketSize2Vtbl;
+     reader->ref = 1;
+ 
++    reader->filehandle = INVALID_HANDLE_VALUE;
++    reader->callback   = NULL;
++    reader->context    = NULL;
++
+     *ret_reader = &reader->IWMReader_iface;
+     return S_OK;
+ }
+diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
+index 8af34e22b6..ef6d8b35d1 100644
+--- a/dlls/wmvcore/tests/wmvcore.c
++++ b/dlls/wmvcore/tests/wmvcore.c
+@@ -338,6 +338,110 @@ static void test_urlextension(void)
+     todo_wine ok(hr == S_OK, "WMCheckURLExtension failed 0x%08x\n", hr);
+ }
+ 
++static HRESULT WINAPI callback_QueryInterface(IWMReaderCallback *iface, REFIID riid, void **ppobj)
++{
++    if (IsEqualGUID(riid, &IID_IUnknown) ||
++        IsEqualGUID(riid, &IID_IWMStatusCallback) ||
++        IsEqualGUID(riid, &IID_IWMReaderCallback) )
++    {
++        *ppobj = iface;
++        return S_OK;
++    }
++
++    trace("Unknown interface %s\n", wine_dbgstr_guid(riid));
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI callback_AddRef(IWMReaderCallback *iface)
++{
++    return 2;
++}
++
++static ULONG WINAPI callback_Release(IWMReaderCallback *iface)
++{
++    return 1;
++}
++
++static HANDLE opened;
++static HRESULT onstatus_ret;
++
++static HRESULT WINAPI callback_OnStatus(IWMReaderCallback *iface, WMT_STATUS status,
++        HRESULT hr, WMT_ATTR_DATATYPE dwType, BYTE *pValue, void *pvContext)
++{
++    trace("status %d, hr 0x%08x, dwType 0x%d, pValue %p, pvContext %p\n", status, hr, dwType, pValue, pvContext);
++
++    switch(status)
++    {
++        /* We always receive this message regardless of success. */
++        case WMT_OPENED:
++            ok(hr == *(DWORD*)pvContext, "got 0x%08x\n", hr);
++            SetEvent(opened);
++            break;
++        default:
++            ok(0, "Unexpected message\n");
++            break;
++    }
++
++    return onstatus_ret;
++}
++
++static HRESULT WINAPI callback_OnSample(IWMReaderCallback *iface, DWORD dwOutputNum, QWORD cnsSampleTime,
++        QWORD cnsSampleDuration, DWORD dwFlags, INSSBuffer *pSample, void *pvContext)
++{
++    return S_OK;
++}
++
++static const IWMReaderCallbackVtbl callbackVtbl =
++{
++    callback_QueryInterface,
++    callback_AddRef,
++    callback_Release,
++    callback_OnStatus,
++    callback_OnSample
++};
++
++static IWMReaderCallback readcallback = { &callbackVtbl };
++
++static void test_load_nonexist_file(void)
++{
++    static WCHAR filename[] = {'n','o','n','e','x','i','s','t','.','w','m','v',0};
++    HRESULT hr;
++    IWMReader *reader;
++    DWORD expected;
++
++    hr = WMCreateReader( NULL, 0, &reader );
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    opened = CreateEventA(NULL, FALSE, FALSE, NULL);
++
++    hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
++    todo_wine ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
++
++    hr = IWMReader_Open(reader, filename, NULL, &expected);
++    ok(hr == E_INVALIDARG, "Failed 0x%08x\n", hr);
++
++    onstatus_ret = S_OK;
++    expected = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
++    hr = IWMReader_Open(reader, filename, &readcallback, &expected);
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    ok( !WaitForSingleObject(opened, 1000), "wait timed out\n" );
++    ResetEvent(opened);
++
++    onstatus_ret = E_FAIL;
++    hr = IWMReader_Open(reader, filename, &readcallback, &expected);
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    ok( !WaitForSingleObject(opened, 1000), "wait timed out\n" );
++
++    hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
++    todo_wine ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
++
++    CloseHandle(opened);
++
++    IWMReader_Release(reader);
++}
++
+ START_TEST(wmvcore)
+ {
+     HRESULT hr;
+@@ -353,6 +457,7 @@ START_TEST(wmvcore)
+     test_profile_manager_interfaces();
+     test_WMCreateWriterPriv();
+     test_urlextension();
++    test_load_nonexist_file();
+ 
+     CoUninitialize();
+ }
+-- 
+2.17.1
+
