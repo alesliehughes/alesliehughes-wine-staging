@@ -1,4 +1,4 @@
-From 999cf37b26efaf8a39f1ab0db359c3eb4f877c1c Mon Sep 17 00:00:00 2001
+From 9dfc07d22055a0a79e3a0b32bdd384dc306c9408 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 16 Oct 2019 11:15:44 +1100
 Subject: [PATCH] wmvcore: IWMProfile3 GetStreamCount return 0 zero outputs.

@@ -1,13 +1,18 @@
-From 59688b03194074339951aac4451428bfa6238376 Mon Sep 17 00:00:00 2001
+From 4b43ba24adf0137947e01864e5b35323cd141f9c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Oct 2019 19:32:07 +1100
 Subject: [PATCH] wmvcore: Implement IWMReader Open.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/wmvcore/reader.c        |  37 +++++++++++-
- dlls/wmvcore/tests/wmvcore.c | 105 +++++++++++++++++++++++++++++++++++
- 2 files changed, 140 insertions(+), 2 deletions(-)
+ dlls/wmvcore/reader.c          |  37 +++++-
+ dlls/wmvcore/tests/Makefile.in |   3 +
+ dlls/wmvcore/tests/rsrc.rc     |  25 ++++
+ dlls/wmvcore/tests/test.wmv    | Bin 0 -> 3931 bytes
+ dlls/wmvcore/tests/wmvcore.c   | 204 +++++++++++++++++++++++++++++++++
+ 5 files changed, 267 insertions(+), 2 deletions(-)
+ create mode 100644 dlls/wmvcore/tests/rsrc.rc
+ create mode 100644 dlls/wmvcore/tests/test.wmv
 
 diff --git a/dlls/wmvcore/reader.c b/dlls/wmvcore/reader.c
 index 6041c567e9..77d8ba6f41 100644
@@ -60,7 +65,7 @@ index 6041c567e9..77d8ba6f41 100644
 +
 +    This->filehandle = CreateFileW(url, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
 +
-+    /* Result from OnStatus isn't passed back to the application. */
++    /* Results from isn't passed back to the application for this call. */
 +    IWMReaderCallback_OnStatus(This->callback, WMT_OPENED, HRESULT_FROM_WIN32(GetLastError()),
 +                                WMT_TYPE_DWORD, (BYTE*)&value, This->context);
 +    
@@ -79,11 +84,114 @@ index 6041c567e9..77d8ba6f41 100644
      *ret_reader = &reader->IWMReader_iface;
      return S_OK;
  }
+diff --git a/dlls/wmvcore/tests/Makefile.in b/dlls/wmvcore/tests/Makefile.in
+index 8054ddd0a2..856e02d45d 100644
+--- a/dlls/wmvcore/tests/Makefile.in
++++ b/dlls/wmvcore/tests/Makefile.in
+@@ -3,3 +3,6 @@ IMPORTS   = ole32 wmvcore
+ 
+ C_SRCS = \
+ 	wmvcore.c
++
++RC_SRCS = \
++	rsrc.rc
+diff --git a/dlls/wmvcore/tests/rsrc.rc b/dlls/wmvcore/tests/rsrc.rc
+new file mode 100644
+index 0000000000..953bebd04f
+--- /dev/null
++++ b/dlls/wmvcore/tests/rsrc.rc
+@@ -0,0 +1,25 @@
++/*
++ * Resource file for wmvcore tests.
++ *
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include "windef.h"
++
++/* ffmpeg -i ../../quartz/tests/test.avi -b:v 2M -vcodec msmpeg4 -acodec wmav2 test.wmv */
++/* @makedep: test.wmv */
++test.wmv RCDATA "test.wmv"
+diff --git a/dlls/wmvcore/tests/test.wmv b/dlls/wmvcore/tests/test.wmv
+new file mode 100644
+index 0000000000000000000000000000000000000000..90123c634ca017aed909fbabd61121c09c21b52c
+GIT binary patch
+literal 3931
+zcmXp|+f>?@c3yDVO@>trN#}BcnHa!;6-Y8NExfb3$9?5_!M-O92Y3{MQ!^lv7-Td*
+zRH(u3>b;F~85yBmhdG5{^BShj0E@`*KqNqd4L~*+x5zPUW!@jJ2eRie#GW}&{eqV+
+zuiga`e+Cg}W5@%_ygL2k==$h#kCyaRJubg|PJzTg0Awm7gA@ZZ0}GJl$WY8sz>vz2
+z%uvD*#E=LiGa2$3BEV{Z1VNRNP?Zi#E?i=Nd`WQn2ZjYF<5mQufHVUEBZCG*ID;>P
+zK7%XJRmniJQ-C()F{CpD18pq<+XvzmgH_8g_yFBd#*oHf%3#i*$6&!=3?vO141kb<
+zVIupT?c0(3*$CFdz;NKb<R0JX^MWh>GBm`;xM(wk|5gY^=0nvPLup93D*$;CK+L28
+zbRq)-jLQfV^bIgEX5a)0q5+4Xi*2%o7X%kC0eX_z<C_mu-Vse4WC0@s7eg-4Te;xi
+zO=mCxdJEzJ7O?qdXh~`lG}6(m1eyZ@jEqeT41%#+xFFodMz93OS|9~VFKZdut9KY5
+zs4%~9L7g?m$z_I&2|MSG&!&D;Gj3Qc`OvB_tn09GL3Hw~DN$uhqEenEW-@-%RImNK
+zdrJfN#mqwo>t=h1m}dLT{ibnFk%8NUPpY})!Ri*q&5G;T{F@lWGGt8IIUlraGrrpO
+zQR;+zf6<n=w>@~AE-_r(()d$vt-}6UGroBxw=Q9AWcjpK!QZY%C8}=<zsVxU2E)eN
+z3?C}^tc08-WV~AsZ<7?-e5Ogst+J>8R`$b3+w5Q8j}|}L!EzvhwV}SD!djQ9$C=^M
+z4|}=koSA!8PWWlG=#1CQy=h`<nd?JM?!_tCsIW1tXJa<uP&n{kkwZfN1XE+f0X~HT
+zNeZtHHvVyGNZ2qzx<7^GSQNM7Lmuv!D*^WJxwgsprOZtcYN^<2xz>0^^kp8!NgH%_
+z9cntWe=(B`+fKL24I&K{WpNV}mg?yWJ&?L_qUoI8s>TMx_s6C^DA>u#$Rbn2rBEAo
+z{lJS)OE0~-HZ@|Z)>6q|%M&bvbv55k$iKd%zwx4)hCzUq?z!y_;zoykOQ%^LleKS%
+z{Lx$U?(M3OwZCrdyuM9?S@*?nj*Nnn2b*6cKqGaO8V!Nb5Eu=C(GVC7fzc2c4S~@R
+m7!83z8v+wJ7>qYQJule#1=RcTJROF^rLb-+NE*~Z#t#76<4_#{
+
+literal 0
+HcmV?d00001
+
 diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
-index 8af34e22b6..ef6d8b35d1 100644
+index 8af34e22b6..88d13681e4 100644
 --- a/dlls/wmvcore/tests/wmvcore.c
 +++ b/dlls/wmvcore/tests/wmvcore.c
-@@ -338,6 +338,110 @@ static void test_urlextension(void)
+@@ -25,6 +25,33 @@
+ 
+ HRESULT WINAPI WMCreateWriterPriv(IWMWriter **writer);
+ 
++static const WCHAR wmvfile[] = {'t','e','s','t','.','w','m','v',0};
++
++static WCHAR *load_resource(const WCHAR *name)
++{
++    static WCHAR pathW[MAX_PATH];
++    DWORD written;
++    HANDLE file;
++    HRSRC res;
++    void *ptr;
++
++    GetTempPathW(ARRAY_SIZE(pathW), pathW);
++    lstrcatW(pathW, name);
++
++    file = CreateFileW(pathW, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, 0);
++    ok(file != INVALID_HANDLE_VALUE, "Failed to create file %s, error %u.\n",
++            wine_dbgstr_w(pathW), GetLastError());
++
++    res = FindResourceW(NULL, name, (LPCWSTR)RT_RCDATA);
++    ok(!!res, "Failed to load resource, error %u.\n", GetLastError());
++    ptr = LockResource(LoadResource(GetModuleHandleA(NULL), res));
++    WriteFile(file, ptr, SizeofResource( GetModuleHandleA(NULL), res), &written, NULL);
++    ok(written == SizeofResource(GetModuleHandleA(NULL), res), "Failed to write resource.\n");
++    CloseHandle(file);
++
++    return pathW;
++}
++
+ static void test_wmwriter_interfaces(void)
+ {
+     HRESULT hr;
+@@ -338,6 +365,181 @@ static void test_urlextension(void)
      todo_wine ok(hr == S_OK, "WMCheckURLExtension failed 0x%08x\n", hr);
  }
  
@@ -97,7 +205,7 @@ index 8af34e22b6..ef6d8b35d1 100644
 +        return S_OK;
 +    }
 +
-+    trace("Unknown interface %s\n", wine_dbgstr_guid(riid));
++    /*trace("Unknown interface %s\n", wine_dbgstr_guid(riid));*/
 +    return E_NOINTERFACE;
 +}
 +
@@ -111,13 +219,37 @@ index 8af34e22b6..ef6d8b35d1 100644
 +    return 1;
 +}
 +
++#define NUM_MAX_MSG 10
++
++static int messages[NUM_MAX_MSG];
++static int message_index = 0;
++
 +static HANDLE opened;
++static HANDLE finished;
 +static HRESULT onstatus_ret;
++
++static void clear_messages(void)
++{
++    memset(messages, 0, sizeof(messages));
++    message_index = 0;
++}
++
++static BOOL check_messages(int *msg, int size)
++{
++    BOOL ret = TRUE;
++    int i;
++    for(i = 0; ret && i < min(size, NUM_MAX_MSG); i++)
++        ret = (messages[i] == msg[i]);
++
++    return ret;
++}
 +
 +static HRESULT WINAPI callback_OnStatus(IWMReaderCallback *iface, WMT_STATUS status,
 +        HRESULT hr, WMT_ATTR_DATATYPE dwType, BYTE *pValue, void *pvContext)
 +{
 +    trace("status %d, hr 0x%08x, dwType 0x%d, pValue %p, pvContext %p\n", status, hr, dwType, pValue, pvContext);
++    if(message_index < NUM_MAX_MSG)
++        messages[message_index++] = status;
 +
 +    switch(status)
 +    {
@@ -126,8 +258,14 @@ index 8af34e22b6..ef6d8b35d1 100644
 +            ok(hr == *(DWORD*)pvContext, "got 0x%08x\n", hr);
 +            SetEvent(opened);
 +            break;
++        case WMT_END_OF_FILE:
++            SetEvent(finished);
++            break;
++        case WMT_END_OF_STREAMING:
++        case WMT_STARTED:
++            break;
 +        default:
-+            ok(0, "Unexpected message\n");
++            ok(0, "Unexpected message %d\n", status);
 +            break;
 +    }
 +
@@ -153,10 +291,13 @@ index 8af34e22b6..ef6d8b35d1 100644
 +
 +static void test_load_nonexist_file(void)
 +{
++    static int messages_nonexist_file[] = {WMT_OPENED};
 +    static WCHAR filename[] = {'n','o','n','e','x','i','s','t','.','w','m','v',0};
 +    HRESULT hr;
 +    IWMReader *reader;
 +    DWORD expected;
++
++    clear_messages();
 +
 +    hr = WMCreateReader( NULL, 0, &reader );
 +    ok(hr == S_OK, "Failed 0x%08x\n", hr);
@@ -176,7 +317,9 @@ index 8af34e22b6..ef6d8b35d1 100644
 +
 +    ok( !WaitForSingleObject(opened, 1000), "wait timed out\n" );
 +    ResetEvent(opened);
++    ok( check_messages(messages_nonexist_file, ARRAY_SIZE(messages_nonexist_file)), "Incorrect sequence\n");
 +
++    clear_messages();
 +    onstatus_ret = E_FAIL;
 +    hr = IWMReader_Open(reader, filename, &readcallback, &expected);
 +    ok(hr == S_OK, "Failed 0x%08x\n", hr);
@@ -191,14 +334,51 @@ index 8af34e22b6..ef6d8b35d1 100644
 +    IWMReader_Release(reader);
 +}
 +
++static void test_load_file(void)
++{
++    static int messages_load_file[] = {WMT_OPENED, WMT_STARTED, WMT_END_OF_STREAMING, WMT_END_OF_FILE };
++    const WCHAR *filename = load_resource(wmvfile);
++    HRESULT hr;
++    IWMReader *reader;
++    DWORD expected;
++
++    clear_messages();
++
++    hr = WMCreateReader( NULL, 0, &reader );
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    opened = CreateEventA(NULL, FALSE, FALSE, NULL);
++    finished = CreateEventA(NULL, FALSE, FALSE, NULL);
++
++    onstatus_ret = S_OK;
++    expected = S_OK;
++    hr = IWMReader_Open(reader, filename, &readcallback, &expected);
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    ok( !WaitForSingleObject(opened, 5000), "wait timed out\n" );
++
++    hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
++    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    todo_wine ok( !WaitForSingleObject(finished, 5000), "wait timed out\n" );
++
++    todo_wine ok( check_messages(messages_load_file, ARRAY_SIZE(messages_load_file)), "Incorrect sequence\n");
++
++    CloseHandle(opened);
++    CloseHandle(finished);
++
++    IWMReader_Release(reader);
++}
++
  START_TEST(wmvcore)
  {
      HRESULT hr;
-@@ -353,6 +457,7 @@ START_TEST(wmvcore)
+@@ -353,6 +555,8 @@ START_TEST(wmvcore)
      test_profile_manager_interfaces();
      test_WMCreateWriterPriv();
      test_urlextension();
 +    test_load_nonexist_file();
++    test_load_file();
  
      CoUninitialize();
  }

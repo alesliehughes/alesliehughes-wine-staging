@@ -1,4 +1,4 @@
-From fd742968382fc348bbab77bb3521c88bee059a67 Mon Sep 17 00:00:00 2001
+From fa62c6dd232ae068eb74f3edfbab91eced7ad6cd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 16 Oct 2019 11:14:58 +1100
 Subject: [PATCH] wmvcore: IWMReader GetOutputCount return 0 zero outputs.

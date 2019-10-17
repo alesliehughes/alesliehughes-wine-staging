@@ -1,4 +1,4 @@
-From ad1d4873635d87a918abe8900c598882308c9200 Mon Sep 17 00:00:00 2001
+From ed4de62e97a67ee32fe3e1918eedea695c61f814 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 16 Oct 2019 14:49:41 +1100
 Subject: [PATCH] wmvcore: Fake Starting a file.
@@ -32,10 +32,10 @@ index 0885f3b467..311477532d 100644
  }
  
 diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
-index ef6d8b35d1..d3ab19963e 100644
+index b87c0e2af0..c234110b35 100644
 --- a/dlls/wmvcore/tests/wmvcore.c
 +++ b/dlls/wmvcore/tests/wmvcore.c
-@@ -415,7 +415,7 @@ static void test_load_nonexist_file(void)
+@@ -463,7 +463,7 @@ static void test_load_nonexist_file(void)
      opened = CreateEventA(NULL, FALSE, FALSE, NULL);
  
      hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
@@ -44,7 +44,7 @@ index ef6d8b35d1..d3ab19963e 100644
  
      hr = IWMReader_Open(reader, filename, NULL, &expected);
      ok(hr == E_INVALIDARG, "Failed 0x%08x\n", hr);
-@@ -435,7 +435,7 @@ static void test_load_nonexist_file(void)
+@@ -484,7 +484,7 @@ static void test_load_nonexist_file(void)
      ok( !WaitForSingleObject(opened, 1000), "wait timed out\n" );
  
      hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
