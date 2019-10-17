@@ -1,7 +1,7 @@
-From 1b48e019dd301e0581c144ee238c85e622b814d0 Mon Sep 17 00:00:00 2001
+From 5f6a3da53bd93398615a1cbb59d3d75239d87114 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 30 Jul 2019 09:38:09 +1000
-Subject: [PATCH] include: Addd atlexcept.h
+Subject: [PATCH 7/9] include: Addd atlexcept.h
 
 ---
  include/Makefile.in |  1 +
@@ -11,7 +11,7 @@ Subject: [PATCH] include: Addd atlexcept.h
  create mode 100644 include/atlexcept.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 405f5e576d..5b4dac5ebe 100644
+index c91a7e539c..21e65c3194 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -23,6 +23,7 @@ SOURCES = \
@@ -23,7 +23,7 @@ index 405f5e576d..5b4dac5ebe 100644
  	atlthunk.h \
  	atlwin.h \
 diff --git a/include/atlbase.h b/include/atlbase.h
-index 1e0d76082f..2056835d61 100644
+index b8c4f65651..f3e4e89716 100644
 --- a/include/atlbase.h
 +++ b/include/atlbase.h
 @@ -22,6 +22,7 @@

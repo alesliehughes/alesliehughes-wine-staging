@@ -1,7 +1,7 @@
-From 7af343a4a18da9beef35b242d523d0da9120c078 Mon Sep 17 00:00:00 2001
+From 5a208d70b9e6a50b3e5eb7a0b8e091ad106e3b40 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 6 Jan 2017 13:50:00 +1100
-Subject: [PATCH] include: add msvcrt/new.h
+Subject: [PATCH 4/9] include: add msvcrt/new.h
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -11,10 +11,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  create mode 100644 include/msvcrt/new.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 40a0b3a820..d13ef5c139 100644
+index 07c0475c2c..7081ee0d67 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -438,6 +438,7 @@ SOURCES = \
+@@ -440,6 +440,7 @@ SOURCES = \
  	msvcrt/mbctype.h \
  	msvcrt/mbstring.h \
  	msvcrt/memory.h \

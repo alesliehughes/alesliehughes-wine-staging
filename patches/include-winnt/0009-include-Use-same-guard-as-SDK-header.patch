@@ -1,0 +1,41 @@
+From f031aad7ad6ed4fe8f051fd791b01a17f0ba3daa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 2 Aug 2019 14:19:35 +1000
+Subject: [PATCH 9/9] include: Use same guard as SDK header.
+
+---
+ include/atlbase.h | 4 ++--
+ include/atlcom.h  | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/atlbase.h b/include/atlbase.h
+index f3e4e89716..82d7f5915b 100644
+--- a/include/atlbase.h
++++ b/include/atlbase.h
+@@ -18,8 +18,8 @@
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+  */
+ 
+-#ifndef __WINE_ATLBASE_H__
+-#define __WINE_ATLBASE_H__
++#ifndef __ATLBASE_H__
++#define __ATLBASE_H__
+ 
+ #include <atliface.h>
+ #include <atlexcept.h>
+diff --git a/include/atlcom.h b/include/atlcom.h
+index c141fbea47..093a2a5e92 100644
+--- a/include/atlcom.h
++++ b/include/atlcom.h
+@@ -19,7 +19,7 @@
+ #ifndef __WINE_ATLCOM_H__
+ #define __WINE_ATLCOM_H__
+ 
+-#ifndef __WINE_ATLBASE_H__
++#ifndef __ATLBASE_H__
+ # error You must include atlbase.h to use this header
+ #endif
+ 
+-- 
+2.17.1
+

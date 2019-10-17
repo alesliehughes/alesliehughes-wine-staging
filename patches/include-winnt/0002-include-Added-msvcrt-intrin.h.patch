@@ -1,7 +1,7 @@
-From 5c5285e60bfe29415f2fb05da1f2ad395118375f Mon Sep 17 00:00:00 2001
+From d4beab85e7441ebd26e6be444ac175bb3f4f707d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Jul 2019 13:40:25 +1000
-Subject: [PATCH] include: Added msvcrt/intrin.h
+Subject: [PATCH 2/9] include: Added msvcrt/intrin.h
 
 ---
  include/Makefile.in     |  1 +
@@ -10,10 +10,10 @@ Subject: [PATCH] include: Added msvcrt/intrin.h
  create mode 100644 include/msvcrt/intrin.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 06d2f25965..f65b9d735d 100644
+index 5e8c4ce737..12fb563d6a 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -427,6 +427,7 @@ SOURCES = \
+@@ -429,6 +429,7 @@ SOURCES = \
  	msvcrt/fcntl.h \
  	msvcrt/float.h \
  	msvcrt/fpieee.h \

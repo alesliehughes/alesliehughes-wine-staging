@@ -1,7 +1,7 @@
-From 2452be35e2d37f97fcea98c234b3f5b0162b06e8 Mon Sep 17 00:00:00 2001
+From a3bbd2b503cb310627c758de48974ba62fe73713 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Jul 2019 13:40:45 +1000
-Subject: [PATCH] include: Added ktmw32.h
+Subject: [PATCH 3/9] include: Added ktmw32.h
 
 ---
  include/Makefile.in |  1 +
@@ -10,7 +10,7 @@ Subject: [PATCH] include: Added ktmw32.h
  create mode 100644 include/ktmw32.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index f65b9d735d..db5d40032b 100644
+index 12fb563d6a..07c0475c2c 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -337,6 +337,7 @@ SOURCES = \

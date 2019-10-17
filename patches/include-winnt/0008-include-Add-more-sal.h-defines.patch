@@ -1,7 +1,7 @@
-From 872666ca6194d5910f38a33524e35fb9fd897334 Mon Sep 17 00:00:00 2001
+From c4603129e38b647786ca602fdb7b16be46992d12 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 2 Aug 2019 11:35:26 +1000
-Subject: [PATCH] include: Add more sal.h defines
+Subject: [PATCH 8/9] include: Add more sal.h defines
 
 ---
  include/sal.h | 1 +
