@@ -1,16 +1,16 @@
-From 4b43ba24adf0137947e01864e5b35323cd141f9c Mon Sep 17 00:00:00 2001
+From 2257467a82aa905db11959a346e9155c8b9a52d9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Oct 2019 19:32:07 +1100
 Subject: [PATCH] wmvcore: Implement IWMReader Open.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/wmvcore/reader.c          |  37 +++++-
+ dlls/wmvcore/reader.c          |  37 ++++-
  dlls/wmvcore/tests/Makefile.in |   3 +
  dlls/wmvcore/tests/rsrc.rc     |  25 ++++
  dlls/wmvcore/tests/test.wmv    | Bin 0 -> 3931 bytes
- dlls/wmvcore/tests/wmvcore.c   | 204 +++++++++++++++++++++++++++++++++
- 5 files changed, 267 insertions(+), 2 deletions(-)
+ dlls/wmvcore/tests/wmvcore.c   | 255 +++++++++++++++++++++++++++++++++
+ 5 files changed, 318 insertions(+), 2 deletions(-)
  create mode 100644 dlls/wmvcore/tests/rsrc.rc
  create mode 100644 dlls/wmvcore/tests/test.wmv
 
@@ -154,10 +154,16 @@ literal 0
 HcmV?d00001
 
 diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
-index 8af34e22b6..88d13681e4 100644
+index 8af34e22b6..b6b19dd06b 100644
 --- a/dlls/wmvcore/tests/wmvcore.c
 +++ b/dlls/wmvcore/tests/wmvcore.c
-@@ -25,6 +25,33 @@
+@@ -21,10 +21,39 @@
+ #include "initguid.h"
+ #include "wmsdk.h"
+ 
++DEFINE_GUID(WMMEDIATYPE_Video,     0x73646976,0x0000,0x0010,0x80,0x00,0x00,0xaa,0x00,0x38,0x9b,0x71);
++
+ #include "wine/test.h"
  
  HRESULT WINAPI WMCreateWriterPriv(IWMWriter **writer);
  
@@ -191,7 +197,7 @@ index 8af34e22b6..88d13681e4 100644
  static void test_wmwriter_interfaces(void)
  {
      HRESULT hr;
-@@ -338,6 +365,181 @@ static void test_urlextension(void)
+@@ -338,6 +367,230 @@ static void test_urlextension(void)
      todo_wine ok(hr == S_OK, "WMCheckURLExtension failed 0x%08x\n", hr);
  }
  
@@ -317,7 +323,7 @@ index 8af34e22b6..88d13681e4 100644
 +
 +    ok( !WaitForSingleObject(opened, 1000), "wait timed out\n" );
 +    ResetEvent(opened);
-+    ok( check_messages(messages_nonexist_file, ARRAY_SIZE(messages_nonexist_file)), "Incorrect sequence\n");
++    ok( check_messages(messages_nonexist_file, ARRAY_SIZE(messages_nonexist_file)), "Incorrected sqequence\n");
 +
 +    clear_messages();
 +    onstatus_ret = E_FAIL;
@@ -340,11 +346,15 @@ index 8af34e22b6..88d13681e4 100644
 +    const WCHAR *filename = load_resource(wmvfile);
 +    HRESULT hr;
 +    IWMReader *reader;
-+    DWORD expected;
++    IWMProfile3 *profile3;
++    DWORD expected, count;
 +
 +    clear_messages();
 +
 +    hr = WMCreateReader( NULL, 0, &reader );
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
++    hr = IWMReader_QueryInterface(reader, &IID_IWMProfile3, (void **)&profile3);
 +    ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
 +    opened = CreateEventA(NULL, FALSE, FALSE, NULL);
@@ -355,25 +365,70 @@ index 8af34e22b6..88d13681e4 100644
 +    hr = IWMReader_Open(reader, filename, &readcallback, &expected);
 +    ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
++    count = 55;
++    hr = IWMReader_GetOutputCount(reader, &count);
++    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
++    todo_wine ok(count == 1, "got %d\n", count);
++
++    if(hr == S_OK && count == 1)
++    {
++        IWMOutputMediaProps *props;
++        hr = IWMReader_GetOutputProps(reader, 0, &props);
++        ok(hr == S_OK, "Failed 0x%08x\n", hr);
++        if(hr == S_OK)
++        {
++            GUID mediatype;
++            hr = IWMOutputMediaProps_GetType(props, &mediatype);
++            ok(hr == S_OK, "Failed 0x%08x\n", hr);
++            ok(IsEqualGUID(&WMMEDIATYPE_Video, &mediatype), "got %s\n", wine_dbgstr_guid(&mediatype));
++
++            /*TODO GetMediaType */
++
++            IWMOutputMediaProps_Release(props);
++        }
++    }
++
++    count = 55;
++    hr = IWMProfile3_GetStreamCount(profile3, &count);
++    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
++    todo_wine ok(count == 1, "got %d\n", count);
++
++    if(hr == S_OK && count == 1)
++    {
++        IWMStreamConfig *config;
++        hr = IWMProfile3_GetStream(profile3, 0, &config);
++        ok(hr == S_OK, "Failed 0x%08x\n", hr);
++        if(hr == S_OK)
++        {
++            GUID mediatype;
++            hr = IWMStreamConfig_GetStreamType(config, &mediatype);
++            ok(hr == S_OK, "Failed 0x%08x\n", hr);
++            ok(IsEqualGUID(&WMMEDIATYPE_Video, &mediatype), "got %s\n", wine_dbgstr_guid(&mediatype));
++
++            IWMStreamConfig_Release(config);
++        }
++    }
++
 +    ok( !WaitForSingleObject(opened, 5000), "wait timed out\n" );
 +
 +    hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
 +    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
-+    todo_wine ok( !WaitForSingleObject(finished, 5000), "wait timed out\n" );
++    todo_wine ok( !WaitForSingleObject(finished, 2000), "wait timed out\n" );
 +
-+    todo_wine ok( check_messages(messages_load_file, ARRAY_SIZE(messages_load_file)), "Incorrect sequence\n");
++    todo_wine ok( check_messages(messages_load_file, ARRAY_SIZE(messages_load_file)), "Incorrected sqequence\n");
 +
 +    CloseHandle(opened);
 +    CloseHandle(finished);
 +
++    IWMProfile3_Release(profile3);
 +    IWMReader_Release(reader);
 +}
 +
  START_TEST(wmvcore)
  {
      HRESULT hr;
-@@ -353,6 +555,8 @@ START_TEST(wmvcore)
+@@ -353,6 +606,8 @@ START_TEST(wmvcore)
      test_profile_manager_interfaces();
      test_WMCreateWriterPriv();
      test_urlextension();
