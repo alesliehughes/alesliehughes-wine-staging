@@ -1,4 +1,4 @@
-From 2257467a82aa905db11959a346e9155c8b9a52d9 Mon Sep 17 00:00:00 2001
+From aa0ae3a6716d545a4fb99dcc4918ebefc8073278 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Oct 2019 19:32:07 +1100
 Subject: [PATCH] wmvcore: Implement IWMReader Open.
@@ -9,13 +9,13 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  dlls/wmvcore/tests/Makefile.in |   3 +
  dlls/wmvcore/tests/rsrc.rc     |  25 ++++
  dlls/wmvcore/tests/test.wmv    | Bin 0 -> 3931 bytes
- dlls/wmvcore/tests/wmvcore.c   | 255 +++++++++++++++++++++++++++++++++
- 5 files changed, 318 insertions(+), 2 deletions(-)
+ dlls/wmvcore/tests/wmvcore.c   | 259 +++++++++++++++++++++++++++++++++
+ 5 files changed, 322 insertions(+), 2 deletions(-)
  create mode 100644 dlls/wmvcore/tests/rsrc.rc
  create mode 100644 dlls/wmvcore/tests/test.wmv
 
 diff --git a/dlls/wmvcore/reader.c b/dlls/wmvcore/reader.c
-index 6041c567e9..77d8ba6f41 100644
+index 68e35cfd484..0885f3b467b 100644
 --- a/dlls/wmvcore/reader.c
 +++ b/dlls/wmvcore/reader.c
 @@ -39,6 +39,10 @@ typedef struct {
@@ -73,7 +73,7 @@ index 6041c567e9..77d8ba6f41 100644
  }
  
  static HRESULT WINAPI WMReader_Close(IWMReader *iface)
-@@ -2054,6 +2083,10 @@ HRESULT WINAPI WMCreateReader(IUnknown *reserved, DWORD rights, IWMReader **ret_
+@@ -2064,6 +2093,10 @@ HRESULT WINAPI WMCreateReader(IUnknown *reserved, DWORD rights, IWMReader **ret_
      reader->IWMPacketSize2_iface.lpVtbl = &WMPacketSize2Vtbl;
      reader->ref = 1;
  
@@ -85,7 +85,7 @@ index 6041c567e9..77d8ba6f41 100644
      return S_OK;
  }
 diff --git a/dlls/wmvcore/tests/Makefile.in b/dlls/wmvcore/tests/Makefile.in
-index 8054ddd0a2..856e02d45d 100644
+index 8054ddd0a2e..856e02d45d5 100644
 --- a/dlls/wmvcore/tests/Makefile.in
 +++ b/dlls/wmvcore/tests/Makefile.in
 @@ -3,3 +3,6 @@ IMPORTS   = ole32 wmvcore
@@ -97,7 +97,7 @@ index 8054ddd0a2..856e02d45d 100644
 +	rsrc.rc
 diff --git a/dlls/wmvcore/tests/rsrc.rc b/dlls/wmvcore/tests/rsrc.rc
 new file mode 100644
-index 0000000000..953bebd04f
+index 00000000000..953bebd04f0
 --- /dev/null
 +++ b/dlls/wmvcore/tests/rsrc.rc
 @@ -0,0 +1,25 @@
@@ -154,7 +154,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
-index 8af34e22b6..b6b19dd06b 100644
+index 8af34e22b6b..df613f88fc4 100644
 --- a/dlls/wmvcore/tests/wmvcore.c
 +++ b/dlls/wmvcore/tests/wmvcore.c
 @@ -21,10 +21,39 @@
@@ -197,7 +197,7 @@ index 8af34e22b6..b6b19dd06b 100644
  static void test_wmwriter_interfaces(void)
  {
      HRESULT hr;
-@@ -338,6 +367,230 @@ static void test_urlextension(void)
+@@ -338,6 +367,234 @@ static void test_urlextension(void)
      todo_wine ok(hr == S_OK, "WMCheckURLExtension failed 0x%08x\n", hr);
  }
  
@@ -360,14 +360,20 @@ index 8af34e22b6..b6b19dd06b 100644
 +    opened = CreateEventA(NULL, FALSE, FALSE, NULL);
 +    finished = CreateEventA(NULL, FALSE, FALSE, NULL);
 +
++    count = 55;
++    hr = IWMReader_GetOutputCount(reader, &count);
++    todo_wine ok(hr == E_UNEXPECTED, "Failed 0x%08x\n", hr);
++    todo_wine ok(count == 55, "got %d\n", count);
++
 +    onstatus_ret = S_OK;
 +    expected = S_OK;
 +    hr = IWMReader_Open(reader, filename, &readcallback, &expected);
 +    ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
++    ok( !WaitForSingleObject(opened, 5000), "wait timed out\n" );
++
 +    count = 55;
 +    hr = IWMReader_GetOutputCount(reader, &count);
-+    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +    todo_wine ok(count == 1, "got %d\n", count);
 +
 +    if(hr == S_OK && count == 1)
@@ -390,7 +396,7 @@ index 8af34e22b6..b6b19dd06b 100644
 +
 +    count = 55;
 +    hr = IWMProfile3_GetStreamCount(profile3, &count);
-+    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +    todo_wine ok(count == 1, "got %d\n", count);
 +
 +    if(hr == S_OK && count == 1)
@@ -409,8 +415,6 @@ index 8af34e22b6..b6b19dd06b 100644
 +        }
 +    }
 +
-+    ok( !WaitForSingleObject(opened, 5000), "wait timed out\n" );
-+
 +    hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
 +    todo_wine ok(hr == S_OK, "Failed 0x%08x\n", hr);
 +
@@ -428,7 +432,7 @@ index 8af34e22b6..b6b19dd06b 100644
  START_TEST(wmvcore)
  {
      HRESULT hr;
-@@ -353,6 +606,8 @@ START_TEST(wmvcore)
+@@ -353,6 +610,8 @@ START_TEST(wmvcore)
      test_profile_manager_interfaces();
      test_WMCreateWriterPriv();
      test_urlextension();
@@ -438,5 +442,5 @@ index 8af34e22b6..b6b19dd06b 100644
      CoUninitialize();
  }
 -- 
-2.17.1
+2.23.0
 
