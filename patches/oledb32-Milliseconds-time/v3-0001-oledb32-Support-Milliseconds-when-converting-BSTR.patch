@@ -1,0 +1,76 @@
+From 25fd5340cab8bc346f5954b04e9e12f50eb2795e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 19 Jun 2018 11:38:25 +1000
+Subject: [PATCH v3] oledb32: Support Milliseconds when converting BSTR ->
+ DBTIMESTAMP
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+Here is a simplier way without convert to ascii first.
+
+ dlls/oledb32/convert.c       | 12 ++++++++++++
+ dlls/oledb32/tests/convert.c | 25 +++++++++++++++++++++----
+ 2 files changed, 33 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index a5bbdbc245..2fc65c7403 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -566,6 +566,18 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+                 d->second = st.wSecond;
+                 d->fraction = st.wMilliseconds * 1000000;
+             }
++            else
++            {
++                if(swscanf( s, L"%d-%d-%d %d:%d:%d.%d", &d->year, &d->month, &d->day, &d->hour, &d->minute,
++                             &d->second, &d->fraction) != 7)
++                {
++                    hr = DISP_E_TYPEMISMATCH;
++                    *dst_status = DBSTATUS_E_CANTCONVERTVALUE;
++                    *dst_len = get_length(dst_type);
++                }
++                else
++                    hr = S_OK;
++            }
+ 
+             VariantClear(&var);
+         }
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index 51fd2f7fa3..28401e68c9 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -3953,10 +3953,27 @@ static void test_converttotimestamp(void)
+     bstr = SysAllocString(strFullW);
+     dst_len = 0x1234;
+     hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
+-    todo_wine ok(hr == S_OK, "got %08x\n", hr);
+-    todo_wine ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
+-    todo_wine ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
+-    todo_wine ok(!memcmp(&ts1, &dst, sizeof(ts1)), "Wrong timestamp\n");
++    ok(hr == S_OK, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    ok(!memcmp(&ts1, &dst, sizeof(ts1)), "Wrong timestamp\n");
++    SysFreeString(bstr);
++
++    bstr = SysAllocString(L"2013-05-14 02:04:12.017000000");
++    dst_len = 0x1234;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
++    ok(hr == S_OK, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
++    ok(!memcmp(&ts1, &dst, sizeof(ts1)), "Wrong timestamp\n");
++    SysFreeString(bstr);
++
++    bstr = SysAllocString(L"2013/05/14 02:04:12.01700");
++    dst_len = 0x1234;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_DBTIMESTAMP, 0, &dst_len, &bstr, &dst, sizeof(dst), 0, &dst_status, 0, 0, 0);
++    ok(hr == DISP_E_TYPEMISMATCH, "got %08x\n", hr);
++    ok(dst_status == DBSTATUS_E_CANTCONVERTVALUE, "got %08x\n", dst_status);
++    ok(dst_len == sizeof(dst), "got %ld\n", dst_len);
+     SysFreeString(bstr);
+ 
+     V_VT(&var) = VT_NULL;
+-- 
+2.17.1
+
