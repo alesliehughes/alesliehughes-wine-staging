@@ -1,4 +1,4 @@
-From b54347ea4423cfff6f50ffdd62d3477559a6fd30 Mon Sep 17 00:00:00 2001
+From bc6bae1c50a72622f4094590987ab182dfa64bd9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Oct 2019 19:32:07 +1100
 Subject: [PATCH] wmvcore: Implement IWMReader Open.
@@ -10,10 +10,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/wmvcore/reader.c          |  37 ++++-
  dlls/wmvcore/tests/Makefile.in |   3 +
- dlls/wmvcore/tests/rsrc.rc     |  25 ++++
+ dlls/wmvcore/tests/rsrc.rc     |  25 +++
  dlls/wmvcore/tests/test.wmv    | Bin 0 -> 3931 bytes
- dlls/wmvcore/tests/wmvcore.c   | 262 +++++++++++++++++++++++++++++++++
- 5 files changed, 325 insertions(+), 2 deletions(-)
+ dlls/wmvcore/tests/wmvcore.c   | 269 +++++++++++++++++++++++++++++++++
+ 5 files changed, 332 insertions(+), 2 deletions(-)
  create mode 100644 dlls/wmvcore/tests/rsrc.rc
  create mode 100644 dlls/wmvcore/tests/test.wmv
 
@@ -157,7 +157,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
-index 8af34e22b6..3904276f35 100644
+index 8af34e22b6..45290af3e1 100644
 --- a/dlls/wmvcore/tests/wmvcore.c
 +++ b/dlls/wmvcore/tests/wmvcore.c
 @@ -21,10 +21,37 @@
@@ -198,7 +198,7 @@ index 8af34e22b6..3904276f35 100644
  static void test_wmwriter_interfaces(void)
  {
      HRESULT hr;
-@@ -338,6 +365,239 @@ static void test_urlextension(void)
+@@ -338,6 +365,246 @@ static void test_urlextension(void)
      todo_wine ok(hr == S_OK, "WMCheckURLExtension failed 0x%08x\n", hr);
  }
  
@@ -270,6 +270,7 @@ index 8af34e22b6..3904276f35 100644
 +            break;
 +        case WMT_END_OF_STREAMING:
 +        case WMT_STARTED:
++        case WMT_CLOSED:
 +            break;
 +        default:
 +            ok(0, "Unexpected message %d\n", status);
@@ -342,6 +343,9 @@ index 8af34e22b6..3904276f35 100644
 +    todo_wine ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
 +
 +    CloseHandle(opened);
++
++    hr = IWMReader_Close(reader);
++    ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
 +
 +    IWMReader_Release(reader);
 +}
@@ -431,6 +435,9 @@ index 8af34e22b6..3904276f35 100644
 +    CloseHandle(opened);
 +    CloseHandle(finished);
 +
++    hr = IWMReader_Close(reader);
++    ok(hr == S_OK, "Failed 0x%08x\n", hr);
++
 +    IWMProfile3_Release(profile3);
 +    IWMReader_Release(reader);
 +}
@@ -438,7 +445,7 @@ index 8af34e22b6..3904276f35 100644
  START_TEST(wmvcore)
  {
      HRESULT hr;
-@@ -353,6 +613,8 @@ START_TEST(wmvcore)
+@@ -353,6 +620,8 @@ START_TEST(wmvcore)
      test_profile_manager_interfaces();
      test_WMCreateWriterPriv();
      test_urlextension();
