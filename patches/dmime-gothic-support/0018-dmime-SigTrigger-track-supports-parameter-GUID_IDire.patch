@@ -1,0 +1,60 @@
+From d3ba07648bb73e7a17cca88bf8ced78327d7d92f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 8 Nov 2019 15:35:41 +1100
+Subject: [PATCH] dmime: SigTrigger track supports parameter
+ GUID_IDirectMusicStyle.
+
+---
+ dlls/dmime/segtriggertrack.c | 13 ++++++++-----
+ dlls/dmime/tests/dmime.c     | 10 ++++++++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/dmime/segtriggertrack.c b/dlls/dmime/segtriggertrack.c
+index 8cbd29de6c7..f2e8b5fe527 100644
+--- a/dlls/dmime/segtriggertrack.c
++++ b/dlls/dmime/segtriggertrack.c
+@@ -140,12 +140,15 @@ static HRESULT WINAPI track_sigtrigger_SetParam(IDirectMusicTrack8 *iface, REFGU
+ static HRESULT WINAPI track_sigtrigger_IsParamSupported(IDirectMusicTrack8 *iface,
+         REFGUID rguidType)
+ {
+-        IDirectMusicSegTriggerTrack *This = impl_from_IDirectMusicTrack8(iface);
++    IDirectMusicSegTriggerTrack *This = impl_from_IDirectMusicTrack8(iface);
++
++    TRACE("(%p, %s)\n", This, debugstr_dmguid(rguidType));
++
++    if (IsEqualGUID(rguidType, &GUID_IDirectMusicStyle))
++        return S_OK;
+ 
+-	TRACE("(%p, %s)\n", This, debugstr_dmguid(rguidType));
+-	/* didn't find any params */
+-	TRACE("param unsupported\n");
+-	return DMUS_E_TYPE_UNSUPPORTED;
++    TRACE("param unsupported\n");
++    return DMUS_E_TYPE_UNSUPPORTED;
+ }
+ 
+ static HRESULT WINAPI track_sigtrigger_AddNotificationType(IDirectMusicTrack8 *iface,
+diff --git a/dlls/dmime/tests/dmime.c b/dlls/dmime/tests/dmime.c
+index b7bf542fd81..944a278dbbd 100644
+--- a/dlls/dmime/tests/dmime.c
++++ b/dlls/dmime/tests/dmime.c
+@@ -565,6 +565,16 @@ static void test_track(void)
+             ok(hr == E_NOTIMPL, "IDirectMusicTrack_SetParam failed: %08x\n", hr);
+             hr = IDirectMusicTrack_IsParamSupported(dmt, NULL);
+             ok(hr == E_NOTIMPL, "IDirectMusicTrack_IsParamSupported failed: %08x\n", hr);
++
++            hr = IDirectMusicTrack_IsParamSupported(dmt, &GUID_IDirectMusicStyle);
++            ok(hr == E_NOTIMPL, "got: %08x\n", hr);
++        }
++        else {
++            hr = IDirectMusicTrack_IsParamSupported(dmt, &GUID_IDirectMusicStyle);
++            if (class[i].clsid == &CLSID_DirectMusicSegmentTriggerTrack)
++                ok(hr == S_OK, "got: %08x\n", hr);
++            else
++                ok(hr == DMUS_E_TYPE_UNSUPPORTED, "got: %08x\n", hr);
+         }
+         if (class[i].clsid != &CLSID_DirectMusicMarkerTrack &&
+                 class[i].clsid != &CLSID_DirectMusicTimeSigTrack) {
+-- 
+2.24.0.rc1
+

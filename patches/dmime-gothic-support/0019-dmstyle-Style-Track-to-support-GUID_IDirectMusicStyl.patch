@@ -1,0 +1,47 @@
+From ccce87eef9eb6fc5c21eb98f88b2079d4b5e10b9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 9 Nov 2019 15:59:14 +1100
+Subject: [PATCH] -dmstyle: Style Track to support GUID_IDirectMusicStyle in
+ GetParam.
+
+---
+ dlls/dmstyle/styletrack.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/dlls/dmstyle/styletrack.c b/dlls/dmstyle/styletrack.c
+index c4b4626e8aa..35b554b5477 100644
+--- a/dlls/dmstyle/styletrack.c
++++ b/dlls/dmstyle/styletrack.c
+@@ -124,11 +124,29 @@ static HRESULT WINAPI track_style_GetParam(IDirectMusicTrack8 *iface, REFGUID rg
+         MUSIC_TIME mtTime, MUSIC_TIME *pmtNext, void *pParam)
+ {
+     IDirectMusicStyleTrack *This = impl_from_IDirectMusicTrack8(iface);
++    struct list* pEntry = NULL;
++    LPDMUS_PRIVATE_STYLE_ITEM pIt = NULL;
++
+     FIXME("(%p, %s, %d, %p, %p): stub\n", This, debugstr_dmguid(rguidType), mtTime, pmtNext, pParam);
+ 
+     if (!rguidType)
+         return E_POINTER;
+ 
++    if(IsEqualGUID(&GUID_IDirectMusicStyle, rguidType))
++    {
++        LIST_FOR_EACH (pEntry, &This->Items) {
++            pIt = LIST_ENTRY(pEntry, DMUS_PRIVATE_STYLE_ITEM, entry);
++
++            if(pIt->pObject)
++            {
++                *((IDirectMusicStyle8**)pParam) = pIt->pObject;
++                return S_OK;
++            }
++        }
++
++        return DMUS_E_NOT_FOUND;
++    }
++
+     return S_OK;
+ }
+ 
+-- 
+2.24.0.rc1
+
