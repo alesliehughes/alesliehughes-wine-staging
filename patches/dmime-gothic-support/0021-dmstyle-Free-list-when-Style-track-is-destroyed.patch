@@ -1,0 +1,46 @@
+From 4861050be7049b2e9f86c23979f271b0edb7fa14 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 11 Nov 2019 09:06:48 +1100
+Subject: [PATCH] dmstyle: Free list when Style track is destroyed
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dmstyle/styletrack.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dmstyle/styletrack.c b/dlls/dmstyle/styletrack.c
+index fbeb671387..06ed448526 100644
+--- a/dlls/dmstyle/styletrack.c
++++ b/dlls/dmstyle/styletrack.c
+@@ -20,6 +20,8 @@
+ #include "dmstyle_private.h"
+ #include "dmobject.h"
+ 
++#include "wine/heap.h"
++
+ WINE_DEFAULT_DEBUG_CHANNEL(dmstyle);
+ WINE_DECLARE_DEBUG_CHANNEL(dmfile);
+ 
+@@ -80,7 +82,18 @@ static ULONG WINAPI track_style_Release(IDirectMusicTrack8 *iface)
+     TRACE("(%p) ref=%d\n", This, ref);
+ 
+     if (!ref) {
+-        HeapFree(GetProcessHeap(), 0, This);
++        struct list* cursor, *cursor2;
++        LPDMUS_PRIVATE_STYLE_ITEM item;
++
++        LIST_FOR_EACH_SAFE (cursor, cursor2, &This->Items) {
++            item = LIST_ENTRY(cursor, DMUS_PRIVATE_STYLE_ITEM, entry);
++            list_remove(cursor);
++
++            IDirectMusicStyle8_Release(item->pObject);
++            heap_free(item);
++        }
++
++        heap_free(This);
+         DMSTYLE_UnlockModule();
+     }
+ 
+-- 
+2.17.1
+

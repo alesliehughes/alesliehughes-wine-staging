@@ -1,25 +1,17 @@
-From fa450800cb667ae3c17ff522bbeab5aed543146f Mon Sep 17 00:00:00 2001
+From bb896ac1a5d87f752c76eb9cb9401744a7713966 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 9 Nov 2019 16:00:50 +1100
-Subject: [PATCH] dmime: Loop Each track when looking for a Parameter
+Subject: [PATCH] dmime: Loop each track when looking for a Parameter
 
 ---
- dlls/dmime/segment.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ dlls/dmime/segment.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dmime/segment.c b/dlls/dmime/segment.c
-index d47c2f2c230..b18152f04ec 100644
+index d47c2f2c23..bbe2bb16ae 100644
 --- a/dlls/dmime/segment.c
 +++ b/dlls/dmime/segment.c
-@@ -376,6 +376,7 @@ static HRESULT WINAPI IDirectMusicSegment8Impl_GetParam(IDirectMusicSegment8 *if
-   IPersistStream* pCLSIDStream = NULL;
-   LPDMUS_PRIVATE_SEGMENT_TRACK pIt = NULL;
-   HRESULT hr = S_OK;
-+  int i = 0;
- 
-   FIXME("(%p, %s, 0x%x, %d, %d, %p, %p)\n", This, debugstr_dmguid(rguidType), dwGroupBits, dwIndex, mtTime, pmtNext, pParam);
-   
-@@ -406,7 +407,19 @@ static HRESULT WINAPI IDirectMusicSegment8Impl_GetParam(IDirectMusicSegment8 *if
+@@ -406,7 +406,17 @@ static HRESULT WINAPI IDirectMusicSegment8Impl_GetParam(IDirectMusicSegment8 *if
      }
      ERR("(%p): not found\n", This);
      return DMUS_E_TRACK_NOT_FOUND;
@@ -29,17 +21,15 @@ index d47c2f2c230..b18152f04ec 100644
 +  LIST_FOR_EACH (pEntry, &This->Tracks) {
 +      pIt = LIST_ENTRY(pEntry, DMUS_PRIVATE_SEGMENT_TRACK, entry);
 +
-+      if (dwGroupBits == pIt->dwGroupBits)
-+      {
++      if (dwGroupBits == pIt->dwGroupBits) {
 +            hr = IDirectMusicTrack_IsParamSupported(pIt->pTrack, rguidType);
-+            if (hr == S_OK)
++            if (SUCCEEDED(hr))
 +                return IDirectMusicTrack_GetParam(pIt->pTrack, rguidType, mtTime, pmtNext, pParam);
 +      }
-+      i++;
 +  }
  
    hr = IDirectMusicSegment8Impl_GetTrack(iface, &GUID_NULL, dwGroupBits, dwIndex, &pTrack);
    if (FAILED(hr)) {
 -- 
-2.24.0.rc1
+2.17.1
 

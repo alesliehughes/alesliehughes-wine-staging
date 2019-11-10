@@ -1,18 +1,18 @@
-From ccce87eef9eb6fc5c21eb98f88b2079d4b5e10b9 Mon Sep 17 00:00:00 2001
+From 2c78257d89c09adefefd6bebedb6d283a7b173d0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 9 Nov 2019 15:59:14 +1100
-Subject: [PATCH] -dmstyle: Style Track to support GUID_IDirectMusicStyle in
+Subject: [PATCH] dmstyle: Style Track to support GUID_IDirectMusicStyle in
  GetParam.
 
 ---
- dlls/dmstyle/styletrack.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ dlls/dmstyle/styletrack.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
 diff --git a/dlls/dmstyle/styletrack.c b/dlls/dmstyle/styletrack.c
-index c4b4626e8aa..35b554b5477 100644
+index c4b4626e8a..fbeb671387 100644
 --- a/dlls/dmstyle/styletrack.c
 +++ b/dlls/dmstyle/styletrack.c
-@@ -124,11 +124,29 @@ static HRESULT WINAPI track_style_GetParam(IDirectMusicTrack8 *iface, REFGUID rg
+@@ -124,11 +124,28 @@ static HRESULT WINAPI track_style_GetParam(IDirectMusicTrack8 *iface, REFGUID rg
          MUSIC_TIME mtTime, MUSIC_TIME *pmtNext, void *pParam)
  {
      IDirectMusicStyleTrack *This = impl_from_IDirectMusicTrack8(iface);
@@ -24,14 +24,13 @@ index c4b4626e8aa..35b554b5477 100644
      if (!rguidType)
          return E_POINTER;
  
-+    if(IsEqualGUID(&GUID_IDirectMusicStyle, rguidType))
-+    {
++    if (IsEqualGUID(&GUID_IDirectMusicStyle, rguidType)) {
 +        LIST_FOR_EACH (pEntry, &This->Items) {
 +            pIt = LIST_ENTRY(pEntry, DMUS_PRIVATE_STYLE_ITEM, entry);
-+
-+            if(pIt->pObject)
-+            {
++            if (pIt->pObject) {
++                IDirectMusicStyle8_AddRef(pIt->pObject);
 +                *((IDirectMusicStyle8**)pParam) = pIt->pObject;
++
 +                return S_OK;
 +            }
 +        }
@@ -43,5 +42,5 @@ index c4b4626e8aa..35b554b5477 100644
  }
  
 -- 
-2.24.0.rc1
+2.17.1
 
