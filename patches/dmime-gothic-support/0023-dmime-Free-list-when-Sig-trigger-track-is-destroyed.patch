@@ -1,14 +1,15 @@
-From 9786ba09360c93a76e29de0112e127eae9b988ea Mon Sep 17 00:00:00 2001
+From 5cf1d1941fadaac967190e218e1a17b960fd7691 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 11 Nov 2019 10:42:23 +1100
-Subject: [PATCH] dmime: Free list when Sig trigger track is destroyed.
+Subject: [PATCH 4/4] dmime: Free list when Sig trigger track is destroyed.
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dmime/segtriggertrack.c | 16 +++++++++++++++-
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dmime/segtriggertrack.c b/dlls/dmime/segtriggertrack.c
-index f2e8b5fe52..daf28e204e 100644
+index 7f81e2e1f4..d371ae86e5 100644
 --- a/dlls/dmime/segtriggertrack.c
 +++ b/dlls/dmime/segtriggertrack.c
 @@ -21,6 +21,8 @@
@@ -20,7 +21,7 @@ index f2e8b5fe52..daf28e204e 100644
  WINE_DEFAULT_DEBUG_CHANNEL(dmime);
  WINE_DECLARE_DEBUG_CHANNEL(dmfile);
  
-@@ -81,7 +83,19 @@ static ULONG WINAPI track_sigtrigger_Release(IDirectMusicTrack8 *iface)
+@@ -81,7 +83,19 @@ static ULONG WINAPI segment_track_Release(IDirectMusicTrack8 *iface)
      TRACE("(%p) ref=%d\n", This, ref);
  
      if (!ref) {

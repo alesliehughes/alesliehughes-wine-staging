@@ -1,7 +1,7 @@
-From 4861050be7049b2e9f86c23979f271b0edb7fa14 Mon Sep 17 00:00:00 2001
+From e2d936676f11115c2c0b14ef647997767b6c9f80 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 11 Nov 2019 09:06:48 +1100
-Subject: [PATCH] dmstyle: Free list when Style track is destroyed
+Subject: [PATCH 2/4] dmstyle: Free list when Style track is destroyed
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dmstyle/styletrack.c b/dlls/dmstyle/styletrack.c
-index fbeb671387..06ed448526 100644
+index 496e0c5ba7..cbaba0a16a 100644
 --- a/dlls/dmstyle/styletrack.c
 +++ b/dlls/dmstyle/styletrack.c
 @@ -20,6 +20,8 @@
@@ -21,7 +21,7 @@ index fbeb671387..06ed448526 100644
  WINE_DEFAULT_DEBUG_CHANNEL(dmstyle);
  WINE_DECLARE_DEBUG_CHANNEL(dmfile);
  
-@@ -80,7 +82,18 @@ static ULONG WINAPI track_style_Release(IDirectMusicTrack8 *iface)
+@@ -80,7 +82,18 @@ static ULONG WINAPI style_track_Release(IDirectMusicTrack8 *iface)
      TRACE("(%p) ref=%d\n", This, ref);
  
      if (!ref) {
