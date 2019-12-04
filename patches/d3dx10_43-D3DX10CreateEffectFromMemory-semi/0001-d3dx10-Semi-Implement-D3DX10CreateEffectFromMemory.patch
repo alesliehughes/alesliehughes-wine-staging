@@ -3,6 +3,9 @@ From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 20 Nov 2015 16:00:15 +1100
 Subject: [PATCH] d3dx10: Semi-Implement D3DX10CreateEffectFromMemory
 
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=21733 ???
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=41191
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/d3dx10_43/Makefile.in      | 1 +

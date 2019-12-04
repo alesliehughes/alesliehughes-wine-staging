@@ -3,6 +3,7 @@ From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 26 Nov 2015 15:49:51 +1100
 Subject: [PATCH] d3dx9_36: Implement ID3DXLine Draw
 
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=25128
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/d3dx9_36/line.c       |  3 +++

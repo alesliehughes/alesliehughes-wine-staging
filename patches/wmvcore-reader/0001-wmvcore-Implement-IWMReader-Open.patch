@@ -6,6 +6,8 @@ Subject: [PATCH] wmvcore: Implement IWMReader Open.
 Technically Open should use a thread but this can wait until
 load code is written.
 
+Wine-bug: https://bugs.winehq.org/show_bug.cgi?id=38278
+
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/wmvcore/reader.c          |  37 ++++-
