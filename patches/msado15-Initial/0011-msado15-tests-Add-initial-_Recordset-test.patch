@@ -27,7 +27,7 @@ index 4c16c21..eca79e0 100644
 +
 +    hr = CoCreateInstance(&CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER,
 +            &IID__Recordset, (void**)&recordset);
-+    if(FAILED(hr))
++    if (FAILED(hr))
 +    {
 +        skip("Failed to create Recordset instance\n");
 +        return;
@@ -35,22 +35,22 @@ index 4c16c21..eca79e0 100644
 +
 +    hr = _Recordset_QueryInterface(recordset, &IID__ADO, (void**)&ado);
 +    ok(hr == S_OK, "Failed to get _ADO interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        _ADO_Release(ado);
 +
 +    hr = _Recordset_QueryInterface(recordset, &IID_Recordset15, (void**)&recordset15);
 +    ok(hr == S_OK, "Failed to get Recordset15 interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        Recordset15_Release(recordset15);
 +
 +    hr = _Recordset_QueryInterface(recordset, &IID_Recordset20, (void**)&recordset20);
 +    ok(hr == S_OK, "Failed to get Recordset20 interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        Recordset20_Release(recordset20);
 +
 +    hr = _Recordset_QueryInterface(recordset, &IID_Recordset21, (void**)&recordset21);
 +    ok(hr == S_OK, "Failed to get Recordset21 interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        Recordset21_Release(recordset21);
 +
 +    _Recordset_Release(recordset);

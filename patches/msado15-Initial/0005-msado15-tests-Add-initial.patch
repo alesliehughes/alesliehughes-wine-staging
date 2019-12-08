@@ -1,130 +1,48 @@
-From 420c0f36bf2746ab2f56434e51c25544096702f4 Mon Sep 17 00:00:00 2001
+From d1df068b7c0857d2018d1accc05b026df8cbd885 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 7 Oct 2016 09:28:14 +1100
-Subject: [PATCH 05/12] msado15/tests: Add initial
+Subject: [PATCH] msado15/tests: Add initial
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- configure                       |  1 +
- configure.ac                    |  3 +-
- dlls/msado15/tests/Makefile.in  |  4 +++
- dlls/msado15/tests/connection.c | 69 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 76 insertions(+), 1 deletion(-)
- create mode 100644 dlls/msado15/tests/Makefile.in
- create mode 100644 dlls/msado15/tests/connection.c
+ dlls/msado15/tests/msado15.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/configure b/configure
-index 4deb3d7..f6a8569 100755
---- a/configure
-+++ b/configure
-@@ -18021,6 +18021,7 @@ wine_fn_config_dll msacm32.drv enable_msacm32_drv
- wine_fn_config_dll msacm32 enable_msacm32 clean,implib
- wine_fn_config_test dlls/msacm32/tests msacm32_test
- wine_fn_config_dll msado15 enable_msado15
-+wine_fn_config_test dlls/msado15/tests msado15_test
- wine_fn_config_dll msadp32.acm enable_msadp32_acm
- wine_fn_config_dll msasn1 enable_msasn1 implib
- wine_fn_config_dll mscat32 enable_mscat32
-diff --git a/configure.ac b/configure.ac
-index ca1638e..c4c6aa8 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -3109,7 +3109,8 @@ WINE_CONFIG_DLL(msacm.dll16,enable_win16)
- WINE_CONFIG_DLL(msacm32.drv)
- WINE_CONFIG_DLL(msacm32,,[clean,implib])
- WINE_CONFIG_TEST(dlls/msacm32/tests)
--WINE_CONFIG_DLL(msado15)
-+WINE_CONFIG_DLL(msado15,,[clean])
-+WINE_CONFIG_TEST(dlls/msado15/tests)
- WINE_CONFIG_DLL(msadp32.acm)
- WINE_CONFIG_DLL(msasn1,,[implib])
- WINE_CONFIG_DLL(mscat32)
-diff --git a/dlls/msado15/tests/Makefile.in b/dlls/msado15/tests/Makefile.in
-new file mode 100644
-index 0000000..33d4b68
---- /dev/null
-+++ b/dlls/msado15/tests/Makefile.in
-@@ -0,0 +1,4 @@
-+TESTDLL   = msado15.dll
-+IMPORTS   = ole32 user32
-+
-+C_SRCS = connection.c
-diff --git a/dlls/msado15/tests/connection.c b/dlls/msado15/tests/connection.c
-new file mode 100644
-index 0000000..9f63e8a
---- /dev/null
-+++ b/dlls/msado15/tests/connection.c
-@@ -0,0 +1,69 @@
-+/*
-+ * msado test
-+ *
-+ * Copyright 2015 Alistair Leslie-Hughes
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2.1 of the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
-+ */
-+
-+
-+#define COBJMACROS
-+
-+#include <stdio.h>
-+#include <assert.h>
-+
-+#include "initguid.h"
-+#include "windows.h"
-+#include "ole2.h"
-+#include "msado15.h"
-+#include "ocidl.h"
-+#include "dispex.h"
-+
-+#include "wine/test.h"
-+
-+void test_connection_interface(void)
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index ed465e2072..976bdcd73f 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -55,9 +55,30 @@ static void test_Stream(void)
+     ok( !refs, "got %d\n", refs );
+ }
+ 
++static void test_connection(void)
 +{
 +    HRESULT hr;
 +    _Connection *connection;
 +    IRunnableObject *runtime;
 +    ISupportErrorInfo *errorinfo;
 +
-+    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER,
-+            &IID__Connection, (void**)&connection);
-+    if(FAILED(hr))
-+    {
-+        skip("Failed to create Connection instance\n");
-+        return;
-+    }
++    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
++    ok( hr == S_OK, "got %08x\n", hr );
 +
 +    hr = _Connection_QueryInterface(connection, &IID_IRunnableObject, (void**)&runtime);
 +    ok(hr == E_NOINTERFACE, "Unexpected IRunnableObject interface\n");
 +
 +    hr = _Connection_QueryInterface(connection, &IID_ISupportErrorInfo, (void**)&errorinfo);
 +    todo_wine ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        ISupportErrorInfo_Release(errorinfo);
-+
-+    _Connection_Release(connection);
 +}
 +
-+START_TEST(connection)
-+{
-+    CoInitialize(NULL);
+ START_TEST(msado15)
+ {
+     CoInitialize( NULL );
+     test_Stream();
++    test_connection();
 +
-+    test_connection_interface();
-+
-+    CoUninitialize();
-+}
-\ No newline at end of file
+     CoUninitialize();
+ }
 -- 
-1.9.1
+2.17.1
 

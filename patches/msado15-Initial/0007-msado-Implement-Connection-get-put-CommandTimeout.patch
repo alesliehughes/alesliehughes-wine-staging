@@ -1,76 +1,71 @@
-From 503638be9ca1408425929fca90692aef29a2efaf Mon Sep 17 00:00:00 2001
+From bd4770f0f131af59be6bdea01caace2310a98b42 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Dec 2015 08:46:24 +1100
-Subject: [PATCH 07/12] msado: Implement Connection get/put CommandTimeout
+Subject: [PATCH] msado: Implement Connection get/put CommandTimeout
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/msado15/connection.c       | 16 ++++++++++++----
- dlls/msado15/tests/connection.c | 14 +++++++++++++-
- 2 files changed, 25 insertions(+), 5 deletions(-)
+ dlls/msado15/connection.c    | 14 ++++++++++----
+ dlls/msado15/tests/msado15.c | 13 ++++++++++++-
+ 2 files changed, 22 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index d68aab5..c52af11 100644
+index dbf0b03149..ef589ecb7d 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
-@@ -49,6 +49,7 @@ typedef struct
-     _Connection _Connection_iface;
+@@ -36,6 +36,7 @@ struct connection
+     LONG        refs;
  
      ObjectStateEnum state;
-+    long timeout;
++    LONG timeout;
+ };
  
-     LONG ref;
- } connection;
-@@ -170,17 +171,23 @@ static HRESULT WINAPI connection_put_ConnectionString(_Connection *iface, BSTR c
- static HRESULT WINAPI connection_get_CommandTimeout(_Connection *iface, LONG *timeout)
+ static inline struct connection *impl_from_Connection( _Connection *iface )
+@@ -126,14 +127,18 @@ static HRESULT WINAPI connection_put_ConnectionString( _Connection *iface, BSTR
+ 
+ static HRESULT WINAPI connection_get_CommandTimeout( _Connection *iface, LONG *timeout )
  {
-     connection *This = impl_from_Connection(iface);
--    FIXME("(%p)->(%p)\n", This, timeout);
- 
+-    FIXME( "%p, %p\n", iface, timeout );
 -    return E_NOTIMPL;
-+    TRACE("(%p)->(%p)\n", This, timeout);
-+
-+    *timeout = This->timeout;
-+
++    struct connection *connection = impl_from_Connection( iface );
++    TRACE( "%p, %p\n", connection, timeout );
++    *timeout = connection->timeout;
 +    return S_OK;
  }
  
- static HRESULT WINAPI connection_put_CommandTimeout(_Connection *iface, LONG timeout)
+ static HRESULT WINAPI connection_put_CommandTimeout( _Connection *iface, LONG timeout )
  {
-     connection *This = impl_from_Connection(iface);
--    FIXME("(%p)->(%d)\n", This, timeout);
- 
+-    FIXME( "%p, %d\n", iface, timeout );
 -    return E_NOTIMPL;
-+    TRACE("(%p)->(%d)\n", This, timeout);
-+
-+    This->timeout = timeout;
-+
++    struct connection *connection = impl_from_Connection( iface );
++    TRACE( "%p, %d\n", connection, timeout );
++    connection->timeout = timeout;
 +    return S_OK;
  }
  
- static HRESULT WINAPI connection_get_ConnectionTimeout(_Connection *iface, LONG *timeout)
-@@ -446,6 +453,7 @@ HRESULT Connecton_create(void **out)
-     This->_Connection_iface.lpVtbl = &connection_vtbl;
-     This->ref = 1;
-     This->state = adStateClosed;
-+    This->timeout = 30;
+ static HRESULT WINAPI connection_get_ConnectionTimeout( _Connection *iface, LONG *timeout )
+@@ -342,6 +347,7 @@ HRESULT Connection_create( void **obj )
+     connection->Connection_iface.lpVtbl = &connection_vtbl;
+     connection->refs = 1;
+     connection->state = adStateClosed;
++    connection->timeout = 30;
  
-     *out = &This->_Connection_iface;
- 
-diff --git a/dlls/msado15/tests/connection.c b/dlls/msado15/tests/connection.c
-index 35f4797..4c16c21 100644
---- a/dlls/msado15/tests/connection.c
-+++ b/dlls/msado15/tests/connection.c
-@@ -39,7 +39,7 @@ void test_connection_interface(void)
+     *obj = &connection->Connection_iface;
+     TRACE( "returning iface %p\n", *obj );
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 3e4ba295f6..8175e5a6c7 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -61,7 +61,7 @@ static void test_connection(void)
      _Connection *connection;
      IRunnableObject *runtime;
      ISupportErrorInfo *errorinfo;
 -    LONG state;
 +    LONG state, timeout;
  
-     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER,
-             &IID__Connection, (void**)&connection);
-@@ -67,6 +67,18 @@ if(0)   /* Crashes on windows */
+     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
+     ok( hr == S_OK, "got %08x\n", hr );
+@@ -84,6 +84,17 @@ if (0)   /* Crashes on windows */
      ok(hr == S_OK, "Failed to get state, hr 0x%08x\n", hr);
      ok(state == adStateClosed, "Unexpected state value 0x%08x\n", state);
  
@@ -81,7 +76,6 @@ index 35f4797..4c16c21 100644
 +    hr = _Connection_put_CommandTimeout(connection, 300);
 +    ok(hr == S_OK, "Failed to get state, hr 0x%08x\n", hr);
 +
-+
 +    hr = _Connection_get_CommandTimeout(connection, &timeout);
 +    ok(hr == S_OK, "Failed to get state, hr 0x%08x\n", hr);
 +    ok(timeout == 300, "Unexpected timeout value %d\n", timeout);
@@ -90,5 +84,5 @@ index 35f4797..4c16c21 100644
  }
  
 -- 
-1.9.1
+2.17.1
 

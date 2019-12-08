@@ -34,17 +34,17 @@ index eca79e0..6bf767f 100644
 +
 +    hr = _Command_QueryInterface(command, &IID__ADO, (void**)&ado);
 +    ok(hr == S_OK, "Failed to get _ADO interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        _ADO_Release(ado);
 +
 +    hr = _Command_QueryInterface(command, &IID_Command15, (void**)&command15);
 +    ok(hr == S_OK, "Failed to get Recordset15 interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        Command15_Release(command15);
 +
 +    hr = _Command_QueryInterface(command, &IID_Command25, (void**)&command25);
 +    ok(hr == S_OK, "Failed to get Recordset20 interface\n");
-+    if(hr == S_OK)
++    if (hr == S_OK)
 +        Command25_Release(command25);
 +
 +    _Command_Release(command);

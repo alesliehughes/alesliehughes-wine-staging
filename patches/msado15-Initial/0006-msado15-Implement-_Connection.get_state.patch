@@ -1,66 +1,66 @@
-From e52f2f776e5c41ee0cb8c7d6f08156c340ec2933 Mon Sep 17 00:00:00 2001
+From c8d4ca08233994e15870339571d255424b503a62 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Dec 2015 14:41:44 +1100
-Subject: [PATCH 06/12] msado15: Implement _Connection.get_state
+Subject: [PATCH] msado15: Implement _Connection.get_state
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/msado15/connection.c       |  9 +++++++--
- dlls/msado15/tests/connection.c | 11 +++++++++++
- 2 files changed, 18 insertions(+), 2 deletions(-)
+ dlls/msado15/connection.c    |  9 +++++++--
+ dlls/msado15/tests/msado15.c | 13 +++++++++++++
+ 2 files changed, 20 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index 0bf506f..d68aab5 100644
+index f33bc89a1a..dbf0b03149 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
-@@ -48,6 +48,8 @@ typedef struct
+@@ -34,6 +34,8 @@ struct connection
  {
-     _Connection _Connection_iface;
- 
+     _Connection Connection_iface;
+     LONG        refs;
++
 +    ObjectStateEnum state;
-+
-     LONG ref;
- } connection;
+ };
  
-@@ -363,9 +365,11 @@ static HRESULT WINAPI connection_put_Provider(_Connection *iface, BSTR provider)
- static HRESULT WINAPI connection_get_State(_Connection *iface, LONG *state)
+ static inline struct connection *impl_from_Connection( _Connection *iface )
+@@ -271,8 +273,10 @@ static HRESULT WINAPI connection_put_Provider( _Connection *iface, BSTR str )
+ 
+ static HRESULT WINAPI connection_get_State( _Connection *iface, LONG *state )
  {
-     connection *This = impl_from_Connection(iface);
--    FIXME("(%p)->(%p)\n", This, state);
-+    TRACE("(%p)->(%p)\n", This, state);
- 
+-    FIXME( "%p, %p\n", iface, state );
 -    return E_NOTIMPL;
-+    *state = This->state;
-+
++    struct connection *connection = impl_from_Connection( iface );
++    TRACE( "%p, %p\n", connection, state );
++    *state = connection->state;
 +    return S_OK;
  }
  
- static HRESULT WINAPI connection_OpenSchema(_Connection *iface, SchemaEnum schema, VARIANT restrictions,
-@@ -441,6 +445,7 @@ HRESULT Connecton_create(void **out)
+ static HRESULT WINAPI connection_OpenSchema( _Connection *iface, SchemaEnum schema, VARIANT restrictions,
+@@ -337,6 +341,7 @@ HRESULT Connection_create( void **obj )
+     if (!(connection = heap_alloc( sizeof(*connection) ))) return E_OUTOFMEMORY;
+     connection->Connection_iface.lpVtbl = &connection_vtbl;
+     connection->refs = 1;
++    connection->state = adStateClosed;
  
-     This->_Connection_iface.lpVtbl = &connection_vtbl;
-     This->ref = 1;
-+    This->state = adStateClosed;
- 
-     *out = &This->_Connection_iface;
- 
-diff --git a/dlls/msado15/tests/connection.c b/dlls/msado15/tests/connection.c
-index 9f63e8a..35f4797 100644
---- a/dlls/msado15/tests/connection.c
-+++ b/dlls/msado15/tests/connection.c
-@@ -39,6 +39,7 @@ void test_connection_interface(void)
+     *obj = &connection->Connection_iface;
+     TRACE( "returning iface %p\n", *obj );
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 976bdcd73f..3e4ba295f6 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -61,6 +61,7 @@ static void test_connection(void)
      _Connection *connection;
      IRunnableObject *runtime;
      ISupportErrorInfo *errorinfo;
 +    LONG state;
  
-     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER,
-             &IID__Connection, (void**)&connection);
-@@ -56,6 +57,16 @@ void test_connection_interface(void)
-     if(hr == S_OK)
+     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
+     ok( hr == S_OK, "got %08x\n", hr );
+@@ -72,6 +73,18 @@ static void test_connection(void)
+     todo_wine ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
+     if (hr == S_OK)
          ISupportErrorInfo_Release(errorinfo);
- 
-+if(0)   /* Crashes on windows */
++
++if (0)   /* Crashes on windows */
 +{
 +    hr = _Connection_get_State(connection, NULL);
 +    ok(hr == E_INVALIDARG, "Unexpected hr 0x%08x\n", hr);
@@ -70,9 +70,10 @@ index 9f63e8a..35f4797 100644
 +    ok(hr == S_OK, "Failed to get state, hr 0x%08x\n", hr);
 +    ok(state == adStateClosed, "Unexpected state value 0x%08x\n", state);
 +
-     _Connection_Release(connection);
++    _Connection_Release(connection);
  }
  
+ START_TEST(msado15)
 -- 
-1.9.1
+2.17.1
 

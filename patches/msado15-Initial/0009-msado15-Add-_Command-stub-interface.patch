@@ -1,96 +1,93 @@
-From b8af92093f6e3fd62e71fffde9971dfe7af943f0 Mon Sep 17 00:00:00 2001
+From c5dace714db69a86e903bcde09b4fcb528ff601a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 4 Jan 2016 15:46:53 +1100
-Subject: [PATCH 09/12] msado15: Add _Command stub interface
+Subject: [PATCH] msado15: Add _Command stub interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/msado15/Makefile.in       |   1 +
- dlls/msado15/command.c         | 391 +++++++++++++++++++++++++++++++++++++++++
- dlls/msado15/msado15.c         |   5 +
- dlls/msado15/msado15_private.h |   3 +-
- 4 files changed, 399 insertions(+), 1 deletion(-)
+ dlls/msado15/command.c         | 388 +++++++++++++++++++++++++++++++++
+ dlls/msado15/main.c            |   5 +
+ dlls/msado15/msado15_private.h |   1 +
+ 4 files changed, 395 insertions(+)
  create mode 100644 dlls/msado15/command.c
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
-index d63e890..1754dcc 100644
+index 604f9ff018..9852e0863d 100644
 --- a/dlls/msado15/Makefile.in
 +++ b/dlls/msado15/Makefile.in
-@@ -2,6 +2,7 @@ MODULE    = msado15.dll
- 
+@@ -4,6 +4,7 @@ IMPORTS   = oleaut32
+ EXTRADLLFLAGS = -mno-cygwin
  
  C_SRCS = \
 +	command.c \
  	connection.c \
- 	msado15.c \
- 	recordset.c
+ 	main.c \
+ 	recordset.c \
 diff --git a/dlls/msado15/command.c b/dlls/msado15/command.c
 new file mode 100644
-index 0000000..454edb8
+index 0000000000..141e8c56b0
 --- /dev/null
 +++ b/dlls/msado15/command.c
-@@ -0,0 +1,391 @@
+@@ -0,0 +1,388 @@
 +/*
-+ * Copyright 2016 Alistair Leslie-Hughes
++ * Copyright 2019 Alistair Leslie-Hughes
 + *
-+ * This library is free software; you can redistribute it and/or
++ * command library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
 + * License as published by the Free Software Foundation; either
 + * version 2.1 of the License, or (at your option) any later version.
 + *
-+ * This library is distributed in the hope that it will be useful,
++ * command library is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 + * Lesser General Public License for more details.
 + *
 + * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
++ * License along with command library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
-+#define COBJMACROS
-+
-+#include "config.h"
-+
 +#include <stdarg.h>
-+
 +#include "windef.h"
 +#include "winbase.h"
-+#include "winuser.h"
-+#include "ole2.h"
++#define COBJMACROS
++#include "objbase.h"
++#include "msado15_backcompat.h"
 +
 +#include "wine/debug.h"
++#include "wine/heap.h"
 +
-+#include "msado15.h"
++#include "msado15_private.h"
 +#include "msado15_private.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(msado);
 +
-+typedef struct
++struct command
 +{
 +    _Command Command_iface;
 +
 +    LONG ref;
-+} command;
++};
 +
 +
-+static inline command *impl_from_Command(_Command *iface)
++static inline struct command *impl_from_Command(_Command *iface)
 +{
-+    return CONTAINING_RECORD(iface, command, Command_iface);
++    return CONTAINING_RECORD(iface, struct command, Command_iface);
 +}
 +
 +static HRESULT WINAPI command_QueryInterface(_Command *iface, REFIID riid, void **out)
 +{
-+    command *This = impl_from_Command(iface);
-+    TRACE("(%p)->(%s, %p)\n", This, debugstr_guid(riid), out);
++    struct command *command = impl_from_Command(iface);
++    TRACE("(%p)->(%s, %p)\n", command, debugstr_guid(riid), out);
 +
 +    *out = NULL;
 +
-+    if(IsEqualIID(riid, &IID_IUnknown)   ||
-+       IsEqualIID(riid, &IID_IDispatch)  ||
-+       IsEqualIID(riid, &IID__ADO)       ||
-+       IsEqualIID(riid, &IID_Command15)  ||
-+       IsEqualIID(riid, &IID_Command25)  ||
-+       IsEqualIID(riid, &IID__Command))
++    if (IsEqualIID(riid, &IID_IUnknown)   ||
++        IsEqualIID(riid, &IID_IDispatch)  ||
++        IsEqualIID(riid, &IID__ADO)       ||
++        IsEqualIID(riid, &IID_Command15)  ||
++        IsEqualIID(riid, &IID_Command25)  ||
++        IsEqualIID(riid, &IID__Command))
 +    {
 +        *out = iface;
 +    }
@@ -106,30 +103,30 @@ index 0000000..454edb8
 +
 +static ULONG WINAPI command_AddRef(_Command *iface)
 +{
-+    command *This = impl_from_Command(iface);
-+    TRACE("(%p)\n", This);
++    struct command *command = impl_from_Command(iface);
++    TRACE("(%p)\n", command);
 +
-+    return InterlockedIncrement(&This->ref);
++    return InterlockedIncrement(&command->ref);
 +}
 +
 +static ULONG WINAPI command_Release(_Command *iface)
 +{
-+    command *This = impl_from_Command(iface);
++    struct command *command = impl_from_Command(iface);
 +    LONG ref;
 +
-+    TRACE("(%p)\n", This);
++    TRACE("(%p)\n", command);
 +
-+    ref = InterlockedDecrement(&This->ref);
-+    if(ref == 0)
-+        heap_free(This);
++    ref = InterlockedDecrement(&command->ref);
++    if (!ref)
++        heap_free(command);
 +
 +    return ref;
 +}
 +
 +static HRESULT WINAPI command_GetTypeInfoCount(_Command *iface, UINT *pctinfo)
 +{
-+    command *This = impl_from_Command(iface);
-+    TRACE("(%p)->()\n", This);
++    struct command *command = impl_from_Command(iface);
++    TRACE("(%p)->()\n", command);
 +
 +    *pctinfo = 1;
 +    return S_OK;
@@ -137,8 +134,8 @@ index 0000000..454edb8
 +
 +static HRESULT WINAPI command_GetTypeInfo(_Command *iface, UINT iTInfo, LCID lcid, ITypeInfo **typeinfo)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%u %u %p)\n", This, iTInfo, lcid, typeinfo);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%u %u %p)\n", command, iTInfo, lcid, typeinfo);
 +
 +    return E_NOTIMPL;
 +}
@@ -146,8 +143,8 @@ index 0000000..454edb8
 +static HRESULT WINAPI command_GetIDsOfNames(_Command *iface, REFIID riid, LPOLESTR *rgszNames,
 +        UINT cNames, LCID lcid, DISPID *rgDispId)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%s %p %u %u %p)\n", This, debugstr_guid(riid), rgszNames, cNames, lcid, rgDispId);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%s %p %u %u %p)\n", command, debugstr_guid(riid), rgszNames, cNames, lcid, rgDispId);
 +
 +    return E_NOTIMPL;
 +}
@@ -156,8 +153,8 @@ index 0000000..454edb8
 +        LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo,
 +        UINT *puArgErr)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%d %s %d %d %p %p %p %p)\n", This, dispIdMember, debugstr_guid(riid),
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%d %s %d %d %p %p %p %p)\n", command, dispIdMember, debugstr_guid(riid),
 +           lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
 +
 +    return E_NOTIMPL;
@@ -165,80 +162,80 @@ index 0000000..454edb8
 +
 +static HRESULT WINAPI command_get_Properties(_Command *iface, Properties **props)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, props);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, props);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_ActiveConnection(_Command *iface, _Connection **connection)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, connection);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, connection);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_putref_ActiveConnection(_Command *iface, _Connection *connection)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, connection);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, connection);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_ActiveConnection(_Command *iface, VARIANT connection)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->()\n", This);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->()\n", command);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_CommandText(_Command *iface, BSTR *text)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, text);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, text);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_CommandText(_Command *iface, BSTR text)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%s)\n", This, debugstr_w(text));
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%s)\n", command, debugstr_w(text));
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_CommandTimeout(_Command *iface, LONG *timeout)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, timeout);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, timeout);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_CommandTimeout(_Command *iface, LONG timeout)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%d)\n", This, timeout);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%d)\n", command, timeout);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_Prepared(_Command *iface, VARIANT_BOOL *prepared)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, prepared);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, prepared);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_Prepared(_Command *iface, VARIANT_BOOL prepared)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%d)\n", This, prepared);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%d)\n", command, prepared);
 +
 +    return E_NOTIMPL;
 +}
@@ -246,8 +243,8 @@ index 0000000..454edb8
 +static HRESULT WINAPI command_Execute(_Command *iface, VARIANT *recordsaffected, VARIANT *parameters,
 +    LONG options, _Recordset **recordset)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p %p %d %p)\n", This, recordsaffected, parameters, options, recordset);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p %p %d %p)\n", command, recordsaffected, parameters, options, recordset);
 +
 +    return E_NOTIMPL;
 +}
@@ -255,8 +252,8 @@ index 0000000..454edb8
 +static HRESULT WINAPI command_CreateParameter(_Command *iface, BSTR name, DataTypeEnum type,
 +    ParameterDirectionEnum direction, LONG size, VARIANT value, _Parameter **parameter)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%s %d %d %d %p)\n", This, debugstr_w(name), type, direction, size,
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%s %d %d %d %p)\n", command, debugstr_w(name), type, direction, size,
 +	    parameter);
 +
 +    return E_NOTIMPL;
@@ -264,104 +261,104 @@ index 0000000..454edb8
 +
 +static HRESULT WINAPI command_get_Parameters(_Command *iface, Parameters **parameters)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, parameters);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, parameters);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_CommandType(_Command *iface, CommandTypeEnum cmdtype)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%d)\n", This, cmdtype);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%d)\n", command, cmdtype);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_CommandType(_Command *iface, CommandTypeEnum *cmdtype)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, cmdtype);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, cmdtype);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_Name(_Command *iface, BSTR *name)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, name);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, name);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_Name(_Command *iface, BSTR name)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%s)\n", This, debugstr_w(name));
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%s)\n", command, debugstr_w(name));
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_State(_Command *iface, LONG *state)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, state);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, state);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_Cancel(_Command *iface)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->()\n", This);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->()\n", command);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_putref_CommandStream(_Command *iface, IUnknown *stream)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, stream);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, stream);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_CommandStream(_Command *iface, VARIANT *stream)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, stream);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, stream);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_Dialect(_Command *iface, BSTR dialect)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%s)\n", This, debugstr_w(dialect));
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%s)\n", command, debugstr_w(dialect));
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_Dialect(_Command *iface, BSTR *dialect)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, dialect);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, dialect);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_put_NamedParameters(_Command *iface, VARIANT_BOOL namedparameters)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%d)\n", This, namedparameters);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%d)\n", command, namedparameters);
 +
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI command_get_NamedParameters(_Command *iface, VARIANT_BOOL *namedparameters)
 +{
-+    command *This = impl_from_Command(iface);
-+    FIXME("(%p)->(%p)\n", This, namedparameters);
++    struct command *command = impl_from_Command(iface);
++    FIXME("(%p)->(%p)\n", command, namedparameters);
 +
 +    return E_NOTIMPL;
 +}
@@ -402,61 +399,60 @@ index 0000000..454edb8
 +	command_get_NamedParameters
 +};
 +
-+HRESULT Command_create(void **out)
++HRESULT Command_create( void **out )
 +{
-+    command *This;
++    struct command *command;
 +
 +    TRACE("(%p)\n", out);
 +
 +    *out = NULL;
 +
-+    This = heap_alloc(sizeof(*This));
-+    if (!This)
++    command = heap_alloc(sizeof(*command));
++    if (!command)
 +	    return E_OUTOFMEMORY;
 +
-+    This->Command_iface.lpVtbl = &command_vtbl;
-+    This->ref = 1;
++    command->Command_iface.lpVtbl = &command_vtbl;
++    command->ref = 1;
 +
-+    *out = &This->Command_iface;
++    *out = &command->Command_iface;
 +
 +    return S_OK;
 +}
-diff --git a/dlls/msado15/msado15.c b/dlls/msado15/msado15.c
-index b8adf74..07a642f 100644
---- a/dlls/msado15/msado15.c
-+++ b/dlls/msado15/msado15.c
-@@ -130,6 +130,7 @@ static const struct IClassFactoryVtbl msadocf_vtbl =
-     msadocf_LockServer
- };
+diff --git a/dlls/msado15/main.c b/dlls/msado15/main.c
+index 32ae252337..4d3c1f0b4c 100644
+--- a/dlls/msado15/main.c
++++ b/dlls/msado15/main.c
+@@ -120,6 +120,7 @@ static const struct IClassFactoryVtbl msadocf_vtbl =
+ static struct msadocf connection_cf = { { &msadocf_vtbl }, Connection_create };
+ static struct msadocf recordset_cf = { { &msadocf_vtbl }, Recordset_create };
+ static struct msadocf stream_cf = { { &msadocf_vtbl }, Stream_create };
++static struct msadocf command_cf = { { &msadocf_vtbl }, Command_create };
  
-+static ClassFactory commandcf    = { { &msadocf_vtbl }, Command_create };
- static ClassFactory connectioncf = { { &msadocf_vtbl }, Connecton_create };
- static ClassFactory recordsetncf = { { &msadocf_vtbl }, Recordset_create };
- 
-@@ -150,6 +151,10 @@ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+ /***********************************************************************
+  *          DllGetClassObject
+@@ -142,6 +143,10 @@ HRESULT WINAPI DllGetClassObject( REFCLSID clsid, REFIID iid, void **obj )
      {
-         cf = &recordsetncf.IClassFactory_iface;
+         cf = &stream_cf.IClassFactory_iface;
      }
-+    else if(IsEqualCLSID( rclsid, &CLSID_Command))
++    else if (IsEqualGUID( clsid, &CLSID_Command ))
 +    {
-+        cf = &commandcf.IClassFactory_iface;
++        cf = &command_cf.IClassFactory_iface;
 +    }
- 
-     if (!cf)
-         return CLASS_E_CLASSNOTAVAILABLE;
+     if (!cf) return CLASS_E_CLASSNOTAVAILABLE;
+     return IClassFactory_QueryInterface( cf, iid, obj );
+ }
 diff --git a/dlls/msado15/msado15_private.h b/dlls/msado15/msado15_private.h
-index 3bbfcbf..dfecc14 100644
+index 83c8b7c966..0cce63fab7 100644
 --- a/dlls/msado15/msado15_private.h
 +++ b/dlls/msado15/msado15_private.h
-@@ -26,5 +26,6 @@ static inline BOOL heap_free(void *mem)
-     return HeapFree(GetProcessHeap(), 0, mem);
- }
+@@ -19,6 +19,7 @@
+ #ifndef _WINE_MSADO15_PRIVATE_H_
+ #define _WINE_MSADO15_PRIVATE_H_
  
-+extern HRESULT Command_create(void **out) DECLSPEC_HIDDEN;
- extern HRESULT Connecton_create(void **out) DECLSPEC_HIDDEN;
--extern HRESULT Recordset_create(void **out) DECLSPEC_HIDDEN;
-\ No newline at end of file
-+extern HRESULT Recordset_create(void **out) DECLSPEC_HIDDEN;
++HRESULT Command_create( void ** ) DECLSPEC_HIDDEN;
+ HRESULT Connection_create( void ** ) DECLSPEC_HIDDEN;
+ HRESULT Recordset_create( void ** ) DECLSPEC_HIDDEN;
+ HRESULT Stream_create( void ** ) DECLSPEC_HIDDEN;
 -- 
-1.9.1
+2.17.1
 
