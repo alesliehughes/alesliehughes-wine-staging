@@ -1,16 +1,17 @@
-From 8975c819401d6779aac644731b7dd74215a475b9 Mon Sep 17 00:00:00 2001
+From 9ba1fc91566a19c6e56a8075f641cfd0faaaa8a4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 24 Oct 2018 14:34:39 +1100
 Subject: [PATCH] oledb32: Implement IDataSourceLocator PromptNew
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/oledb32/Makefile.in     |   1 +
- dlls/oledb32/dslocator.c     | 128 ++++++++++++++++++++++++++++++++++-
+ dlls/oledb32/dslocator.c     | 133 +++++++++++++++++++++++++++++++++--
  dlls/oledb32/main.c          |   2 +-
  dlls/oledb32/oledb_private.h |   2 +
  dlls/oledb32/resource.h      |  24 +++++++
  dlls/oledb32/version.rc      |  21 ++++++
- 6 files changed, 174 insertions(+), 4 deletions(-)
+ 6 files changed, 178 insertions(+), 5 deletions(-)
  create mode 100644 dlls/oledb32/resource.h
 
 diff --git a/dlls/oledb32/Makefile.in b/dlls/oledb32/Makefile.in
@@ -25,7 +26,7 @@ index b55a66c5db..33cc312ee3 100644
  EXTRADLLFLAGS = -mno-cygwin
  
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index d397e47aa5..3e5b6c0c92 100644
+index d397e47aa5..0a31a99130 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -20,6 +20,7 @@
@@ -48,13 +49,14 @@ index d397e47aa5..3e5b6c0c92 100644
  
  #include "wine/debug.h"
  #include "wine/heap.h"
-@@ -188,13 +192,131 @@ static HRESULT WINAPI dslocator_put_hWnd(IDataSourceLocator *iface, COMPATIBLE_L
+@@ -188,13 +192,134 @@ static HRESULT WINAPI dslocator_put_hWnd(IDataSourceLocator *iface, COMPATIBLE_L
      return S_OK;
  }
  
 -static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **ppADOConnection)
 +static void create_connections_columns(HWND lv)
-+{
+ {
+-    DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
 +    RECT rc;
 +    WCHAR buf[256];
 +    LVCOLUMNW column;
@@ -70,7 +72,6 @@ index d397e47aa5..3e5b6c0c92 100644
 +
 +static void add_connectons_providers(HWND lv)
 +{
-+    static const WCHAR clsidkey[] = {'C','L','S','I','D',0};
 +    static const WCHAR oledbprov[] = {'\\','O','L','E',' ','D','B',' ','P','r','o','v','i','d','e','r',0};
 +    LONG res;
 +    HKEY key = NULL, subkey;
@@ -80,7 +81,7 @@ index d397e47aa5..3e5b6c0c92 100644
 +    WCHAR guidkey[MAX_PATH];
 +    LONG size;
 +
-+    res = RegOpenKeyExW(HKEY_CLASSES_ROOT, clsidkey, 0, KEY_READ, &key);
++    res = RegOpenKeyExW(HKEY_CLASSES_ROOT, L"CLSID", 0, KEY_READ, &key);
 +    if (res == ERROR_FILE_NOT_FOUND)
 +        return;
 +
@@ -115,10 +116,12 @@ index d397e47aa5..3e5b6c0c92 100644
 +        index++;
 +        next_key = RegEnumKeyW(key, index, provider, MAX_PATH);
 +    }
-+
+ 
+-    FIXME("(%p)->(%p)\n",This, ppADOConnection);
 +    RegCloseKey(key);
 +}
-+
+ 
+-    return E_NOTIMPL;
 +static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 +{
 +    TRACE("(%p, %08x, %08lx, %08lx)\n", hwnd, msg, wp, lp);
@@ -127,9 +130,12 @@ index d397e47aa5..3e5b6c0c92 100644
 +    {
 +        case WM_INITDIALOG:
 +        {
-+            HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
++            HWND btn, lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
 +            create_connections_columns(lv);
 +            add_connectons_providers(lv);
++
++            btn = GetDlgItem(GetParent(hwnd), IDOK);
++            EnableWindow(btn, FALSE);
 +
 +            break;
 +        }
@@ -149,15 +155,14 @@ index d397e47aa5..3e5b6c0c92 100644
 +}
 +
 +static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **connection)
- {
-     DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
++{
++    DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
 +    PROPSHEETHEADERW hdr;
 +    PROPSHEETPAGEW page;
- 
--    FIXME("(%p)->(%p)\n",This, ppADOConnection);
++    INT_PTR ret;
++
 +    FIXME("(%p, %p) Semi-stub\n", iface, connection);
- 
--    return E_NOTIMPL;
++
 +    if(!connection)
 +        return E_INVALIDARG;
 +
@@ -177,9 +182,9 @@ index d397e47aa5..3e5b6c0c92 100644
 +    hdr.pszCaption = MAKEINTRESOURCEW(IDS_PROPSHEET_TITLE);
 +    hdr.u3.ppsp = &page;
 +    hdr.nPages = 1;
-+    PropertySheetW(&hdr);
++    ret = PropertySheetW(&hdr);
 +
-+    return S_FALSE;
++    return ret ? S_OK : S_FALSE;
  }
  
  static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
