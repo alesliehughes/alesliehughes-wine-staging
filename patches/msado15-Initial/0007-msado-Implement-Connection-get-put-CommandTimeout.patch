@@ -1,7 +1,9 @@
-From bd4770f0f131af59be6bdea01caace2310a98b42 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Fri, 18 Dec 2015 08:46:24 +1100
-Subject: [PATCH] msado: Implement Connection get/put CommandTimeout
+Subject: [PATCH 2/2] msado15: Implement Connection get/put CommandTimeout
+Message-Id: <PSXP216MB01330C08AAA4E4491B7EC845935B0@PSXP216MB0133.KORP216.PROD.OUTLOOK.COM>
+Date: Tue, 10 Dec 2019 10:30:55 +0000
+In-Reply-To: <20191210103034.526139-1-leslie_alistair@hotmail.com>
+References: <20191210103034.526139-1-leslie_alistair@hotmail.com>
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -53,10 +55,10 @@ index dbf0b03149..ef589ecb7d 100644
      *obj = &connection->Connection_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 3e4ba295f6..8175e5a6c7 100644
+index f2c9789576..bb356ae5a8 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -61,7 +61,7 @@ static void test_connection(void)
+@@ -197,7 +197,7 @@ static void test_connection(void)
      _Connection *connection;
      IRunnableObject *runtime;
      ISupportErrorInfo *errorinfo;
@@ -65,7 +67,7 @@ index 3e4ba295f6..8175e5a6c7 100644
  
      hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
      ok( hr == S_OK, "got %08x\n", hr );
-@@ -84,6 +84,17 @@ if (0)   /* Crashes on windows */
+@@ -220,6 +220,17 @@ if (0)   /* Crashes on windows */
      ok(hr == S_OK, "Failed to get state, hr 0x%08x\n", hr);
      ok(state == adStateClosed, "Unexpected state value 0x%08x\n", state);
  
@@ -83,6 +85,9 @@ index 3e4ba295f6..8175e5a6c7 100644
      _Connection_Release(connection);
  }
  
+
 -- 
-2.17.1
+2.24.0
+
+
 

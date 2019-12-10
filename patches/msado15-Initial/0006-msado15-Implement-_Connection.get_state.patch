@@ -1,13 +1,13 @@
-From c8d4ca08233994e15870339571d255424b503a62 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 17 Dec 2015 14:41:44 +1100
-Subject: [PATCH] msado15: Implement _Connection.get_state
+Subject: [PATCH 1/2] msado15: Implement Connection.get_state
+Message-Id: <PSXP216MB0133F68200DE038A613713DC935B0@PSXP216MB0133.KORP216.PROD.OUTLOOK.COM>
+Date: Tue, 10 Dec 2019 10:30:53 +0000
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/msado15/connection.c    |  9 +++++++--
- dlls/msado15/tests/msado15.c | 13 +++++++++++++
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ dlls/msado15/tests/msado15.c | 34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 41 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
 index f33bc89a1a..dbf0b03149 100644
@@ -44,21 +44,31 @@ index f33bc89a1a..dbf0b03149 100644
      *obj = &connection->Connection_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 976bdcd73f..3e4ba295f6 100644
+index 1755a7f3da..f2c9789576 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -61,6 +61,7 @@ static void test_connection(void)
-     _Connection *connection;
-     IRunnableObject *runtime;
-     ISupportErrorInfo *errorinfo;
-+    LONG state;
+@@ -191,9 +191,43 @@ static void test_Stream(void)
+     ok( !refs, "got %d\n", refs );
+ }
  
-     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
-     ok( hr == S_OK, "got %08x\n", hr );
-@@ -72,6 +73,18 @@ static void test_connection(void)
-     todo_wine ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
-     if (hr == S_OK)
-         ISupportErrorInfo_Release(errorinfo);
++static void test_connection(void)
++{
++    HRESULT hr;
++    _Connection *connection;
++    IRunnableObject *runtime;
++    ISupportErrorInfo *errorinfo;
++    LONG state;
++
++    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
++    ok( hr == S_OK, "got %08x\n", hr );
++
++    hr = _Connection_QueryInterface(connection, &IID_IRunnableObject, (void**)&runtime);
++    ok(hr == E_NOINTERFACE, "Unexpected IRunnableObject interface\n");
++
++    hr = _Connection_QueryInterface(connection, &IID_ISupportErrorInfo, (void**)&errorinfo);
++    todo_wine ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
++    if (hr == S_OK)
++        ISupportErrorInfo_Release(errorinfo);
 +
 +if (0)   /* Crashes on windows */
 +{
@@ -71,9 +81,19 @@ index 976bdcd73f..3e4ba295f6 100644
 +    ok(state == adStateClosed, "Unexpected state value 0x%08x\n", state);
 +
 +    _Connection_Release(connection);
- }
- 
++}
++
  START_TEST(msado15)
+ {
+     CoInitialize( NULL );
+     test_Stream();
++    test_connection();
++
+     CoUninitialize();
+ }
+
 -- 
-2.17.1
+2.24.0
+
+
 

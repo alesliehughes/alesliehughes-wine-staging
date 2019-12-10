@@ -1,0 +1,120 @@
+From e2a071ed12c1be5986e4c22f8828eff8dd4e9108 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 11 Dec 2019 14:11:18 +1100
+Subject: [PATCH] msado15: Add ISupportErrorInfo support to _Connection
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msado15/connection.c    | 46 +++++++++++++++++++++++++++++++++++-
+ dlls/msado15/tests/msado15.c |  5 ++--
+ 2 files changed, 47 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 037ab52199..80d921d091 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -33,6 +33,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(msado15);
+ struct connection
+ {
+     _Connection Connection_iface;
++    ISupportErrorInfo ISupportErrorInfo_iface;
+     LONG        refs;
+ 
+     ObjectStateEnum state;
+@@ -44,6 +45,11 @@ static inline struct connection *impl_from_Connection( _Connection *iface )
+     return CONTAINING_RECORD( iface, struct connection, Connection_iface );
+ }
+ 
++static inline struct connection *impl_from_ISupportErrorInfo(ISupportErrorInfo *iface)
++{
++    return CONTAINING_RECORD(iface, struct connection, ISupportErrorInfo_iface);
++}
++
+ static ULONG WINAPI connection_AddRef( _Connection *iface )
+ {
+     struct connection *connection = impl_from_Connection( iface );
+@@ -64,13 +70,18 @@ static ULONG WINAPI connection_Release( _Connection *iface )
+ 
+ static HRESULT WINAPI connection_QueryInterface( _Connection *iface, REFIID riid, void **obj )
+ {
+-    TRACE( "%p, %s, %p\n", iface, debugstr_guid(riid), obj );
++    struct connection *connection = impl_from_Connection( iface );
++    TRACE( "%p, %s, %p\n", connection, debugstr_guid(riid), obj );
+ 
+     if (IsEqualGUID( riid, &IID__Connection ) || IsEqualGUID( riid, &IID_IDispatch ) ||
+         IsEqualGUID( riid, &IID_IUnknown ))
+     {
+         *obj = iface;
+     }
++    else if(IsEqualGUID( riid, &IID_ISupportErrorInfo ))
++    {
++        *obj = &connection->ISupportErrorInfo_iface;
++    }
+     else
+     {
+         FIXME( "interface %s not implemented\n", debugstr_guid(riid) );
+@@ -339,12 +350,45 @@ static const struct _ConnectionVtbl connection_vtbl =
+     connection_Cancel
+ };
+ 
++static HRESULT WINAPI SupportErrorInfo_QueryInterface(ISupportErrorInfo *iface, REFIID riid, void **obj)
++{
++    struct connection *connection = impl_from_ISupportErrorInfo( iface );
++    return connection_QueryInterface(&connection->Connection_iface, riid, obj);
++}
++
++static ULONG WINAPI SupportErrorInfo_AddRef(ISupportErrorInfo *iface)
++{
++    struct connection *connection = impl_from_ISupportErrorInfo( iface );
++    return connection_AddRef(&connection->Connection_iface);
++}
++
++static ULONG WINAPI SupportErrorInfo_Release(ISupportErrorInfo *iface)
++{
++    struct connection *connection = impl_from_ISupportErrorInfo( iface );
++    return connection_Release(&connection->Connection_iface);
++}
++
++static HRESULT WINAPI SupportErrorInfo_InterfaceSupportsErrorInfo(ISupportErrorInfo *iface, REFIID riid)
++{
++    struct connection *connection = impl_from_ISupportErrorInfo( iface );
++    FIXME("(%p)->(%s)\n", connection, debugstr_guid(riid));
++    return S_FALSE;
++}
++
++static const struct ISupportErrorInfoVtbl support_error_vtbl = {
++    SupportErrorInfo_QueryInterface,
++    SupportErrorInfo_AddRef,
++    SupportErrorInfo_Release,
++    SupportErrorInfo_InterfaceSupportsErrorInfo
++};
++
+ HRESULT Connection_create( void **obj )
+ {
+     struct connection *connection;
+ 
+     if (!(connection = heap_alloc( sizeof(*connection) ))) return E_OUTOFMEMORY;
+     connection->Connection_iface.lpVtbl = &connection_vtbl;
++    connection->ISupportErrorInfo_iface.lpVtbl = &support_error_vtbl;
+     connection->refs = 1;
+     connection->state = adStateClosed;
+     connection->timeout = 30;
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 19ec3d49fd..2547cca866 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -295,9 +295,8 @@ static void test_connection(void)
+     ok(hr == E_NOINTERFACE, "Unexpected IRunnableObject interface\n");
+ 
+     hr = _Connection_QueryInterface(connection, &IID_ISupportErrorInfo, (void**)&errorinfo);
+-    todo_wine ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
+-    if (hr == S_OK)
+-        ISupportErrorInfo_Release(errorinfo);
++    ok(hr == S_OK, "Failed to get ISupportErrorInfo interface\n");
++    ISupportErrorInfo_Release(errorinfo);
+ 
+ if (0)   /* Crashes on windows */
+ {
+-- 
+2.17.1
+

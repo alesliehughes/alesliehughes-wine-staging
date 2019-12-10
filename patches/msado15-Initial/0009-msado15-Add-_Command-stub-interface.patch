@@ -1,15 +1,17 @@
-From c5dace714db69a86e903bcde09b4fcb528ff601a Mon Sep 17 00:00:00 2001
+From dc0635fde9aa1dcbceb65d1a17ec20c78af4df0f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 4 Jan 2016 15:46:53 +1100
 Subject: [PATCH] msado15: Add _Command stub interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/msado15/Makefile.in       |   1 +
- dlls/msado15/command.c         | 388 +++++++++++++++++++++++++++++++++
- dlls/msado15/main.c            |   5 +
- dlls/msado15/msado15_private.h |   1 +
- 4 files changed, 395 insertions(+)
+ dlls/msado15/Makefile.in         |   1 +
+ dlls/msado15/command.c           | 388 +++++++++++++++++++++++++++++++
+ dlls/msado15/main.c              |   5 +
+ dlls/msado15/msado15_classes.idl |   8 +
+ dlls/msado15/msado15_private.h   |   1 +
+ dlls/msado15/tests/msado15.c     |  31 +++
+ 6 files changed, 434 insertions(+)
  create mode 100644 dlls/msado15/command.c
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
@@ -26,25 +28,25 @@ index 604f9ff018..9852e0863d 100644
  	recordset.c \
 diff --git a/dlls/msado15/command.c b/dlls/msado15/command.c
 new file mode 100644
-index 0000000000..141e8c56b0
+index 0000000000..9856b52e91
 --- /dev/null
 +++ b/dlls/msado15/command.c
 @@ -0,0 +1,388 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
-+ * command library is free software; you can redistribute it and/or
++ * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
 + * License as published by the Free Software Foundation; either
 + * version 2.1 of the License, or (at your option) any later version.
 + *
-+ * command library is distributed in the hope that it will be useful,
++ * This library is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 + * Lesser General Public License for more details.
 + *
 + * You should have received a copy of the GNU Lesser General Public
-+ * License along with command library; if not, write to the Free Software
++ * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
 +#include <stdarg.h>
@@ -419,17 +421,17 @@ index 0000000000..141e8c56b0
 +    return S_OK;
 +}
 diff --git a/dlls/msado15/main.c b/dlls/msado15/main.c
-index 32ae252337..4d3c1f0b4c 100644
+index 32ae252337..3115474b84 100644
 --- a/dlls/msado15/main.c
 +++ b/dlls/msado15/main.c
-@@ -120,6 +120,7 @@ static const struct IClassFactoryVtbl msadocf_vtbl =
+@@ -117,6 +117,7 @@ static const struct IClassFactoryVtbl msadocf_vtbl =
+     msadocf_LockServer
+ };
+ 
++static struct msadocf command_cf = { { &msadocf_vtbl }, Command_create };
  static struct msadocf connection_cf = { { &msadocf_vtbl }, Connection_create };
  static struct msadocf recordset_cf = { { &msadocf_vtbl }, Recordset_create };
  static struct msadocf stream_cf = { { &msadocf_vtbl }, Stream_create };
-+static struct msadocf command_cf = { { &msadocf_vtbl }, Command_create };
- 
- /***********************************************************************
-  *          DllGetClassObject
 @@ -142,6 +143,10 @@ HRESULT WINAPI DllGetClassObject( REFCLSID clsid, REFIID iid, void **obj )
      {
          cf = &stream_cf.IClassFactory_iface;
@@ -441,18 +443,84 @@ index 32ae252337..4d3c1f0b4c 100644
      if (!cf) return CLASS_E_CLASSNOTAVAILABLE;
      return IClassFactory_QueryInterface( cf, iid, obj );
  }
+diff --git a/dlls/msado15/msado15_classes.idl b/dlls/msado15/msado15_classes.idl
+index 5ede180240..51f8bd77db 100644
+--- a/dlls/msado15/msado15_classes.idl
++++ b/dlls/msado15/msado15_classes.idl
+@@ -18,6 +18,14 @@
+ 
+ #pragma makedep register
+ 
++[
++    threading(apartment),
++    progid("ADODB.Command.6.0"),
++    vi_progid("ADODB.Command"),
++    uuid(00000507-0000-0010-8000-00aa006d2ea4)
++]
++coclass Command { interface _Command; }
++
+ [
+     threading(apartment),
+     progid("ADODB.Connection.6.0"),
 diff --git a/dlls/msado15/msado15_private.h b/dlls/msado15/msado15_private.h
-index 83c8b7c966..0cce63fab7 100644
+index 7239e48b53..f6c60f0304 100644
 --- a/dlls/msado15/msado15_private.h
 +++ b/dlls/msado15/msado15_private.h
-@@ -19,6 +19,7 @@
- #ifndef _WINE_MSADO15_PRIVATE_H_
- #define _WINE_MSADO15_PRIVATE_H_
+@@ -21,6 +21,7 @@
+ 
+ #define MAKE_ADO_HRESULT( err ) MAKE_HRESULT( SEVERITY_ERROR, FACILITY_CONTROL, err )
  
 +HRESULT Command_create( void ** ) DECLSPEC_HIDDEN;
  HRESULT Connection_create( void ** ) DECLSPEC_HIDDEN;
  HRESULT Recordset_create( void ** ) DECLSPEC_HIDDEN;
  HRESULT Stream_create( void ** ) DECLSPEC_HIDDEN;
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 639f59820a..19ec3d49fd 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -323,11 +323,42 @@ if (0)   /* Crashes on windows */
+     _Connection_Release(connection);
+ }
+ 
++static void test_command_interface(void)
++{
++    HRESULT hr;
++    _Command *command;
++    _ADO *ado;
++    Command15 *command15;
++    Command25 *command25;
++
++    hr = CoCreateInstance(&CLSID_Command, NULL, CLSCTX_INPROC_SERVER,
++            &IID__Command, (void**)&command);
++    ok( hr == S_OK, "got %08x\n", hr );
++
++    hr = _Command_QueryInterface(command, &IID__ADO, (void**)&ado);
++    ok( hr == S_OK, "got %08x\n", hr );
++    if (hr == S_OK)
++        _ADO_Release(ado);
++
++    hr = _Command_QueryInterface(command, &IID_Command15, (void**)&command15);
++    ok( hr == S_OK, "got %08x\n", hr );
++    if (hr == S_OK)
++        Command15_Release(command15);
++
++    hr = _Command_QueryInterface(command, &IID_Command25, (void**)&command25);
++    ok( hr == S_OK, "got %08x\n", hr );
++    if (hr == S_OK)
++        Command25_Release(command25);
++
++    _Command_Release(command);
++}
++
+ START_TEST(msado15)
+ {
+     CoInitialize( NULL );
+     test_Stream();
+     test_connection();
++    test_command_interface();
+ 
+     CoUninitialize();
+ }
 -- 
 2.17.1
 
