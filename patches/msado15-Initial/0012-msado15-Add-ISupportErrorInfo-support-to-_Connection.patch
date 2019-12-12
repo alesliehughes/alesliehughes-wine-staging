@@ -1,7 +1,7 @@
-From e2a071ed12c1be5986e4c22f8828eff8dd4e9108 Mon Sep 17 00:00:00 2001
+From 328ce47dd0eb8521792c2ae6bcdd4340a93c8862 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 11 Dec 2019 14:11:18 +1100
-Subject: [PATCH] msado15: Add ISupportErrorInfo support to _Connection
+Subject: [PATCH 1/2] msado15: Add ISupportErrorInfo support to _Connection
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -100,10 +100,10 @@ index 037ab52199..80d921d091 100644
      connection->state = adStateClosed;
      connection->timeout = 30;
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 19ec3d49fd..2547cca866 100644
+index 4ef4762ac6..5a1813694b 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -295,9 +295,8 @@ static void test_connection(void)
+@@ -414,9 +414,8 @@ static void test_Connection(void)
      ok(hr == E_NOINTERFACE, "Unexpected IRunnableObject interface\n");
  
      hr = _Connection_QueryInterface(connection, &IID_ISupportErrorInfo, (void**)&errorinfo);

@@ -1,7 +1,7 @@
-From dc0635fde9aa1dcbceb65d1a17ec20c78af4df0f Mon Sep 17 00:00:00 2001
+From fd9c67c1d707c6cab4739ca04cb50c0612a82e1f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Mon, 4 Jan 2016 15:46:53 +1100
-Subject: [PATCH] msado15: Add _Command stub interface
+Date: Wed, 11 Dec 2019 14:11:18 +1100
+Subject: [PATCH 2/2] msado15: Add _Command stub interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -10,8 +10,8 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  dlls/msado15/main.c              |   5 +
  dlls/msado15/msado15_classes.idl |   8 +
  dlls/msado15/msado15_private.h   |   1 +
- dlls/msado15/tests/msado15.c     |  31 +++
- 6 files changed, 434 insertions(+)
+ dlls/msado15/tests/msado15.c     |  28 +++
+ 6 files changed, 431 insertions(+)
  create mode 100644 dlls/msado15/command.c
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
@@ -475,14 +475,14 @@ index 7239e48b53..f6c60f0304 100644
  HRESULT Recordset_create( void ** ) DECLSPEC_HIDDEN;
  HRESULT Stream_create( void ** ) DECLSPEC_HIDDEN;
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 639f59820a..19ec3d49fd 100644
+index 5a1813694b..7850c45231 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -323,11 +323,42 @@ if (0)   /* Crashes on windows */
+@@ -444,6 +444,33 @@ if (0)   /* Crashes on windows */
      _Connection_Release(connection);
  }
  
-+static void test_command_interface(void)
++static void test_Command(void)
 +{
 +    HRESULT hr;
 +    _Command *command;
@@ -496,18 +496,15 @@ index 639f59820a..19ec3d49fd 100644
 +
 +    hr = _Command_QueryInterface(command, &IID__ADO, (void**)&ado);
 +    ok( hr == S_OK, "got %08x\n", hr );
-+    if (hr == S_OK)
-+        _ADO_Release(ado);
++    _ADO_Release(ado);
 +
 +    hr = _Command_QueryInterface(command, &IID_Command15, (void**)&command15);
 +    ok( hr == S_OK, "got %08x\n", hr );
-+    if (hr == S_OK)
-+        Command15_Release(command15);
++    Command15_Release(command15);
 +
 +    hr = _Command_QueryInterface(command, &IID_Command25, (void**)&command25);
 +    ok( hr == S_OK, "got %08x\n", hr );
-+    if (hr == S_OK)
-+        Command25_Release(command25);
++    Command25_Release(command25);
 +
 +    _Command_Release(command);
 +}
@@ -515,10 +512,11 @@ index 639f59820a..19ec3d49fd 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
+@@ -451,5 +478,6 @@ START_TEST(msado15)
+     test_Fields();
+     test_Recordset();
      test_Stream();
-     test_connection();
-+    test_command_interface();
- 
++    test_Command();
      CoUninitialize();
  }
 -- 
