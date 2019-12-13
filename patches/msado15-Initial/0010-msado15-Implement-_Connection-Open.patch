@@ -1,4 +1,4 @@
-From 6e94952cef197a3eeda61377c276bb12777556d1 Mon Sep 17 00:00:00 2001
+From 7f8b54404add84168465a78c85df36e409845f71 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 5 Jan 2016 09:55:09 +1100
 Subject: [PATCH] msado15: Implement _Connection Open
@@ -22,7 +22,7 @@ index 9852e0863d..e64da60547 100644
  EXTRADLLFLAGS = -mno-cygwin
  
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index ef589ecb7d..296a8eb6ff 100644
+index 73b225628c..2408000abc 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
 @@ -21,6 +21,7 @@
@@ -33,16 +33,16 @@ index ef589ecb7d..296a8eb6ff 100644
  #include "msado15_backcompat.h"
  
  #include "wine/debug.h"
-@@ -33,6 +34,8 @@ WINE_DEFAULT_DEBUG_CHANNEL(msado15);
- struct connection
+@@ -34,6 +35,8 @@ struct connection
  {
-     _Connection Connection_iface;
-+    IDataInitialize *datainit;
-+    IDBInitialize   *dbinit;
-     LONG        refs;
- 
-     ObjectStateEnum state;
-@@ -56,6 +59,11 @@ static ULONG WINAPI connection_Release( _Connection *iface )
+     _Connection       Connection_iface;
+     ISupportErrorInfo ISupportErrorInfo_iface;
++    IDataInitialize   *datainit;
++    IDBInitialize     *dbinit;
+     LONG              refs;
+     ObjectStateEnum   state;
+     LONG              timeout;
+@@ -61,6 +64,11 @@ static ULONG WINAPI connection_Release( _Connection *iface )
      LONG refs = InterlockedDecrement( &connection->refs );
      if (!refs)
      {
@@ -54,7 +54,7 @@ index ef589ecb7d..296a8eb6ff 100644
          TRACE( "destroying %p\n", connection );
          heap_free( connection );
      }
-@@ -193,9 +201,33 @@ static HRESULT WINAPI connection_RollbackTrans( _Connection *iface )
+@@ -203,9 +211,33 @@ static HRESULT WINAPI connection_RollbackTrans( _Connection *iface )
  static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BSTR userid, BSTR password,
                                         LONG options )
  {
@@ -63,7 +63,7 @@ index ef589ecb7d..296a8eb6ff 100644
 +    HRESULT hr;
 +
 +    TRACE( "%p, %s, %s, %p, %08x\n", iface, debugstr_w(connect_str), debugstr_w(userid),
-            debugstr_w(password), options );
+            password, options );
 -    return E_NOTIMPL;
 +
 +    hr = CoCreateInstance(&CLSID_MSDAINITIALIZE, NULL, CLSCTX_INPROC_SERVER, &IID_IDataInitialize,(void**)&connection->datainit);
@@ -90,7 +90,7 @@ index ef589ecb7d..296a8eb6ff 100644
  }
  
  static HRESULT WINAPI connection_get_Errors( _Connection *iface, Errors **obj )
-@@ -348,6 +380,8 @@ HRESULT Connection_create( void **obj )
+@@ -392,6 +424,8 @@ HRESULT Connection_create( void **obj )
      connection->refs = 1;
      connection->state = adStateClosed;
      connection->timeout = 30;
@@ -100,7 +100,7 @@ index ef589ecb7d..296a8eb6ff 100644
      *obj = &connection->Connection_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/main.c b/dlls/msado15/main.c
-index 4d3c1f0b4c..aaa049a89d 100644
+index 3115474b84..83c4a20566 100644
 --- a/dlls/msado15/main.c
 +++ b/dlls/msado15/main.c
 @@ -21,6 +21,7 @@
