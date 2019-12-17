@@ -1,23 +1,24 @@
-From bccb8f4356668437d8c0190c94331d2505a530b5 Mon Sep 17 00:00:00 2001
+From 7433628bf099161da02d4043311512f993598c47 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 14:16:13 +1100
-Subject: [PATCH 2/2] msdasql: Register MSDASQL interface
+Subject: [PATCH] msdasql: Register MSDASQL interface
 
 ---
  dlls/msdasql/Makefile.in         |  5 +++++
  dlls/msdasql/msdasql.rc          | 20 ++++++++++++++++++++
  dlls/msdasql/msdasql.rgs         | 11 +++++++++++
  dlls/msdasql/msdasql_classes.idl | 26 ++++++++++++++++++++++++++
- 4 files changed, 62 insertions(+)
+ dlls/msdasql/msdasql_main.c      |  2 ++
+ 5 files changed, 64 insertions(+)
  create mode 100644 dlls/msdasql/msdasql.rc
  create mode 100644 dlls/msdasql/msdasql.rgs
  create mode 100644 dlls/msdasql/msdasql_classes.idl
 
 diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
-index ace5c68..91d2404 100644
+index fad4648342..b8cba6ac8c 100644
 --- a/dlls/msdasql/Makefile.in
 +++ b/dlls/msdasql/Makefile.in
-@@ -4,3 +4,8 @@ IMPORTS   = uuid
+@@ -5,3 +5,8 @@ EXTRADLLFLAGS = -mno-cygwin
  
  C_SRCS = \
  	msdasql_main.c
@@ -28,7 +29,7 @@ index ace5c68..91d2404 100644
 +
 diff --git a/dlls/msdasql/msdasql.rc b/dlls/msdasql/msdasql.rc
 new file mode 100644
-index 0000000..d2ba45b
+index 0000000000..d2ba45b8c4
 --- /dev/null
 +++ b/dlls/msdasql/msdasql.rc
 @@ -0,0 +1,20 @@
@@ -54,7 +55,7 @@ index 0000000..d2ba45b
 +2 WINE_REGISTRY msdasql.rgs
 diff --git a/dlls/msdasql/msdasql.rgs b/dlls/msdasql/msdasql.rgs
 new file mode 100644
-index 0000000..b5ac427
+index 0000000000..b5ac427199
 --- /dev/null
 +++ b/dlls/msdasql/msdasql.rgs
 @@ -0,0 +1,11 @@
@@ -71,12 +72,12 @@ index 0000000..b5ac427
 +}
 diff --git a/dlls/msdasql/msdasql_classes.idl b/dlls/msdasql/msdasql_classes.idl
 new file mode 100644
-index 0000000..0077494
+index 0000000000..c6c72f49e4
 --- /dev/null
 +++ b/dlls/msdasql/msdasql_classes.idl
 @@ -0,0 +1,26 @@
 +/*
-+ * Copyright 2018 Alistair Leslie-Hughes
++ * Copyright 2019 Alistair Leslie-Hughes
 + *
 + * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
@@ -92,7 +93,7 @@ index 0000000..0077494
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
-+#pragma makedep register
++#pragma makedep register header
 +
 +[
 +    progid("MSDASQL.1"),
@@ -101,6 +102,19 @@ index 0000000..0077494
 +    uuid(c8b522cb-5cf3-11ce-ade5-00aa0044773d)
 +]
 +coclass MSDASQL { }
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index 607df7b77b..7b1ad8f53c 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -26,6 +26,8 @@
+ #include "rpcproxy.h"
+ #include "wine/debug.h"
+ 
++#include "msdasql_classes.h"
++
+ WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
+ 
+ static HINSTANCE msdasql_instance;
 -- 
-1.9.1
+2.17.1
 

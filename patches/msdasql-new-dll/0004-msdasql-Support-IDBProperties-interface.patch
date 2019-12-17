@@ -1,0 +1,138 @@
+From f94edf7772e4e94e81958d679792f95988427707 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 18 Dec 2019 11:09:38 +1100
+Subject: [PATCH] msdasql: Support IDBProperties interface.
+
+---
+ dlls/msdasql/msdasql_main.c | 77 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 76 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index 6a9ace31534..6f633108afe 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -24,6 +24,7 @@
+ #include "winbase.h"
+ #include "objbase.h"
+ #include "rpcproxy.h"
++#include "msdasc.h"
+ #include "wine/heap.h"
+ #include "wine/debug.h"
+ 
+@@ -144,10 +145,11 @@ HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
+ struct msdasql
+ {
+     IUnknown         MSDASQL_iface;
++    IDBProperties    IDBProperties_iface;
+ 
+ /*    IDBCreateSession IDBCreateSession_iface;
+     IDBInitialize    IDBInitialize_iface;
+-    IDBProperties    IDBProperties_iface;*/
++    */
+ 
+     LONG     ref;
+ };
+@@ -157,6 +159,11 @@ static inline struct msdasql *impl_from_IUnknown(IUnknown *iface)
+     return CONTAINING_RECORD(iface, struct msdasql, MSDASQL_iface);
+ }
+ 
++static inline struct msdasql *impl_from_IDBProperties(IDBProperties *iface)
++{
++    return CONTAINING_RECORD(iface, struct msdasql, IDBProperties_iface);
++}
++
+ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void **out)
+ {
+     struct msdasql *provider = impl_from_IUnknown(iface);
+@@ -168,6 +175,10 @@ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void *
+     {
+         *out = &provider->MSDASQL_iface;
+     }
++    else if ( IsEqualGUID(riid, &IID_IDBProperties))
++    {
++        *out = &provider->IDBProperties_iface;
++    }
+     else
+     {
+         FIXME("(%s, %p)\n", debugstr_guid(riid), out);
+@@ -211,6 +222,69 @@ static const IUnknownVtbl msdsql_vtbl =
+     msdsql_Release
+ };
+ 
++static HRESULT WINAPI dbprops_QueryInterface(IDBProperties *iface, REFIID riid, void **ppvObject)
++{
++    struct msdasql *provider = impl_from_IDBProperties(iface);
++
++    return IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppvObject);
++}
++
++static ULONG WINAPI dbprops_AddRef(IDBProperties *iface)
++{
++    struct msdasql *provider = impl_from_IDBProperties(iface);
++
++    return IUnknown_AddRef(&provider->MSDASQL_iface);
++}
++
++static ULONG WINAPI dbprops_Release(IDBProperties *iface)
++{
++    struct msdasql *provider = impl_from_IDBProperties(iface);
++
++    return IUnknown_Release(&provider->MSDASQL_iface);
++}
++
++static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropertyIDSets,
++            const DBPROPIDSET rgPropertyIDSets[], ULONG *pcPropertySets, DBPROPSET **prgPropertySets)
++{
++    struct msdasql *provider = impl_from_IDBProperties(iface);
++
++    FIXME("(%p)->(%d %p %p %p)\n", provider, cPropertyIDSets, rgPropertyIDSets, pcPropertySets, prgPropertySets);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPropertyIDSets,
++            const DBPROPIDSET rgPropertyIDSets[], ULONG *pcPropertyInfoSets,
++            DBPROPINFOSET **prgPropertyInfoSets, OLECHAR **ppDescBuffer)
++{
++    struct msdasql *provider = impl_from_IDBProperties(iface);
++
++    FIXME("(%p)->(%d %p %p %p %p)\n", provider, cPropertyIDSets, rgPropertyIDSets, pcPropertyInfoSets,
++                prgPropertyInfoSets, ppDescBuffer);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropertySets,
++            DBPROPSET rgPropertySets[])
++{
++    struct msdasql *provider = impl_from_IDBProperties(iface);
++
++    FIXME("(%p)->(%d %p)\n", provider, cPropertySets, rgPropertySets);
++
++    return E_NOTIMPL;
++}
++
++static const struct IDBPropertiesVtbl dbprops_vtbl =
++{
++    dbprops_QueryInterface,
++    dbprops_AddRef,
++    dbprops_Release,
++    dbprops_GetProperties,
++    dbprops_GetPropertyInfo,
++    dbprops_SetProperties
++};
++
+ static HRESULT create_msdasql_provider(void **ppv)
+ {
+     struct msdasql *provider;
+@@ -220,6 +294,7 @@ static HRESULT create_msdasql_provider(void **ppv)
+         return E_OUTOFMEMORY;
+ 
+     provider->MSDASQL_iface.lpVtbl = &msdsql_vtbl;
++    provider->IDBProperties_iface.lpVtbl = &dbprops_vtbl;
+     provider->ref = 1;
+ 
+     *ppv = (void*)provider;
+-- 
+2.24.0
+
