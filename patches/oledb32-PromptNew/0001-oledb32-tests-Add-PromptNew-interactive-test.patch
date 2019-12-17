@@ -1,0 +1,44 @@
+From dada3419489aeb965a50c3c35f3c14f884be65ec Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 24 Oct 2018 14:34:39 +1100
+Subject: [PATCH] oledb32/tests: Add PromptNew interactive test.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/tests/database.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/dlls/oledb32/tests/database.c b/dlls/oledb32/tests/database.c
+index 8ff55b9d2a..3a6a582f56 100644
+--- a/dlls/oledb32/tests/database.c
++++ b/dlls/oledb32/tests/database.c
+@@ -939,6 +939,26 @@ static void test_dslocator(void)
+ 
+         hr = IDataSourceLocator_QueryInterface(dslocator, &IID_IRpcOptions, (void **)&opts);
+         ok(hr == E_NOINTERFACE, "got %08x\n", hr);
++        
++        if (winetest_interactive)
++        {
++            IDispatch *disp = NULL;
++
++            hr = IDataSourceLocator_PromptNew(dslocator, NULL);
++            ok(hr == E_INVALIDARG, "got %08x\n", hr);
++
++            hr = IDataSourceLocator_PromptNew(dslocator, &disp);
++            if (hr == S_OK)
++            {
++                ok(disp != NULL, "got %08x\n", hr);
++                IDispatch_Release(disp);
++            }
++            else
++            {
++                ok(hr == S_FALSE, "got %08x\n", hr);
++                ok(!disp, "got %08x\n", hr);
++            }
++        }
+ 
+         IDataInitialize_Release(datainit2);
+         IDataInitialize_Release(datainit);
+-- 
+2.17.1
+
