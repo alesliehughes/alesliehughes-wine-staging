@@ -1,0 +1,176 @@
+From 05ec52cbe79181db496f28ad0dda06a76cf72f36 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 19 Dec 2019 14:04:05 +1100
+Subject: [PATCH] msdasql/tests: Initial tests
+
+---
+ configure                              |  1 +
+ configure.ac                           |  1 +
+ dlls/msdasql/tests/Makefile.in         |  8 +++
+ dlls/msdasql/tests/msdasql_classes.idl | 26 +++++++++
+ dlls/msdasql/tests/provider.c          | 81 ++++++++++++++++++++++++++
+ 5 files changed, 117 insertions(+)
+ create mode 100644 dlls/msdasql/tests/Makefile.in
+ create mode 100644 dlls/msdasql/tests/msdasql_classes.idl
+ create mode 100644 dlls/msdasql/tests/provider.c
+
+diff --git a/configure b/configure
+index 49bedd90c0..104d4ab751 100755
+--- a/configure
++++ b/configure
+@@ -20622,6 +20622,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
+ wine_fn_config_makefile dlls/msctfp enable_msctfp
+ wine_fn_config_makefile dlls/msdaps enable_msdaps
+ wine_fn_config_makefile dlls/msdasql enable_msdasql
++wine_fn_config_makefile dlls/msdasql/tests enable_tests
+ wine_fn_config_makefile dlls/msdelta enable_msdelta
+ wine_fn_config_makefile dlls/msdmo enable_msdmo
+ wine_fn_config_makefile dlls/msdmo/tests enable_tests
+diff --git a/configure.ac b/configure.ac
+index 8261ed1cab..b5bb55ce4f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3433,6 +3433,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
+ WINE_CONFIG_MAKEFILE(dlls/msctfp)
+ WINE_CONFIG_MAKEFILE(dlls/msdaps)
+ WINE_CONFIG_MAKEFILE(dlls/msdasql)
++WINE_CONFIG_MAKEFILE(dlls/msdasql/tests)
+ WINE_CONFIG_MAKEFILE(dlls/msdelta)
+ WINE_CONFIG_MAKEFILE(dlls/msdmo)
+ WINE_CONFIG_MAKEFILE(dlls/msdmo/tests)
+diff --git a/dlls/msdasql/tests/Makefile.in b/dlls/msdasql/tests/Makefile.in
+new file mode 100644
+index 0000000000..16e084045e
+--- /dev/null
++++ b/dlls/msdasql/tests/Makefile.in
+@@ -0,0 +1,8 @@
++TESTDLL   = msdasql.dll
++IMPORTS   = uuid oleaut32 ole32
++
++C_SRCS = \
++	provider.c
++
++IDL_SRCS = msdasql_classes.idl
++
+diff --git a/dlls/msdasql/tests/msdasql_classes.idl b/dlls/msdasql/tests/msdasql_classes.idl
+new file mode 100644
+index 0000000000..14b77d892c
+--- /dev/null
++++ b/dlls/msdasql/tests/msdasql_classes.idl
+@@ -0,0 +1,26 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#pragma makedep header
++
++[
++    progid("MSDASQL.1"),
++    vi_progid("MSDASQL"),
++    threading(both),
++    uuid(c8b522cb-5cf3-11ce-ade5-00aa0044773d)
++]
++coclass MSDASQL { }
+diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
+new file mode 100644
+index 0000000000..af5085c43e
+--- /dev/null
++++ b/dlls/msdasql/tests/provider.c
+@@ -0,0 +1,81 @@
++/*
++ * Copyright 2019 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include <stdio.h>
++#define COBJMACROS
++
++#include "msdasc.h"
++#include "oledb.h"
++
++#include "initguid.h"
++
++#include "msdasql_classes.h"
++
++#include "wine/test.h"
++
++/* This needs to be be moved to lib somewhere. */
++DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++
++static void test_Properties(void)
++{
++    HRESULT hr;
++    IDBProperties *props;
++    DBPROPIDSET propidset;
++    ULONG infocount;
++    DBPROPINFOSET *propinfoset;
++    WCHAR *desc;
++
++    hr = CoCreateInstance( &CLSID_MSDASQL, NULL, CLSCTX_ALL, &IID_IDBProperties, (void **)&props);
++    ok(hr == S_OK, "Failed to create object 0x%08x\n", hr);
++
++    propidset.rgPropertyIDs = NULL;
++    propidset.cPropertyIDs = 0;
++    propidset.guidPropertySet = DBPROPSET_DBINITALL;
++
++    infocount = 0;
++    hr = IDBProperties_GetPropertyInfo(props, 1, &propidset, &infocount, &propinfoset, &desc);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    if (hr == S_OK)
++    {
++        ULONG i;
++        trace("desc: %s\n", debugstr_w(desc));
++        trace("Count: %d\n", propinfoset->cPropertyInfos);
++
++        for (i = 0; i < propinfoset->cPropertyInfos; i++)
++        {
++            trace("%d: pwszDescription: %s\n", i, debugstr_w(propinfoset->rgPropertyInfos[i].pwszDescription) );
++        }
++
++        for (i = 0; i < propinfoset->cPropertyInfos; i++)
++            VariantClear(&propinfoset->rgPropertyInfos[i].vValues);
++
++        CoTaskMemFree(propinfoset->rgPropertyInfos);
++        CoTaskMemFree(propinfoset);
++    }
++
++    IDBProperties_Release(props);
++}
++
++START_TEST(provider)
++{
++    CoInitialize(0);
++
++    test_Properties();
++
++    CoUninitialize();
++}
+-- 
+2.17.1
+

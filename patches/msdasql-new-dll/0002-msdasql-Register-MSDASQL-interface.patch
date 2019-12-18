@@ -1,4 +1,4 @@
-From 7433628bf099161da02d4043311512f993598c47 Mon Sep 17 00:00:00 2001
+From c62a828d8d1712e862f1c252c3c7818692dd80db Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 14:16:13 +1100
 Subject: [PATCH] msdasql: Register MSDASQL interface

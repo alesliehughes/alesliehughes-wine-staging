@@ -1,4 +1,4 @@
-From 3e84d164819770d733bed590178a2c2e7d00832b Mon Sep 17 00:00:00 2001
+From 7ff1e4276e93f2af5112df3de795af8ea8409fd0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 12:13:43 +1100
 Subject: [PATCH] New DLL msdasql
