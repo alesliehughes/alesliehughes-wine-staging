@@ -1,0 +1,28 @@
+From 00e2dd0e48a3ea92fb4008b8ab9be8228f79db6f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 8 Jan 2020 08:33:02 +1100
+Subject: [PATCH 4/9] xaudio2_7: IXACT3Engine Initialize return valid error
+ code
+
+FACTAudioEngine_Initialize returns a uint32_t type, so we need to
+convert to a valid HRESULT value.
+---
+ dlls/xaudio2_7/xact_dll.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
+index 7948122ddc9..fadad54ccb1 100644
+--- a/dlls/xaudio2_7/xact_dll.c
++++ b/dlls/xaudio2_7/xact_dll.c
+@@ -971,7 +971,7 @@ static HRESULT WINAPI IXACT3EngineImpl_Initialize(IXACT3Engine *iface,
+     params.fileIOCallbacks.readFileCallback = wrap_readfile;
+     params.fileIOCallbacks.getOverlappedResultCallback = wrap_getoverlappedresult;
+ 
+-    return FACTAudioEngine_Initialize(This->fact_engine, &params);
++    return FACTAudioEngine_Initialize(This->fact_engine, &params) == 0 ? S_OK : E_FAIL;
+ }
+ 
+ static HRESULT WINAPI IXACT3EngineImpl_ShutDown(IXACT3Engine *iface)
+-- 
+2.17.1
+
