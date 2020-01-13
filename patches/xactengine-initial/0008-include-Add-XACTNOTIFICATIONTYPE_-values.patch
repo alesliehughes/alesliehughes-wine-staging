@@ -1,14 +1,14 @@
-From c25389f6f0aa2fbc28e4e8e0926d9106648fe5aa Mon Sep 17 00:00:00 2001
+From 6612b9a24f2b7716a2bced7740385c897c36073a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jan 2020 08:30:23 +1100
-Subject: [PATCH 8/9] include: Add XACTNOTIFICATIONTYPE_* values
+Subject: [PATCH 08/10] include: Add XACTNOTIFICATIONTYPE_* values
 
 ---
  include/xact3.idl | 22 ++++++++++++++++++----
  1 file changed, 18 insertions(+), 4 deletions(-)
 
 diff --git a/include/xact3.idl b/include/xact3.idl
-index 6bedda173c6..22bc2f98d29 100644
+index 6bedda173c..22bc2f98d2 100644
 --- a/include/xact3.idl
 +++ b/include/xact3.idl
 @@ -342,10 +342,24 @@ struct XACT_NOTIFICATION

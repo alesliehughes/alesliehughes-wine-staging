@@ -1,14 +1,14 @@
-From f4e0d44ed5500761d29e6a128bff0d72318303d3 Mon Sep 17 00:00:00 2001
+From 9323cd81d31a0077284863dd25af587a9846ff65 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Jan 2020 12:34:53 +1100
-Subject: [PATCH 6/9] xaudio2_7: Always return S_OK in IXACT34Cue Destroy
+Subject: [PATCH 06/10] xaudio2_7: Always return S_OK in IXACT34Cue Destroy
 
 ---
  dlls/xaudio2_7/xact_dll.c | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
-index ef47ae95579..c661e35ddaa 100644
+index 1deec24ca1..a0f81f4bcc 100644
 --- a/dlls/xaudio2_7/xact_dll.c
 +++ b/dlls/xaudio2_7/xact_dll.c
 @@ -319,13 +319,12 @@ static HRESULT WINAPI IXACT34CueImpl_GetState(IXACT34Cue *iface, DWORD *pdwState

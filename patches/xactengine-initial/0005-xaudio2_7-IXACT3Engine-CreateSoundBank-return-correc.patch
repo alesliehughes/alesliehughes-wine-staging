@@ -1,7 +1,7 @@
-From 049175fd28f589d1ab05ea5d141fa5397a2bc13f Mon Sep 17 00:00:00 2001
+From 54cf46df7ffb170ade0d190d80c05299f7b31dc1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Jan 2020 10:39:02 +1100
-Subject: [PATCH 5/9] xaudio2_7: IXACT3Engine CreateSoundBank return correct
+Subject: [PATCH 05/10] xaudio2_7: IXACT3Engine CreateSoundBank return correct
  HRESULT values.
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 5/9] xaudio2_7: IXACT3Engine CreateSoundBank return correct
  1 file changed, 16 insertions(+), 12 deletions(-)
 
 diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
-index fadad54ccb1..ef47ae95579 100644
+index 7dc1c4e833..1deec24ca1 100644
 --- a/dlls/xaudio2_7/xact_dll.c
 +++ b/dlls/xaudio2_7/xact_dll.c
-@@ -999,21 +999,23 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
+@@ -1004,21 +1004,23 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
      XACT3EngineImpl *This = impl_from_IXACT3Engine(iface);
      XACT3SoundBankImpl *sb;
      FACTSoundBank *fsb;
@@ -41,7 +41,7 @@ index fadad54ccb1..ef47ae95579 100644
      }
  
      sb->IXACT3SoundBank_iface.lpVtbl = &XACT3SoundBank_Vtbl;
-@@ -1022,7 +1024,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
+@@ -1027,7 +1029,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
  
      TRACE("Created SoundBank: %p\n", sb);
  
@@ -50,7 +50,7 @@ index fadad54ccb1..ef47ae95579 100644
  }
  
  static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *iface,
-@@ -1032,21 +1034,23 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
+@@ -1037,21 +1039,23 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
      XACT3EngineImpl *This = impl_from_IXACT3Engine(iface);
      XACT3WaveBankImpl *wb;
      FACTWaveBank *fwb;
@@ -79,7 +79,7 @@ index fadad54ccb1..ef47ae95579 100644
      }
  
      wb->IXACT3WaveBank_iface.lpVtbl = &XACT3WaveBank_Vtbl;
-@@ -1055,7 +1059,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
+@@ -1060,7 +1064,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
  
      TRACE("Created in-memory WaveBank: %p\n", wb);
  

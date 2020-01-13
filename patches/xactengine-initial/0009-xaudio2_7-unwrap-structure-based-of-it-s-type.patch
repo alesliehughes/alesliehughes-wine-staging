@@ -1,17 +1,17 @@
-From 688cf07d433fdce879169dc524806697771288b1 Mon Sep 17 00:00:00 2001
+From 366e5108377bc28a80ef4c5e57123cf91d70a473 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jan 2020 09:06:01 +1100
-Subject: [PATCH 9/9] xaudio2_7: unwrap structure based of it's type.
+Subject: [PATCH 09/10] xaudio2_7: unwrap structure based of it's type.
 
 ---
  dlls/xaudio2_7/xact_dll.c | 68 +++++++++++++++++++++++++++++++++++----
  1 file changed, 61 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
-index b430c741585..a034581ca6c 100644
+index 8f34525f2f..8638c5ca57 100644
 --- a/dlls/xaudio2_7/xact_dll.c
 +++ b/dlls/xaudio2_7/xact_dll.c
-@@ -1138,42 +1138,96 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareStreamingWave(IXACT3Engine *iface,
+@@ -1143,42 +1143,96 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareStreamingWave(IXACT3Engine *iface,
      return S_OK;
  }
  

@@ -1,7 +1,7 @@
-From e31dba4d4e5b7063f38ab2231487b5426c3a4d35 Mon Sep 17 00:00:00 2001
+From bdcfa782fb60df9d38d796eacc498cd33696efc7 Mon Sep 17 00:00:00 2001
 From: Ethan Lee <elee@codeweavers.com>
 Date: Wed, 13 Nov 2019 12:13:45 -0500
-Subject: [PATCH 2/9] xaudio2: Add support for xactengine3
+Subject: [PATCH 02/10] xaudio2: Add support for xactengine3
 
 v2: Remove references to IXAudio2/IXAudio2Voice internals
 
@@ -54,10 +54,10 @@ Signed-off-by: Ethan Lee <elee@codeweavers.com>
  create mode 100644 include/xact3.idl
 
 diff --git a/configure.ac b/configure.ac
-index 98cdf1ec84e..9a5fcc857f9 100644
+index 4e43b4516e..8749be7c3b 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1985,6 +1985,14 @@ then
+@@ -1924,6 +1924,14 @@ then
      enable_x3daudio1_5=${enable_x3daudio1_5:-no}
      enable_x3daudio1_6=${enable_x3daudio1_6:-no}
      enable_x3daudio1_7=${enable_x3daudio1_7:-no}
@@ -72,7 +72,7 @@ index 98cdf1ec84e..9a5fcc857f9 100644
      enable_xapofx1_1=${enable_xapofx1_1:-no}
      enable_xapofx1_2=${enable_xapofx1_2:-no}
      enable_xapofx1_3=${enable_xapofx1_3:-no}
-@@ -3947,6 +3955,14 @@ WINE_CONFIG_MAKEFILE(dlls/x3daudio1_4)
+@@ -3846,6 +3854,14 @@ WINE_CONFIG_MAKEFILE(dlls/x3daudio1_4)
  WINE_CONFIG_MAKEFILE(dlls/x3daudio1_5)
  WINE_CONFIG_MAKEFILE(dlls/x3daudio1_6)
  WINE_CONFIG_MAKEFILE(dlls/x3daudio1_7)
@@ -89,7 +89,7 @@ index 98cdf1ec84e..9a5fcc857f9 100644
  WINE_CONFIG_MAKEFILE(dlls/xapofx1_3)
 diff --git a/dlls/xactengine3_0/Makefile.in b/dlls/xactengine3_0/Makefile.in
 new file mode 100644
-index 00000000000..03530399135
+index 0000000000..0353039913
 --- /dev/null
 +++ b/dlls/xactengine3_0/Makefile.in
 @@ -0,0 +1,12 @@
@@ -107,7 +107,7 @@ index 00000000000..03530399135
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_0/xactengine3_0.spec b/dlls/xactengine3_0/xactengine3_0.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_0/xactengine3_0.spec
 @@ -0,0 +1,4 @@
@@ -117,7 +117,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_1/Makefile.in b/dlls/xactengine3_1/Makefile.in
 new file mode 100644
-index 00000000000..b065b92d9a9
+index 0000000000..b065b92d9a
 --- /dev/null
 +++ b/dlls/xactengine3_1/Makefile.in
 @@ -0,0 +1,12 @@
@@ -135,7 +135,7 @@ index 00000000000..b065b92d9a9
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_1/xactengine3_1.spec b/dlls/xactengine3_1/xactengine3_1.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_1/xactengine3_1.spec
 @@ -0,0 +1,4 @@
@@ -145,7 +145,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_2/Makefile.in b/dlls/xactengine3_2/Makefile.in
 new file mode 100644
-index 00000000000..6e4e0655348
+index 0000000000..6e4e065534
 --- /dev/null
 +++ b/dlls/xactengine3_2/Makefile.in
 @@ -0,0 +1,12 @@
@@ -163,7 +163,7 @@ index 00000000000..6e4e0655348
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_2/xactengine3_2.spec b/dlls/xactengine3_2/xactengine3_2.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_2/xactengine3_2.spec
 @@ -0,0 +1,4 @@
@@ -173,7 +173,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_3/Makefile.in b/dlls/xactengine3_3/Makefile.in
 new file mode 100644
-index 00000000000..a8eebc03b28
+index 0000000000..a8eebc03b2
 --- /dev/null
 +++ b/dlls/xactengine3_3/Makefile.in
 @@ -0,0 +1,12 @@
@@ -191,7 +191,7 @@ index 00000000000..a8eebc03b28
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_3/xactengine3_3.spec b/dlls/xactengine3_3/xactengine3_3.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_3/xactengine3_3.spec
 @@ -0,0 +1,4 @@
@@ -201,7 +201,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_4/Makefile.in b/dlls/xactengine3_4/Makefile.in
 new file mode 100644
-index 00000000000..967acb7bcce
+index 0000000000..967acb7bcc
 --- /dev/null
 +++ b/dlls/xactengine3_4/Makefile.in
 @@ -0,0 +1,12 @@
@@ -219,7 +219,7 @@ index 00000000000..967acb7bcce
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_4/xactengine3_4.spec b/dlls/xactengine3_4/xactengine3_4.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_4/xactengine3_4.spec
 @@ -0,0 +1,4 @@
@@ -229,7 +229,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_5/Makefile.in b/dlls/xactengine3_5/Makefile.in
 new file mode 100644
-index 00000000000..16e8b00b5ef
+index 0000000000..16e8b00b5e
 --- /dev/null
 +++ b/dlls/xactengine3_5/Makefile.in
 @@ -0,0 +1,12 @@
@@ -247,7 +247,7 @@ index 00000000000..16e8b00b5ef
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_5/xactengine3_5.spec b/dlls/xactengine3_5/xactengine3_5.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_5/xactengine3_5.spec
 @@ -0,0 +1,4 @@
@@ -257,7 +257,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_6/Makefile.in b/dlls/xactengine3_6/Makefile.in
 new file mode 100644
-index 00000000000..d226331aafc
+index 0000000000..d226331aaf
 --- /dev/null
 +++ b/dlls/xactengine3_6/Makefile.in
 @@ -0,0 +1,12 @@
@@ -275,7 +275,7 @@ index 00000000000..d226331aafc
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_6/xactengine3_6.spec b/dlls/xactengine3_6/xactengine3_6.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_6/xactengine3_6.spec
 @@ -0,0 +1,4 @@
@@ -285,7 +285,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xactengine3_7/Makefile.in b/dlls/xactengine3_7/Makefile.in
 new file mode 100644
-index 00000000000..080bc8a13b7
+index 0000000000..080bc8a13b
 --- /dev/null
 +++ b/dlls/xactengine3_7/Makefile.in
 @@ -0,0 +1,12 @@
@@ -303,7 +303,7 @@ index 00000000000..080bc8a13b7
 +IDL_SRCS = xact_classes.idl
 diff --git a/dlls/xactengine3_7/xactengine3_7.spec b/dlls/xactengine3_7/xactengine3_7.spec
 new file mode 100644
-index 00000000000..b16365d0c9f
+index 0000000000..b16365d0c9
 --- /dev/null
 +++ b/dlls/xactengine3_7/xactengine3_7.spec
 @@ -0,0 +1,4 @@
@@ -312,7 +312,7 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllRegisterServer()
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/xaudio2_7/Makefile.in b/dlls/xaudio2_7/Makefile.in
-index 294f841b019..f27ce9f87e4 100644
+index 294f841b01..f27ce9f87e 100644
 --- a/dlls/xaudio2_7/Makefile.in
 +++ b/dlls/xaudio2_7/Makefile.in
 @@ -7,9 +7,12 @@ EXTRAINCL = $(FAUDIO_CFLAGS)
@@ -331,7 +331,7 @@ index 294f841b019..f27ce9f87e4 100644
 +	xaudio_classes.idl
 diff --git a/dlls/xaudio2_7/xact_classes.idl b/dlls/xaudio2_7/xact_classes.idl
 new file mode 100644
-index 00000000000..64d914af629
+index 0000000000..64d914af62
 --- /dev/null
 +++ b/dlls/xaudio2_7/xact_classes.idl
 @@ -0,0 +1,93 @@
@@ -430,7 +430,7 @@ index 00000000000..64d914af629
 +#endif /* XACT3_VER == 0x0300 */
 diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
 new file mode 100644
-index 00000000000..b5f72e7c64e
+index 0000000000..b5f72e7c64
 --- /dev/null
 +++ b/dlls/xaudio2_7/xact_dll.c
 @@ -0,0 +1,1408 @@
@@ -1843,10 +1843,10 @@ index 00000000000..b5f72e7c64e
 +
 +#endif
 diff --git a/include/Makefile.in b/include/Makefile.in
-index a400251e3a6..1d8d9ec438f 100644
+index 8a05f5d01c..f5291d84f2 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -781,6 +781,7 @@ SOURCES = \
+@@ -771,6 +771,7 @@ SOURCES = \
  	wtypes.idl \
  	wuapi.idl \
  	x3daudio.h \
@@ -1856,7 +1856,7 @@ index a400251e3a6..1d8d9ec438f 100644
  	xaudio2.idl \
 diff --git a/include/xact3.idl b/include/xact3.idl
 new file mode 100644
-index 00000000000..6bedda173c6
+index 0000000000..6bedda173c
 --- /dev/null
 +++ b/include/xact3.idl
 @@ -0,0 +1,608 @@

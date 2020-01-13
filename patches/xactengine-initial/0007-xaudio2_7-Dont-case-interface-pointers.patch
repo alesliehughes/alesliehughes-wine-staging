@@ -1,14 +1,14 @@
-From 0970d59c86edb8109e8eb7551cdf9aa523541921 Mon Sep 17 00:00:00 2001
+From e062db4e57eca22c1c4b7cd018ecb3ab7a74a215 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Jan 2020 20:51:09 +1100
-Subject: [PATCH 7/9] xaudio2_7: Dont case interface pointers
+Subject: [PATCH 07/10] xaudio2_7: Dont case interface pointers
 
 ---
  dlls/xaudio2_7/xact_dll.c | 51 ++++++++++++++++++++++++++-------------
  1 file changed, 34 insertions(+), 17 deletions(-)
 
 diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
-index c661e35ddaa..b430c741585 100644
+index a0f81f4bcc..8f34525f2f 100644
 --- a/dlls/xaudio2_7/xact_dll.c
 +++ b/dlls/xaudio2_7/xact_dll.c
 @@ -762,7 +762,7 @@ static HRESULT WINAPI IXACT3WaveBankImpl_Prepare(IXACT3WaveBank *iface,
@@ -31,7 +31,7 @@ index c661e35ddaa..b430c741585 100644
      }
  
      return hr;
-@@ -1019,7 +1021,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
+@@ -1024,7 +1026,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
  
      sb->IXACT3SoundBank_iface.lpVtbl = &XACT3SoundBank_Vtbl;
      sb->fact_soundbank = fsb;
@@ -40,7 +40,7 @@ index c661e35ddaa..b430c741585 100644
  
      TRACE("Created SoundBank: %p\n", sb);
  
-@@ -1054,7 +1056,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
+@@ -1059,7 +1061,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
  
      wb->IXACT3WaveBank_iface.lpVtbl = &XACT3WaveBank_Vtbl;
      wb->fact_wavebank = fwb;
@@ -49,7 +49,7 @@ index c661e35ddaa..b430c741585 100644
  
      TRACE("Created in-memory WaveBank: %p\n", wb);
  
-@@ -1098,7 +1100,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateStreamingWaveBank(IXACT3Engine *ifa
+@@ -1103,7 +1105,7 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateStreamingWaveBank(IXACT3Engine *ifa
  
      wb->IXACT3WaveBank_iface.lpVtbl = &XACT3WaveBank_Vtbl;
      wb->fact_wavebank = fwb;
@@ -58,7 +58,7 @@ index c661e35ddaa..b430c741585 100644
  
      TRACE("Created streaming WaveBank: %p\n", wb);
  
-@@ -1139,7 +1141,11 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareStreamingWave(IXACT3Engine *iface,
+@@ -1144,7 +1146,11 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareStreamingWave(IXACT3Engine *iface,
  static inline void unwrap_notificationdesc(FACTNotificationDescription *fd,
          const XACT_NOTIFICATION_DESCRIPTION *xd)
  {
@@ -70,7 +70,7 @@ index c661e35ddaa..b430c741585 100644
      fd->type = xd->type;
      fd->flags = xd->flags;
      fd->cueIndex = xd->cueIndex;
-@@ -1147,24 +1153,35 @@ static inline void unwrap_notificationdesc(FACTNotificationDescription *fd,
+@@ -1152,24 +1158,35 @@ static inline void unwrap_notificationdesc(FACTNotificationDescription *fd,
      fd->pvContext = xd->pvContext;
  
      if (xd->pCue != NULL)
