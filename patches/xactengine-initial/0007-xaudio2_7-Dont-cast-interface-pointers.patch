@@ -1,7 +1,7 @@
 From e062db4e57eca22c1c4b7cd018ecb3ab7a74a215 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Jan 2020 20:51:09 +1100
-Subject: [PATCH 07/10] xaudio2_7: Dont case interface pointers
+Subject: [PATCH 07/10] xaudio2_7: Dont cast interface pointers
 
 ---
  dlls/xaudio2_7/xact_dll.c | 51 ++++++++++++++++++++++++++-------------
