@@ -1,0 +1,85 @@
+From b021d6fbcb8cb3b99582a0bc3a0ef1be73305bd2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 18 Jan 2020 18:45:24 +1100
+Subject: [PATCH 1/2] include: Add XACT defines
+
+---
+ dlls/xaudio2_7/tests/xaudio2.c |  2 ++
+ dlls/xaudio2_7/xact_dll.c      |  2 ++
+ include/xact3.idl              | 34 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 38 insertions(+)
+
+diff --git a/dlls/xaudio2_7/tests/xaudio2.c b/dlls/xaudio2_7/tests/xaudio2.c
+index 05b1dc3aba1..44abe4ac719 100644
+--- a/dlls/xaudio2_7/tests/xaudio2.c
++++ b/dlls/xaudio2_7/tests/xaudio2.c
+@@ -18,6 +18,8 @@
+ 
+ #include <windows.h>
+ #include <math.h>
++#include <limits.h>
++#include <float.h>
+ 
+ #define COBJMACROS
+ #include "wine/test.h"
+diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
+index c00f62c97a1..1724e639afe 100644
+--- a/dlls/xaudio2_7/xact_dll.c
++++ b/dlls/xaudio2_7/xact_dll.c
+@@ -20,6 +20,8 @@
+ #include "config.h"
+ 
+ #include <stdarg.h>
++#include <limits.h>
++#include <float.h>
+ 
+ #define NONAMELESSUNION
+ #define COBJMACROS
+diff --git a/include/xact3.idl b/include/xact3.idl
+index 22bc2f98d29..e9db3868ba6 100644
+--- a/include/xact3.idl
++++ b/include/xact3.idl
+@@ -361,6 +361,40 @@ cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEDESTROYED
+ cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEBANKPREPARED                 = 17;")
+ cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEBANKSTREAMING_INVALIDCONTENT = 18;")
+ 
++cpp_quote("static const XACTTIME             XACTTIME_MIN               = LONG_MIN;")
++cpp_quote("static const XACTTIME             XACTTIME_MAX               = LONG_MAX;")
++cpp_quote("static const XACTTIME             XACTTIME_INFINITE          = LONG_MAX;")
++cpp_quote("static const XACTINSTANCELIMIT    XACTINSTANCELIMIT_INFINITE = 0xff;")
++cpp_quote("static const XACTINSTANCELIMIT    XACTINSTANCELIMIT_MIN      = 0x00;")
++cpp_quote("static const XACTINSTANCELIMIT    XACTINSTANCELIMIT_MAX      = 0xfe;")
++cpp_quote("static const XACTINDEX            XACTINDEX_MIN              = 0x00;")
++cpp_quote("static const XACTINDEX            XACTINDEX_MAX              = 0xfffe;")
++cpp_quote("static const XACTINDEX            XACTINDEX_INVALID          = 0xffff;")
++cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_MIN   = 0x00;")
++cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_MAX   = 0xff;")
++cpp_quote("static const XACTVARIABLEVALUE    XACTVARIABLEVALUE_MIN      = -FLT_MAX;")
++cpp_quote("static const XACTVARIABLEVALUE    XACTVARIABLEVALUE_MAX      = FLT_MAX;")
++cpp_quote("static const XACTVARIABLEINDEX    XACTVARIABLEINDEX_MIN      = 0x0000;")
++cpp_quote("static const XACTVARIABLEINDEX    XACTVARIABLEINDEX_MAX      = 0xfffe;")
++cpp_quote("static const XACTVARIABLEINDEX    XACTVARIABLEINDEX_INVALID  = 0xffff;")
++cpp_quote("static const XACTCATEGORY         XACTCATEGORY_MIN           = 0x0;")
++cpp_quote("static const XACTCATEGORY         XACTCATEGORY_MAX           = 0xfffe;")
++cpp_quote("static const XACTCATEGORY         XACTCATEGORY_INVALID       = 0xffff;")
++cpp_quote("static const XACTCHANNEL          XACTCHANNEL_MIN            = 0;")
++cpp_quote("static const XACTCHANNEL          XACTCHANNEL_MAX            = 0xff;")
++cpp_quote("static const XACTPITCH            XACTPITCH_MIN              = -1200;")
++cpp_quote("static const XACTPITCH            XACTPITCH_MAX              =  1200;")
++cpp_quote("static const XACTPITCH            XACTPITCH_MIN_TOTAL        = -2400;")
++cpp_quote("static const XACTPITCH            XACTPITCH_MAX_TOTAL        =  2400;")
++cpp_quote("static const XACTVOLUME           XACTVOLUME_MIN             = 0.0f;")
++cpp_quote("static const XACTVOLUME           XACTVOLUME_MAX             = 16777216.0f;")
++cpp_quote("static const XACTVARIABLEVALUE    XACTPARAMETERVALUE_MIN     = -FLT_MAX;")
++cpp_quote("static const XACTVARIABLEVALUE    XACTPARAMETERVALUE_MAX     = FLT_MAX;")
++cpp_quote("static const XACTLOOPCOUNT        XACTLOOPCOUNT_MIN          = 0x00;")
++cpp_quote("static const XACTLOOPCOUNT        XACTLOOPCOUNT_MAX          = 0xfe;")
++cpp_quote("static const XACTLOOPCOUNT        XACTLOOPCOUNT_INFINITE     = 0xff;")
++cpp_quote("static const DWORD                XACTWAVEALIGNMENT_MIN      = 2048;")
++
+ [
+     object,
+     uuid(b1ee676a-d9cd-4d2a-89a8-fa53eb9e480b),
+-- 
+2.24.1
+
