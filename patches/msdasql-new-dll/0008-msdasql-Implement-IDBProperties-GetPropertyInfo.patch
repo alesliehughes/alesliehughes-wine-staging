@@ -1,0 +1,239 @@
+From bbbac70f36907c17fcbd44f828a3df7ae0ee6bd3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 20 Jan 2020 16:01:23 +1100
+Subject: [PATCH] msdasql: Implement IDBProperties GetPropertyInfo
+
+---
+ dlls/msdasql/Makefile.in      |   2 +-
+ dlls/msdasql/msdasql_main.c   | 120 ++++++++++++++++++++++++++++++++--
+ dlls/msdasql/tests/provider.c |  23 +++++--
+ 3 files changed, 134 insertions(+), 11 deletions(-)
+
+diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
+index b8cba6ac8c..605db88f99 100644
+--- a/dlls/msdasql/Makefile.in
++++ b/dlls/msdasql/Makefile.in
+@@ -1,5 +1,5 @@
+ MODULE    = msdasql.dll
+-IMPORTS   = uuid
++IMPORTS   = uuid ole32
+ 
+ EXTRADLLFLAGS = -mno-cygwin
+ 
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index 802dfccc42..30542bc5e2 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -33,6 +33,9 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
+ 
++DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++
+ static HINSTANCE msdasql_instance;
+ 
+ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
+@@ -141,6 +144,82 @@ HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
+     return CLASS_E_CLASSNOTAVAILABLE;
+ }
+ 
++struct dbproperty {
++    const WCHAR *name;
++    DBPROPID id;
++    DBPROPOPTIONS options;
++    VARTYPE type;
++    HRESULT (*convert_dbproperty)(const WCHAR *src, VARIANT *dest);
++};
++
++struct mode_propval
++{
++    const WCHAR *name;
++    DWORD value;
++};
++
++static int __cdecl dbmodeprop_compare(const void *a, const void *b)
++{
++    const WCHAR *src = a;
++    const struct mode_propval *propval = b;
++    return wcsicmp(src, propval->name);
++}
++
++static HRESULT convert_dbproperty_mode(const WCHAR *src, VARIANT *dest)
++{
++    static const WCHAR readW[] = {'R','e','a','d',0};
++    static const WCHAR readwriteW[] = {'R','e','a','d','W','r','i','t','e',0};
++    static const WCHAR sharedenynoneW[] = {'S','h','a','r','e',' ','D','e','n','y',' ','N','o','n','e',0};
++    static const WCHAR sharedenyreadW[] = {'S','h','a','r','e',' ','D','e','n','y',' ','R','e','a','d',0};
++    static const WCHAR sharedenywriteW[] = {'S','h','a','r','e',' ','D','e','n','y',' ','W','r','i','t','e',0};
++    static const WCHAR shareexclusiveW[] = {'S','h','a','r','e',' ','E','x','c','l','u','s','i','v','e',0};
++    static const WCHAR writeW[] = {'W','r','i','t','e',0};
++
++    struct mode_propval mode_propvals[] =
++    {
++        { readW, DB_MODE_READ },
++        { readwriteW, DB_MODE_READWRITE },
++        { sharedenynoneW, DB_MODE_SHARE_DENY_NONE },
++        { sharedenyreadW, DB_MODE_SHARE_DENY_READ },
++        { sharedenywriteW, DB_MODE_SHARE_DENY_WRITE },
++        { shareexclusiveW, DB_MODE_SHARE_EXCLUSIVE },
++        { writeW, DB_MODE_WRITE },
++    };
++    struct mode_propval *prop;
++
++    if ((prop = bsearch(src, mode_propvals, ARRAY_SIZE(mode_propvals),
++                        sizeof(struct mode_propval), dbmodeprop_compare)))
++    {
++        V_VT(dest) = VT_I4;
++        V_I4(dest) = prop->value;
++        TRACE("%s = %#x\n", debugstr_w(src), prop->value);
++        return S_OK;
++    }
++
++    return E_FAIL;
++}
++
++static const struct dbproperty dbproperties[] = {
++    { L"Password",                 DBPROP_AUTH_PASSWORD,                   DBPROPOPTIONS_OPTIONAL, VT_BSTR },
++    { L"Persist Security Info",    DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO, DBPROPOPTIONS_OPTIONAL, VT_BOOL },
++    { L"User ID",                  DBPROP_AUTH_USERID,                     DBPROPOPTIONS_OPTIONAL, VT_BSTR },
++    { L"Data Source",              DBPROP_INIT_DATASOURCE,                 DBPROPOPTIONS_REQUIRED, VT_BSTR },
++#ifndef _WIN64
++    { L"Window Handle",            DBPROP_INIT_HWND,                       DBPROPOPTIONS_OPTIONAL, VT_I4 },
++#else
++    { L"Window Handle",            DBPROP_INIT_HWND,                       DBPROPOPTIONS_OPTIONAL, VT_I8 },
++#endif
++    { L"Location",                 DBPROP_INIT_LOCATION,                   DBPROPOPTIONS_OPTIONAL, VT_BSTR },
++    { L"Mode",                     DBPROP_INIT_MODE,                       DBPROPOPTIONS_OPTIONAL, VT_I4, convert_dbproperty_mode },
++    { L"Prompt",                   DBPROP_INIT_PROMPT,                     DBPROPOPTIONS_OPTIONAL, VT_I2 },
++    { L"Connect Timeout",          DBPROP_INIT_TIMEOUT,                    DBPROPOPTIONS_OPTIONAL, VT_I4 },
++    { L"Extended Properties",      DBPROP_INIT_PROVIDERSTRING,             DBPROPOPTIONS_REQUIRED, VT_BSTR },
++    {  L"Locale Identifier",       DBPROP_INIT_LCID,                       DBPROPOPTIONS_OPTIONAL, VT_I4 },
++    { L"Initial Catalog",          DBPROP_CATALOGLOCATION,                 DBPROPOPTIONS_OPTIONAL, VT_BSTR },
++    { L"OLE DB Services",          DBPROP_INIT_OLEDBSERVICES,              DBPROPOPTIONS_OPTIONAL, VT_I4 },
++    { L"General Timeout",          DBPROP_INIT_GENERALTIMEOUT,             DBPROPOPTIONS_OPTIONAL, VT_I4 },
++};
++
+ struct msdasql
+ {
+     IUnknown         MSDASQL_iface;
+@@ -258,19 +337,50 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
+ {
+     struct msdasql *provider = impl_from_IDBProperties(iface);
+     int i;
++    DBPROPINFOSET *infoset;
++    int size = 1;
++    OLECHAR *ptr;
+ 
+     FIXME("(%p)->(%d %p %p %p %p)\n", provider, cPropertyIDSets, rgPropertyIDSets, pcPropertyInfoSets,
+                 prgPropertyInfoSets, ppDescBuffer);
+ 
+     for (i=0; i < cPropertyIDSets; i++)
+     {
+-        TRACE("Property Set %d\n", i);
+-        TRACE("  rgPropertyIDs: %p\n", rgPropertyIDSets[i].rgPropertyIDs);
+-        TRACE("  cPropertyIDs:  %d\n", rgPropertyIDSets[i].cPropertyIDs);
+-        TRACE("  guidPropertySet: %s\n", debugstr_guid(&rgPropertyIDSets[i].guidPropertySet) );
++        FIXME("Property Set %d\n", i);
++        FIXME("  rgPropertyIDs: %p\n", rgPropertyIDSets[i].rgPropertyIDs);
++        FIXME("  cPropertyIDs:  %d\n", rgPropertyIDSets[i].cPropertyIDs);
++        FIXME("  guidPropertySet: %s\n", debugstr_guid(&rgPropertyIDSets[i].guidPropertySet) );
+     }
+ 
+-    return E_NOTIMPL;
++    infoset = CoTaskMemAlloc(sizeof(DBPROPINFOSET));
++    memcpy(&infoset->guidPropertySet, &DBPROPSET_DBINIT, sizeof(GUID));
++    infoset->cPropertyInfos = ARRAY_SIZE(dbproperties);
++    infoset->rgPropertyInfos = CoTaskMemAlloc(sizeof(DBPROPINFO) * ARRAY_SIZE(dbproperties));
++
++    for(i=0; i < ARRAY_SIZE(dbproperties); i++)
++    {
++        size += lstrlenW(dbproperties[i].name) + 1;
++    }
++
++    ptr = *ppDescBuffer = CoTaskMemAlloc(size * sizeof(WCHAR));
++    memset(*ppDescBuffer, 0, size * sizeof(WCHAR));
++
++    for(i=0; i < ARRAY_SIZE(dbproperties); i++)
++    {
++        lstrcpyW(ptr, dbproperties[i].name);
++        infoset->rgPropertyInfos[i].pwszDescription = ptr;
++        infoset->rgPropertyInfos[i].dwPropertyID =  dbproperties[i].id;
++        infoset->rgPropertyInfos[i].dwFlags = DBPROPFLAGS_DBINIT | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE;
++        infoset->rgPropertyInfos[i].vtType =  dbproperties[i].type;
++        V_VT(&infoset->rgPropertyInfos[i].vValues) =  VT_EMPTY;
++
++        ptr += lstrlenW(dbproperties[i].name) + 1;
++    }
++
++    *pcPropertyInfoSets = 1;
++    *prgPropertyInfoSets = infoset;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropertySets,
+diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
+index 65705123a8..935d945c47 100644
+--- a/dlls/msdasql/tests/provider.c
++++ b/dlls/msdasql/tests/provider.c
+@@ -21,6 +21,7 @@
+ 
+ #include "msdasc.h"
+ #include "oledb.h"
++#include "wtypes.h"
+ 
+ #include "initguid.h"
+ 
+@@ -30,6 +31,7 @@
+ 
+ /* This needs to be be moved to lib somewhere. */
+ DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+ 
+ static void test_Properties(void)
+ {
+@@ -42,6 +44,10 @@ static void test_Properties(void)
+ 
+     hr = CoCreateInstance( &CLSID_MSDASQL, NULL, CLSCTX_ALL, &IID_IDBProperties, (void **)&props);
+     ok(hr == S_OK, "Failed to create object 0x%08x\n", hr);
++    if (FAILED(hr))
++    {
++        return;
++    }
+ 
+     propidset.rgPropertyIDs = NULL;
+     propidset.cPropertyIDs = 0;
+@@ -49,17 +55,24 @@ static void test_Properties(void)
+ 
+     infocount = 0;
+     hr = IDBProperties_GetPropertyInfo(props, 1, &propidset, &infocount, &propinfoset, &desc);
+-    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
+-    todo_wine ok(infocount == 1, "got %d\n", infocount);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(infocount == 1, "got %d\n", infocount);
+     if (hr == S_OK)
+     {
+         ULONG i;
+-        trace("desc: %s\n", debugstr_w(desc));
+-        trace("Count: %d\n", propinfoset->cPropertyInfos);
++        ok(0, "desc: %s\n", debugstr_w(desc));
++        ok(IsEqualGUID(&propinfoset->guidPropertySet, &DBPROPSET_DBINIT), "got %s\n",  debugstr_guid(&propinfoset->guidPropertySet));
++        ok(propinfoset->cPropertyInfos == 14, "got %d\n", propinfoset->cPropertyInfos);
+ 
+         for (i = 0; i < propinfoset->cPropertyInfos; i++)
+         {
+-            trace("%d: pwszDescription: %s\n", i, debugstr_w(propinfoset->rgPropertyInfos[i].pwszDescription) );
++            ok(0, "%d: pwszDescription: %s, %d, 0x%08x, %d, %d\n", i, debugstr_w(propinfoset->rgPropertyInfos[i].pwszDescription),
++                propinfoset->rgPropertyInfos[i].dwPropertyID,
++                propinfoset->rgPropertyInfos[i].dwFlags,
++                propinfoset->rgPropertyInfos[i].vtType,
++                V_VT(&propinfoset->rgPropertyInfos[i].vValues) );
++
++            ok(propinfoset->rgPropertyInfos[i].vtType != VT_EMPTY, "got %d\n", propinfoset->rgPropertyInfos[i].vtType);
+         }
+ 
+         for (i = 0; i < propinfoset->cPropertyInfos; i++)
+-- 
+2.17.1
+
