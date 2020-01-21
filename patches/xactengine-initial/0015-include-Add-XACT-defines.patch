@@ -1,51 +1,33 @@
-From b021d6fbcb8cb3b99582a0bc3a0ef1be73305bd2 Mon Sep 17 00:00:00 2001
+From 93c3f61d272c22660d0f9d0a7aca9178ef481196 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 18 Jan 2020 18:45:24 +1100
-Subject: [PATCH 1/2] include: Add XACT defines
+Subject: [PATCH] include: Add XACT defines
 
 ---
- dlls/xaudio2_7/tests/xaudio2.c |  2 ++
- dlls/xaudio2_7/xact_dll.c      |  2 ++
- include/xact3.idl              | 34 ++++++++++++++++++++++++++++++++++
- 3 files changed, 38 insertions(+)
+ include/xact3.idl | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
-diff --git a/dlls/xaudio2_7/tests/xaudio2.c b/dlls/xaudio2_7/tests/xaudio2.c
-index 05b1dc3aba1..44abe4ac719 100644
---- a/dlls/xaudio2_7/tests/xaudio2.c
-+++ b/dlls/xaudio2_7/tests/xaudio2.c
-@@ -18,6 +18,8 @@
- 
- #include <windows.h>
- #include <math.h>
-+#include <limits.h>
-+#include <float.h>
- 
- #define COBJMACROS
- #include "wine/test.h"
-diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
-index c00f62c97a1..1724e639afe 100644
---- a/dlls/xaudio2_7/xact_dll.c
-+++ b/dlls/xaudio2_7/xact_dll.c
-@@ -20,6 +20,8 @@
- #include "config.h"
- 
- #include <stdarg.h>
-+#include <limits.h>
-+#include <float.h>
- 
- #define NONAMELESSUNION
- #define COBJMACROS
 diff --git a/include/xact3.idl b/include/xact3.idl
-index 22bc2f98d29..e9db3868ba6 100644
+index 9dec71a747..105826a2fe 100644
 --- a/include/xact3.idl
 +++ b/include/xact3.idl
-@@ -361,6 +361,40 @@ cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEDESTROYED
+@@ -19,6 +19,9 @@
+ import "unknwn.idl";
+ import "xaudio2.idl";
+ 
++cpp_quote("#include <limits.h>")
++cpp_quote("#include <float.h>")
++
+ [
+     uuid(3b80ee2a-b0f5-4780-9e30-90cb39685b03)
+ ]
+@@ -361,6 +364,40 @@ cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEDESTROYED
  cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEBANKPREPARED                 = 17;")
  cpp_quote("static const XACTNOTIFICATIONTYPE XACTNOTIFICATIONTYPE_WAVEBANKSTREAMING_INVALIDCONTENT = 18;")
  
-+cpp_quote("static const XACTTIME             XACTTIME_MIN               = LONG_MIN;")
-+cpp_quote("static const XACTTIME             XACTTIME_MAX               = LONG_MAX;")
-+cpp_quote("static const XACTTIME             XACTTIME_INFINITE          = LONG_MAX;")
++cpp_quote("static const XACTTIME             XACTTIME_MIN               = INT_MIN;")
++cpp_quote("static const XACTTIME             XACTTIME_MAX               = INT_MAX;")
++cpp_quote("static const XACTTIME             XACTTIME_INFINITE          = INT_MAX;")
 +cpp_quote("static const XACTINSTANCELIMIT    XACTINSTANCELIMIT_INFINITE = 0xff;")
 +cpp_quote("static const XACTINSTANCELIMIT    XACTINSTANCELIMIT_MIN      = 0x00;")
 +cpp_quote("static const XACTINSTANCELIMIT    XACTINSTANCELIMIT_MAX      = 0xfe;")
@@ -81,5 +63,5 @@ index 22bc2f98d29..e9db3868ba6 100644
      object,
      uuid(b1ee676a-d9cd-4d2a-89a8-fa53eb9e480b),
 -- 
-2.24.1
+2.17.1
 
