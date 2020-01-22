@@ -1,0 +1,26 @@
+From 806f9966e413267fee123d213f281aeac0c5fb41 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 14 Jan 2020 15:47:43 +1100
+Subject: [PATCH 14/18] xaudio2_7: Trace FAudio version being used
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/xaudio2_7/xact_dll.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
+index 4846f38920..ac44800cd8 100644
+--- a/dlls/xaudio2_7/xact_dll.c
++++ b/dlls/xaudio2_7/xact_dll.c
+@@ -52,6 +52,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD reason, void *pReserved)
+     case DLL_PROCESS_ATTACH:
+         instance = hinstDLL;
+         DisableThreadLibraryCalls( hinstDLL );
++
++        TRACE("Using FAudio version %d\n", FAudioLinkedVersion() );
+         break;
+     }
+     return TRUE;
+-- 
+2.17.1
+
