@@ -1,12 +1,13 @@
-From 0fce4ec1fe26a256507ee162f5d045f638299251 Mon Sep 17 00:00:00 2001
+From b8e04882174b290d9d9c5bb9179d6c1eaa4a2bbf Mon Sep 17 00:00:00 2001
 From: Ethan Lee <elee@codeweavers.com>
 Date: Wed, 13 Nov 2019 12:13:45 -0500
-Subject: [PATCH 04/18] xaudio2: Add support for xactengine3
+Subject: [PATCH 04/17] xaudio2: Add support for xactengine3
 
 v2: Remove references to IXAudio2/IXAudio2Voice internals
 
 v3: Uses 0x030* for the version.
     #if out xact_dll.c from the xaudio solution.
+    Use a static ClassFactory interface.
 
 Signed-off-by: Ethan Lee <elee@codeweavers.com>
 ---
@@ -29,8 +30,8 @@ Signed-off-by: Ethan Lee <elee@codeweavers.com>
  dlls/xactengine3_7/xactengine3_7.spec |    4 +
  dlls/xaudio2_7/Makefile.in            |    5 +-
  dlls/xaudio2_7/xact_classes.idl       |   93 ++
- dlls/xaudio2_7/xact_dll.c             | 1418 +++++++++++++++++++++++++
- 20 files changed, 1659 insertions(+), 1 deletion(-)
+ dlls/xaudio2_7/xact_dll.c             | 1387 +++++++++++++++++++++++++
+ 20 files changed, 1628 insertions(+), 1 deletion(-)
  create mode 100644 dlls/xactengine3_0/Makefile.in
  create mode 100644 dlls/xactengine3_0/xactengine3_0.spec
  create mode 100644 dlls/xactengine3_1/Makefile.in
@@ -427,10 +428,10 @@ index 0000000000..89418dbe1a
 +#endif /* XACT3_VER == 0x0300 */
 diff --git a/dlls/xaudio2_7/xact_dll.c b/dlls/xaudio2_7/xact_dll.c
 new file mode 100644
-index 0000000000..b67d436e31
+index 0000000000..dcb4ee85d1
 --- /dev/null
 +++ b/dlls/xaudio2_7/xact_dll.c
-@@ -0,0 +1,1418 @@
+@@ -0,0 +1,1387 @@
 +/*
 + * Copyright (c) 2018 Ethan Lee for CodeWeavers
 + *
@@ -1712,22 +1713,11 @@ index 0000000000..b67d436e31
 +    IXACT3EngineImpl_GetGlobalVariable
 +};
 +
-+struct xact3_cf {
-+    IClassFactory IClassFactory_iface;
-+    LONG ref;
-+};
-+
-+static struct xact3_cf *impl_from_IClassFactory(IClassFactory *iface)
-+{
-+    return CONTAINING_RECORD(iface, struct xact3_cf, IClassFactory_iface);
-+}
-+
 +static HRESULT WINAPI XACT3CF_QueryInterface(IClassFactory *iface, REFIID riid, void **ppobj)
 +{
-+    if(IsEqualGUID(riid, &IID_IUnknown)
-+            || IsEqualGUID(riid, &IID_IClassFactory))
++    if(IsEqualGUID(riid, &IID_IUnknown) ||
++       IsEqualGUID(riid, &IID_IClassFactory))
 +    {
-+        IClassFactory_AddRef(iface);
 +        *ppobj = iface;
 +        return S_OK;
 +    }
@@ -1739,30 +1729,21 @@ index 0000000000..b67d436e31
 +
 +static ULONG WINAPI XACT3CF_AddRef(IClassFactory *iface)
 +{
-+    struct xact3_cf *This = impl_from_IClassFactory(iface);
-+    ULONG ref = InterlockedIncrement(&This->ref);
-+    TRACE("(%p)->(): Refcount now %u\n", This, ref);
-+    return ref;
++    return 2;
 +}
 +
 +static ULONG WINAPI XACT3CF_Release(IClassFactory *iface)
 +{
-+    struct xact3_cf *This = impl_from_IClassFactory(iface);
-+    ULONG ref = InterlockedDecrement(&This->ref);
-+    TRACE("(%p)->(): Refcount now %u\n", This, ref);
-+    if (!ref)
-+        HeapFree(GetProcessHeap(), 0, This);
-+    return ref;
++    return 1;
 +}
 +
 +static HRESULT WINAPI XACT3CF_CreateInstance(IClassFactory *iface, IUnknown *pOuter,
 +                                               REFIID riid, void **ppobj)
 +{
-+    struct xact3_cf *This = impl_from_IClassFactory(iface);
 +    HRESULT hr;
 +    XACT3EngineImpl *object;
 +
-+    TRACE("(%p)->(%p,%s,%p)\n", This, pOuter, debugstr_guid(riid), ppobj);
++    TRACE("(%p)->(%p,%s,%p)\n", iface, pOuter, debugstr_guid(riid), ppobj);
 +
 +    *ppobj = NULL;
 +
@@ -1796,8 +1777,7 @@ index 0000000000..b67d436e31
 +
 +static HRESULT WINAPI XACT3CF_LockServer(IClassFactory *iface, BOOL dolock)
 +{
-+    struct xact3_cf *This = impl_from_IClassFactory(iface);
-+    FIXME("(%p)->(%d): stub!\n", This, dolock);
++    TRACE("(%p)->(%d): stub!\n", iface, dolock);
 +    return S_OK;
 +}
 +
@@ -1810,17 +1790,7 @@ index 0000000000..b67d436e31
 +    XACT3CF_LockServer
 +};
 +
-+static HRESULT make_xact3_factory(REFIID riid, void **ppv)
-+{
-+    HRESULT hr;
-+    struct xact3_cf *ret = HeapAlloc(GetProcessHeap(), 0, sizeof(struct xact3_cf));
-+    ret->IClassFactory_iface.lpVtbl = &XACT3CF_Vtbl;
-+    ret->ref = 0;
-+    hr = IClassFactory_QueryInterface(&ret->IClassFactory_iface, riid, ppv);
-+    if(FAILED(hr))
-+        HeapFree(GetProcessHeap(), 0, ret);
-+    return hr;
-+}
++static IClassFactory XACTFactory = { &XACT3CF_Vtbl };
 +
 +HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 +{
@@ -1843,7 +1813,7 @@ index 0000000000..b67d436e31
 +#elif XACT3_VER == 0x0307
 +    if (IsEqualGUID(rclsid, &CLSID_XACTEngine37))
 +#endif
-+        return make_xact3_factory(riid, ppv);
++        return IClassFactory_QueryInterface(&XACTFactory, riid, ppv);
 +
 +    return CLASS_E_CLASSNOTAVAILABLE;
 +}
