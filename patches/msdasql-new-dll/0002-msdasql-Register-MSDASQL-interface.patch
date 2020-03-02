@@ -1,7 +1,7 @@
-From c62a828d8d1712e862f1c252c3c7818692dd80db Mon Sep 17 00:00:00 2001
+From 6e20ba6a1c1006850cc752ed67ec10c592b90619 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 14:16:13 +1100
-Subject: [PATCH] msdasql: Register MSDASQL interface
+Subject: [PATCH 2/6] msdasql: Register MSDASQL interface
 
 ---
  dlls/msdasql/Makefile.in         |  5 +++++
