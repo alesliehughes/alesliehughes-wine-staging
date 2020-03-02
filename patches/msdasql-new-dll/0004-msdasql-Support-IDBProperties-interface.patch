@@ -1,7 +1,7 @@
-From ea17231964ad209ed08b0f04937c57960032768e Mon Sep 17 00:00:00 2001
+From 7fc62d2db3c16638dd0b262b6d137441303ddad0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 09:37:40 +1100
-Subject: [PATCH 4/6] msdasql: Support IDBProperties interface.
+Subject: [PATCH] msdasql: Support IDBProperties interface.
 
 ---
  dlls/msdasql/msdasql_main.c | 23 ++++++++++++++++++++++-

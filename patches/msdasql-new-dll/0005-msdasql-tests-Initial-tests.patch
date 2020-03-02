@@ -1,7 +1,7 @@
-From fbd4a212a51f5ce5cf32d72bcf4c8246872a1c96 Mon Sep 17 00:00:00 2001
+From d14ead6bb098b1fc68b43dc8c3994f220be4f077 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
-Subject: [PATCH 5/6] msdasql/tests: Initial tests
+Subject: [PATCH] msdasql/tests: Initial tests
 
 ---
  configure                              |  1 +

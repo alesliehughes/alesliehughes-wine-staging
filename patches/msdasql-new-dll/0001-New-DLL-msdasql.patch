@@ -1,7 +1,7 @@
-From 28ef7154ee971c6119054eb5d00fcb0bc580a9a2 Mon Sep 17 00:00:00 2001
+From 2ec74469c96ff44528052c9915f72591b7d570f4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 12:13:43 +1100
-Subject: [PATCH 1/6] New DLL msdasql
+Subject: [PATCH] New DLL msdasql
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

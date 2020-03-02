@@ -1,7 +1,7 @@
-From ec92a710859309b8a7aae43c6e52786ecd9e8223 Mon Sep 17 00:00:00 2001
+From 5d36ba2542b5b2ecab90d9e4bb6b898dc09be298 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Dec 2019 15:42:32 +1100
-Subject: [PATCH 3/6] msdasql: Implement MSDASQL provider
+Subject: [PATCH] msdasql: Implement MSDASQL provider
 
 ---
  dlls/msdasql/msdasql_main.c | 164 +++++++++++++++++++++++++++++++++++-
