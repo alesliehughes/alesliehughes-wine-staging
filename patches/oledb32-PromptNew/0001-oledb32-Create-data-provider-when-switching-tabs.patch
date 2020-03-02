@@ -1,0 +1,181 @@
+From c847274abf8af6cf4a8daae2a3569049db4ee070 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 26 Feb 2020 09:54:32 +1100
+Subject: [PATCH] oledb32: Create data provider when switching tabs
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oledb32/dslocator.c | 99 +++++++++++++++++++++++++++++++++++++++-
+ dlls/oledb32/resource.h  |  1 +
+ dlls/oledb32/version.rc  |  1 +
+ 3 files changed, 99 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
+index 006330b004..df546fc659 100644
+--- a/dlls/oledb32/dslocator.c
++++ b/dlls/oledb32/dslocator.c
+@@ -41,6 +41,59 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(oledb);
+ 
++struct datasource
++{
++    CLSID clsid;
++    IDBProperties *provider;
++    DBPROPINFOSET *propinfoset;
++    WCHAR *description;
++};
++
++static struct datasource *create_datasource(WCHAR *guid)
++{
++    struct datasource *data = heap_alloc_zero(sizeof(struct datasource));
++    if (data)
++    {
++        CLSIDFromString(guid, &data->clsid);
++    }
++
++    return data;
++}
++
++static void destroy_datasource(struct datasource *data)
++{
++    if (data->propinfoset)
++    {
++        ULONG i;
++
++        for (i = 0; i < data->propinfoset->cPropertyInfos; i++)
++            VariantClear(&data->propinfoset->rgPropertyInfos[i].vValues);
++
++        CoTaskMemFree(data->propinfoset->rgPropertyInfos);
++        CoTaskMemFree(data->propinfoset);
++    }
++    if (data->description)
++        CoTaskMemFree(data->description);
++
++    if (data->provider)
++        IDBProperties_Release(data->provider);
++
++    heap_free(data);
++}
++
++static BOOL initialize_datasource(struct datasource *data)
++{
++    HRESULT hr;
++
++    hr = CoCreateInstance(&data->clsid, NULL, CLSCTX_INPROC_SERVER, &IID_IDBProperties, (void**)&data->provider);
++    if (FAILED(hr))
++    {
++        WARN("Datasource cannot be created (0x%08x)\n", hr);
++        return FALSE;
++    }
++
++    return TRUE;
++}
+ 
+ typedef struct DSLocatorImpl
+ {
+@@ -240,12 +293,17 @@ static void add_connections_providers(HWND lv)
+             if (res == ERROR_SUCCESS)
+             {
+                 LVITEMW item;
+-                item.mask = LVIF_TEXT;
++                struct datasource *data;
++
++                data = create_datasource(guidkey);
++
++                item.mask = LVIF_TEXT | LVIF_PARAM;
+                 item.iItem = SendMessageW(lv, LVM_GETITEMCOUNT, 0, 0);
+                 item.iSubItem = 0;
+                 item.pszText = description;
++                item.lParam = (LPARAM)data;
++
+                 SendMessageW(lv, LVM_INSERTITEMW, 0, (LPARAM)&item);
+-                /* TODO - Add ProgID to item data */
+             }
+             RegCloseKey(subkey);
+         }
+@@ -274,6 +332,22 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+ 
+             break;
+         }
++        case WM_DESTROY:
++        {
++            HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
++            LVITEMA item;
++
++            item.iItem = 0;
++            item.iSubItem = 0;
++            item.mask = LVIF_PARAM;
++
++            while(ListView_GetItemA(lv, &item))
++            {
++                destroy_datasource( (struct datasource *)item.lParam);
++                item.iItem++;
++            }
++            break;
++        }
+         case WM_NOTIFY:
+         {
+             NMHDR *hdr = ((LPNMHDR)lp);
+@@ -281,6 +355,7 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+             {
+                 case PSN_KILLACTIVE:
+                 {
++                    LVITEMA item;
+                     /*
+                      * FIXME: This needs to replace the connection page based off the selection.
+                      *   We only care about the ODBC for now which is the default.
+@@ -298,6 +373,26 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+                         return TRUE;
+                     }
+ 
++                    item.iItem = 0;
++                    item.iSubItem = 0;
++                    item.stateMask = LVIS_SELECTED;
++                    item.mask = LVIF_PARAM | LVIF_STATE;
++
++                    if(ListView_GetItemA(lv, &item))
++                    {
++                        if(!initialize_datasource( (struct datasource*)item.lParam))
++                        {
++                            WCHAR title[256], msg[256];
++                            LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
++                            LoadStringW(instance, IDS_PROVIDER_NOT_AVAIL, msg, ARRAY_SIZE(msg));
++                            MessageBoxW(hwnd, msg, title, MB_OK | MB_ICONEXCLAMATION);
++                            SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
++                            return TRUE;
++                        }
++                    }
++                    else
++                        ERR("Failed to get selected item\n");
++
+                     return FALSE;
+                 }
+             }
+diff --git a/dlls/oledb32/resource.h b/dlls/oledb32/resource.h
+index dfedb34a54..42f984c013 100644
+--- a/dlls/oledb32/resource.h
++++ b/dlls/oledb32/resource.h
+@@ -21,6 +21,7 @@
+ #define IDC_LST_CONNECTIONS 1002
+ #define IDS_PROVIDER_TITLE  1003
+ #define IDS_PROVIDER_ERROR  1004
++#define IDS_PROVIDER_NOT_AVAIL 1005
+ 
+ #define IDS_PROPSHEET_TITLE 2000
+ #define IDS_COL_PROVIDER    2001
+diff --git a/dlls/oledb32/version.rc b/dlls/oledb32/version.rc
+index 080e444eb7..5d9e528ead 100644
+--- a/dlls/oledb32/version.rc
++++ b/dlls/oledb32/version.rc
+@@ -48,6 +48,7 @@ STRINGTABLE
+ 
+     IDS_PROVIDER_TITLE      "Data Link Error"
+     IDS_PROVIDER_ERROR      "Please select a provider."
++    IDS_PROVIDER_NOT_AVAIL  "Provider is no longer available. Ensure that the provider is installed properly."
+ }
+ 
+ IDD_PROVIDER DIALOG 0, 0, 227, 225
+-- 
+2.17.1
+
