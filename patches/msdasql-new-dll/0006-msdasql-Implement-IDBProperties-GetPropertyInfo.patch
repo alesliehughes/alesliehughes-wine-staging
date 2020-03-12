@@ -1,27 +1,27 @@
-From bae88b8fb926f393f82ba97a6dcbee5bb689f2fd Mon Sep 17 00:00:00 2001
+From 3970a5e51e1cc98fc8e6efa2e8ff96cfda866bea Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Jan 2020 16:01:23 +1100
 Subject: [PATCH] msdasql: Implement IDBProperties GetPropertyInfo
 
 ---
  dlls/msdasql/Makefile.in      |   2 +-
- dlls/msdasql/msdasql_main.c   | 120 ++++++++++++++++++++++++++++++++--
- dlls/msdasql/tests/provider.c |  20 ++++--
- 3 files changed, 132 insertions(+), 10 deletions(-)
+ dlls/msdasql/msdasql_main.c   | 149 ++++++++++++++++++++++++++++++++--
+ dlls/msdasql/tests/provider.c |  20 ++++-
+ 3 files changed, 160 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
-index b8cba6ac8c..605db88f99 100644
+index b8cba6ac8c..455a3e2934 100644
 --- a/dlls/msdasql/Makefile.in
 +++ b/dlls/msdasql/Makefile.in
 @@ -1,5 +1,5 @@
  MODULE    = msdasql.dll
 -IMPORTS   = uuid
-+IMPORTS   = uuid ole32
++IMPORTS   = uuid ole32 oleaut32
  
  EXTRADLLFLAGS = -mno-cygwin
  
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 802dfccc42..46ab36da7d 100644
+index 802dfccc42..1257a98539 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -33,6 +33,9 @@
@@ -117,7 +117,46 @@ index 802dfccc42..46ab36da7d 100644
  struct msdasql
  {
      IUnknown         MSDASQL_iface;
-@@ -258,19 +337,50 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
+@@ -246,10 +325,37 @@ static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropert
+             const DBPROPIDSET rgPropertyIDSets[], ULONG *pcPropertySets, DBPROPSET **prgPropertySets)
+ {
+     struct msdasql *provider = impl_from_IDBProperties(iface);
++    int i, j;
++    DBPROPSET *propset;
+ 
+     FIXME("(%p)->(%d %p %p %p)\n", provider, cPropertyIDSets, rgPropertyIDSets, pcPropertySets, prgPropertySets);
+ 
+-    return E_NOTIMPL;
++    *pcPropertySets = 1;
++
++    propset = CoTaskMemAlloc(rgPropertyIDSets[0].cPropertyIDs * sizeof(DBPROPSET));
++    propset->guidPropertySet = DBPROPSET_DBINIT;
++
++    for (i=0; i < cPropertyIDSets; i++)
++    {
++        FIXME("Property Set %d\n", i);
++        FIXME("  cPropertyIDs:  %d\n", rgPropertyIDSets[i].cPropertyIDs);
++        FIXME("  guidPropertySet: %s\n", debugstr_guid(&rgPropertyIDSets[i].guidPropertySet) );
++
++        propset->cProperties = rgPropertyIDSets[i].cPropertyIDs;
++        propset->rgProperties = CoTaskMemAlloc(propset->cProperties * sizeof(DBPROP));
++
++        for (j=0; j < propset->cProperties; j++)
++        {
++            FIXME("  rgPropertyIDs[%d]: %d\n", j, rgPropertyIDSets[i].rgPropertyIDs[j]);
++
++            propset->rgProperties[j].dwPropertyID = rgPropertyIDSets[i].rgPropertyIDs[j];
++            VariantInit(&propset->rgProperties[j].vValue);
++        }
++    }
++
++    *prgPropertySets = propset;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPropertyIDSets,
+@@ -258,19 +364,50 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
  {
      struct msdasql *provider = impl_from_IDBProperties(iface);
      int i;
