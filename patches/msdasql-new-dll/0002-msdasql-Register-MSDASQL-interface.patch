@@ -1,15 +1,15 @@
-From 440e551bb3a5ca62c5593fc0a099c97ae339e944 Mon Sep 17 00:00:00 2001
+From 27c28ac5b0258cbc825107802a5610a18c08787d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 14:16:13 +1100
-Subject: [PATCH] msdasql: Register MSDASQL interface
+Subject: [PATCH 2/7] msdasql: Register MSDASQL interface
 
 ---
  dlls/msdasql/Makefile.in         |  5 +++++
  dlls/msdasql/msdasql.rc          | 20 ++++++++++++++++++++
  dlls/msdasql/msdasql.rgs         | 11 +++++++++++
  dlls/msdasql/msdasql_classes.idl | 26 ++++++++++++++++++++++++++
- dlls/msdasql/msdasql_main.c      |  2 ++
- 5 files changed, 64 insertions(+)
+ dlls/msdasql/msdasql_main.c      |  3 +++
+ 5 files changed, 65 insertions(+)
  create mode 100644 dlls/msdasql/msdasql.rc
  create mode 100644 dlls/msdasql/msdasql.rgs
  create mode 100644 dlls/msdasql/msdasql_classes.idl
@@ -72,7 +72,7 @@ index 0000000000..b5ac427199
 +}
 diff --git a/dlls/msdasql/msdasql_classes.idl b/dlls/msdasql/msdasql_classes.idl
 new file mode 100644
-index 0000000000..c6c72f49e4
+index 0000000000..9ed0959469
 --- /dev/null
 +++ b/dlls/msdasql/msdasql_classes.idl
 @@ -0,0 +1,26 @@
@@ -93,7 +93,7 @@ index 0000000000..c6c72f49e4
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
-+#pragma makedep register header
++#pragma makedep register
 +
 +[
 +    progid("MSDASQL.1"),
@@ -103,18 +103,19 @@ index 0000000000..c6c72f49e4
 +]
 +coclass MSDASQL { }
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 607df7b77b..7b1ad8f53c 100644
+index 607df7b77b..ad66213766 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -26,6 +26,8 @@
+@@ -26,6 +26,9 @@
  #include "rpcproxy.h"
  #include "wine/debug.h"
  
-+#include "msdasql_classes.h"
++#include "initguid.h"
++#include "msdasql.h"
 +
  WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
  
  static HINSTANCE msdasql_instance;
 -- 
-2.17.1
+2.25.1
 

@@ -1,24 +1,22 @@
-From d14ead6bb098b1fc68b43dc8c3994f220be4f077 Mon Sep 17 00:00:00 2001
+From c60f8c593657b3e3551ea2a9b6c3692d6c7bbb3c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
-Subject: [PATCH] msdasql/tests: Initial tests
+Subject: [PATCH 5/7] msdasql/tests: Initial tests
 
 ---
- configure                              |  1 +
- configure.ac                           |  1 +
- dlls/msdasql/tests/Makefile.in         |  8 +++
- dlls/msdasql/tests/msdasql_classes.idl | 26 +++++++++
- dlls/msdasql/tests/provider.c          | 81 ++++++++++++++++++++++++++
- 5 files changed, 117 insertions(+)
+ configure                      |  1 +
+ configure.ac                   |  1 +
+ dlls/msdasql/tests/Makefile.in |  6 +++
+ dlls/msdasql/tests/provider.c  | 82 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 90 insertions(+)
  create mode 100644 dlls/msdasql/tests/Makefile.in
- create mode 100644 dlls/msdasql/tests/msdasql_classes.idl
  create mode 100644 dlls/msdasql/tests/provider.c
 
 diff --git a/configure b/configure
-index f7ba99b5fd..ada02a56fb 100755
+index 787d9929e0..fa99d76dd1 100755
 --- a/configure
 +++ b/configure
-@@ -20691,6 +20691,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
+@@ -20735,6 +20735,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
  wine_fn_config_makefile dlls/msdasql enable_msdasql
@@ -27,10 +25,10 @@ index f7ba99b5fd..ada02a56fb 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index b6b2793e28..50d679cd81 100644
+index f64f0c4140..ae343149ac 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3427,6 +3427,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
+@@ -3440,6 +3440,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
  WINE_CONFIG_MAKEFILE(dlls/msdasql)
@@ -40,56 +38,22 @@ index b6b2793e28..50d679cd81 100644
  WINE_CONFIG_MAKEFILE(dlls/msdmo/tests)
 diff --git a/dlls/msdasql/tests/Makefile.in b/dlls/msdasql/tests/Makefile.in
 new file mode 100644
-index 0000000000..16e084045e
+index 0000000000..4c8717c8e1
 --- /dev/null
 +++ b/dlls/msdasql/tests/Makefile.in
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,6 @@
 +TESTDLL   = msdasql.dll
 +IMPORTS   = uuid oleaut32 ole32
 +
 +C_SRCS = \
 +	provider.c
 +
-+IDL_SRCS = msdasql_classes.idl
-+
-diff --git a/dlls/msdasql/tests/msdasql_classes.idl b/dlls/msdasql/tests/msdasql_classes.idl
-new file mode 100644
-index 0000000000..14b77d892c
---- /dev/null
-+++ b/dlls/msdasql/tests/msdasql_classes.idl
-@@ -0,0 +1,26 @@
-+/*
-+ * Copyright 2019 Alistair Leslie-Hughes
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2.1 of the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
-+ */
-+#pragma makedep header
-+
-+[
-+    progid("MSDASQL.1"),
-+    vi_progid("MSDASQL"),
-+    threading(both),
-+    uuid(c8b522cb-5cf3-11ce-ade5-00aa0044773d)
-+]
-+coclass MSDASQL { }
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
 new file mode 100644
-index 0000000000..af5085c43e
+index 0000000000..c3020f2aba
 --- /dev/null
 +++ b/dlls/msdasql/tests/provider.c
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,82 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -116,7 +80,8 @@ index 0000000000..af5085c43e
 +
 +#include "initguid.h"
 +
-+#include "msdasql_classes.h"
++//#include "msdasql_classes.h"
++#include "msdasql.h"
 +
 +#include "wine/test.h"
 +
@@ -172,5 +137,5 @@ index 0000000000..af5085c43e
 +    CoUninitialize();
 +}
 -- 
-2.17.1
+2.25.1
 

@@ -1,7 +1,7 @@
-From 3970a5e51e1cc98fc8e6efa2e8ff96cfda866bea Mon Sep 17 00:00:00 2001
+From b15cfb4c2f96c7470064ed44d4161f03296ea87f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Jan 2020 16:01:23 +1100
-Subject: [PATCH] msdasql: Implement IDBProperties GetPropertyInfo
+Subject: [PATCH 6/7] msdasql: Implement IDBProperties GetPropertyInfo
 
 ---
  dlls/msdasql/Makefile.in      |   2 +-
@@ -21,7 +21,7 @@ index b8cba6ac8c..455a3e2934 100644
  EXTRADLLFLAGS = -mno-cygwin
  
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 802dfccc42..1257a98539 100644
+index b55f9b6d02..8b92c97a72 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -33,6 +33,9 @@
@@ -213,7 +213,7 @@ index 802dfccc42..1257a98539 100644
  
  static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropertySets,
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index af5085c43e..f732d72605 100644
+index c3020f2aba..a0d8c59752 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
 @@ -21,6 +21,7 @@
@@ -224,7 +224,7 @@ index af5085c43e..f732d72605 100644
  
  #include "initguid.h"
  
-@@ -30,6 +31,7 @@
+@@ -31,6 +32,7 @@
  
  /* This needs to be be moved to lib somewhere. */
  DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
@@ -232,7 +232,7 @@ index af5085c43e..f732d72605 100644
  
  static void test_Properties(void)
  {
-@@ -42,6 +44,10 @@ static void test_Properties(void)
+@@ -43,6 +45,10 @@ static void test_Properties(void)
  
      hr = CoCreateInstance( &CLSID_MSDASQL, NULL, CLSCTX_ALL, &IID_IDBProperties, (void **)&props);
      ok(hr == S_OK, "Failed to create object 0x%08x\n", hr);
@@ -243,7 +243,7 @@ index af5085c43e..f732d72605 100644
  
      propidset.rgPropertyIDs = NULL;
      propidset.cPropertyIDs = 0;
-@@ -49,16 +55,22 @@ static void test_Properties(void)
+@@ -50,16 +56,22 @@ static void test_Properties(void)
  
      infocount = 0;
      hr = IDBProperties_GetPropertyInfo(props, 1, &propidset, &infocount, &propinfoset, &desc);
@@ -271,5 +271,5 @@ index af5085c43e..f732d72605 100644
  
          for (i = 0; i < propinfoset->cPropertyInfos; i++)
 -- 
-2.17.1
+2.25.1
 

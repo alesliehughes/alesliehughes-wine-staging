@@ -1,28 +1,25 @@
-From 5d36ba2542b5b2ecab90d9e4bb6b898dc09be298 Mon Sep 17 00:00:00 2001
+From b3ed5a7803e3ad58b2b8bba8f55c7bb7cc7b84f5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Dec 2019 15:42:32 +1100
-Subject: [PATCH] msdasql: Implement MSDASQL provider
+Subject: [PATCH 3/7] msdasql: Implement MSDASQL provider
 
 ---
- dlls/msdasql/msdasql_main.c | 164 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 162 insertions(+), 2 deletions(-)
+ dlls/msdasql/msdasql_main.c | 163 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 161 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 7b1ad8f53c..6f613c81e3 100644
+index ad66213766..677eb15731 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -24,8 +24,10 @@
+@@ -24,6 +24,7 @@
  #include "winbase.h"
  #include "objbase.h"
  #include "rpcproxy.h"
 +#include "wine/heap.h"
  #include "wine/debug.h"
  
-+#include "initguid.h"
- #include "msdasql_classes.h"
- 
- WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
-@@ -103,11 +105,13 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
+ #include "initguid.h"
+@@ -104,11 +105,13 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
      return 1;
  }
  
@@ -37,7 +34,7 @@ index 7b1ad8f53c..6f613c81e3 100644
  }
  
  static HRESULT WINAPI ClassFactory_LockServer(IClassFactory *iface, BOOL fLock)
-@@ -129,5 +133,161 @@ static IClassFactory cffactory = { &cffactoryVtbl };
+@@ -130,5 +133,161 @@ static IClassFactory cffactory = { &cffactoryVtbl };
  HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
  {
      FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
@@ -201,5 +198,5 @@ index 7b1ad8f53c..6f613c81e3 100644
 +
 +
 -- 
-2.17.1
+2.25.1
 
