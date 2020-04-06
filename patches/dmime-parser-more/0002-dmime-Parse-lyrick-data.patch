@@ -1,0 +1,115 @@
+From b7840b3f938067cdc8d9fb99ccb0034c409cd536 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Apr 2020 15:14:31 +1000
+Subject: [PATCH 2/2] dmime: Parse lyrick data
+
+---
+ dlls/dmime/lyricstrack.c | 76 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 75 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dmime/lyricstrack.c b/dlls/dmime/lyricstrack.c
+index 49f44f52a34..64e7b11b99b 100644
+--- a/dlls/dmime/lyricstrack.c
++++ b/dlls/dmime/lyricstrack.c
+@@ -21,6 +21,7 @@
+ #include "dmobject.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dmime);
++WINE_DECLARE_DEBUG_CHANNEL(dmfile);
+ 
+ /*****************************************************************************
+  * IDirectMusicLyricsTrack implementation
+@@ -37,6 +38,11 @@ static inline IDirectMusicLyricsTrack *impl_from_IDirectMusicTrack8(IDirectMusic
+     return CONTAINING_RECORD(iface, IDirectMusicLyricsTrack, IDirectMusicTrack8_iface);
+ }
+ 
++static inline IDirectMusicLyricsTrack *impl_from_IPersistStream(IPersistStream *iface)
++{
++    return CONTAINING_RECORD(iface, IDirectMusicLyricsTrack, dmobj.IPersistStream_iface);
++}
++
+ static HRESULT WINAPI lyrics_track_QueryInterface(IDirectMusicTrack8 *iface, REFIID riid,
+         void **ret_iface)
+ {
+@@ -236,9 +242,77 @@ static const IDirectMusicTrack8Vtbl dmtrack8_vtbl = {
+     lyrics_track_Join
+ };
+ 
++static void parse_lyricstrack_list(IDirectMusicLyricsTrack *This, IStream *stream)
++{
++    HRESULT hr;
++    LARGE_INTEGER liMove;
++    DMUS_PRIVATE_CHUNK chunk;
++    hr = IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
++    while(hr == S_OK)
++    {
++        TRACE_(dmfile)(": LIST chunk of type %s\n", debugstr_fourcc(chunk.fccID));
++        switch (chunk.fccID) {
++            case FOURCC_LIST:
++            {
++                IStream_Read (stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
++                TRACE_(dmfile)("     - size %d\n", chunk.dwSize);
++                break;
++            }
++            case DMUS_FOURCC_LYRICSTRACKEVENTS_LIST:
++            case DMUS_FOURCC_LYRICSTRACK_LIST: {
++                IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
++                continue;
++            }
++            /*case DMUS_FOURCC_LYRICSTRACKEVENT_LIST: {
++
++                break;
++            }*/
++            case DMUS_FOURCC_TRACK_EXTRAS_CHUNK: {
++                DMUS_IO_TRACK_EXTRAS_HEADER txhdr = {0};
++
++                IStream_Read (stream, &txhdr, sizeof(txhdr), NULL);
++
++                TRACE("dwFlags: %#x, dwPriority: %u\n", txhdr.dwFlags, txhdr.dwPriority);
++                break;
++            }
++            default:
++                TRACE_(dmfile)(": unknown (skipping)\n");
++                liMove.QuadPart = chunk.dwSize - sizeof(FOURCC);
++                IStream_Seek (stream, liMove, STREAM_SEEK_CUR, NULL);
++        }
++
++        hr = IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
++    }
++}
++
+ static HRESULT WINAPI lyrics_IPersistStream_Load(IPersistStream *iface, IStream *stream)
+ {
+-	FIXME(": Loading not implemented yet\n");
++    IDirectMusicLyricsTrack *This = impl_from_IPersistStream(iface);
++    HRESULT hr;
++    DMUS_PRIVATE_CHUNK chunk;
++    LARGE_INTEGER liMove;
++
++    TRACE("%p, %p\n", This, stream);
++
++    hr = IStream_Read (stream, &chunk, sizeof(FOURCC) + sizeof(DWORD), NULL);
++
++	while (hr == S_OK)
++    {
++	    TRACE_(dmfile)(": %s chunk (size = %d)\n", debugstr_fourcc (chunk.fccID), chunk.dwSize);
++        switch (chunk.fccID) {
++            case FOURCC_LIST: {
++                parse_lyricstrack_list(This, stream);
++                break;
++            }
++            default:
++                TRACE_(dmfile)(": Unknown LIST chunk of type %s\n", debugstr_fourcc(chunk.fccID));
++                liMove.QuadPart = chunk.dwSize - sizeof(FOURCC);
++                IStream_Seek (stream, liMove, STREAM_SEEK_CUR, NULL);
++        }
++
++        hr = IStream_Read (stream, &chunk, sizeof(FOURCC) + sizeof(DWORD), NULL);
++	}
++
+ 	return S_OK;
+ }
+ 
+-- 
+2.25.1
+
