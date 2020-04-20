@@ -1,31 +1,33 @@
-From af56b5f9b6bd1b8ca2914069057bb7387ccaee62 Mon Sep 17 00:00:00 2001
+From 14091816b6bdde09d21ba63c947848c79ae0b7e4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 5 Apr 2020 14:39:35 +1000
 Subject: [PATCH 1/2] dmime: Parse Wave stream
 
 ---
- dlls/dmime/dmime_private.h |   5 +
- dlls/dmime/wavetrack.c     | 191 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 195 insertions(+), 1 deletion(-)
+ dlls/dmime/dmime_private.h |   7 ++
+ dlls/dmime/wavetrack.c     | 195 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 200 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dmime/dmime_private.h b/dlls/dmime/dmime_private.h
-index 9759039a03e..5a9dfc50e09 100644
+index 9759039a03e..fddb66e89f6 100644
 --- a/dlls/dmime/dmime_private.h
 +++ b/dlls/dmime/dmime_private.h
-@@ -86,6 +86,11 @@ typedef struct _DMUS_PRIVATE_TEMPO_ITEM {
+@@ -86,6 +86,13 @@ typedef struct _DMUS_PRIVATE_TEMPO_ITEM {
    DMUS_IO_TEMPO_ITEM item;
  } DMUS_PRIVATE_TEMPO_ITEM, *LPDMUS_PRIVATE_TEMPO_ITEM;
  
 +struct DMUS_PRIVATE_WAVE_ITEM {
 +    struct list entry; /* for listing elements */
-+    DMUS_IO_WAVE_ITEM_HEADER header;
++    DMUS_IO_WAVE_TRACK_HEADER header;
++
++    IDirectMusicObject *object;
 +};
 +
  typedef struct _DMUS_PRIVATE_SEGMENT_ITEM {
    struct list entry; /* for listing elements */
    DMUS_IO_SEGMENT_ITEM_HEADER header;
 diff --git a/dlls/dmime/wavetrack.c b/dlls/dmime/wavetrack.c
-index 1c6b08b5235..bcd7241b807 100644
+index 1c6b08b5235..79dbb350f94 100644
 --- a/dlls/dmime/wavetrack.c
 +++ b/dlls/dmime/wavetrack.c
 @@ -20,7 +20,10 @@
@@ -60,7 +62,7 @@ index 1c6b08b5235..bcd7241b807 100644
  static HRESULT WINAPI wave_track_QueryInterface(IDirectMusicTrack8 *iface, REFIID riid,
          void **ret_iface)
  {
-@@ -81,6 +91,16 @@ static ULONG WINAPI wave_track_Release(IDirectMusicTrack8 *iface)
+@@ -81,6 +91,19 @@ static ULONG WINAPI wave_track_Release(IDirectMusicTrack8 *iface)
      TRACE("(%p) ref=%d\n", This, ref);
  
      if (!ref) {
@@ -71,21 +73,29 @@ index 1c6b08b5235..bcd7241b807 100644
 +            item = LIST_ENTRY(cursor, struct DMUS_PRIVATE_WAVE_ITEM, entry);
 +            list_remove(cursor);
 +
++            if (item->object)
++                IDirectMusicObject_Release(item->object);
++
 +            heap_free(item);
 +        }
 +
          HeapFree(GetProcessHeap(), 0, This);
          DMIME_UnlockModule();
      }
-@@ -280,9 +300,178 @@ static const IDirectMusicTrack8Vtbl dmtrack8_vtbl = {
+@@ -280,10 +303,177 @@ static const IDirectMusicTrack8Vtbl dmtrack8_vtbl = {
      wave_track_Join
  };
  
-+static void parse_wave_item(IDirectMusicWaveTrack *This, IStream *stream)
++static void parse_wave_item(IDirectMusicWaveTrack *This, IStream *stream, struct DMUS_PRIVATE_WAVE_ITEM *item)
 +{
 +    LARGE_INTEGER liMove;
 +    DMUS_PRIVATE_CHUNK chunk;
 +    HRESULT hr;
++
++    if (!item) {
++        ERR("Wave item data is NULL\n");
++        return;
++    }
 +
 +    IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
 +
@@ -125,8 +135,6 @@ index 1c6b08b5235..bcd7241b807 100644
 +                break;
 +            }
 +            case DMUS_FOURCC_REF_LIST: {
-+                IDirectMusicObject* pObject = NULL;
-+
 +                FIXME_(dmfile)(": DMRF (DM References) list\n");
 +
 +                /* ParseReference takes away FOURCC from the size, so add it here to ensure the data is read correctly
@@ -134,17 +142,12 @@ index 1c6b08b5235..bcd7241b807 100644
 +                chunk.dwSize += sizeof(FOURCC);
 +
 +                hr = IDirectMusicUtils_IPersistStream_ParseReference(&This->dmobj.IPersistStream_iface,
-+                                &chunk, stream, &pObject);
-+	            if (FAILED(hr)) {
-+	                ERR(": could not load Reference\n");
-+	                return; //return hr;
-+	            }
-+	            TRACE_(dmfile)("     - hr 0x%08x\n", hr);
-+                //if (!pNewItem) {
-+	            //    ERR(": pNewItem not allocated, bad chunk order?\n");
-+	            //    return; // E_FAIL;
-+                //}
-+	            //pNewItem->pObject = pObject;
++                                &chunk, stream, &item->object);
++                if (FAILED(hr)) {
++                    ERR(": could not load Reference\n");
++                    return; //return hr;
++                }
++                TRACE_(dmfile)("     - hr 0x%08x\n", hr);
 +                break;
 +            }
 +            default:
@@ -176,7 +179,7 @@ index 1c6b08b5235..bcd7241b807 100644
 +                break;
 +            }
 +            case DMUS_FOURCC_WAVEITEM_LIST: {
-+                parse_wave_item(This, stream);
++                parse_wave_item(This, stream, item);
 +                break;
 +            }
 +            case DMUS_FOURCC_WAVEPART_LIST:
@@ -200,7 +203,7 @@ index 1c6b08b5235..bcd7241b807 100644
 +                break;
 +            }
 +            case DMUS_FOURCC_WAVETRACK_CHUNK: {
-+                item = HeapAlloc (GetProcessHeap (), HEAP_ZERO_MEMORY, sizeof(DMUS_PRIVATE_SEGMENT_ITEM));
++                item = HeapAlloc (GetProcessHeap (), HEAP_ZERO_MEMORY, sizeof(struct DMUS_PRIVATE_WAVE_ITEM));
 +                if (!item)
 +                    return  E_OUTOFMEMORY;
 +
@@ -228,18 +231,19 @@ index 1c6b08b5235..bcd7241b807 100644
  static HRESULT WINAPI wave_IPersistStream_Load(IPersistStream *iface, IStream *stream)
  {
 -	FIXME(": Loading not implemented yet\n");
+-	return S_OK;
 +    IDirectMusicWaveTrack *This = impl_from_IPersistStream(iface);
 +    HRESULT hr;
 +    DMUS_PRIVATE_CHUNK chunk;
 +    LARGE_INTEGER liMove;
 +
-+    TRACE("%p, %p\n", This, stream);
++    FIXME("%p, %p Semi-Stub\n", This, stream);
 +
 +    hr = IStream_Read (stream, &chunk, sizeof(FOURCC) + sizeof(DWORD), NULL);
 +
-+	while (hr == S_OK)
++    while (hr == S_OK)
 +    {
-+	    TRACE_(dmfile)(": %s chunk (size = %d)\n", debugstr_fourcc (chunk.fccID), chunk.dwSize);
++        TRACE_(dmfile)(": %s chunk (size = %d)\n", debugstr_fourcc (chunk.fccID), chunk.dwSize);
 +        switch (chunk.fccID) {
 +            case FOURCC_LIST: {
 +                parse_wavetrack_list(This, stream);
@@ -252,11 +256,20 @@ index 1c6b08b5235..bcd7241b807 100644
 +        }
 +
 +        hr = IStream_Read (stream, &chunk, sizeof(FOURCC) + sizeof(DWORD), NULL);
-+	}
++    }
 +
- 	return S_OK;
++    return S_OK;
  }
  
+ static const IPersistStreamVtbl persiststream_vtbl = {
+@@ -313,6 +503,7 @@ HRESULT WINAPI create_dmwavetrack(REFIID lpcGUID, void **ppobj)
+     dmobject_init(&track->dmobj, &CLSID_DirectMusicWaveTrack,
+                   (IUnknown *)&track->IDirectMusicTrack8_iface);
+     track->dmobj.IPersistStream_iface.lpVtbl = &persiststream_vtbl;
++    list_init(&track->items);
+ 
+     DMIME_LockModule();
+     hr = IDirectMusicTrack8_QueryInterface(&track->IDirectMusicTrack8_iface, lpcGUID, ppobj);
 -- 
-2.25.1
+2.26.1
 

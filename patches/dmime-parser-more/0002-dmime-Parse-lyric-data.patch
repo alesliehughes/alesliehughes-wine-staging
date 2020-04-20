@@ -1,4 +1,4 @@
-From 8fdc1b0d2284b07331ac8e1038f0624fc3fae36f Mon Sep 17 00:00:00 2001
+From a082eb1efb774b9d3a22b0cb450165ca6a81cd26 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Apr 2020 15:14:31 +1000
 Subject: [PATCH 2/2] dmime: Parse lyric data
@@ -159,5 +159,5 @@ index 49f44f52a34..e12350fedbf 100644
  }
  
 -- 
-2.25.1
+2.26.1
 
