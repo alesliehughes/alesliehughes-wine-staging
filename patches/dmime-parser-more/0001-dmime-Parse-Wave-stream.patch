@@ -1,22 +1,23 @@
-From 14091816b6bdde09d21ba63c947848c79ae0b7e4 Mon Sep 17 00:00:00 2001
+From 08e7f4b6b61287e50f60a2d061fdbeb837524211 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 5 Apr 2020 14:39:35 +1000
-Subject: [PATCH 1/2] dmime: Parse Wave stream
+Subject: [PATCH v2 2/2] dmime: Parse Wave track stream
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/dmime/dmime_private.h |   7 ++
- dlls/dmime/wavetrack.c     | 195 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 200 insertions(+), 2 deletions(-)
+ dlls/dmime/wavetrack.c     | 196 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 201 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dmime/dmime_private.h b/dlls/dmime/dmime_private.h
-index 9759039a03e..fddb66e89f6 100644
+index 9759039a03e9..f7431e882f42 100644
 --- a/dlls/dmime/dmime_private.h
 +++ b/dlls/dmime/dmime_private.h
 @@ -86,6 +86,13 @@ typedef struct _DMUS_PRIVATE_TEMPO_ITEM {
    DMUS_IO_TEMPO_ITEM item;
  } DMUS_PRIVATE_TEMPO_ITEM, *LPDMUS_PRIVATE_TEMPO_ITEM;
  
-+struct DMUS_PRIVATE_WAVE_ITEM {
++struct wave_item {
 +    struct list entry; /* for listing elements */
 +    DMUS_IO_WAVE_TRACK_HEADER header;
 +
@@ -27,21 +28,19 @@ index 9759039a03e..fddb66e89f6 100644
    struct list entry; /* for listing elements */
    DMUS_IO_SEGMENT_ITEM_HEADER header;
 diff --git a/dlls/dmime/wavetrack.c b/dlls/dmime/wavetrack.c
-index 1c6b08b5235..79dbb350f94 100644
+index 1c6b08b52355..23406e0794d0 100644
 --- a/dlls/dmime/wavetrack.c
 +++ b/dlls/dmime/wavetrack.c
-@@ -20,7 +20,10 @@
+@@ -20,6 +20,8 @@
  #include "dmime_private.h"
  #include "dmobject.h"
  
 +#include "wine/heap.h"
 +
  WINE_DEFAULT_DEBUG_CHANNEL(dmime);
-+WINE_DECLARE_DEBUG_CHANNEL(dmfile);
  
  /*****************************************************************************
-  * IDirectMusicWaveTrack implementation
-@@ -32,6 +35,8 @@ typedef struct IDirectMusicWaveTrack {
+@@ -32,6 +34,8 @@ typedef struct IDirectMusicWaveTrack {
      IDirectMusicTrack8 IDirectMusicTrack8_iface;
      struct dmobject dmobj;  /* IPersistStream only */
      LONG ref;
@@ -50,7 +49,7 @@ index 1c6b08b5235..79dbb350f94 100644
  } IDirectMusicWaveTrack;
  
  /* IDirectMusicWaveTrack IDirectMusicTrack8 part: */
-@@ -40,6 +45,11 @@ static inline IDirectMusicWaveTrack *impl_from_IDirectMusicTrack8(IDirectMusicTr
+@@ -40,6 +44,11 @@ static inline IDirectMusicWaveTrack *impl_from_IDirectMusicTrack8(IDirectMusicTr
      return CONTAINING_RECORD(iface, IDirectMusicWaveTrack, IDirectMusicTrack8_iface);
  }
  
@@ -62,15 +61,15 @@ index 1c6b08b5235..79dbb350f94 100644
  static HRESULT WINAPI wave_track_QueryInterface(IDirectMusicTrack8 *iface, REFIID riid,
          void **ret_iface)
  {
-@@ -81,6 +91,19 @@ static ULONG WINAPI wave_track_Release(IDirectMusicTrack8 *iface)
+@@ -81,6 +90,19 @@ static ULONG WINAPI wave_track_Release(IDirectMusicTrack8 *iface)
      TRACE("(%p) ref=%d\n", This, ref);
  
      if (!ref) {
 +        struct list *cursor, *cursor2;
-+        struct DMUS_PRIVATE_WAVE_ITEM *item;
++        struct wave_item *item;
 +
 +        LIST_FOR_EACH_SAFE(cursor, cursor2, &This->items) {
-+            item = LIST_ENTRY(cursor, struct DMUS_PRIVATE_WAVE_ITEM, entry);
++            item = LIST_ENTRY(cursor, struct wave_item, entry);
 +            list_remove(cursor);
 +
 +            if (item->object)
@@ -82,150 +81,161 @@ index 1c6b08b5235..79dbb350f94 100644
          HeapFree(GetProcessHeap(), 0, This);
          DMIME_UnlockModule();
      }
-@@ -280,10 +303,177 @@ static const IDirectMusicTrack8Vtbl dmtrack8_vtbl = {
+@@ -280,10 +302,179 @@ static const IDirectMusicTrack8Vtbl dmtrack8_vtbl = {
      wave_track_Join
  };
  
-+static void parse_wave_item(IDirectMusicWaveTrack *This, IStream *stream, struct DMUS_PRIVATE_WAVE_ITEM *item)
++static HRESULT parse_wave_item(IDirectMusicWaveTrack *This, IStream *stream,
++        struct chunk_entry *wave, struct wave_item *item)
 +{
-+    LARGE_INTEGER liMove;
-+    DMUS_PRIVATE_CHUNK chunk;
 +    HRESULT hr;
++    struct chunk_entry chunk = {.parent = wave};
 +
-+    if (!item) {
-+        ERR("Wave item data is NULL\n");
-+        return;
-+    }
++    if (FAILED(hr = stream_next_chunk(stream, &chunk)))
++        return hr;
 +
-+    IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
-+
-+    if (chunk.fccID != FOURCC_LIST)
++    if(chunk.id == FOURCC_LIST && chunk.type == DMUS_FOURCC_WAVE_LIST)
 +    {
-+        ERR("Expecting LIST got %s\n", debugstr_fourcc(chunk.fccID));
-+        return;
-+    }
-+    IStream_Read(stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
++        struct chunk_entry child = {.parent = &chunk};
++        DMUS_IO_WAVE_ITEM_HEADER header;
 +
-+    hr = IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
-+    while(hr == S_OK) {
-+        TRACE_(dmfile)(": LIST chunk of type %s\n", debugstr_fourcc(chunk.fccID));
-+        switch (chunk.fccID) {
-+            case FOURCC_LIST: {
-+                IStream_Read(stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
-+                TRACE_(dmfile)("     - size %d\n", chunk.dwSize);
-+                break;
-+            }
-+            case DMUS_FOURCC_WAVE_LIST: {
-+                IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
-+                continue;
-+            }
-+            case DMUS_FOURCC_WAVEITEM_CHUNK: {
-+                DMUS_IO_WAVE_ITEM_HEADER header;
++        if (FAILED(hr = stream_next_chunk(stream, &child)))
++            return  hr;
 +
-+                IStream_Read (stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
-+                TRACE_(dmfile)("     - size %d == %d\n", chunk.dwSize, sizeof(header));
++        if(child.id != DMUS_FOURCC_WAVEITEM_CHUNK)
++            return DMUS_E_UNSUPPORTED_STREAM;
 +
-+                IStream_Read (stream, &header, sizeof(header), NULL);
-+                TRACE_(dmfile)("     - lVolume %d\n", header.lVolume);
-+                //TRACE_(dmfile)("     - dwVariations 0x%08x\n", header.dwVariations);
-+                //TRACE_(dmfile)("     - dwPChannel 0x%08x\n", header.dwPChannel);
-+                //TRACE_(dmfile)("     - dwLockToPart 0x%08x\n", header.dwLockToPart);
-+                TRACE_(dmfile)("     - dwFlags 0x%08x\n", header.dwFlags);
-+                //TRACE_(dmfile)("     - dwIndex 0x%08x\n", header.dwIndex);
-+                break;
-+            }
-+            case DMUS_FOURCC_REF_LIST: {
-+                FIXME_(dmfile)(": DMRF (DM References) list\n");
-+
-+                /* ParseReference takes away FOURCC from the size, so add it here to ensure the data is read correctly
-+                 * maybe this is an error with the reader elsewhere. */
-+                chunk.dwSize += sizeof(FOURCC);
-+
-+                hr = IDirectMusicUtils_IPersistStream_ParseReference(&This->dmobj.IPersistStream_iface,
-+                                &chunk, stream, &item->object);
-+                if (FAILED(hr)) {
-+                    ERR(": could not load Reference\n");
-+                    return; //return hr;
-+                }
-+                TRACE_(dmfile)("     - hr 0x%08x\n", hr);
-+                break;
-+            }
-+            default:
-+                TRACE_(dmfile)(": unknown (skipping)\n");
-+                liMove.QuadPart = chunk.dwSize - sizeof(FOURCC);
-+                IStream_Seek (stream, liMove, STREAM_SEEK_CUR, NULL);
++        if (FAILED(hr = stream_chunk_get_data(stream, &child, &header, child.size))) {
++            WARN("Failed to read data of %s\n", debugstr_chunk(&child));
++            return hr;
 +        }
 +
-+        hr = IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
++        TRACE("Found DMUS_IO_WAVE_ITEM_HEADER\n");
++        TRACE("  - lVolume %d\n", header.lVolume);
++        TRACE("  - dwVariations %d\n", header.dwVariations);
++        TRACE("  - rtTime %d\n", header.rtTime);
++        TRACE("  - rtStartOffset %d\n", header.rtStartOffset);
++        TRACE("  - rtReserved %d\n", header.rtReserved);
++        TRACE("  - rtDuration %d\n", header.rtDuration);
++        TRACE("  - dwLoopStart %d\n", header.dwLoopStart);
++        TRACE("  - dwLoopEnd %d\n", header.dwLoopEnd);
++        TRACE("  - dwFlags 0x%08x\n", header.dwFlags);
++        TRACE("  - wVolumeRange %d\n", header.wVolumeRange);
++        TRACE("  - wPitchRange %d\n", header.wPitchRange);
++
++        if (FAILED(hr = stream_next_chunk(stream, &child)))
++            return  hr;
++
++        if(child.id == FOURCC_LIST && child.type == DMUS_FOURCC_REF_LIST)
++        {
++            struct chunk_entry dmrf = {.parent = &child};
++            IDirectMusicGetLoader *getloader;
++            IDirectMusicLoader *loader;
++            DMUS_IO_REFERENCE reference;
++
++            if (FAILED(hr = stream_next_chunk(stream, &dmrf)))
++                return hr;
++
++            if(dmrf.id != DMUS_FOURCC_REF_CHUNK)
++                return DMUS_E_UNSUPPORTED_STREAM;
++
++            if (FAILED(hr = stream_chunk_get_data(stream, &dmrf, &reference, dmrf.size))) {
++                WARN("Failed to read data of %s\n", debugstr_chunk(&dmrf));
++                return hr;
++            }
++
++            TRACE("REFERENCE guidClassID %s, dwValidData 0x%08x\n", debugstr_dmguid(&reference.guidClassID),
++                reference.dwValidData);
++
++            This->dmobj.desc.guidClass = reference.guidClassID;
++            This->dmobj.desc.dwValidData = DMUS_OBJ_CLASS;
++
++            hr = dmobj_parsedescriptor(stream, &child, &This->dmobj.desc, reference.dwValidData);
++            if (FAILED(hr))
++                return hr;
++
++            dump_DMUS_OBJECTDESC(&This->dmobj.desc);
++
++            hr = IStream_QueryInterface (stream, &IID_IDirectMusicGetLoader, (void**)&getloader);
++            if (FAILED(hr))
++                return hr;
++
++            hr = IDirectMusicGetLoader_GetLoader (getloader, &loader);
++            if (FAILED(hr))
++                return hr;
++            IDirectMusicGetLoader_Release (getloader);
++
++            hr = IDirectMusicLoader_GetObject (loader, &This->dmobj.desc, &IID_IDirectMusicObject,
++                        (void**)&item->object);
++            IDirectMusicLoader_Release (loader);
++        }
 +    }
++    else
++        hr = DMUS_E_UNSUPPORTED_STREAM;
++
++    return SUCCEEDED(hr) ? S_OK : hr;
 +}
 +
-+static HRESULT parse_wavetrack_list(IDirectMusicWaveTrack *This, IStream *stream)
++static HRESULT parse_wavetrack_list(IDirectMusicWaveTrack *This, IStream *stream,
++        struct chunk_entry *wave)
 +{
 +    HRESULT hr;
-+    LARGE_INTEGER liMove;
-+    DMUS_PRIVATE_CHUNK chunk;
-+    struct DMUS_PRIVATE_WAVE_ITEM *item = NULL;
++    struct chunk_entry chunk = {.parent = wave};
++    struct wave_item *item = NULL;
 +
-+    hr = IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
-+    while(hr == S_OK)
++    TRACE("Parsing segment form in %p: %s\n", stream, debugstr_chunk(wave));
++
++    if (FAILED(hr = stream_next_chunk(stream, &chunk)))
++        return hr;
++
++    if (chunk.id != DMUS_FOURCC_WAVETRACK_CHUNK)
++        return DMUS_E_UNSUPPORTED_STREAM;
++
++    item = HeapAlloc (GetProcessHeap (), HEAP_ZERO_MEMORY, sizeof(struct wave_item));
++    if (!item)
++        return  E_OUTOFMEMORY;
++
++    list_add_tail (&This->items, &item->entry);
++
++    if (FAILED(hr = stream_next_chunk(stream, &chunk)))
++        return hr;
++
++    if (chunk.id == FOURCC_LIST && chunk.type == DMUS_FOURCC_WAVEPART_LIST)
 +    {
-+        TRACE_(dmfile)(": LIST chunk of type %s\n", debugstr_fourcc(chunk.fccID));
-+        switch (chunk.fccID) {
-+            case FOURCC_LIST:
-+            {
-+                IStream_Read (stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
-+                TRACE_(dmfile)("     - size %d\n", chunk.dwSize);
-+                break;
-+            }
-+            case DMUS_FOURCC_WAVEITEM_LIST: {
-+                parse_wave_item(This, stream, item);
-+                break;
-+            }
-+            case DMUS_FOURCC_WAVEPART_LIST:
-+            case DMUS_FOURCC_WAVETRACK_LIST: {
-+                IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
-+                continue;
-+            }
-+            case DMUS_FOURCC_WAVEPART_CHUNK: {
-+                DMUS_IO_WAVE_PART_HEADER part;
++        struct chunk_entry child = {.parent = wave};
++        DMUS_IO_WAVE_PART_HEADER header;
 +
-+                IStream_Read (stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
-+                TRACE_(dmfile)("     - size %d\n", chunk.dwSize);
++        if (FAILED(hr = stream_next_chunk(stream, &child)))
++            return hr;
 +
-+                IStream_Read (stream, &part, sizeof(part), NULL);
-+                TRACE_(dmfile)("     - lVolume %d\n", part.lVolume);
-+                TRACE_(dmfile)("     - dwVariations 0x%08x\n", part.dwVariations);
-+                TRACE_(dmfile)("     - dwPChannel 0x%08x\n", part.dwPChannel);
-+                TRACE_(dmfile)("     - dwLockToPart 0x%08x\n", part.dwLockToPart);
-+                TRACE_(dmfile)("     - dwFlags 0x%08x\n", part.dwFlags);
-+                TRACE_(dmfile)("     - dwIndex 0x%08x\n", part.dwIndex);
-+                break;
-+            }
-+            case DMUS_FOURCC_WAVETRACK_CHUNK: {
-+                item = HeapAlloc (GetProcessHeap (), HEAP_ZERO_MEMORY, sizeof(struct DMUS_PRIVATE_WAVE_ITEM));
-+                if (!item)
-+                    return  E_OUTOFMEMORY;
++        if (child.id != DMUS_FOURCC_WAVEPART_CHUNK)
++            return DMUS_E_UNSUPPORTED_STREAM;
 +
-+                IStream_Read (stream, &chunk.dwSize, sizeof(chunk.dwSize), NULL);
-+                TRACE_(dmfile)("     - size %d\n", chunk.dwSize);
-+
-+                IStream_Read (stream, &item->header, sizeof(item->header), NULL);
-+                TRACE_(dmfile)("     - lVolume %d, dwFlags 0x%08x\n", item->header.lVolume , item->header.dwFlags);
-+
-+                list_add_tail (&This->items, &item->entry);
-+                break;
-+            }
-+            default:
-+                TRACE_(dmfile)(": unknown (skipping)\n");
-+                liMove.QuadPart = chunk.dwSize - sizeof(FOURCC);
-+                IStream_Seek (stream, liMove, STREAM_SEEK_CUR, NULL);
++        if (FAILED(hr = stream_chunk_get_data(stream, &child, &header, child.size))) {
++            WARN("Failed to read data of %s\n", debugstr_chunk(&child));
++            return hr;
 +        }
 +
-+        hr = IStream_Read (stream, &chunk.fccID, sizeof(FOURCC), NULL);
-+    }
++        TRACE("Found DMUS_IO_WAVE_PART_HEADER\n");
++        TRACE("  - lVolume %d\n", header.lVolume);
++        TRACE("  - dwVariations %d\n", header.dwVariations);
++        TRACE("  - dwPChannel %d\n", header.dwPChannel);
++        TRACE("  - dwLockToPart %d\n", header.dwLockToPart);
++        TRACE("  - dwFlags 0x%08x\n", header.dwFlags);
++        TRACE("  - dwIndex %d\n", header.dwIndex);
 +
-+    return S_OK;
++        if (FAILED(hr = stream_next_chunk(stream, &child)))
++            return hr;
++
++        if(child.id != FOURCC_LIST || child.type != DMUS_FOURCC_WAVEITEM_LIST)
++            return DMUS_E_UNSUPPORTED_STREAM;
++
++        hr = parse_wave_item(This, stream, &child, item);
++    }
++    else
++        hr = DMUS_E_UNSUPPORTED_STREAM;
++
++    return SUCCEEDED(hr) ? S_OK : hr;
 +}
 +
  static HRESULT WINAPI wave_IPersistStream_Load(IPersistStream *iface, IStream *stream)
@@ -234,35 +244,26 @@ index 1c6b08b5235..79dbb350f94 100644
 -	return S_OK;
 +    IDirectMusicWaveTrack *This = impl_from_IPersistStream(iface);
 +    HRESULT hr;
-+    DMUS_PRIVATE_CHUNK chunk;
-+    LARGE_INTEGER liMove;
++    struct chunk_entry chunk = {0};
 +
-+    FIXME("%p, %p Semi-Stub\n", This, stream);
++    TRACE("%p, %p\n", This, stream);
 +
-+    hr = IStream_Read (stream, &chunk, sizeof(FOURCC) + sizeof(DWORD), NULL);
++    if (!stream)
++        return E_POINTER;
 +
-+    while (hr == S_OK)
-+    {
-+        TRACE_(dmfile)(": %s chunk (size = %d)\n", debugstr_fourcc (chunk.fccID), chunk.dwSize);
-+        switch (chunk.fccID) {
-+            case FOURCC_LIST: {
-+                parse_wavetrack_list(This, stream);
-+                break;
-+            }
-+            default:
-+                TRACE_(dmfile)(": Unknown LIST chunk of type %s\n", debugstr_fourcc(chunk.fccID));
-+                liMove.QuadPart = chunk.dwSize - sizeof(FOURCC);
-+                IStream_Seek (stream, liMove, STREAM_SEEK_CUR, NULL);
-+        }
++    if ((hr = stream_get_chunk(stream, &chunk) != S_OK))
++        return hr;
 +
-+        hr = IStream_Read (stream, &chunk, sizeof(FOURCC) + sizeof(DWORD), NULL);
-+    }
++    if (chunk.id == FOURCC_LIST && chunk.type == DMUS_FOURCC_WAVETRACK_LIST)
++        hr = parse_wavetrack_list(This, stream, &chunk);
++    else
++        hr = DMUS_E_UNSUPPORTED_STREAM;
 +
-+    return S_OK;
++    return hr;
  }
  
  static const IPersistStreamVtbl persiststream_vtbl = {
-@@ -313,6 +503,7 @@ HRESULT WINAPI create_dmwavetrack(REFIID lpcGUID, void **ppobj)
+@@ -313,6 +504,7 @@ HRESULT WINAPI create_dmwavetrack(REFIID lpcGUID, void **ppobj)
      dmobject_init(&track->dmobj, &CLSID_DirectMusicWaveTrack,
                    (IUnknown *)&track->IDirectMusicTrack8_iface);
      track->dmobj.IPersistStream_iface.lpVtbl = &persiststream_vtbl;
@@ -271,5 +272,5 @@ index 1c6b08b5235..79dbb350f94 100644
      DMIME_LockModule();
      hr = IDirectMusicTrack8_QueryInterface(&track->IDirectMusicTrack8_iface, lpcGUID, ppobj);
 -- 
-2.26.1
+2.26.2
 
