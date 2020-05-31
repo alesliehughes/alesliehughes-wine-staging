@@ -1,7 +1,7 @@
-From b15cfb4c2f96c7470064ed44d4161f03296ea87f Mon Sep 17 00:00:00 2001
+From ab6e53609f64ec755b5c0016ce610a3dfa825b2e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Jan 2020 16:01:23 +1100
-Subject: [PATCH 6/7] msdasql: Implement IDBProperties GetPropertyInfo
+Subject: [PATCH 06/11] msdasql: Implement IDBProperties GetPropertyInfo
 
 ---
  dlls/msdasql/Makefile.in      |   2 +-
@@ -271,5 +271,5 @@ index c3020f2aba..a0d8c59752 100644
  
          for (i = 0; i < propinfoset->cPropertyInfos; i++)
 -- 
-2.25.1
+2.26.2
 

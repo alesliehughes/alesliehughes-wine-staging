@@ -1,0 +1,25 @@
+From c2d107d64dd0ce25fc2fc5cf5c9da28f41010b6a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 30 May 2020 15:33:18 +1000
+Subject: [PATCH 09/11] msdasql: Fake return from IDBProperties SetProperties
+
+---
+ dlls/msdasql/msdasql_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index c1929192b6..188ebcf5fc 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -445,7 +445,7 @@ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropert
+ 
+     FIXME("(%p)->(%d %p)\n", provider, cPropertySets, rgPropertySets);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static const struct IDBPropertiesVtbl dbprops_vtbl =
+-- 
+2.26.2
+

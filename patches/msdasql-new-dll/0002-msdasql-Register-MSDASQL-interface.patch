@@ -1,7 +1,7 @@
-From 27c28ac5b0258cbc825107802a5610a18c08787d Mon Sep 17 00:00:00 2001
+From efc2658c3194ec4710a5f1f77c8f14c7a1fdd347 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 14:16:13 +1100
-Subject: [PATCH 2/7] msdasql: Register MSDASQL interface
+Subject: [PATCH 02/11] msdasql: Register MSDASQL interface
 
 ---
  dlls/msdasql/Makefile.in         |  5 +++++
@@ -117,5 +117,5 @@ index 607df7b77b..ad66213766 100644
  
  static HINSTANCE msdasql_instance;
 -- 
-2.25.1
+2.26.2
 

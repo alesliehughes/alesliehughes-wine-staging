@@ -1,7 +1,7 @@
-From c60f8c593657b3e3551ea2a9b6c3692d6c7bbb3c Mon Sep 17 00:00:00 2001
+From 4fcdae4f7d8919cc7bb5291038dc444b1412497b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
-Subject: [PATCH 5/7] msdasql/tests: Initial tests
+Subject: [PATCH 05/11] msdasql/tests: Initial tests
 
 ---
  configure                      |  1 +
@@ -13,10 +13,10 @@ Subject: [PATCH 5/7] msdasql/tests: Initial tests
  create mode 100644 dlls/msdasql/tests/provider.c
 
 diff --git a/configure b/configure
-index 787d9929e0..fa99d76dd1 100755
+index b798739b95..e483287171 100755
 --- a/configure
 +++ b/configure
-@@ -20735,6 +20735,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
+@@ -20841,6 +20841,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
  wine_fn_config_makefile dlls/msdasql enable_msdasql
@@ -25,10 +25,10 @@ index 787d9929e0..fa99d76dd1 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index f64f0c4140..ae343149ac 100644
+index f64e860e14..04bfbac234 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3440,6 +3440,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
+@@ -3463,6 +3463,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
  WINE_CONFIG_MAKEFILE(dlls/msdasql)
@@ -137,5 +137,5 @@ index 0000000000..c3020f2aba
 +    CoUninitialize();
 +}
 -- 
-2.25.1
+2.26.2
 
