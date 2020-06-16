@@ -1,0 +1,31 @@
+From 4f2474cf63321b8d5c6ca006502090ff2b5b1ad7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 12 Jun 2020 15:34:49 +1000
+Subject: [PATCH 2/7] winhttp: Status HTTP_STATUS_SWITCH_PROTOCOLS doesn't have
+ any content
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/winhttp/request.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
+index 79d66fd5e80..9173bdb56d1 100644
+--- a/dlls/winhttp/request.c
++++ b/dlls/winhttp/request.c
+@@ -2353,8 +2353,11 @@ static void set_content_length( struct request *request, DWORD status )
+     WCHAR encoding[20];
+     DWORD buflen = sizeof(request->content_length);
+ 
+-    if (status == HTTP_STATUS_NO_CONTENT || status == HTTP_STATUS_NOT_MODIFIED || !wcscmp( request->verb, L"HEAD" ))
++    if (status == HTTP_STATUS_NO_CONTENT || status == HTTP_STATUS_NOT_MODIFIED ||
++        status == HTTP_STATUS_SWITCH_PROTOCOLS || !wcscmp( request->verb, L"HEAD" ))
++    {
+         request->content_length = 0;
++    }
+     else
+     {
+         if (query_headers( request, WINHTTP_QUERY_CONTENT_LENGTH|WINHTTP_QUERY_FLAG_NUMBER,
+-- 
+2.27.0
+

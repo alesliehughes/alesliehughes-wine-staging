@@ -1,0 +1,171 @@
+From ae2ddde34d46046ca964071c154b2aa82af18d09 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 16 Jun 2020 12:15:45 +1000
+Subject: [PATCH 7/7] winhttp: Implement WinHttpWebSocketClose
+
+WIP
+---
+ dlls/winhttp/request.c | 140 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 138 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
+index 5e3b9661f87..bed3c80c929 100644
+--- a/dlls/winhttp/request.c
++++ b/dlls/winhttp/request.c
+@@ -3270,15 +3270,151 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
+ 
+ DWORD WINAPI WinHttpWebSocketClose( HINTERNET hsocket, USHORT status, void *reason, DWORD len )
+ {
++    struct request *request;
++
++    unsigned char mask[4];
++    unsigned int mask_int;
++    //unsigned long long payload_len;
++    unsigned char finNopcode;
++    unsigned int payload_len_small;
++    unsigned int payload_offset = 6;
++    //unsigned int len_size;
++    //unsigned long long be_payload_len;
++    unsigned int sent = 0;
++    unsigned int frame_size;
++    char *data;
++    int i;
++
+     FIXME("%p, %u, %p, %u\n", hsocket, status, reason, len);
+-    return ERROR_INVALID_PARAMETER;
++
++    if (!(request = (struct request *)grab_object( hsocket )))
++    {
++        return ERROR_INVALID_OPERATION;
++    }
++
++    finNopcode = 0x88; //FIN and Close opcode.
++
++    srand(time(NULL));
++    mask_int = rand();
++    memcpy(mask, &mask_int, 4);
++    //payload_len = len;
++
++    payload_len_small = 1;
++
++    frame_size = 6 + payload_len_small;
++    payload_offset = 2;
++
++    /*if(payload_len <= 125) {
++            frame_size = 6 + payload_len;
++            payload_len_small = payload_len;
++
++    } else if(payload_len > 125 && payload_len <= 0xffff) {
++            frame_size = 8 + payload_len;
++            payload_len_small = 126;
++            payload_offset += 2;
++    } else if(payload_len > 0xffff && payload_len <= 0xffffffffffffffffLL) {
++            frame_size = 14 + payload_len;
++            payload_len_small = 127;
++            payload_offset += 8;
++    } else {
++            return -1;
++    }*/
++    data = (char *)malloc(frame_size);
++    memset(data, 0, frame_size);
++    *data = finNopcode;
++    *(data+1) = payload_len_small | 0x80; //payload length with mask bit on
++    *(data+2) = status;
++    /*if(payload_len_small == 126) {
++            payload_len &= 0xffff;
++            len_size = 2;
++            for(i = 0; i < len_size; i++) {
++                    *(data+4+i) = *((char *)&payload_len+(len_size-i-1));
++            }
++    }
++    if(payload_len_small == 127) {
++            payload_len &= 0xffffffffffffffffLL;
++            len_size = 8;
++            for(i = 0; i < len_size; i++) {
++                    *(data+4+i) = *((char *)&payload_len+(len_size-i-1));
++            }
++    }*/
++    for(i=0;i<4;i++)
++            *(data+(payload_offset-4)+i) = mask[i];
++
++    //if (len)
++    //    memcpy(data+payload_offset, strdata, strlen(strdata));
++    //for(i=0;i<strlen(strdata);i++)
++    //        *(data+payload_offset+i) ^= mask[i % 4] & 0xff;
++    sent = 0;
++    i = 0;
++    while(sent < frame_size && i >= 0) {
++            netconn_send(request->netconn, data+sent, frame_size - sent, &i);
++            sent += i;
++    }
++    free(data);
++    //heap_free(strdata);
++    return 0;
+ }
+ 
+ DWORD WINAPI WinHttpWebSocketQueryCloseStatus( HINTERNET hsocket, USHORT *status, void *reason, DWORD len,
+                                                DWORD *consumed )
+ {
++    struct request *request;
++    struct webheader header;
++    char buffer[1024], *ptr;
++    DWORD /*buf_len,*/ ret;
++    int size;
++
+     FIXME("%p, %p, %p, %u, %p\n", hsocket, status, reason, len, consumed);
+-    return ERROR_INVALID_PARAMETER;
++
++    if (!(request = (struct request *)grab_object( hsocket )))
++    {
++        return 11;
++    }
++
++    //buf_len = 4096;
++    //buffer = heap_alloc(buf_len);
++
++    ret = netconn_recv( request->netconn, &buffer, 1024, 0, &size );
++
++    ptr = buffer;
++    header.fin = *ptr & 0x80;
++    header.opcode = *ptr & 0x0F;
++
++    ptr++;
++    header.mask = *ptr & 0x80;
++    header.lenght = *ptr & 0x7F;
++
++FIXME("fin    %u\n", header.fin);
++/*FIXME("resv1  %u\n", header.resv1);
++FIXME("resv2  %u\n", header.resv2);
++FIXME("resv3  %u\n", header.resv3);*/
++FIXME("opcode %u\n", header.opcode );
++FIXME("mask   %u\n", header.mask);
++FIXME("lenght %u\n", header.lenght);
++
++    ptr++;
++
++    *status =  *(SHORT*)ptr;
++    ptr++;
++
++FIXME("strings %s\n", debugstr_a( ptr) );
++    /*if (header.lenght < 126)
++    {
++            int ddd;
++            // TODO - If TEXT
++            ddd = MultiByteToWideChar( CP_ACP, 0, ptr, header.lenght, NULL, 0 );
++            MultiByteToWideChar( CP_ACP, 0, ptr, header.lenght, reason, ddd );
++            ((WCHAR*)reason)[ddd] = 0;
++    }*/
++
++    *(char*)reason = 0;
++
++
++
++    //*type = WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE;
++
++    return ret;
+ }
+ 
+ enum request_state
+-- 
+2.27.0
+
