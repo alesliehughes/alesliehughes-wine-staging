@@ -1,0 +1,171 @@
+From 2c4629abe7eec90d692b6d27c021374f5f921704 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 16 Jun 2020 12:15:45 +1000
+Subject: [PATCH 6/6] winhttp: Implement WinHttpWebSocketClose
+
+WIP
+---
+ dlls/winhttp/request.c | 140 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 138 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
+index a6807f5fb59..88f9897a89e 100644
+--- a/dlls/winhttp/request.c
++++ b/dlls/winhttp/request.c
+@@ -3257,15 +3257,151 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
+ 
+ DWORD WINAPI WinHttpWebSocketClose( HINTERNET hsocket, USHORT status, void *reason, DWORD len )
+ {
++    struct request *request;
++    DWORD ret;
++
++    unsigned char mask[4];
++    unsigned int mask_int;
++    //unsigned long long payload_len;
++    //unsigned int payload_len_small;
++    //unsigned int payload_offset = 6;
++    //unsigned int len_size;
++    //unsigned long long be_payload_len;
++    unsigned int sent = 0;
++    unsigned int frame_size;
++    char *data, *packet;
++    int i;
++
+     FIXME("%p, %u, %p, %u\n", hsocket, status, reason, len);
+-    return ERROR_INVALID_PARAMETER;
++
++    if (len > 123 || (!len && reason))
++        return ERROR_INVALID_PARAMETER;
++
++    if (!(request = (struct request *)grab_object( hsocket )))
++    {
++        return ERROR_INVALID_OPERATION;
++    }
++
++    /* We dont need to include a mask or error code in this case. */
++    if (!len && status == WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS)
++    {
++        /* FIN and Close (0x88), Mask bit (0x80), 4 bits blank mask. */
++        unsigned char simple[6] = {0x88, 0x80, 0x00, 0x00, 0x00, 0x00};
++
++        i = 0;
++        ret = netconn_send(request->netconn, simple, 6, &i);
++
++        release_object( &request->hdr );
++        return ret;
++    }
++
++    srand(time(NULL));
++    mask_int = rand();
++    memcpy(mask, &mask_int, 4);
++
++    //payload_len_small = 1;
++
++    frame_size = 2 + 4 /*mask*/ + 2 /* status */  + len;
++    //payload_offset = 6;
++
++
++    packet = data = (char *)malloc(frame_size);
++    memset(data, 0, frame_size);
++    *data = 0x88;             /* FIN and Close opcode. */
++    data++;
++    *data = (len + 2) | 0x80; /* Payload length and Mask Value */
++    data++;
++
++    for(i=0; i<4; i++)
++    {
++        *data = mask[i];
++        data++;
++    }
++
++
++    //*(data+10) = status;     /* Status code */
++    *data = status;     /* Status code */
++
++    /*if (len)
++        memcpy(data+12, reason, len);
++
++    for(i=0;i<len;i++)
++        *(data+12+i) ^= mask[i % 4] & 0xff;
++*/
++    sent = 0;
++    i = 0;
++    while(sent < frame_size && i >= 0) {
++            netconn_send(request->netconn, packet+sent, frame_size - sent, &i);
++            sent += i;
++    }
++    free(data);
++
++    release_object( &request->hdr );
++    return 0;
+ }
+ 
+ DWORD WINAPI WinHttpWebSocketQueryCloseStatus( HINTERNET hsocket, USHORT *status, void *reason, DWORD len,
+                                                DWORD *consumed )
+ {
++    struct request *request;
++    struct webheader header;
++    char buffer[1024], *ptr;
++    DWORD /*buf_len,*/ ret;
++    int size;
++
+     FIXME("%p, %p, %p, %u, %p\n", hsocket, status, reason, len, consumed);
+-    return ERROR_INVALID_PARAMETER;
++
++    if (!(request = (struct request *)grab_object( hsocket )))
++    {
++        return 11;
++    }
++
++    //buf_len = 4096;
++    //buffer = heap_alloc(buf_len);
++
++    ret = netconn_recv( request->netconn, &buffer, 1024, 0, &size );
++
++    ptr = buffer;
++    header.fin = *ptr & 0x80;
++    header.opcode = *ptr & 0x0F;
++
++    ptr++;
++    header.mask = *ptr & 0x80;
++    header.lenght = *ptr & 0x7F;
++
++FIXME("fin    %u\n", header.fin);
++/*FIXME("resv1  %u\n", header.resv1);
++FIXME("resv2  %u\n", header.resv2);
++FIXME("resv3  %u\n", header.resv3);*/
++FIXME("opcode %u\n", header.opcode );
++FIXME("mask   %u\n", header.mask);
++FIXME("lenght %u\n", header.lenght);
++
++    /* If we dont have a header length, everything is fine. */
++    if (header.lenght > 0)
++    {
++        ptr++;
++
++        *status =  *(SHORT*)ptr;
++        ptr++;
++
++    FIXME("strings %s\n", debugstr_a( ptr) );
++        /*if (header.lenght < 126)
++        {
++                int ddd;
++                // TODO - If TEXT
++                ddd = MultiByteToWideChar( CP_ACP, 0, ptr, header.lenght, NULL, 0 );
++                MultiByteToWideChar( CP_ACP, 0, ptr, header.lenght, reason, ddd );
++                ((WCHAR*)reason)[ddd] = 0;
++        }*/
++    }
++    else
++        *status = WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS;
++
++    *(char*)reason = 0;
++    *consumed = header.lenght;
++
++    return ret;
+ }
+ 
+ enum request_state
+-- 
+2.27.0
+

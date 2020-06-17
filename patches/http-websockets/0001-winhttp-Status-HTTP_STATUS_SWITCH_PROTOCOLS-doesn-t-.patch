@@ -1,7 +1,7 @@
-From 4f2474cf63321b8d5c6ca006502090ff2b5b1ad7 Mon Sep 17 00:00:00 2001
+From ccd405e22af7f7e50cd3ebd5e1d8ecb3fb6bb7b0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 12 Jun 2020 15:34:49 +1000
-Subject: [PATCH 2/7] winhttp: Status HTTP_STATUS_SWITCH_PROTOCOLS doesn't have
+Subject: [PATCH 1/6] winhttp: Status HTTP_STATUS_SWITCH_PROTOCOLS doesn't have
  any content
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>

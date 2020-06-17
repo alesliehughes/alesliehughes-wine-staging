@@ -1,18 +1,19 @@
-From 2e3feb106dafe5eb0135a44899cd2798547965f7 Mon Sep 17 00:00:00 2001
+From 0a9b5abe95188cdc8c5699beab77eaa066253d77 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 11:09:43 +1000
-Subject: [PATCH 5/7] winhttp: Implement WinHttpWebSocketCompleteUpgrade
+Subject: [PATCH 4/6] winhttp: Implement WinHttpWebSocketCompleteUpgrade
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/winhttp/request.c | 31 ++++++++++++++++++++++++++++++-
- 1 file changed, 30 insertions(+), 1 deletion(-)
+ dlls/winhttp/request.c       | 32 +++++++++++++++++++++++++++++++-
+ dlls/winhttp/tests/winhttp.c |  3 +--
+ 2 files changed, 32 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index a018b783069..f0553dd6fa1 100644
+index f2a398cb2fd..2214dbad037 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
-@@ -3054,8 +3054,37 @@ BOOL WINAPI WinHttpWriteData( HINTERNET hrequest, LPCVOID buffer, DWORD to_write
+@@ -3054,8 +3054,38 @@ BOOL WINAPI WinHttpWriteData( HINTERNET hrequest, LPCVOID buffer, DWORD to_write
  
  HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR context )
  {
@@ -29,7 +30,7 @@ index a018b783069..f0553dd6fa1 100644
 +        return FALSE;
 +    }
 +
-+    if (!request->upgrade_socket)
++    if (request->websocket_state != WEBSOCKET_UPGRADING)
 +    {
 +        release_object( &request->hdr );
 +        SetLastError( ERROR_WINHTTP_INCORRECT_HANDLE_STATE );
@@ -46,11 +47,33 @@ index a018b783069..f0553dd6fa1 100644
 +    }
 +
 +    hconnect = alloc_handle( &request->hdr );
++    request->websocket_state = WEBSOCKET_OPEN;
 +
 +    return hconnect;
  }
  
  DWORD WINAPI WinHttpWebSocketSend( HINTERNET hsocket, WINHTTP_WEB_SOCKET_BUFFER_TYPE type, void *buf, DWORD len )
+diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
+index d34adabfbb4..c8ecbaf7787 100644
+--- a/dlls/winhttp/tests/winhttp.c
++++ b/dlls/winhttp/tests/winhttp.c
+@@ -2442,7 +2442,6 @@ static DWORD CALLBACK server_thread(LPVOID param)
+                 send(c, headers, strlen(headers), 0);
+             }
+             else send(c, notokmsg, sizeof(notokmsg) - 1, 0);
+-            continue;
+         }
+         if (strstr(buffer, "GET /quit"))
+         {
+@@ -3223,7 +3222,7 @@ static void test_websocket(int port)
+     ok(ret, "got %u\n", GetLastError());
+ 
+     socket = pWinHttpWebSocketCompleteUpgrade(request, 0);
+-    todo_wine ok(socket != NULL, "got %u\n", GetLastError());
++    ok(socket != NULL, "got %u\n", GetLastError());
+ 
+     header[0] = 0;
+     size = sizeof(header);
 -- 
 2.27.0
 

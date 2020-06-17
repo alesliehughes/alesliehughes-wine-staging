@@ -1,18 +1,26 @@
-From 1945ecd9cdacea8c2f5f1924898ebc2d03dee48d Mon Sep 17 00:00:00 2001
+From f6b96e61e790612a7893b77690f0840468988837 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 16:25:39 +1000
-Subject: [PATCH 6/7] winhttp: Implement WinHttpWebSocketSend
+Subject: [PATCH 5/6] winhttp: Implement WinHttpWebSocketSend
 
 WIP
 ---
- dlls/winhttp/request.c | 168 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 165 insertions(+), 3 deletions(-)
+ dlls/winhttp/request.c | 154 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 151 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index f0553dd6fa1..5e3b9661f87 100644
+index 2214dbad037..a6807f5fb59 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
-@@ -3089,15 +3089,177 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
+@@ -21,6 +21,7 @@
+ 
+ #include <assert.h>
+ #include <stdarg.h>
++#include <stdint.h>
+ #include <wchar.h>
+ 
+ #define COBJMACROS
+@@ -3090,15 +3091,162 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
  
  DWORD WINAPI WinHttpWebSocketSend( HINTERNET hsocket, WINHTTP_WEB_SOCKET_BUFFER_TYPE type, void *buf, DWORD len )
  {
@@ -20,9 +28,6 @@ index f0553dd6fa1..5e3b9661f87 100644
 -    return ERROR_INVALID_PARAMETER;
 +    struct request *request;
 +
-+    char *strdata;
-+
-+    //struct timeval tv;
 +    unsigned char mask[4];
 +    unsigned int mask_int;
 +    unsigned long long payload_len;
@@ -30,7 +35,6 @@ index f0553dd6fa1..5e3b9661f87 100644
 +    unsigned int payload_len_small;
 +    unsigned int payload_offset = 6;
 +    unsigned int len_size;
-+    //unsigned long long be_payload_len;
 +    unsigned int sent = 0;
 +    unsigned int frame_size;
 +    char *data;
@@ -43,7 +47,7 @@ index f0553dd6fa1..5e3b9661f87 100644
 +        return ERROR_INVALID_OPERATION;
 +    }
 +
-+    finNopcode = 0x80; //FIN and text opcode.
++    finNopcode = 0x80; /* FIN - Final Packet */
 +
 +    switch (type)
 +    {
@@ -62,44 +66,40 @@ index f0553dd6fa1..5e3b9661f87 100644
 +            return ERROR_INVALID_PARAMETER;
 +    }
 +
-+    strdata = (char *)heap_alloc(len);
-+
-+    sprintf(strdata, "%S", buf);
-+
 +    srand(time(NULL));
 +    mask_int = rand();
 +    memcpy(mask, &mask_int, 4);
-+    payload_len = strlen(strdata);
-+
++    payload_len = len;
 +
 +    if(payload_len <= 125) {
 +            frame_size = 6 + payload_len;
 +            payload_len_small = payload_len;
 +
-+    } else if(payload_len > 125 && payload_len <= 0xffff) {
++    } else if(payload_len > 125 && payload_len <= UINT16_MAX) {
 +            frame_size = 8 + payload_len;
 +            payload_len_small = 126;
 +            payload_offset += 2;
-+    } else if(payload_len > 0xffff && payload_len <= 0xffffffffffffffffLL) {
++    } else if(payload_len > 0xffff && payload_len <= UINT64_MAX) {
 +            frame_size = 14 + payload_len;
 +            payload_len_small = 127;
 +            payload_offset += 8;
 +    } else {
 +            return -1;
 +    }
-+    data = (char *)malloc(frame_size);
-+    memset(data, 0, frame_size);
++
++    data = (char *)heap_alloc_zero(frame_size);
++
 +    *data = finNopcode;
 +    *(data+1) = payload_len_small | 0x80; //payload length with mask bit on
 +    if(payload_len_small == 126) {
-+            payload_len &= 0xffff;
++            payload_len &= UINT16_MAX;
 +            len_size = 2;
 +            for(i = 0; i < len_size; i++) {
 +                    *(data+2+i) = *((char *)&payload_len+(len_size-i-1));
 +            }
 +    }
 +    if(payload_len_small == 127) {
-+            payload_len &= 0xffffffffffffffffLL;
++            payload_len &= UINT64_MAX;
 +            len_size = 8;
 +            for(i = 0; i < len_size; i++) {
 +                    *(data+2+i) = *((char *)&payload_len+(len_size-i-1));
@@ -108,17 +108,17 @@ index f0553dd6fa1..5e3b9661f87 100644
 +    for(i=0;i<4;i++)
 +            *(data+(payload_offset-4)+i) = mask[i];
 +
-+    memcpy(data+payload_offset, strdata, strlen(strdata));
-+    for(i=0;i<strlen(strdata);i++)
-+            *(data+payload_offset+i) ^= mask[i % 4] & 0xff;
++    memcpy(data+payload_offset, buf, len);
++    for(i=0;i<len;i++)
++        *(data+payload_offset+i) ^= mask[i % 4] & 0xff;
 +    sent = 0;
 +    i = 0;
 +    while(sent < frame_size && i >= 0) {
 +            netconn_send(request->netconn, data+sent, frame_size - sent, &i);
 +            sent += i;
 +    }
-+    free(data);
-+    heap_free(strdata);
++    heap_free(data);
++
 +    return 0;
  }
  
@@ -173,16 +173,9 @@ index f0553dd6fa1..5e3b9661f87 100644
 +FIXME("mask   %u\n", header.mask);
 +FIXME("lenght %u\n", header.lenght);
 +
-+    ptr++;
-+
-+FIXME("strings %s\n", debugstr_a( ptr) );
-+    if (header.lenght < 126)
++    if (header.lenght)
 +    {
-+            int ddd;
-+            // TODO - If TEXT
-+            ddd = MultiByteToWideChar( CP_ACP, 0, ptr, header.lenght, NULL, 0 );
-+            MultiByteToWideChar( CP_ACP, 0, ptr, header.lenght, buf, ddd );
-+            ((WCHAR*)buf)[ddd] = 0;
++        memcpy(buf, ptr, header.lenght);
 +    }
 +
 +    *read = header.lenght;

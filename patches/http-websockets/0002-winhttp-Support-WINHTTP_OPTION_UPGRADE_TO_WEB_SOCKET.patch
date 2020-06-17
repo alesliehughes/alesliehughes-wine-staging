@@ -1,0 +1,72 @@
+From 2fe853305e82815c684685e9c345fbe581f34bfa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 15 Jun 2020 09:16:50 +1000
+Subject: [PATCH 2/6] winhttp: Support WINHTTP_OPTION_UPGRADE_TO_WEB_SOCKET
+ option
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/winhttp/session.c         |  4 ++++
+ dlls/winhttp/tests/winhttp.c   |  2 +-
+ dlls/winhttp/winhttp_private.h | 10 ++++++++++
+ 3 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/winhttp/session.c b/dlls/winhttp/session.c
+index 24455d858a6..05866568843 100644
+--- a/dlls/winhttp/session.c
++++ b/dlls/winhttp/session.c
+@@ -1042,6 +1042,10 @@ static BOOL request_set_option( struct object_header *hdr, DWORD option, void *b
+         FIXME("WINHTTP_OPTION_CONNECT_RETRIES\n");
+         return TRUE;
+ 
++    case WINHTTP_OPTION_UPGRADE_TO_WEB_SOCKET:
++        request->websocket_state = WEBSOCKET_UPGRADING;
++        return TRUE;
++
+     default:
+         FIXME("unimplemented option %u\n", option);
+         SetLastError( ERROR_WINHTTP_INVALID_OPTION );
+diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
+index f08f50b9a9d..e17639d4dd6 100644
+--- a/dlls/winhttp/tests/winhttp.c
++++ b/dlls/winhttp/tests/winhttp.c
+@@ -3119,7 +3119,7 @@ static void test_websocket(int port)
+     ok(request != NULL, "got %u\n", GetLastError());
+ 
+     ret = WinHttpSetOption(request, WINHTTP_OPTION_UPGRADE_TO_WEB_SOCKET, NULL, 0);
+-    todo_wine ok(ret, "got %u\n", GetLastError());
++    ok(ret, "got %u\n", GetLastError());
+ 
+     size = sizeof(header);
+     SetLastError(0xdeadbeef);
+diff --git a/dlls/winhttp/winhttp_private.h b/dlls/winhttp/winhttp_private.h
+index 657f82f6421..35a1daf0637 100644
+--- a/dlls/winhttp/winhttp_private.h
++++ b/dlls/winhttp/winhttp_private.h
+@@ -154,6 +154,15 @@ struct authinfo
+     BOOL finished; /* finished authenticating */
+ };
+ 
++enum websocket_state
++{
++    WEBSOCKET_NOT_SUPPORTED,
++    WEBSOCKET_UPGRADING,
++    WEBSOCKET_OPEN,
++    WEBSOCKET_CLOSING,
++    WEBSOCKET_CLOSED,
++};
++
+ struct request
+ {
+     struct object_header hdr;
+@@ -167,6 +176,7 @@ struct request
+     struct netconn *netconn;
+     DWORD security_flags;
+     BOOL check_revocation;
++    enum websocket_state websocket_state;
+     const CERT_CONTEXT *server_cert;
+     const CERT_CONTEXT *client_cert;
+     CredHandle cred_handle;
+-- 
+2.27.0
+
