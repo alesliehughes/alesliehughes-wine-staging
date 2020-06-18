@@ -1,15 +1,15 @@
-From f6b96e61e790612a7893b77690f0840468988837 Mon Sep 17 00:00:00 2001
+From 1023410fb9c50c486cbd92949f3bb2f5573b61f8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 16:25:39 +1000
-Subject: [PATCH 5/6] winhttp: Implement WinHttpWebSocketSend
+Subject: [PATCH 1/3] winhttp: Implement WinHttpWebSocketSend
 
 WIP
 ---
- dlls/winhttp/request.c | 154 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 151 insertions(+), 3 deletions(-)
+ dlls/winhttp/request.c | 168 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 166 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index 2214dbad037..a6807f5fb59 100644
+index 0511dd44eec..4af50e674e0 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
 @@ -21,6 +21,7 @@
@@ -20,13 +20,11 @@ index 2214dbad037..a6807f5fb59 100644
  #include <wchar.h>
  
  #define COBJMACROS
-@@ -3090,15 +3091,162 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
+@@ -3119,15 +3120,178 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
  
  DWORD WINAPI WinHttpWebSocketSend( HINTERNET hsocket, WINHTTP_WEB_SOCKET_BUFFER_TYPE type, void *buf, DWORD len )
  {
--    FIXME("%p, %u, %p, %u\n", hsocket, type, buf, len);
--    return ERROR_INVALID_PARAMETER;
-+    struct request *request;
++    struct socket *sock;
 +
 +    unsigned char mask[4];
 +    unsigned int mask_int;
@@ -40,11 +38,20 @@ index 2214dbad037..a6807f5fb59 100644
 +    char *data;
 +    int i;
 +
-+    TRACE("%p, %u, %p, %u\n", hsocket, type, buf, len);
+     FIXME("%p, %u, %p, %u\n", hsocket, type, buf, len);
+-    return ERROR_INVALID_PARAMETER;
 +
-+    if (!(request = (struct request *)grab_object( hsocket )))
++    if (!(sock = (struct socket *)grab_object( hsocket )))
 +    {
++        ERR("Invalid Handle\n");
 +        return ERROR_INVALID_OPERATION;
++    }
++
++    if (sock->hdr.type != WINHTTP_HANDLE_TYPE_SOCKET)
++    {
++        ERR("Incorrect handle\n");
++        release_object( &sock->hdr );
++        return ERROR_WINHTTP_INCORRECT_HANDLE_TYPE;
 +    }
 +
 +    finNopcode = 0x80; /* FIN - Final Packet */
@@ -114,7 +121,7 @@ index 2214dbad037..a6807f5fb59 100644
 +    sent = 0;
 +    i = 0;
 +    while(sent < frame_size && i >= 0) {
-+            netconn_send(request->netconn, data+sent, frame_size - sent, &i);
++            netconn_send(sock->request->netconn, data+sent, frame_size - sent, &i);
 +            sent += i;
 +    }
 +    heap_free(data);
@@ -137,7 +144,7 @@ index 2214dbad037..a6807f5fb59 100644
  DWORD WINAPI WinHttpWebSocketReceive( HINTERNET hsocket, void *buf, DWORD len, DWORD *read,
                                        WINHTTP_WEB_SOCKET_BUFFER_TYPE *type )
  {
-+    struct request *request;
++    struct socket *sock;
 +    struct webheader header;
 +    char buffer[1024], *ptr;
 +    DWORD /*buf_len,*/ ret;
@@ -146,15 +153,23 @@ index 2214dbad037..a6807f5fb59 100644
      FIXME("%p, %p, %u, %p, %p\n", hsocket, buf, len, read, type);
 -    return ERROR_INVALID_PARAMETER;
 +
-+    if (!(request = (struct request *)grab_object( hsocket )))
++    if (!(sock = (struct socket *)grab_object( hsocket )))
 +    {
-+        return 11;
++        ERR("Invalid Handle\n");
++        return ERROR_INVALID_OPERATION;
++    }
++
++    if (sock->hdr.type != WINHTTP_HANDLE_TYPE_SOCKET)
++    {
++        ERR("Incorrect handle\n");
++        release_object( &sock->hdr );
++        return ERROR_WINHTTP_INCORRECT_HANDLE_TYPE;
 +    }
 +
 +    //buf_len = 4096;
 +    //buffer = heap_alloc(buf_len);
 +
-+    ret = netconn_recv( request->netconn, &buffer,
++    ret = netconn_recv( sock->request->netconn, &buffer,
 +                        1024, 0, &size );
 +
 +    ptr = buffer;

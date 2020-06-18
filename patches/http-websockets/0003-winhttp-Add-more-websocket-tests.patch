@@ -1,0 +1,139 @@
+From 0c92bb32df0e14d5ac3ed9940150597db9678637 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 18 Jun 2020 08:32:45 +1000
+Subject: [PATCH 3/3] winhttp: Add more websocket tests
+
+---
+ dlls/winhttp/tests/winhttp.c | 68 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 59 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
+index 8083c4825b2..6112a8b764d 100644
+--- a/dlls/winhttp/tests/winhttp.c
++++ b/dlls/winhttp/tests/winhttp.c
+@@ -37,7 +37,10 @@
+ 
+ DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
+ 
++static DWORD     (WINAPI *pWinHttpWebSocketClose)(HINTERNET,USHORT,void *,DWORD);
+ static HINTERNET (WINAPI *pWinHttpWebSocketCompleteUpgrade)(HINTERNET,DWORD_PTR);
++static DWORD     (WINAPI *pWinHttpWebSocketQueryCloseStatus)(HINTERNET,USHORT*,void*,DWORD,DWORD*);
++static DWORD     (WINAPI *pWinHttpWebSocketSend)(HINTERNET,WINHTTP_WEB_SOCKET_BUFFER_TYPE,void*,DWORD);
+ 
+ static BOOL proxy_active(void)
+ {
+@@ -2259,6 +2262,7 @@ static DWORD CALLBACK server_thread(LPVOID param)
+     char buffer[0x100];
+     WSADATA wsaData;
+     int last_request = 0;
++    BOOL websocket = FALSE;
+ 
+     WSAStartup(MAKEWORD(1,1), &wsaData);
+ 
+@@ -2285,15 +2289,32 @@ static DWORD CALLBACK server_thread(LPVOID param)
+         if (c == -1) c = accept(s, NULL, NULL);
+ 
+         memset(buffer, 0, sizeof buffer);
+-        for(i = 0; i < sizeof buffer - 1; i++)
++        if (websocket)
+         {
+-            r = recv(c, &buffer[i], 1, 0);
+-            if (r != 1)
+-                break;
+-            if (i < 4) continue;
+-            if (buffer[i - 2] == '\n' && buffer[i] == '\n' &&
+-                buffer[i - 3] == '\r' && buffer[i - 1] == '\r')
+-                break;
++            r = recv(c, buffer, sizeof buffer, 0);
++            if (r >= 2)
++            {
++                unsigned char fin = buffer[0];
++                unsigned char code = buffer[1];
++
++                ok(0, "r = %d, %x, %x\n", r, fin, code);
++
++                // TODO - Detect Close
++                //websocket = FALSE;
++            }
++        }
++        else
++        {
++            for(i = 0; i < sizeof buffer - 1; i++)
++            {
++                r = recv(c, &buffer[i], 1, 0);
++                if (r != 1)
++                    break;
++                if (i < 4) continue;
++                if (buffer[i - 2] == '\n' && buffer[i] == '\n' &&
++                    buffer[i - 3] == '\r' && buffer[i - 1] == '\r')
++                    break;
++            }
+         }
+         if (strstr(buffer, "GET /basic"))
+         {
+@@ -2439,6 +2460,7 @@ static DWORD CALLBACK server_thread(LPVOID param)
+                 strcat(headers, accept);
+                 strcat(headers, "\r\n\r\n");
+ 
++                websocket = TRUE;
+                 send(c, headers, strlen(headers), 0);
+             }
+             else send(c, notokmsg, sizeof(notokmsg) - 1, 0);
+@@ -3101,7 +3123,10 @@ static void test_websocket(int port)
+     DWORD size, len, count, status, index, error;
+     WCHAR header[32];
+     char buf[128];
++    WCHAR bufferW[128];
+     BOOL ret;
++    USHORT closestatus;
++    WINHTTP_WEB_SOCKET_BUFFER_TYPE type;
+ 
+     if (!pWinHttpWebSocketCompleteUpgrade)
+     {
+@@ -3242,9 +3267,31 @@ static void test_websocket(int port)
+     ret = WinHttpQueryHeaders(request, WINHTTP_QUERY_CUSTOM, L"Sec-WebSocket-Accept", buf, &size, &index);
+     ok(ret, "got %u\n", GetLastError());
+ 
++    /* Once WinHttpWebSocketCompleteUpgrade is complete, we no longer require the request handle */
++    WinHttpCloseHandle(request);
++
+     /* Send/Receive on websock */
++    lstrcpyW(bufferW, L"Hello World");
++    ret = pWinHttpWebSocketSend(socket, WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE,
++            bufferW, (lstrlenW(bufferW)+1)*sizeof(WCHAR) );
++    todo_wine ok(ret == NO_ERROR, "%u. got %u\n", ret, GetLastError());
++if (0)
++{
++    ret = WinHttpWebSocketReceive(socket, bufferW, ARRAY_SIZE(bufferW), &size, &type);
++    todo_wine ok(!ret, "got %u\n", GetLastError());
++    todo_wine ok(type == WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE, "got %u\n", type);
++    todo_wine ok(size == 56, "got %u\n", size);
++    ok(!wcscmp( bufferW, L"Hello World" ), "got %s\n", wine_dbgstr_w(bufferW));
++}
++    ret = pWinHttpWebSocketClose(socket, WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS, NULL, 0);
++    todo_wine ok(ret == NO_ERROR, "got %u\n", GetLastError());
++
++    bufferW[0] = 0;
++    closestatus = 0;
++    ret = pWinHttpWebSocketQueryCloseStatus(socket, &closestatus, bufferW, ARRAY_SIZE(bufferW), &size);
++    todo_wine ok(ret == NO_ERROR, "got %u\n", GetLastError());
++    todo_wine ok(closestatus == WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS, "got %u\n", closestatus);
+ 
+-    WinHttpCloseHandle(request);
+     WinHttpCloseHandle(socket);
+     WinHttpCloseHandle(connection);
+     WinHttpCloseHandle(session);
+@@ -4923,7 +4970,10 @@ START_TEST (winhttp)
+     DWORD ret;
+     HMODULE mod = GetModuleHandleA("winhttp.dll");
+ 
++    pWinHttpWebSocketClose = (void *)GetProcAddress(mod, "WinHttpWebSocketClose");
+     pWinHttpWebSocketCompleteUpgrade = (void *)GetProcAddress(mod, "WinHttpWebSocketCompleteUpgrade");
++    pWinHttpWebSocketQueryCloseStatus = (void *)GetProcAddress(mod, "WinHttpWebSocketQueryCloseStatus");
++    pWinHttpWebSocketSend = (void *)GetProcAddress(mod, "WinHttpWebSocketSend");
+ 
+     test_WinHttpOpenRequest();
+     test_WinHttpSendRequest();
+-- 
+2.27.0
+

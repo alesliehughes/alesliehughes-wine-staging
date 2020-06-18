@@ -1,22 +1,22 @@
-From 2c4629abe7eec90d692b6d27c021374f5f921704 Mon Sep 17 00:00:00 2001
+From 9d6e961b3d5b73e2ad61aed4c73f218baf342d4f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 16 Jun 2020 12:15:45 +1000
-Subject: [PATCH 6/6] winhttp: Implement WinHttpWebSocketClose
+Subject: [PATCH 2/3] winhttp: Implement WinHttpWebSocketClose
 
 WIP
 ---
- dlls/winhttp/request.c | 140 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 138 insertions(+), 2 deletions(-)
+ dlls/winhttp/request.c | 154 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 152 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index a6807f5fb59..88f9897a89e 100644
+index 4af50e674e0..b01f3cddf1c 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
-@@ -3257,15 +3257,151 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
+@@ -3302,15 +3302,165 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
  
  DWORD WINAPI WinHttpWebSocketClose( HINTERNET hsocket, USHORT status, void *reason, DWORD len )
  {
-+    struct request *request;
++    struct socket *sock;
 +    DWORD ret;
 +
 +    unsigned char mask[4];
@@ -37,9 +37,16 @@ index a6807f5fb59..88f9897a89e 100644
 +    if (len > 123 || (!len && reason))
 +        return ERROR_INVALID_PARAMETER;
 +
-+    if (!(request = (struct request *)grab_object( hsocket )))
++    if (!(sock = (struct socket *)grab_object( hsocket )))
 +    {
 +        return ERROR_INVALID_OPERATION;
++    }
++
++    if (sock->hdr.type != WINHTTP_HANDLE_TYPE_SOCKET)
++    {
++        ERR("Incorrect handle\n");
++        release_object( &sock->hdr );
++        return ERROR_WINHTTP_INCORRECT_HANDLE_TYPE;
 +    }
 +
 +    /* We dont need to include a mask or error code in this case. */
@@ -49,9 +56,9 @@ index a6807f5fb59..88f9897a89e 100644
 +        unsigned char simple[6] = {0x88, 0x80, 0x00, 0x00, 0x00, 0x00};
 +
 +        i = 0;
-+        ret = netconn_send(request->netconn, simple, 6, &i);
++        ret = netconn_send(sock->request->netconn, simple, 6, &i);
 +
-+        release_object( &request->hdr );
++        release_object( &sock->request->hdr );
 +        return ret;
 +    }
 +
@@ -91,19 +98,19 @@ index a6807f5fb59..88f9897a89e 100644
 +    sent = 0;
 +    i = 0;
 +    while(sent < frame_size && i >= 0) {
-+            netconn_send(request->netconn, packet+sent, frame_size - sent, &i);
++            netconn_send(sock->request->netconn, packet+sent, frame_size - sent, &i);
 +            sent += i;
 +    }
 +    free(data);
 +
-+    release_object( &request->hdr );
++    release_object( &sock->request->hdr );
 +    return 0;
  }
  
  DWORD WINAPI WinHttpWebSocketQueryCloseStatus( HINTERNET hsocket, USHORT *status, void *reason, DWORD len,
                                                 DWORD *consumed )
  {
-+    struct request *request;
++    struct socket *sock;
 +    struct webheader header;
 +    char buffer[1024], *ptr;
 +    DWORD /*buf_len,*/ ret;
@@ -112,15 +119,22 @@ index a6807f5fb59..88f9897a89e 100644
      FIXME("%p, %p, %p, %u, %p\n", hsocket, status, reason, len, consumed);
 -    return ERROR_INVALID_PARAMETER;
 +
-+    if (!(request = (struct request *)grab_object( hsocket )))
++    if (!(sock = (struct socket *)grab_object( hsocket )))
 +    {
 +        return 11;
++    }
++
++    if (sock->hdr.type != WINHTTP_HANDLE_TYPE_SOCKET)
++    {
++        ERR("Incorrect handle\n");
++        release_object( &sock->hdr );
++        return ERROR_WINHTTP_INCORRECT_HANDLE_TYPE;
 +    }
 +
 +    //buf_len = 4096;
 +    //buffer = heap_alloc(buf_len);
 +
-+    ret = netconn_recv( request->netconn, &buffer, 1024, 0, &size );
++    ret = netconn_recv( sock->request->netconn, &buffer, 1024, 0, &size );
 +
 +    ptr = buffer;
 +    header.fin = *ptr & 0x80;
