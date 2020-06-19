@@ -1,4 +1,4 @@
-From 7e46a7f940a3a8bbb26cbda1378a0de5e5cef70e Mon Sep 17 00:00:00 2001
+From d404ef497d330d6f2476e1e9f80e4d871f4d2cd9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 16:25:39 +1000
 Subject: [PATCH 2/3] winhttp: Implement WinHttpWebSocketSend
@@ -9,7 +9,7 @@ WIP
  1 file changed, 204 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index 08e9d7584ed..bed9677834b 100644
+index 08e9d7584ed..d6f7728ae8e 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
 @@ -21,6 +21,7 @@
@@ -220,7 +220,7 @@ index 08e9d7584ed..bed9677834b 100644
 +    }
 +
 +    FIXME("packetsize %u\n", packetsize);
-+    ret = netconn_recv( sock->request->netconn, &ptr, packetsize, 0, &size );
++    ret = netconn_recv( sock->request->netconn, buf, packetsize, 0, &size );
 +    if (ret != 0)
 +    {
 +        WARN("recv returned %d\n", ret);
@@ -229,7 +229,7 @@ index 08e9d7584ed..bed9677834b 100644
 +    }
 +
 +    if (read)
-+        *read = header.length;
++        *read = packetsize;
 +    if (type)
 +        *type = WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE;
 +
