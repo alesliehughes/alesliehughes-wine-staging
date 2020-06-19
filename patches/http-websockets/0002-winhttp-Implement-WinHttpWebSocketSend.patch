@@ -1,15 +1,15 @@
-From 6c31df27cad2ce2d6a73dba33a6a3b7c1552bbde Mon Sep 17 00:00:00 2001
+From 7e46a7f940a3a8bbb26cbda1378a0de5e5cef70e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 16:25:39 +1000
 Subject: [PATCH 2/3] winhttp: Implement WinHttpWebSocketSend
 
 WIP
 ---
- dlls/winhttp/request.c | 186 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 184 insertions(+), 2 deletions(-)
+ dlls/winhttp/request.c | 206 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 204 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index 08e9d7584ed..077cf9e55f4 100644
+index 08e9d7584ed..bed9677834b 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
 @@ -21,6 +21,7 @@
@@ -20,7 +20,7 @@ index 08e9d7584ed..077cf9e55f4 100644
  #include <wchar.h>
  
  #define COBJMACROS
-@@ -3117,15 +3118,196 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
+@@ -3117,15 +3118,216 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
  
  DWORD WINAPI WinHttpWebSocketSend( HINTERNET hsocket, WINHTTP_WEB_SOCKET_BUFFER_TYPE type, void *buf, DWORD len )
  {
@@ -154,9 +154,10 @@ index 08e9d7584ed..077cf9e55f4 100644
  {
 +    struct socket *sock;
 +    struct webheader header;
-+    char buffer[2], *ptr;
++    char buffer[4], *ptr;
 +    DWORD /*buf_len,*/ ret;
 +    int size;
++    DWORD packetsize;
 +
      FIXME("%p, %p, %u, %p, %p\n", hsocket, buf, len, read, type);
 -    return ERROR_INVALID_PARAMETER;
@@ -175,7 +176,7 @@ index 08e9d7584ed..077cf9e55f4 100644
 +    }
 +
 +    /* Just Read the header */
-+    ret = netconn_recv( sock->request->netconn, &buffer, ARRAY_SIZE(buffer), 0, &size );
++    ret = netconn_recv( sock->request->netconn, &buffer, 2, 0, &size );
 +    if (ret != 0)
 +    {
 +        WARN("recv returned %d\n", ret);
@@ -200,7 +201,26 @@ index 08e9d7584ed..077cf9e55f4 100644
 +FIXME("mask   %u\n", header.mask);
 +FIXME("length %u\n", header.length);
 +
-+    ret = netconn_recv( sock->request->netconn, &ptr, header.length, 0, &size );
++    packetsize = header.length;
++    if (header.length == 126)
++    {
++        ret = netconn_recv( sock->request->netconn, &packetsize, 4, 0, &size );
++        if (ret != 0)
++        {
++            WARN("recv returned %d\n", ret);
++            release_object( &sock->hdr );
++            return ret;
++        }
++    }
++    else if (header.length == 127)
++    {
++        /**/
++        ERR("64 length currently not supported.\n");
++        return 1;
++    }
++
++    FIXME("packetsize %u\n", packetsize);
++    ret = netconn_recv( sock->request->netconn, &ptr, packetsize, 0, &size );
 +    if (ret != 0)
 +    {
 +        WARN("recv returned %d\n", ret);

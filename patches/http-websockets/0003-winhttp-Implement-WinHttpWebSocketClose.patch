@@ -1,4 +1,4 @@
-From 4c29b82377f530c15abf304e4769cf218b613581 Mon Sep 17 00:00:00 2001
+From a2e4941f906312650e12266d67c8ae38d731a803 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 16 Jun 2020 12:15:45 +1000
 Subject: [PATCH 3/3] winhttp: Implement WinHttpWebSocketClose
@@ -9,10 +9,10 @@ WIP
  1 file changed, 60 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index 077cf9e55f4..9601ca7b15b 100644
+index bed9677834b..4f8c7406a2a 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
-@@ -3318,15 +3318,71 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
+@@ -3338,15 +3338,71 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
  
  DWORD WINAPI WinHttpWebSocketClose( HINTERNET hsocket, USHORT status, void *reason, DWORD len )
  {
