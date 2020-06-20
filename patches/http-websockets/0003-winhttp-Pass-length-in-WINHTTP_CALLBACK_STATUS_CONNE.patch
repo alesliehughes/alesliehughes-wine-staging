@@ -1,0 +1,27 @@
+From d030cd5028bb9560c55a34fbe25bab4de342c7bc Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 20 Jun 2020 20:56:46 +1000
+Subject: [PATCH 3/5] winhttp: Pass length in
+ WINHTTP_CALLBACK_STATUS_CONNECTING_TO_SERVER callback
+
+---
+ dlls/winhttp/request.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
+index 31062e716b4..c86382ce4b7 100644
+--- a/dlls/winhttp/request.c
++++ b/dlls/winhttp/request.c
+@@ -1591,7 +1591,8 @@ static DWORD open_connection( struct request *request )
+ 
+         TRACE("connecting to %s:%u\n", debugstr_w(addressW), port);
+ 
+-        send_callback( &request->hdr, WINHTTP_CALLBACK_STATUS_CONNECTING_TO_SERVER, addressW, 0 );
++        len = lstrlenW( addressW ) + 1;
++        send_callback( &request->hdr, WINHTTP_CALLBACK_STATUS_CONNECTING_TO_SERVER, addressW, len );
+ 
+         if ((ret = netconn_create( host, &connect->sockaddr, request->connect_timeout, &netconn )))
+         {
+-- 
+2.27.0
+

@@ -1,7 +1,7 @@
-From ccf0845e9d16768536d1fb45e521a455940f4c90 Mon Sep 17 00:00:00 2001
+From 57d78f2701fcaee256811d56f9d42b938b5c1676 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 16:25:39 +1000
-Subject: [PATCH 2/3] winhttp: Implement WinHttpWebSocketSend
+Subject: [PATCH 4/5] winhttp: Implement WinHttpWebSocketSend
 
 WIP
 ---
@@ -9,7 +9,7 @@ WIP
  1 file changed, 209 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index 08e9d7584ed..6fa2c16a63f 100644
+index c86382ce4b7..d768b964eea 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
 @@ -21,6 +21,7 @@
@@ -20,7 +20,7 @@ index 08e9d7584ed..6fa2c16a63f 100644
  #include <wchar.h>
  
  #define COBJMACROS
-@@ -3117,15 +3118,221 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
+@@ -3122,15 +3123,221 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
  
  DWORD WINAPI WinHttpWebSocketSend( HINTERNET hsocket, WINHTTP_WEB_SOCKET_BUFFER_TYPE type, void *buf, DWORD len )
  {
@@ -180,7 +180,7 @@ index 08e9d7584ed..6fa2c16a63f 100644
 +    ret = netconn_recv( sock->request->netconn, &buffer, 2, 0, &size );
 +    if (ret != 0)
 +    {
-+        WARN("recv returned %d\n", ret);
++        WARN("header recv returned %d\n", ret);
 +        release_object( &sock->hdr );
 +        return ret;
 +    }
@@ -212,7 +212,7 @@ index 08e9d7584ed..6fa2c16a63f 100644
 +        ret = netconn_recv( sock->request->netconn, &packetsize, 4, 0, &size );
 +        if (ret != 0)
 +        {
-+            WARN("recv returned %d\n", ret);
++            WARN("length recv returned %d\n", ret);
 +            release_object( &sock->hdr );
 +            return ret;
 +        }
@@ -228,7 +228,7 @@ index 08e9d7584ed..6fa2c16a63f 100644
 +    ret = netconn_recv( sock->request->netconn, buf, packetsize, 0, &size );
 +    if (ret != 0)
 +    {
-+        WARN("recv returned %d\n", ret);
++        WARN("packetsize recv returned %d\n", ret);
 +        release_object( &sock->hdr );
 +        return ret;
 +    }

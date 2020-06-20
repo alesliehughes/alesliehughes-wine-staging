@@ -1,0 +1,30 @@
+From e5eeb95a5e3e4dc510f7fd65097dfbc2a2fbd7be Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 20 Jun 2020 20:42:23 +1000
+Subject: [PATCH 2/5] winhttp: WinHttpWebSocketCompleteUpgrade use
+ WINHTTP_CALLBACK_STATUS_HANDLE_CREATED callback
+
+---
+ dlls/winhttp/request.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
+index 08e9d7584ed..31062e716b4 100644
+--- a/dlls/winhttp/request.c
++++ b/dlls/winhttp/request.c
+@@ -3111,7 +3111,11 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
+     release_object( &socket->hdr );
+     release_object( &request->hdr );
+     TRACE("returning %p\n", hsocket);
+-    if (hsocket) SetLastError( ERROR_SUCCESS );
++    if (hsocket)
++    {
++        send_callback( &request->hdr, WINHTTP_CALLBACK_STATUS_HANDLE_CREATED, hsocket, sizeof(hsocket) );
++        SetLastError( ERROR_SUCCESS );
++    }
+     return hsocket;
+ }
+ 
+-- 
+2.27.0
+
