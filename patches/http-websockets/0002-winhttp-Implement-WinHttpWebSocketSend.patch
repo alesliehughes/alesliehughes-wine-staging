@@ -1,15 +1,15 @@
-From d404ef497d330d6f2476e1e9f80e4d871f4d2cd9 Mon Sep 17 00:00:00 2001
+From ccf0845e9d16768536d1fb45e521a455940f4c90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jun 2020 16:25:39 +1000
 Subject: [PATCH 2/3] winhttp: Implement WinHttpWebSocketSend
 
 WIP
 ---
- dlls/winhttp/request.c | 206 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 204 insertions(+), 2 deletions(-)
+ dlls/winhttp/request.c | 211 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 209 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
-index 08e9d7584ed..d6f7728ae8e 100644
+index 08e9d7584ed..6fa2c16a63f 100644
 --- a/dlls/winhttp/request.c
 +++ b/dlls/winhttp/request.c
 @@ -21,6 +21,7 @@
@@ -20,7 +20,7 @@ index 08e9d7584ed..d6f7728ae8e 100644
  #include <wchar.h>
  
  #define COBJMACROS
-@@ -3117,15 +3118,216 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
+@@ -3117,15 +3118,221 @@ HINTERNET WINAPI WinHttpWebSocketCompleteUpgrade( HINTERNET hrequest, DWORD_PTR
  
  DWORD WINAPI WinHttpWebSocketSend( HINTERNET hsocket, WINHTTP_WEB_SOCKET_BUFFER_TYPE type, void *buf, DWORD len )
  {
@@ -175,6 +175,7 @@ index 08e9d7584ed..d6f7728ae8e 100644
 +        return ERROR_WINHTTP_INCORRECT_HANDLE_TYPE;
 +    }
 +
++retry:
 +    /* Just Read the header */
 +    ret = netconn_recv( sock->request->netconn, &buffer, 2, 0, &size );
 +    if (ret != 0)
@@ -193,13 +194,17 @@ index 08e9d7584ed..d6f7728ae8e 100644
 +    header.length = *ptr & 0x7F;
 +    ptr++;
 +
-+FIXME("fin    %u\n", header.fin);
-+/*FIXME("resv1  %u\n", header.resv1);
-+FIXME("resv2  %u\n", header.resv2);
-+FIXME("resv3  %u\n", header.resv3);*/
-+FIXME("opcode %u\n", header.opcode );
-+FIXME("mask   %u\n", header.mask);
-+FIXME("length %u\n", header.length);
++    FIXME("fin    %u\n", header.fin);
++    FIXME("opcode %u\n", header.opcode );
++    FIXME("mask   %u\n", header.mask);
++    FIXME("length %u\n", header.length);
++
++    if (header.opcode == 0xA /* Pong */ ||
++        header.opcode == 0x9 /* Ping */ )
++    {
++        TRACE("%s Packet ignored\n", header.opcode == 0xA ? "Pong" : "Ping");
++        goto retry;
++    }
 +
 +    packetsize = header.length;
 +    if (header.length == 126)
