@@ -1,0 +1,91 @@
+From 97c51ab455d2ad421181b19195afcb98bc5cbf25 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 16 Jun 2020 12:15:45 +1000
+Subject: [PATCH 2/3] winhttp: Semi-stub WinHttpWebSocketClose
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/winhttp/request.c       | 36 ++++++++++++++++++++++++++++++++++--
+ dlls/winhttp/tests/winhttp.c |  5 +++++
+ 2 files changed, 39 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/winhttp/request.c b/dlls/winhttp/request.c
+index 8e8707fbd2f..e6758a6cd27 100644
+--- a/dlls/winhttp/request.c
++++ b/dlls/winhttp/request.c
+@@ -3360,8 +3360,40 @@ DWORD WINAPI WinHttpWebSocketShutdown( HINTERNET hsocket, USHORT status, void *r
+ 
+ DWORD WINAPI WinHttpWebSocketClose( HINTERNET hsocket, USHORT status, void *reason, DWORD len )
+ {
+-    FIXME("%p, %u, %p, %u\n", hsocket, status, reason, len);
+-    return ERROR_INVALID_PARAMETER;
++    struct socket *sock;
++    DWORD ret;
++    int i;
++    /* FIN and Close (0x88), Mask bit (0x80), 4 bits blank mask. */
++    unsigned char simple[6] = {0x88, 0x80, 0x00, 0x00, 0x00, 0x00};
++
++    FIXME("%p, %u, %p, %u Semi-stub\n", hsocket, status, reason, len);
++
++    if (len > WINHTTP_WEB_SOCKET_MAX_CLOSE_REASON_LENGTH || (!len && reason))
++        return ERROR_INVALID_PARAMETER;
++
++    if (!(sock = (struct socket *)grab_object( hsocket )))
++    {
++        return ERROR_INVALID_HANDLE;
++    }
++
++    if (sock->hdr.type != WINHTTP_HANDLE_TYPE_SOCKET)
++    {
++        ERR("Incorrect handle type\n");
++        release_object( &sock->hdr );
++        return ERROR_WINHTTP_INCORRECT_HANDLE_TYPE;
++    }
++
++    if (len || status != WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS)
++    {
++        WARN("User supplied error message %d currently not supported.\n", status);
++    }
++
++    i = 0;
++    /* Just send the simplest close message we have to */
++    ret = netconn_send(sock->request->netconn, simple, ARRAY_SIZE(simple), &i);
++
++    release_object( &sock->request->hdr );
++    return ret;
+ }
+ 
+ DWORD WINAPI WinHttpWebSocketQueryCloseStatus( HINTERNET hsocket, USHORT *status, void *reason, DWORD len,
+diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
+index be02bbe2502..44f156ba39a 100644
+--- a/dlls/winhttp/tests/winhttp.c
++++ b/dlls/winhttp/tests/winhttp.c
+@@ -37,6 +37,7 @@
+ 
+ DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
+ 
++static DWORD     (WINAPI *pWinHttpWebSocketClose)(HINTERNET,USHORT,void *,DWORD);
+ static HINTERNET (WINAPI *pWinHttpWebSocketCompleteUpgrade)(HINTERNET,DWORD_PTR);
+ 
+ static BOOL proxy_active(void)
+@@ -3248,6 +3249,9 @@ static void test_websocket(int port)
+     ret = WinHttpCloseHandle(connection);
+     ok(ret, "got %u\n", GetLastError());
+ 
++    ret = pWinHttpWebSocketClose(socket, WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS, NULL, 0);
++    ok(ret == NO_ERROR, "got %u\n", GetLastError());
++
+     /* request handle is still valid */
+     size = sizeof(ctx);
+     ret = WinHttpQueryOption(request, WINHTTP_OPTION_CONTEXT_VALUE, &ctx, &size);
+@@ -4942,6 +4946,7 @@ START_TEST (winhttp)
+     DWORD ret;
+     HMODULE mod = GetModuleHandleA("winhttp.dll");
+ 
++    pWinHttpWebSocketClose = (void *)GetProcAddress(mod, "WinHttpWebSocketClose");
+     pWinHttpWebSocketCompleteUpgrade = (void *)GetProcAddress(mod, "WinHttpWebSocketCompleteUpgrade");
+ 
+     test_WinHttpOpenRequest();
+-- 
+2.27.0
+
