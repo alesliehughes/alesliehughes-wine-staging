@@ -1,0 +1,65 @@
+From 4c0026e6c518528c3e8087997a071d579ca2dd82 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 26 May 2020 16:47:25 +1000
+Subject: [PATCH 11/11] Great Hack
+
+---
+ dlls/oledb32/convert.c   |  1 +
+ dlls/oledb32/dslocator.c | 16 ++++++++++++++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index 2fc65c7403..63fadada57 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -314,6 +314,7 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+     case DBTYPE_I4:
+     {
+         signed int *d = dst;
++
+         switch(src_type)
+         {
+         case DBTYPE_EMPTY:       *d = 0; hr = S_OK;                              break;
+diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
+index 86a334bea0..168d48477f 100644
+--- a/dlls/oledb32/dslocator.c
++++ b/dlls/oledb32/dslocator.c
+@@ -618,13 +618,15 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+ 
+      return 0;
+  }
+-
++#include "initguid.h"
++ #include <msado15_backcompat.h>
+ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **connection)
+ {
+     DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
+     PROPSHEETHEADERW hdr;
+     PROPSHEETPAGEW pages[4];
+     INT_PTR ret;
++    _Connection *conn;
+ 
+     FIXME("(%p, %p) Semi-stub\n", iface, connection);
+ 
+@@ -665,7 +667,17 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+     hdr.nPages = ARRAY_SIZE(pages);
+     ret = PropertySheetW(&hdr);
+ 
+-    return ret ? S_OK : S_FALSE;
++    ret = CoCreateInstance( &CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void
++    **)connection );
++    if (ret == S_OK)
++{
++        BSTR str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data "
++                              "Source=wine_test");
++        ret = _Connection_put_ConnectionString( (_Connection*)*connection, str);
++        SysFreeString(str);
++}
++
++    return ret == S_OK ? S_OK : S_FALSE;
+ }
+ 
+ static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
+-- 
+2.26.2
+
