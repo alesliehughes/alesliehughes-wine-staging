@@ -1,0 +1,58 @@
+From 404b86b70ddee4403fb5bd1b370ae37f7a17a9ec Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 28 Aug 2020 18:24:41 +1000
+Subject: [PATCH] oleaut32: ITypeInfo_ReleaseFuncDesc_Proxy handle NULL
+ parameter
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/oleaut32/tests/typelib.c | 3 +++
+ dlls/oleaut32/typelib.c       | 3 +++
+ dlls/oleaut32/usrmarshal.c    | 3 +++
+ 3 files changed, 9 insertions(+)
+
+diff --git a/dlls/oleaut32/tests/typelib.c b/dlls/oleaut32/tests/typelib.c
+index a8cb966f33..6864e04b02 100644
+--- a/dlls/oleaut32/tests/typelib.c
++++ b/dlls/oleaut32/tests/typelib.c
+@@ -577,6 +577,9 @@ static void test_TypeComp(void)
+         desckind);
+     ok(bindptr.lpfuncdesc != NULL, "bindptr.lpfuncdesc should not have been set to NULL\n");
+     ITypeInfo_ReleaseFuncDesc(pTypeInfo, bindptr.lpfuncdesc);
++
++    ITypeInfo_ReleaseFuncDesc(pTypeInfo, NULL);
++
+     ITypeInfo_Release(pTypeInfo);
+ 
+     /* tests nonexistent members */
+diff --git a/dlls/oleaut32/typelib.c b/dlls/oleaut32/typelib.c
+index 06667850a3..55a207b560 100644
+--- a/dlls/oleaut32/typelib.c
++++ b/dlls/oleaut32/typelib.c
+@@ -8269,6 +8269,9 @@ static void WINAPI ITypeInfo_fnReleaseFuncDesc(
+ 
+     TRACE("(%p)->(%p)\n", This, pFuncDesc);
+ 
++    if (!pFuncDesc)
++        return;
++
+     for (i = 0; i < pFuncDesc->cParams; i++)
+         TLB_FreeElemDesc(&pFuncDesc->lprgelemdescParam[i]);
+     TLB_FreeElemDesc(&pFuncDesc->elemdescFunc);
+diff --git a/dlls/oleaut32/usrmarshal.c b/dlls/oleaut32/usrmarshal.c
+index 163b48f6f4..07dabde174 100644
+--- a/dlls/oleaut32/usrmarshal.c
++++ b/dlls/oleaut32/usrmarshal.c
+@@ -1905,6 +1905,9 @@ void CALLBACK ITypeInfo_ReleaseFuncDesc_Proxy(
+     SHORT param;
+     TRACE("(%p, %p)\n", This, pFuncDesc);
+ 
++    if (!pFuncDesc)
++        return;
++
+     for(param = 0; param < pFuncDesc->cParams; param++)
+         free_embedded_elemdesc(pFuncDesc->lprgelemdescParam + param);
+     if(param)
+-- 
+2.28.0
+
