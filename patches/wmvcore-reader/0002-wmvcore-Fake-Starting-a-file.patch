@@ -1,0 +1,58 @@
+From 61a9fcf03a9741f2af4727e456fbf521f55d7eb8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 16 Oct 2019 14:49:41 +1100
+Subject: [PATCH 2/2] wmvcore: Fake Starting a file.
+
+---
+ dlls/wmvcore/reader.c        | 12 ++++++++++++
+ dlls/wmvcore/tests/wmvcore.c |  4 ++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/wmvcore/reader.c b/dlls/wmvcore/reader.c
+index 777dbcd6132..d20179f7582 100644
+--- a/dlls/wmvcore/reader.c
++++ b/dlls/wmvcore/reader.c
+@@ -245,6 +245,18 @@ static HRESULT WINAPI WMReader_Start(IWMReader *iface, QWORD start, QWORD durati
+ {
+     WMReader *This = impl_from_IWMReader(iface);
+     FIXME("(%p)->(%s %s %f %p)\n", This, wine_dbgstr_longlong(start), wine_dbgstr_longlong(duration), rate, context);
++
++    if (This->filehandle == INVALID_HANDLE_VALUE)
++        return NS_E_INVALID_REQUEST;
++
++    /* Fake Starting and Ending a File. */
++    if (This->callback)
++    {
++        DWORD vv = 0;
++        IWMReaderCallback_OnStatus(This->callback, WMT_STARTED, S_OK, WMT_TYPE_DWORD, (BYTE *)&vv, This->context);
++        IWMReaderCallback_OnStatus(This->callback, WMT_END_OF_STREAMING, S_OK, WMT_TYPE_DWORD, (BYTE *)&vv, This->context);
++        IWMReaderCallback_OnStatus(This->callback, WMT_END_OF_FILE, S_OK, WMT_TYPE_DWORD, (BYTE *)&vv, This->context);
++    }
+     return E_NOTIMPL;
+ }
+ 
+diff --git a/dlls/wmvcore/tests/wmvcore.c b/dlls/wmvcore/tests/wmvcore.c
+index 7a086f9175f..b2f8caf72dd 100644
+--- a/dlls/wmvcore/tests/wmvcore.c
++++ b/dlls/wmvcore/tests/wmvcore.c
+@@ -493,7 +493,7 @@ static void test_load_nonexist_file(void)
+     opened = CreateEventA(NULL, FALSE, FALSE, NULL);
+ 
+     hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
+-    todo_wine ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
++    ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
+ 
+     hr = IWMReader_Open(reader, filename, NULL, &expected);
+     ok(hr == E_INVALIDARG, "Failed 0x%08x\n", hr);
+@@ -520,7 +520,7 @@ static void test_load_nonexist_file(void)
+     ok( !WaitForSingleObject(opened, 1000), "wait timed out\n" );
+ 
+     hr = IWMReader_Start(reader, 0, 0, 1.0, NULL);
+-    todo_wine ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
++    ok(hr == NS_E_INVALID_REQUEST, "Failed 0x%08x\n", hr);
+ 
+     CloseHandle(opened);
+ 
+-- 
+2.27.0
+
