@@ -1,25 +1,45 @@
-From c2d107d64dd0ce25fc2fc5cf5c9da28f41010b6a Mon Sep 17 00:00:00 2001
+From 4362719751897951df18fca0798d1ecb585264bc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 15:33:18 +1000
-Subject: [PATCH 09/11] msdasql: Fake return from IDBProperties SetProperties
+Subject: [PATCH] msdasql: Fake return from IDBProperties SetProperties
 
 ---
- dlls/msdasql/msdasql_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ dlls/msdasql/msdasql_main.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index c1929192b6..188ebcf5fc 100644
+index c1929192b65..6f7aca55295 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -445,7 +445,7 @@ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropert
+@@ -441,11 +441,27 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
+ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropertySets,
+             DBPROPSET rgPropertySets[])
+ {
++    int i;
+     struct msdasql *provider = impl_from_IDBProperties(iface);
  
      FIXME("(%p)->(%d %p)\n", provider, cPropertySets, rgPropertySets);
  
 -    return E_NOTIMPL;
++    FIXME("count %d guidPropertySet: %s\n", rgPropertySets->cProperties, debugstr_guid(&rgPropertySets->guidPropertySet));
++    for (i=0; i < rgPropertySets->cProperties; i++)
++    {
++        FIXME("Property Set %d\n", i);
++        FIXME("  dwPropertyID: %x\n", rgPropertySets->rgProperties[i].dwPropertyID);
++        //FIXME("  cPropertyIDs:  %d\n", rgPropertySets->rgProperties[i].cPropertyIDs);
++        //FIXME("  guidPropertySet: %s\n", rgPropertySets(&rgPropertyIDSets[i].guidPropertySet) );
++    }
++
++    // DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO  (0x0b)
++    // DBPROP_INIT_DATASOURCE (0x3b)
++
++    // DBPROP_INIT_TIMEOUT (0x42)
++    // DBPROP_INIT_OLEDBSERVICES (0xf8)
++
 +    return S_OK;
  }
  
  static const struct IDBPropertiesVtbl dbprops_vtbl =
 -- 
-2.26.2
+2.28.0
 
