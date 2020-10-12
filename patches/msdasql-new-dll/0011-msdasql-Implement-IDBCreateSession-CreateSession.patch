@@ -1,0 +1,168 @@
+From 8758ebcb60580b292fbc851e3580e71f75cc979e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2020 12:23:14 +1100
+Subject: [PATCH] msdasql: Implement IDBCreateSession CreateSession
+
+---
+ dlls/msdasql/Makefile.in    |   3 +-
+ dlls/msdasql/msdasql_main.c |   8 ++-
+ dlls/msdasql/session.c      | 106 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 115 insertions(+), 2 deletions(-)
+ create mode 100644 dlls/msdasql/session.c
+
+diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
+index 455a3e2934e..47a357e5d0f 100644
+--- a/dlls/msdasql/Makefile.in
++++ b/dlls/msdasql/Makefile.in
+@@ -4,7 +4,8 @@ IMPORTS   = uuid ole32 oleaut32
+ EXTRADLLFLAGS = -mno-cygwin
+ 
+ C_SRCS = \
+-	msdasql_main.c
++	msdasql_main.c \
++	session.c
+ 
+ RC_SRCS = msdasql.rc
+ 
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index 53137eb0482..e0d4fcb6236 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -535,14 +535,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
+     return IUnknown_Release(&provider->MSDASQL_iface);
+ }
+ 
++/* Lazy - Move to header */
++extern HRESULT create_db_session(REFIID riid, void **unk) DECLSPEC_HIDDEN;
++
+ static HRESULT WINAPI dbsess_CreateSession(IDBCreateSession *iface, IUnknown *outer, REFIID riid,
+         IUnknown **session)
+ {
+     struct msdasql *provider = impl_from_IDBCreateSession(iface);
++    HRESULT hr;
+ 
+     FIXME("%p, outer %p, riid %s, session %p stub\n", provider, outer, debugstr_guid(riid), session);
+ 
+-    return E_FAIL;
++    hr = create_db_session(riid, (void**)session);
++
++    return hr;
+ }
+ 
+ static const struct IDBCreateSessionVtbl dbsess_vtbl =
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+new file mode 100644
+index 00000000000..ee753c84b56
+--- /dev/null
++++ b/dlls/msdasql/session.c
+@@ -0,0 +1,106 @@
++/*
++ * Copyright 2020 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define COBJMACROS
++
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "objbase.h"
++#include "rpcproxy.h"
++#include "msdasc.h"
++#include "wine/heap.h"
++#include "wine/debug.h"
++
++#include "msdasql.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
++
++struct msdasql_session
++{
++    IUnknown session_iface;
++    LONG refs;
++};
++
++static inline struct msdasql_session *impl_from_IUnknown( IUnknown *iface )
++{
++    return CONTAINING_RECORD( iface, struct msdasql_session, session_iface );
++}
++
++static HRESULT WINAPI session_QueryInterface(IUnknown *iface, REFIID riid, void **ppv)
++{
++    struct msdasql_session *session = impl_from_IUnknown( iface );
++
++    TRACE( "%p, %s, %p\n", iface, debugstr_guid(riid), ppv );
++    *ppv = NULL;
++
++    if(IsEqualGUID(&IID_IUnknown, riid)) {
++        TRACE("(%p)->(IID_IUnknown %p)\n", iface, ppv);
++        *ppv = &session->session_iface;
++    }
++
++    if(*ppv) {
++        IUnknown_AddRef((IUnknown*)*ppv);
++        return S_OK;
++    }
++
++    FIXME("(%p)->(%s %p)\n", iface, debugstr_guid(riid), ppv);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI session_AddRef(IUnknown *iface)
++{
++    struct msdasql_session *session = impl_from_IUnknown( iface );
++    LONG refs = InterlockedIncrement( &session->refs );
++    TRACE( "%p new refcount %d\n", session, refs );
++    return refs;
++}
++
++static ULONG WINAPI session_Release(IUnknown *iface)
++{
++    struct msdasql_session *session = impl_from_IUnknown( iface );
++    LONG refs = InterlockedDecrement( &session->refs );
++    TRACE( "%p new refcount %d\n", session, refs );
++    if (!refs)
++    {
++        TRACE( "destroying %p\n", session );
++        heap_free( session );
++    }
++    return refs;
++}
++
++static const IUnknownVtbl unkfactoryVtbl = {
++    session_QueryInterface,
++    session_AddRef,
++    session_Release,
++};
++
++HRESULT create_db_session(REFIID riid, void **unk)
++{
++    struct msdasql_session *session;
++
++    session = heap_alloc(sizeof(*session));
++    if (!session)
++        return E_OUTOFMEMORY;
++
++    session->session_iface.lpVtbl = &unkfactoryVtbl;
++    session->refs = 1;
++
++    return IUnknown_QueryInterface((IUnknown *)session, riid, unk);
++}
+\ No newline at end of file
+-- 
+2.28.0
+

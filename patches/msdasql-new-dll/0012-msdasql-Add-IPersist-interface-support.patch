@@ -1,0 +1,100 @@
+From 59d8201037cc52e2f533b698b8c1466beb780f3d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2020 15:05:19 +1100
+Subject: [PATCH] msdasql: Add IPersist interface support
+
+---
+ dlls/msdasql/msdasql_main.c | 49 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index e0d4fcb6236..ed064dbb17a 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -245,6 +245,7 @@ struct msdasql
+     IDBProperties    IDBProperties_iface;
+     IDBInitialize    IDBInitialize_iface;
+     IDBCreateSession IDBCreateSession_iface;
++    IPersist         IPersist_iface;
+ 
+     LONG     ref;
+ };
+@@ -269,6 +270,11 @@ static inline struct msdasql *impl_from_IDBCreateSession(IDBCreateSession *iface
+     return CONTAINING_RECORD(iface, struct msdasql, IDBCreateSession_iface);
+ }
+ 
++static inline struct msdasql *impl_from_IPersist( IPersist *iface )
++{
++    return CONTAINING_RECORD( iface, struct msdasql, IPersist_iface );
++}
++
+ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void **out)
+ {
+     struct msdasql *provider = impl_from_IUnknown(iface);
+@@ -292,6 +298,9 @@ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void *
+     {
+         *out = &provider->IDBCreateSession_iface;
+     }
++    else if(IsEqualGUID(&IID_IPersist, riid)) {
++        *out = &provider->IPersist_iface;
++    }
+     else
+     {
+         FIXME("(%s, %p)\n", debugstr_guid(riid), out);
+@@ -559,6 +568,45 @@ static const struct IDBCreateSessionVtbl dbsess_vtbl =
+     dbsess_CreateSession
+ };
+ 
++static HRESULT WINAPI persist_QueryInterface(IPersist *iface, REFIID riid, void **ppv)
++{
++    struct msdasql *provider = impl_from_IPersist( iface );
++    return IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
++}
++
++static ULONG WINAPI persist_AddRef(IPersist *iface)
++{
++    struct msdasql *provider = impl_from_IPersist( iface );
++    return IUnknown_AddRef(&provider->MSDASQL_iface);
++}
++
++static ULONG WINAPI persist_Release(IPersist *iface)
++{
++    struct msdasql *provider = impl_from_IPersist( iface );
++    return IUnknown_Release(&provider->MSDASQL_iface);
++}
++
++static HRESULT WINAPI persist_GetClassID(IPersist *iface, CLSID *classid)
++{
++    struct msdasql *provider = impl_from_IPersist( iface );
++
++    TRACE("(%p)->(%p)\n", provider, classid);
++
++    if(!classid)
++        return E_INVALIDARG;
++
++    *classid = CLSID_MSDASQL;
++    return S_OK;
++
++}
++
++static const IPersistVtbl persistVtbl = {
++    persist_QueryInterface,
++    persist_AddRef,
++    persist_Release,
++    persist_GetClassID
++};
++
+ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+ {
+     struct msdasql *provider;
+@@ -572,6 +620,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+     provider->IDBProperties_iface.lpVtbl = &dbprops_vtbl;
+     provider->IDBInitialize_iface.lpVtbl = &dbinit_vtbl;
+     provider->IDBCreateSession_iface.lpVtbl = &dbsess_vtbl;
++    provider->IPersist_iface.lpVtbl = &persistVtbl;
+     provider->ref = 1;
+ 
+     hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
+-- 
+2.28.0
+
