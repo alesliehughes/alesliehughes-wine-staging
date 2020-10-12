@@ -1,0 +1,125 @@
+From 71f02828c7b40cdd73001209015c93660bd37e44 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 11 Oct 2020 11:13:02 +1100
+Subject: [PATCH] msado15: Implement _Connection Open
+
+---
+ dlls/msado15/Makefile.in  |  2 +-
+ dlls/msado15/connection.c | 70 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 70 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
+index 9852e0863dd..e64da605473 100644
+--- a/dlls/msado15/Makefile.in
++++ b/dlls/msado15/Makefile.in
+@@ -1,5 +1,5 @@
+ MODULE    = msado15.dll
+-IMPORTS   = oleaut32
++IMPORTS   = oleaut32 ole32
+ 
+ EXTRADLLFLAGS = -mno-cygwin
+ 
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 2773850236d..4ee02d499ab 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -23,6 +23,7 @@
+ #include "initguid.h"
+ #include "ocidl.h"
+ #include "objbase.h"
++#include "msdasc.h"
+ #include "olectl.h"
+ #include "msado15_backcompat.h"
+ 
+@@ -56,6 +57,7 @@ struct connection
+     WCHAR                    *provider;
+     ConnectModeEnum           mode;
+     CursorLocationEnum        location;
++    IUnknown                 *session;
+     struct connection_point   cp_connev;
+ };
+ 
+@@ -273,13 +275,79 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+                                        LONG options )
+ {
+     struct connection *connection = impl_from_Connection( iface );
++    IDataInitialize   *datainit;
++    IDBInitialize     *dbinit;
++    IDBCreateSession  *session;
++    HRESULT hr;
++
+     FIXME( "%p, %s, %s, %p, %08x\n", iface, debugstr_w(connect_str), debugstr_w(userid),
+            password, options );
+ 
+     if (connection->state == adStateOpen) return MAKE_ADO_HRESULT( adErrObjectOpen );
+ 
++    /* TODO - Use Provider or DSN from connect_str */
++    hr = CoCreateInstance(&CLSID_MSDAINITIALIZE, NULL, CLSCTX_INPROC_SERVER, &IID_IDataInitialize,(void**)&datainit);
++    if (FAILED(hr))
++    {
++        WARN("Failed to create IDataInitialize object\n");
++        return hr;
++    }
++
++    hr = IDataInitialize_GetDataSource(datainit, NULL, CLSCTX_INPROC_SERVER, connect_str, &IID_IDBInitialize, (IUnknown**)&dbinit);
++    if (FAILED(hr))
++    {
++        IDataInitialize_Release(datainit);
++        WARN("Failed to create IDataInitialize object\n");
++        return hr;
++    }
++    IDataInitialize_Release(datainit);
++
++    /* dbprops_GetPropertyInfo */
++    /*
++     * 0134:fixme:msdasql:dbprops_GetPropertyInfo (00B610E8)->(1 0064F940 0064F930 0064F934 0064F924)
++0134:fixme:msdasql:dbprops_GetPropertyInfo Property Set 0
++0134:fixme:msdasql:dbprops_GetPropertyInfo   rgPropertyIDs: 00000000
++0134:fixme:msdasql:dbprops_GetPropertyInfo   cPropertyIDs:  0
++0134:fixme:msdasql:dbprops_GetPropertyInfo   guidPropertySet: {c8b522ca-5cf3-11ce-ade5-00aa0044773d}
++     */
++
++    /* username password
++    0134:fixme:msdasql:dbprops_SetProperties (00B61C48)->(1 00B60E78)
++0134:trace:msdasql:msdsql_QueryInterface (00B61C48)->({0c733a8a-2a1c-11ce-ade5-00aa0044773d} 0064F868)
++0134:trace:msdasql:msdsql_AddRef (00B61C48) ref=3
++0134:fixme:msdasql:dbprops_SetProperties (00B61C48)->(1 0064F8CC)
++*/
++
++    hr = IDBInitialize_Initialize(dbinit);
++    if (FAILED(hr))
++    {
++        goto done;
++    }
++
++    hr = IDBInitialize_QueryInterface(dbinit, &IID_IDBCreateSession, (void**)&session);
++    if (FAILED(hr))
++    {
++        goto done;
++    }
++
++    // FIXME NULL for outer
++    hr = IDBCreateSession_CreateSession(session, NULL, &IID_IUnknown, &connection->session);
++    if (FAILED(hr))
++    {
++        goto done;
++    }
++
+     connection->state = adStateOpen;
+-    return S_OK;
++    hr = S_OK;
++
++done:
++    if (session) IDBCreateSession_Release(session);
++    if (dbinit) {
++        IDBInitialize_Uninitialize(dbinit);
++        IDBInitialize_Release(dbinit);
++    }
++    WARN("Failed with 0x%08x\n", hr);
++    return hr;
+ }
+ 
+ static HRESULT WINAPI connection_get_Errors( _Connection *iface, Errors **obj )
+-- 
+2.28.0
+

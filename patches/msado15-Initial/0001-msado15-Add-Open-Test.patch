@@ -1,0 +1,76 @@
+From 55a916ab5e01d5089a6cab3cc6ba492aff886fe3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 10 Oct 2020 15:02:32 +1100
+Subject: [PATCH] msado15: Add Open Test
+
+---
+ dlls/msado15/tests/msado15.c | 47 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 378c2eb918c..f3d3b0da618 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1126,6 +1126,52 @@ static void test_ConnectionPoint(void)
+     ok( !conn_event.refs, "got %d\n", conn_event.refs );
+ }
+ 
++static void test_connection_open(void)
++{
++    HRESULT hr;
++    _Connection *connection;
++    _Recordset  *recordset;
++    BSTR str, str2;
++    VARIANT var, var2;
++
++    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
++    ok( hr == S_OK, "got %08x\n", hr );
++
++    hr = CoCreateInstance(&CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void**)&recordset);
++    ok( hr == S_OK, "got %08x\n", hr );
++
++    str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
++    str2 = SysAllocStringLen(NULL, 0);
++
++    ok( 0, "Before _Connection_Open\n");
++    hr = _Connection_Open(connection, str, str2, str2, 0);
++    ok( 0, "After _Connection_Open\n");
++    ok( hr == S_OK, "got %08x\n", hr );
++    SysFreeString(str);
++    SysFreeString(str2);
++
++    V_VT(&var2) = VT_BSTR;
++    V_BSTR(&var2) = SysAllocString(L"SELECT * FROM testing");;
++
++    V_VT(&var) = VT_DISPATCH;
++    V_DISPATCH(&var) = (IDispatch*)connection;
++    _Connection_AddRef(connection);
++
++    ok( 0, "Before _Recordset_Open\n");
++    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
++    ok( hr == S_OK, "got %08x\n", hr );
++    ok( 0, "After _Recordset_Open\n");
++
++    VariantClear(&var);
++    VariantClear(&var2);
++    SysFreeString(str);
++
++     hr = _Recordset_Close(recordset);
++     ok( hr == S_OK, "got %08x\n", hr );
++
++    _Connection_Release(connection);
++}
++
+ START_TEST(msado15)
+ {
+     CoInitialize( NULL );
+@@ -1135,5 +1181,6 @@ START_TEST(msado15)
+     test_Recordset();
+     test_Stream();
+     test_Command();
++    test_connection_open();
+     CoUninitialize();
+ }
+-- 
+2.28.0
+
