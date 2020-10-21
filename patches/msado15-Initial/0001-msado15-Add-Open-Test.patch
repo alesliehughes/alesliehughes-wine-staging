@@ -1,17 +1,17 @@
-From 69c7140ebae723bc373d9ab9a638290a985f1ef9 Mon Sep 17 00:00:00 2001
+From 2f1adac167840c3fe74a386fd59752fa6ab7a99c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
-Subject: [PATCH 1/2] msado15: Add Open Test
+Subject: [PATCH 1/4] msado15: Add Open Test
 
 ---
- dlls/msado15/tests/msado15.c | 47 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ dlls/msado15/tests/msado15.c | 58 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 378c2eb918c..3b38a63a1bf 100644
+index 378c2eb918c..7ec78038b81 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1126,6 +1126,52 @@ static void test_ConnectionPoint(void)
+@@ -1126,6 +1126,63 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %d\n", conn_event.refs );
  }
  
@@ -19,7 +19,7 @@ index 378c2eb918c..3b38a63a1bf 100644
 +{
 +    HRESULT hr;
 +    _Connection *connection;
-+    _Recordset  *recordset;
++    _Recordset  *recordset, *recordset2 = NULL;
 +    BSTR str, str2;
 +    VARIANT var, var2;
 +
@@ -32,9 +32,7 @@ index 378c2eb918c..3b38a63a1bf 100644
 +    str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
 +    str2 = SysAllocStringLen(NULL, 0);
 +
-+    ok( 0, "Before _Connection_Open\n");
 +    hr = _Connection_Open(connection, str, str2, str2, 0);
-+    ok( 0, "After _Connection_Open\n");
 +    ok( hr == S_OK, "got %08x\n", hr );
 +    SysFreeString(str);
 +    SysFreeString(str2);
@@ -51,6 +49,19 @@ index 378c2eb918c..3b38a63a1bf 100644
 +    ok( hr == S_OK, "got %08x\n", hr );
 +    ok( 0, "After _Recordset_Open\n");*/
 +
++    ok( 0, "**** Before _Connection_Execute\n");
++    hr = _Connection_Execute(connection, V_BSTR(&var2), NULL, 0, &recordset2);
++    ok( 0, "**** After _Connection_Execute\n");
++    ok( hr == S_OK, "got %08x\n", hr );
++
++    if (recordset2)
++    {
++        hr = _Recordset_Close(recordset2);
++        ok( hr == S_OK, "got %08x\n", hr );
++
++        _Recordset_Release(recordset2);
++    }
++
 +    VariantClear(&var);
 +    VariantClear(&var2);
 +    SysFreeString(str);
@@ -64,7 +75,7 @@ index 378c2eb918c..3b38a63a1bf 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
-@@ -1135,5 +1181,6 @@ START_TEST(msado15)
+@@ -1135,5 +1192,6 @@ START_TEST(msado15)
      test_Recordset();
      test_Stream();
      test_Command();

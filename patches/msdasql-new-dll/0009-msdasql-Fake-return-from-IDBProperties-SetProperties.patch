@@ -1,17 +1,17 @@
-From 4362719751897951df18fca0798d1ecb585264bc Mon Sep 17 00:00:00 2001
+From f63b1e647456dac484d97bacd3e6466136ba4aad Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 15:33:18 +1000
-Subject: [PATCH] msdasql: Fake return from IDBProperties SetProperties
+Subject: [PATCH 03/12] msdasql: Fake return from IDBProperties SetProperties
 
 ---
- dlls/msdasql/msdasql_main.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ dlls/msdasql/msdasql_main.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index c1929192b65..6f7aca55295 100644
+index c1929192b65..7fd30721c4a 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -441,11 +441,27 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
+@@ -441,11 +441,33 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
  static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropertySets,
              DBPROPSET rgPropertySets[])
  {
@@ -26,6 +26,12 @@ index c1929192b65..6f7aca55295 100644
 +    {
 +        FIXME("Property Set %d\n", i);
 +        FIXME("  dwPropertyID: %x\n", rgPropertySets->rgProperties[i].dwPropertyID);
++        if (V_VT(&rgPropertySets->rgProperties[i].vValue) == VT_BSTR)
++            FIXME("  vValue: %s\n", debugstr_w(V_BSTR(&rgPropertySets->rgProperties[i].vValue)));
++        else if (V_VT(&rgPropertySets->rgProperties[i].vValue) == VT_BOOL)
++            FIXME("  vValue: %d\n", V_BOOL(&rgPropertySets->rgProperties[i].vValue));
++        else
++            FIXME("  vValue: %d\n", V_I4(&rgPropertySets->rgProperties[i].vValue));
 +        //FIXME("  cPropertyIDs:  %d\n", rgPropertySets->rgProperties[i].cPropertyIDs);
 +        //FIXME("  guidPropertySet: %s\n", rgPropertySets(&rgPropertyIDSets[i].guidPropertySet) );
 +    }
