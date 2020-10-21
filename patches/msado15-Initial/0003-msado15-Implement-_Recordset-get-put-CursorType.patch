@@ -1,0 +1,83 @@
+From 73ed166b7fd7e57da737846c7c0ae79916f16cbd Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2020 13:26:39 +1100
+Subject: [PATCH 3/3] msado15: Implement _Recordset get/put CursorType
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msado15/recordset.c     | 16 ++++++++++++----
+ dlls/msado15/tests/msado15.c |  6 ++++++
+ 2 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index a5096e5c4ff..134a6e68a42 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -44,6 +44,7 @@ struct recordset
+     LONG               index;
+     VARIANT           *data;
+     CursorLocationEnum cursor_location;
++    CursorTypeEnum     curosr_type;
+ };
+ 
+ struct fields
+@@ -910,14 +911,20 @@ static HRESULT WINAPI recordset_put_CacheSize( _Recordset *iface, LONG size )
+ 
+ static HRESULT WINAPI recordset_get_CursorType( _Recordset *iface, CursorTypeEnum *cursor_type )
+ {
+-    FIXME( "%p, %p\n", iface, cursor_type );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %p\n", iface, cursor_type );
++
++    *cursor_type = recordset->curosr_type;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_put_CursorType( _Recordset *iface, CursorTypeEnum cursor_type )
+ {
+-    FIXME( "%p, %d\n", iface, cursor_type );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %d\n", iface, cursor_type );
++
++    recordset->curosr_type = cursor_type;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_get_EOF( _Recordset *iface, VARIANT_BOOL *eof )
+@@ -1546,6 +1553,7 @@ HRESULT Recordset_create( void **obj )
+     recordset->refs = 1;
+     recordset->index = -1;
+     recordset->cursor_location = adUseServer;
++    recordset->curosr_type = adOpenForwardOnly;
+ 
+     *obj = &recordset->Recordset_iface;
+     TRACE( "returning iface %p\n", *obj );
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 27c459c8888..c6990c51027 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -68,6 +68,7 @@ static void test_Recordset(void)
+     LONG refs, count, state;
+     VARIANT missing, val, index;
+     CursorLocationEnum location;
++    CursorTypeEnum cursor;
+     BSTR name;
+     HRESULT hr;
+ 
+@@ -144,6 +145,11 @@ static void test_Recordset(void)
+     ok( hr == S_OK, "got %08x\n", hr );
+     ok( location == adUseServer, "got %d\n", location );
+ 
++    cursor = adOpenUnspecified;
++    hr = _Recordset_get_CursorType( recordset, &cursor );
++    ok( hr == S_OK, "got %08x\n", hr );
++    ok( cursor == adOpenForwardOnly, "got %d\n", cursor );
++
+     VariantInit( &missing );
+     hr = _Recordset_AddNew( recordset, missing, missing );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+-- 
+2.28.0
+

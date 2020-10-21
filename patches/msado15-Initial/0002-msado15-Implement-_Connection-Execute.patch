@@ -1,0 +1,43 @@
+From 025ca903060d55a1dd586b653b420a82d68ae9ac Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2020 14:55:17 +1100
+Subject: [PATCH 2/3] msado15: Implement _Connection Execute
+
+WIP
+---
+ dlls/msado15/connection.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index fd15d5a443f..e0781087fd3 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -256,8 +256,24 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+ static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
+                                           LONG options, _Recordset **record_set )
+ {
++    struct connection *connection = impl_from_Connection( iface );
++    DBID table;
++    ULONG count = 0;
++    DBPROPSET propset;
++    HRESULT hr;
++    IOpenRowset *rowset;
++
+     FIXME( "%p, %s, %p, %08x, %p\n", iface, debugstr_w(command), records_affected, options, record_set );
+-    return E_NOTIMPL;
++
++    hr = IUnknown_QueryInterface(connection->session, &IID_IOpenRowset, (void**)&rowset);
++    if (FAILED(hr)) return hr;
++
++    table.eKind = DBKIND_NAME;
++    table.uName.pwszName = command;
++    hr = IOpenRowset_OpenRowset(rowset, NULL, &table, NULL, &IID_IUnknown, count, &propset, (IUnknown**)record_set);
++
++    FIXME("hr = 0x%08x\n", hr);
++    return hr;
+ }
+ 
+ static HRESULT WINAPI connection_BeginTrans( _Connection *iface, LONG *transaction_level )
+-- 
+2.28.0
+
