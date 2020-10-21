@@ -1,0 +1,42 @@
+From 835546858bd8a80247373d3901196e67bb476c92 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2020 16:09:36 +1100
+Subject: [PATCH] msdasql: Dump OpenRowset properties
+
+---
+ dlls/msdasql/session.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index fde335e6ae9..ffd7526c3fd 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -177,9 +177,25 @@ HRESULT WINAPI openrowset_OpenRowset(IOpenRowset *iface, IUnknown *pUnkOuter, DB
+             DBID *index, REFIID riid, ULONG count, DBPROPSET propertysets[], IUnknown **rowset)
+ {
+     struct msdasql_session *session = impl_from_IOpenRowset( iface );
++    int i;
++
+     FIXME("%p, %p, %p %p %s, %d %p %p stub\n", session, pUnkOuter, table, index, debugstr_guid(riid),
+             count, propertysets, rowset);
+ 
++    for (i=0; i < propertysets->cProperties; i++)
++    {
++        FIXME("Property Set %d\n", i);
++        FIXME("  dwPropertyID: %x\n", propertysets->rgProperties[i].dwPropertyID);
++        if (V_VT(&propertysets->rgProperties[i].vValue) == VT_BSTR)
++            FIXME("  vValue: %s\n", debugstr_w(V_BSTR(&propertysets->rgProperties[i].vValue)));
++        else if (V_VT(&propertysets->rgProperties[i].vValue) == VT_BOOL)
++            FIXME("  vValue: %d\n", V_BOOL(&propertysets->rgProperties[i].vValue));
++        else
++            FIXME("  vValue: %d\n", V_I4(&propertysets->rgProperties[i].vValue));
++        //FIXME("  cPropertyIDs:  %d\n", rgPropertySets->rgProperties[i].cPropertyIDs);
++        //FIXME("  guidPropertySet: %s\n", rgPropertySets(&rgPropertyIDSets[i].guidPropertySet) );
++    }
++
+     return E_NOTIMPL;
+ }
+ 
+-- 
+2.28.0
+
