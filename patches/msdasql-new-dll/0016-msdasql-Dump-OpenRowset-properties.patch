@@ -1,14 +1,14 @@
-From 8ccb0b8baccb0f6407856dc22399832bae8d6836 Mon Sep 17 00:00:00 2001
+From 886f5748311c8690951547e78aab9cd7c894cb08 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2020 16:09:36 +1100
 Subject: msdasql: Dump OpenRowset properties
 
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index fde335e6ae9..03a7d859309 100644
+index fde335e6ae9..751ac5c16a3 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -173,13 +173,63 @@ ULONG WINAPI openrowset_Release(IOpenRowset *iface)
+@@ -173,13 +173,64 @@ ULONG WINAPI openrowset_Release(IOpenRowset *iface)
      return IUnknown_Release(&session->session_iface);
  }
  
@@ -18,8 +18,15 @@ index fde335e6ae9..03a7d859309 100644
 +    {
 +#define FMT_TO_STR(property) case property: return #property
 +
++        FMT_TO_STR(DBPROP_AUTH_INTEGRATED);
 +        FMT_TO_STR(DBPROP_AUTH_MASK_PASSWORD);
 +        FMT_TO_STR(DBPROP_BLOCKINGSTORAGEOBJECTS);
++        FMT_TO_STR(DBPROP_CANFETCHBACKWARDS);
++        FMT_TO_STR(DBPROP_CANSCROLLBACKWARDS);
++        FMT_TO_STR(DBPROP_OTHERINSERT);
++        FMT_TO_STR(DBPROP_OWNUPDATEDELETE);
++        FMT_TO_STR(DBPROP_REMOVEDELETED);
++        FMT_TO_STR(DBPROP_UPDATABILITY);
 +
 +        FMT_TO_STR(DBPROP_IColumnsRowset);
 +        FMT_TO_STR(DBPROP_IRowset);
@@ -28,8 +35,6 @@ index fde335e6ae9..03a7d859309 100644
 +        FMT_TO_STR(DBPROP_IRowsetIndex);
 +        FMT_TO_STR(DBPROP_IRowsetUpdate);
 +        FMT_TO_STR(DBPROP_ISequentialStream);
-+        FMT_TO_STR(DBPROP_OWNUPDATEDELETE);
-+        FMT_TO_STR(DBPROP_UPDATABILITY);
 +        default:
 +            FIXME("Unknown value 0x%08x\n", property);
 +            return "Unknown";
@@ -53,17 +58,13 @@ index fde335e6ae9..03a7d859309 100644
 +
 +    for (j=0; j < count; j++)
 +    {
++        FIXME(" Property Set %d (%s)\n", j, debugstr_guid(&propertysets[j].guidPropertySet));
 +        for (i=0; i < propertysets[j].cProperties; i++)
 +        {
-+            FIXME("Property Set %d\n", i);
++            FIXME(" Property %d, dwOptions 0x%08x\n", i, propertysets[j].rgProperties[i].dwOptions);
 +            FIXME("  dwPropertyID: %s (%d)\n", get_property_value(propertysets[j].rgProperties[i].dwPropertyID),
 +                    V_VT(&propertysets[j].rgProperties[i].vValue));
-+            if (V_VT(&propertysets[j].rgProperties[i].vValue) == VT_BSTR)
-+                FIXME("  vValue: %s\n", debugstr_w(V_BSTR(&propertysets[j].rgProperties[i].vValue)));
-+            else if (V_VT(&propertysets[j].rgProperties[i].vValue) == VT_BOOL)
-+                FIXME("  vValue: %s\n", V_BOOL(&propertysets[j].rgProperties[i].vValue) == VARIANT_TRUE ? "True" : "False");
-+            else
-+                FIXME("  vValue: %d\n", V_I4(&propertysets[j].rgProperties[i].vValue));
++            FIXME("  vValue: %s\n", debugstr_variant(&propertysets[j].rgProperties[i].vValue));
 +            //FIXME("  cPropertyIDs:  %d\n", rgPropertySets->rgProperties[i].cPropertyIDs);
 +            //FIXME("  guidPropertySet: %s\n", rgPropertySets(&rgPropertyIDSets[i].guidPropertySet) );
 +        }
