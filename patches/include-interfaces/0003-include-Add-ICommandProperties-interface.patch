@@ -1,17 +1,54 @@
-From 3bdd53532179b9791e3d56b5c43b3cd6659abb7e Mon Sep 17 00:00:00 2001
+From f38eae8dd97cbfd2694e409a24a8f0fb233ef7e8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 25 Oct 2020 18:55:19 +1100
 Subject: [PATCH] include: Add ICommandProperties interface
 
 ---
- include/cmdprp.idl | 44 ++++++++++++++++++++++++++++++++++++++++++++
- include/oledb.idl  |  1 +
- 2 files changed, 45 insertions(+)
+ dlls/msdaps/usrmarshal.c | 27 ++++++++++++++++++++++++
+ include/cmdprp.idl       | 44 ++++++++++++++++++++++++++++++++++++++++
+ include/oledb.idl        |  1 +
+ 3 files changed, 72 insertions(+)
  create mode 100644 include/cmdprp.idl
 
+diff --git a/dlls/msdaps/usrmarshal.c b/dlls/msdaps/usrmarshal.c
+index 2fe4e60b68b..4759d08f1de 100644
+--- a/dlls/msdaps/usrmarshal.c
++++ b/dlls/msdaps/usrmarshal.c
+@@ -1589,3 +1589,30 @@ HRESULT __RPC_STUB IGetDataSource_GetDataSource_Stub(IGetDataSource* This, REFII
+     FIXME("(%p)->(%s %p %p): stub\n", This, debugstr_guid(riid), datasource, error);
+     return E_NOTIMPL;
+ }
++
++HRESULT CALLBACK ICommandProperties_GetProperties_Proxy(ICommandProperties* This, const ULONG count,
++    const DBPROPIDSET propertyidsets[], ULONG *sets_cnt, DBPROPSET **propertyset)
++{
++    FIXME("(%p)->(%d %p %p %p): stub\n", This, count, propertyidsets, sets_cnt, propertyset);
++    return E_NOTIMPL;
++}
++
++HRESULT __RPC_STUB ICommandProperties_GetProperties_Stub(ICommandProperties* This, const ULONG count,
++    const DBPROPIDSET *propertyidsets, ULONG *sets_cnt, DBPROPSET **propertyset, IErrorInfo **error)
++{
++    FIXME("(%p)->(%d %p %p %p %p): stub\n", This, count, propertyidsets, sets_cnt, propertyset, error);
++    return E_NOTIMPL;
++}
++
++HRESULT CALLBACK ICommandProperties_SetProperties_Proxy(ICommandProperties* This, ULONG count, DBPROPSET propertyset[])
++{
++    FIXME("(%p)->(%d %p %p %p %p): stub\n", This, count, propertyset);
++    return E_NOTIMPL;
++}
++
++HRESULT __RPC_STUB ICommandProperties_SetProperties_Stub(ICommandProperties* This, ULONG count,
++    DBPROPSET *propertyset, ULONG total, DBPROPSTATUS *propstatus, IErrorInfo **error)
++{
++    FIXME("(%p)->(%d %p %d %p %p): stub\n", This, count, propertyset, total, propstatus, error);
++    return E_NOTIMPL;
++}
+\ No newline at end of file
 diff --git a/include/cmdprp.idl b/include/cmdprp.idl
 new file mode 100644
-index 00000000000..6052af3f855
+index 00000000000..ce9e7075523
 --- /dev/null
 +++ b/include/cmdprp.idl
 @@ -0,0 +1,44 @@
@@ -45,11 +82,11 @@ index 00000000000..6052af3f855
 +interface ICommandProperties : IUnknown
 +{
 +    [local]
-+    HRESULT GetProperties([in] const ULONG count, [in, size_is(count)] const DBPROPIDSET propertyidsets[],
++    HRESULT GetProperties([in] ULONG count, [in, size_is(count)] const DBPROPIDSET propertyidsets[],
 +        [in, out] ULONG *sets_cnt, [out, size_is(,*sets_cnt)] DBPROPSET **propertyset);
 +
 +    [call_as(GetProperties)]
-+    HRESULT RemoteGetProperties([in] const ULONG count, [in, unique, size_is(count)] const DBPROPIDSET *propertyidsets,
++    HRESULT RemoteGetProperties([in] ULONG count, [in, unique, size_is(count)] const DBPROPIDSET *propertyidsets,
 +        [in, out] ULONG *sets_cnt, [out, size_is(,*sets_cnt)] DBPROPSET **propertyset, [out] IErrorInfo **error);
 +
 +    [local]
