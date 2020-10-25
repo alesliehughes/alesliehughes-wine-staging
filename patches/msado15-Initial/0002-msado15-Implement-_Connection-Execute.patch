@@ -1,27 +1,43 @@
-From 025ca903060d55a1dd586b653b420a82d68ae9ac Mon Sep 17 00:00:00 2001
+From 934d431ba948164e413652be8a637186d3826bcd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2020 14:55:17 +1100
-Subject: [PATCH 2/3] msado15: Implement _Connection Execute
+Subject: msado15: Implement _Connection Execute
 
 WIP
----
- dlls/msado15/connection.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index fd15d5a443f..e0781087fd3 100644
+index fd15d5a443f..1381a951612 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
-@@ -256,8 +256,24 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+@@ -24,6 +24,7 @@
+ #include "ocidl.h"
+ #include "objbase.h"
+ #include "msdasc.h"
++#include "msdasql.h"
+ #include "olectl.h"
+ #include "msado15_backcompat.h"
+ 
+@@ -34,6 +35,8 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(msado15);
+ 
++DEFINE_GUID(DBPROPSET_ROWSET,            0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++
+ struct connection;
+ 
+ struct connection_point
+@@ -256,8 +259,103 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
  static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
                                            LONG options, _Recordset **record_set )
  {
 +    struct connection *connection = impl_from_Connection( iface );
 +    DBID table;
-+    ULONG count = 0;
-+    DBPROPSET propset;
++    ULONG count = 2;
++    DBPROPSET propset[2];
++    DBPROP prop1[9], prop2[2];
 +    HRESULT hr;
 +    IOpenRowset *rowset;
++    IDBCreateCommand *create_command;
 +
      FIXME( "%p, %s, %p, %08x, %p\n", iface, debugstr_w(command), records_affected, options, record_set );
 -    return E_NOTIMPL;
@@ -29,15 +45,89 @@ index fd15d5a443f..e0781087fd3 100644
 +    hr = IUnknown_QueryInterface(connection->session, &IID_IOpenRowset, (void**)&rowset);
 +    if (FAILED(hr)) return hr;
 +
++    hr = IOpenRowset_QueryInterface(rowset, &IID_IDBCreateCommand, (void**)&create_command);
++
++    FIXME("IDBCreateCommand %s\n", hr == S_OK ? "Yes" : "No");
++    if (SUCCEEDED(hr))
++    {
++        ICommandStream *commandStream;
++        ICommand *cmd;
++
++        hr = IDBCreateCommand_CreateCommand(create_command, NULL, &IID_IUnknown, (IUnknown **)&cmd);
++        FIXME("CreateCommand %s (0x%08x)\n", hr == S_OK ? "Yes" : "No", hr);
++        if (SUCCEEDED(hr))
++        {
++            hr = ICommand_QueryInterface(cmd, &IID_ICommandStream, (void**)&commandStream);
++            FIXME("ICommandStream %s\n", hr == S_OK ? "Yes" : "No");
++            if (SUCCEEDED(hr)) ICommandStream_Release(commandStream);
++
++            ICommand_Release(cmd);
++        }
++
++        IDBCreateCommand_Release(create_command);
++    }
++
++    memset(prop1, 0, sizeof(prop1));
++    prop1[0].dwPropertyID = DBPROP_IRowset;
++    V_VT(&prop1[0].vValue) = VT_BOOL;
++    V_BOOL(&prop1[0].vValue) = VARIANT_TRUE;
++
++    prop1[1].dwPropertyID = DBPROP_IColumnsRowset;
++    V_VT(&prop1[1].vValue) = VT_BOOL;
++    V_BOOL(&prop1[1].vValue) = VARIANT_TRUE;
++
++    prop1[2].dwPropertyID = DBPROP_OWNUPDATEDELETE;
++    V_VT(&prop1[2].vValue) = VT_BOOL;
++    V_BOOL(&prop1[2].vValue) = VARIANT_FALSE;
++
++    prop1[3].dwPropertyID = DBPROP_IRowsetIndex;
++    V_VT(&prop1[3].vValue) = VT_BOOL;
++    V_BOOL(&prop1[3].vValue) = VARIANT_TRUE;
++
++    prop1[4].dwPropertyID = DBPROP_IRowsetCurrentIndex;
++    V_VT(&prop1[4].vValue) = VT_BOOL;
++    V_BOOL(&prop1[4].vValue) = VARIANT_TRUE;
++
++    prop1[5].dwPropertyID = DBPROP_IRowsetChange;
++    V_VT(&prop1[5].vValue) = VT_BOOL;
++    V_BOOL(&prop1[5].vValue) = VARIANT_FALSE;
++
++    prop1[6].dwPropertyID = DBPROP_IRowsetUpdate;
++    V_VT(&prop1[6].vValue) = VT_BOOL;
++    V_BOOL(&prop1[6].vValue) = VARIANT_FALSE;
++
++    prop1[7].dwPropertyID = DBPROP_UPDATABILITY;
++    V_VT(&prop1[7].vValue) = VT_I4;
++    V_BOOL(&prop1[7].vValue) = 0;
++
++    prop1[8].dwPropertyID = DBPROP_ISequentialStream;
++    V_VT(&prop1[8].vValue) = VT_BOOL;
++    V_BOOL(&prop1[8].vValue) = VARIANT_TRUE;
++
++
++    memset(prop2, 0, sizeof(prop2));
++    prop2[0].dwPropertyID = DBPROP_AUTH_MASK_PASSWORD;
++    V_VT(&prop2[0].vValue) = VT_BOOL;
++    V_BOOL(&prop2[0].vValue) = VARIANT_TRUE;
++
++    prop2[1].dwPropertyID = DBPROP_BLOCKINGSTORAGEOBJECTS;
++    V_VT(&prop2[1].vValue) = VT_BOOL;
++    V_BOOL(&prop2[1].vValue) = VARIANT_TRUE;
++
++    propset[0].guidPropertySet = DBPROPSET_ROWSET;
++    propset[0].cProperties = ARRAY_SIZE(prop1);
++    propset[0].rgProperties = prop1;
++
++    propset[1].guidPropertySet = DBPROPSET_PROVIDERROWSET;
++    propset[1].cProperties = ARRAY_SIZE(prop2);
++    propset[1].rgProperties = prop2;
++
 +    table.eKind = DBKIND_NAME;
 +    table.uName.pwszName = command;
-+    hr = IOpenRowset_OpenRowset(rowset, NULL, &table, NULL, &IID_IUnknown, count, &propset, (IUnknown**)record_set);
++    hr = IOpenRowset_OpenRowset(rowset, NULL, &table, NULL, &IID_IUnknown, count, propset, (IUnknown**)record_set);
 +
 +    FIXME("hr = 0x%08x\n", hr);
 +    return hr;
  }
  
  static HRESULT WINAPI connection_BeginTrans( _Connection *iface, LONG *transaction_level )
--- 
-2.28.0
-
