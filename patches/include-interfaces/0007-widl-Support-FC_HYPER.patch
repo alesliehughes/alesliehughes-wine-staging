@@ -1,0 +1,24 @@
+From d816869658a040529ffbde33f59a34e721ec22f8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 26 Oct 2020 16:04:30 +1100
+Subject: [PATCH] widl: Support FC_HYPER
+
+---
+ tools/widl/typegen.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/widl/typegen.c b/tools/widl/typegen.c
+index 4557d24b3ff..b7e8f66d74b 100644
+--- a/tools/widl/typegen.c
++++ b/tools/widl/typegen.c
+@@ -1741,6 +1741,7 @@ static unsigned int write_conf_or_var_desc(FILE *file, const type_t *cont_type,
+             case FC_LONG:
+                 param_type = FC_LONG;
+                 break;
++            case FC_HYPER:
+             case FC_ULONG:
+                 param_type = FC_ULONG;
+                 break;
+-- 
+2.28.0
+
