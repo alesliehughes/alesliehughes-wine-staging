@@ -1,41 +1,39 @@
-From 166851f924988ba5e9b87edd40190cf328fc0ccf Mon Sep 17 00:00:00 2001
+From 544a4ed112b0060802ba1c5ca94afef070b69a10 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Oct 2020 21:17:05 +1100
-Subject: [PATCH] msdasql: Implement IDBCreateCommand CreateCommand
+Subject: msdasql: Implement IDBCreateCommand CreateCommand
 
----
- dlls/msdasql/session.c | 102 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 101 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 11ff05fb179..bce2cf125b9 100644
+index 11ff05fb179..067b630274b 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -314,13 +314,113 @@ static ULONG WINAPI createcommand_Release(IDBCreateCommand *iface)
+@@ -314,13 +314,130 @@ static ULONG WINAPI createcommand_Release(IDBCreateCommand *iface)
      return IUnknown_Release(&session->session_iface);
  }
  
 +struct command
 +{
-+    ICommand ICommand_iface;
++    ICommandText ICommandText_iface;
 +    LONG refs;
 +};
 +
-+static inline struct command *impl_from_ICommand( ICommand *iface )
++static inline struct command *impl_from_ICommandText( ICommandText *iface )
 +{
-+    return CONTAINING_RECORD( iface, struct command, ICommand_iface );
++    return CONTAINING_RECORD( iface, struct command, ICommandText_iface );
 +}
 +
-+static HRESULT WINAPI command_QueryInterface(ICommand *iface, REFIID riid, void **ppv)
++static HRESULT WINAPI command_QueryInterface(ICommandText *iface, REFIID riid, void **ppv)
 +{
-+    struct command *command = impl_from_ICommand( iface );
++    struct command *command = impl_from_ICommandText( iface );
 +
 +    TRACE( "%p, %s, %p\n", command, debugstr_guid(riid), ppv );
 +    *ppv = NULL;
 +
 +    if(IsEqualGUID(&IID_IUnknown, riid) ||
-+       IsEqualGUID(&IID_ICommand, riid)) {
-+        *ppv = &command->ICommand_iface;
++       IsEqualGUID(&IID_ICommand, riid) ||
++       IsEqualGUID(&IID_ICommandText, riid)) {
++        *ppv = &command->ICommandText_iface;
 +    }
 +    // ICommandStream must.
 +
@@ -48,17 +46,17 @@ index 11ff05fb179..bce2cf125b9 100644
 +    return E_NOINTERFACE;
 +}
 +
-+static ULONG WINAPI command_AddRef(ICommand *iface)
++static ULONG WINAPI command_AddRef(ICommandText *iface)
 +{
-+    struct command *command = impl_from_ICommand( iface );
++    struct command *command = impl_from_ICommandText( iface );
 +    LONG refs = InterlockedIncrement( &command->refs );
 +    TRACE( "%p new refcount %d\n", command, refs );
 +    return refs;
 +}
 +
-+static ULONG WINAPI command_Release(ICommand *iface)
++static ULONG WINAPI command_Release(ICommandText *iface)
 +{
-+    struct command *command = impl_from_ICommand( iface );
++    struct command *command = impl_from_ICommandText( iface );
 +    LONG refs = InterlockedDecrement( &command->refs );
 +    TRACE( "%p new refcount %d\n", command, refs );
 +    if (!refs)
@@ -69,37 +67,53 @@ index 11ff05fb179..bce2cf125b9 100644
 +    return refs;
 +}
 +
-+static HRESULT WINAPI command_Cancel(ICommand *iface)
++static HRESULT WINAPI command_Cancel(ICommandText *iface)
 +{
-+    struct command *command = impl_from_ICommand( iface );
++    struct command *command = impl_from_ICommandText( iface );
 +
 +    FIXME("%p\n", command);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI command_Execute(ICommand *iface, IUnknown *outer, REFIID riid,
++static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFIID riid,
 +        DBPARAMS *params, DBROWCOUNT *affected, IUnknown **rowset)
 +{
-+    struct command *command = impl_from_ICommand( iface );
++    struct command *command = impl_from_ICommandText( iface );
 +
 +    FIXME("%p, %p, %s, %p %p %p\n", command, outer, debugstr_guid(riid), params, affected, rowset);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT WINAPI command_GetDBSession(ICommand *iface, REFIID riid, IUnknown **session)
++static HRESULT WINAPI command_GetDBSession(ICommandText *iface, REFIID riid, IUnknown **session)
 +{
-+    struct command *command = impl_from_ICommand( iface );
++    struct command *command = impl_from_ICommandText( iface );
 +    FIXME("%p, %s, %p\n", command, debugstr_guid(riid), session);
 +    return E_NOTIMPL;
 +}
 +
-+static const ICommandVtbl commandVtbl = {
++static HRESULT WINAPI command_GetCommandText(ICommandText *iface, GUID *dialect, LPOLESTR *commandstr)
++{
++    struct command *command = impl_from_ICommandText( iface );
++    FIXME("%p, %p, %p\n", command, dialect, commandstr);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI command_SetCommandText(ICommandText *iface, REFGUID dialect, LPCOLESTR commandstr)
++{
++    struct command *command = impl_from_ICommandText( iface );
++    FIXME("%p, %s, %s\n", command, debugstr_guid(dialect), debugstr_w(commandstr));
++    return S_OK;
++}
++
++static const ICommandTextVtbl commandVtbl = {
 +    command_QueryInterface,
 +    command_AddRef,
 +    command_Release,
 +    command_Cancel,
 +    command_Execute,
-+    command_GetDBSession
++    command_GetDBSession,
++    command_GetCommandText,
++    command_SetCommandText
 +};
 +
  static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnknown *outer, REFIID riid,
@@ -116,16 +130,13 @@ index 11ff05fb179..bce2cf125b9 100644
 +    if (!command)
 +        return E_OUTOFMEMORY;
 +
-+    command->ICommand_iface.lpVtbl = &commandVtbl;
++    command->ICommandText_iface.lpVtbl = &commandVtbl;
 +    command->refs = 1;
 +
-+    hr = ICommand_QueryInterface(&command->ICommand_iface, riid, (void**)out);
-+    ICommand_Release(&command->ICommand_iface);
++    hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
++    ICommandText_Release(&command->ICommandText_iface);
 +    FIXME("ret 0x%08x, %p\n", hr, *out);
 +    return hr;
  }
  
  static const IDBCreateCommandVtbl createcommandVtbl = {
--- 
-2.28.0
-
