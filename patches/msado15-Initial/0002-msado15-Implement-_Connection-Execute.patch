@@ -1,4 +1,4 @@
-From 765e794c84facfbb37192accfa2fb612220e7503 Mon Sep 17 00:00:00 2001
+From f74872eb7d83dde571d60546e0b15564de244bfb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2020 14:55:17 +1100
 Subject: msado15: Implement _Connection Execute
@@ -6,7 +6,7 @@ Subject: msado15: Implement _Connection Execute
 WIP
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index fd15d5a443f..5d2976127a9 100644
+index fd15d5a443f..7763fe873f3 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
 @@ -24,6 +24,7 @@
@@ -26,7 +26,7 @@ index fd15d5a443f..5d2976127a9 100644
  struct connection;
  
  struct connection_point
-@@ -256,8 +259,124 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+@@ -256,8 +259,130 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
  static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
                                            LONG options, _Recordset **record_set )
  {
@@ -61,10 +61,7 @@ index fd15d5a443f..5d2976127a9 100644
 +            ICommandText *comandText;
 +            IConvertType *convertType;
 +            ICommandWithParameters *commandWParamters;
-+
-+            hr = ICommand_QueryInterface(cmd, &IID_ICommandStream, (void**)&commandStream);
-+            FIXME("ICommandStream %s\n", hr == S_OK ? "Yes" : "No");
-+            if (SUCCEEDED(hr)) ICommandStream_Release(commandStream);
++            ICommandPrepare *commandPrepare;
 +
 +            hr = ICommand_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
 +            FIXME("ICommandProperties %s\n", hr == S_OK ? "Yes" : "No");
@@ -81,6 +78,15 @@ index fd15d5a443f..5d2976127a9 100644
 +            hr = ICommand_QueryInterface(cmd, &IID_ICommandWithParameters, (void**)&commandWParamters);
 +            FIXME("ICommandWithParameters %s\n", hr == S_OK ? "Yes" : "No");
 +            if (SUCCEEDED(hr)) ICommandWithParameters_Release(commandWParamters);
++
++            hr = ICommand_QueryInterface(cmd, &IID_ICommandPrepare, (void**)&commandPrepare);
++            FIXME("ICommandPrepare %s\n", hr == S_OK ? "Yes" : "No");
++            if (SUCCEEDED(hr)) ICommandPrepare_Release(commandPrepare);
++
++            hr = ICommand_QueryInterface(cmd, &IID_ICommandStream, (void**)&commandStream);
++            FIXME("ICommandStream %s\n", hr == S_OK ? "Yes" : "No");
++            if (SUCCEEDED(hr)) ICommandStream_Release(commandStream);
++
 +
 +            ICommand_Release(cmd);
 +        }
