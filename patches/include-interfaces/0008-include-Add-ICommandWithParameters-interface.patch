@@ -1,17 +1,11 @@
-From 1a6a38456e51a644e53780923cb990a431d58f7d Mon Sep 17 00:00:00 2001
+From 2e65fba2616155a16ae475f9108e0c5825fe0fdf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Oct 2020 15:39:26 +1100
-Subject: [PATCH] include: Add ICommandWithParameters interface
+Subject: include: Add ICommandWithParameters interface
 
----
- dlls/msdaps/usrmarshal.c |  42 ++++++++++++++
- include/cmdwpr.idl       | 118 +++++++++++++++++++++++++++++++++++++++
- include/oledb.idl        |   1 +
- 3 files changed, 161 insertions(+)
- create mode 100644 include/cmdwpr.idl
 
 diff --git a/dlls/msdaps/usrmarshal.c b/dlls/msdaps/usrmarshal.c
-index c4259bbd3a1..e387fe567b1 100644
+index c4259bbd3a1..7f107249c5d 100644
 --- a/dlls/msdaps/usrmarshal.c
 +++ b/dlls/msdaps/usrmarshal.c
 @@ -1629,3 +1629,45 @@ HRESULT __RPC_STUB IConvertType_CanConvert_Stub(IConvertType* This, DBTYPE from,
@@ -25,7 +19,7 @@ index c4259bbd3a1..e387fe567b1 100644
 +    LPCWSTR rgParamNames[],
 +    DB_LPARAMS rgParamOrdinals[])
 +{
-+    FIXME("\n");
++    FIXME("(%p)->(%d %p %p): stub\n", This, cParamNames, rgParamNames, rgParamOrdinals);
 +    return E_NOTIMPL;
 +}
 +
@@ -36,7 +30,7 @@ index c4259bbd3a1..e387fe567b1 100644
 +    DB_LPARAMS *rgParamOrdinals,
 +    IErrorInfo **ppErrorInfoRem)
 +{
-+    FIXME("\n");
++    FIXME("(%p)->(%d %p %p %p): stub\n", This, cParamNames, rgParamNames, rgParamOrdinals, ppErrorInfoRem);
 +    return E_NOTIMPL;
 +}
 +
@@ -44,9 +38,9 @@ index c4259bbd3a1..e387fe567b1 100644
 +    ICommandWithParameters* This,
 +    DB_UPARAMS cParams,
 +    const DB_UPARAMS rgParamOrdinals[],
-+    const DBPARAMBINDINFO rgParamBindInfo[])\
++    const DBPARAMBINDINFO rgParamBindInfo[])
 +{
-+    FIXME("\n");
++    FIXME("(%p)->(%d %p %p): stub\n", This, cParams, rgParamOrdinals, rgParamBindInfo);
 +    return E_NOTIMPL;
 +}
 +
@@ -57,16 +51,16 @@ index c4259bbd3a1..e387fe567b1 100644
 +    const DBPARAMBINDINFO *rgParamBindInfo,
 +    IErrorInfo **ppErrorInfoRem)
 +{
-+    FIXME("\n");
++    FIXME("(%p)->(%d %p %p %p): stub\n", This, cParams, rgParamOrdinals, rgParamBindInfo, ppErrorInfoRem);
 +    return E_NOTIMPL;
 +}
 \ No newline at end of file
 diff --git a/include/cmdwpr.idl b/include/cmdwpr.idl
 new file mode 100644
-index 00000000000..d021a1f6dbe
+index 00000000000..5227efb8709
 --- /dev/null
 +++ b/include/cmdwpr.idl
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,84 @@
 +/*
 + * Copyright (C) 2020 Alistair Leslie-Hughes
 + *
@@ -96,92 +90,58 @@ index 00000000000..d021a1f6dbe
 +]
 +interface ICommandWithParameters : IUnknown
 +{
-+typedef struct tagDBPARAMBINDINFO
-+{
-+    LPOLESTR pwszDataSourceType;
-+    LPOLESTR pwszName;
-+    DBLENGTH ulParamSize;
-+    DBPARAMFLAGS dwFlags;
-+    BYTE bPrecision;
-+    BYTE bScale;
-+} DBPARAMBINDINFO;
++
++    typedef struct tagDBPARAMBINDINFO
++    {
++        LPOLESTR pwszDataSourceType;
++        LPOLESTR pwszName;
++        DBLENGTH ulParamSize;
++        DBPARAMFLAGS dwFlags;
++        BYTE bPrecision;
++        BYTE bScale;
++    } DBPARAMBINDINFO;
 +
 +    [local]
-+    HRESULT GetParameterInfo([in, out] DB_UPARAMS *params, [out, size_is(,*params)] DBPARAMINFO **info, [out] OLECHAR **buffer);
++    HRESULT GetParameterInfo([in, out] DB_UPARAMS *uparams, [out, size_is(,*uparams)] DBPARAMINFO **info, [out] OLECHAR **buffer);
 +
 +#ifdef _WIN64
-+        [call_as(GetParameterInfo)]
-+        HRESULT RemoteGetParameterInfo(
-+                [in, out] DB_UPARAMS *params,
-+                [out, size_is(,(ULONG)*params)] DBPARAMINFO **param_info,
-+                [out, size_is(,(ULONG)*params)] DBBYTEOFFSET **offsets,
-+                [in, out] DBLENGTH *buff_len,
-+                [in, out, unique, size_is(,(ULONG)*buff_len)] OLECHAR **buffer,
-+                [out] IErrorInfo **error
-+        );
++    [call_as(GetParameterInfo)]
++    HRESULT RemoteGetParameterInfo([in, out] DB_UPARAMS *uparams, [out, size_is(,(ULONG)*uparams)] DBPARAMINFO **param_info,
++            [out, size_is(,(ULONG)*uparams)] DBBYTEOFFSET **offsets, [in, out] DBLENGTH *buff_len,
++            [in, out, unique, size_is(,(ULONG)*buff_len)] OLECHAR **buffer, [out] IErrorInfo **error);
 +
-+        [local]
-+        HRESULT MapParameterNames(
-+                [in] DB_UPARAMS cParamNames,
-+                [in, size_is((ULONG)cParamNames)] LPCWSTR rgParamNames[],
-+                [out, size_is((ULONG)cParamNames)] DB_LPARAMS rgParamOrdinals[]
-+        );
++    [local]
++    HRESULT MapParameterNames([in] DB_UPARAMS uparams, [in, size_is((ULONG)uparams)] LPCWSTR names[],
++            [out, size_is((ULONG)uparams)] DB_LPARAMS ordinals[]);
 +
 +    [call_as(MapParameterNames)]
-+        HRESULT RemoteMapParameterNames(
-+                [in] DB_UPARAMS cParamNames,
-+                [in, size_is((ULONG)cParamNames)] LPCOLESTR *rgParamNames,
-+                [out, size_is((ULONG)cParamNames)] DB_LPARAMS * rgParamOrdinals,
-+                [out] IErrorInfo ** ppErrorInfoRem
-+        );
++        HRESULT RemoteMapParameterNames([in] DB_UPARAMS uparams, [in, size_is((ULONG)uparams)] LPCOLESTR *names,
++                [out, size_is((ULONG)uparams)] DB_LPARAMS *ordinals, [out] IErrorInfo **error);
 +
-+        [local]
-+        HRESULT SetParameterInfo(
-+                [in] DB_UPARAMS cParams,
-+                [in, unique, size_is((ULONG)cParams)] const DB_UPARAMS rgParamOrdinals[
-+],
-+                [in, unique, size_is((ULONG)cParams)] const DBPARAMBINDINFO rgParamBind
-+Info[]
-+        );
++    [local]
++    HRESULT SetParameterInfo([in] DB_UPARAMS uparams, [in, unique, size_is((ULONG)uparams)] const DB_UPARAMS ordinals[],
++            [in, unique, size_is((ULONG)uparams)] const DBPARAMBINDINFO bindinfo[]);
 +
-+        [call_as(SetParameterInfo)]
-+        HRESULT RemoteSetParameterInfo(
-+                [in] DB_UPARAMS cParams,
-+                [in, unique, size_is((ULONG)cParams)] const DB_UPARAMS * rgParamOrdinals,
-+                [in, unique, size_is((ULONG)cParams)] const DBPARAMBINDINFO * rgParamBindInfo,
-+                [out] IErrorInfo ** ppErrorInfoRem
-+        );
++    [call_as(SetParameterInfo)]
++    HRESULT RemoteSetParameterInfo([in] DB_UPARAMS uparams, [in, unique, size_is((ULONG)uparams)] const DB_UPARAMS *ordinals,
++            [in, unique, size_is((ULONG)uparams)] const DBPARAMBINDINFO *bindinfo, [out] IErrorInfo **error);
 +
 +#else
 +    [local]
-+    HRESULT MapParameterNames(
-+            [in] DB_UPARAMS cParamNames,
-+            [in, size_is(cParamNames)] LPCWSTR rgParamNames[],
-+            [out, size_is(cParamNames)] DB_LPARAMS rgParamOrdinals[]
-+    );
++    HRESULT MapParameterNames([in] DB_UPARAMS uparams, [in, size_is(uparams)] LPCWSTR names[],
++            [out, size_is(uparams)] DB_LPARAMS ordinals[]);
 +
 +    [call_as(MapParameterNames)]
-+    HRESULT RemoteMapParameterNames(
-+            [in] DB_UPARAMS cParamNames,
-+            [in, size_is(cParamNames)] LPCOLESTR *rgParamNames,
-+            [out, size_is(cParamNames)] DB_LPARAMS * rgParamOrdinals,
-+            [out] IErrorInfo ** ppErrorInfoRem
-+    );
++    HRESULT RemoteMapParameterNames([in] DB_UPARAMS uparams, [in, size_is(uparams)] LPCOLESTR *names,
++            [out, size_is(uparams)] DB_LPARAMS *ordinals, [out] IErrorInfo **error);
 +
 +    [local]
-+    HRESULT SetParameterInfo(
-+            [in] DB_UPARAMS cParams,
-+            [in, unique, size_is(cParams)] const DB_UPARAMS rgParamOrdinals[],
-+            [in, unique, size_is(cParams)] const DBPARAMBINDINFO rgParamBindInfo[]
-+    );
++    HRESULT SetParameterInfo([in] DB_UPARAMS uparams, [in, unique, size_is(uparams)] const DB_UPARAMS ordinals[],
++            [in, unique, size_is(uparams)] const DBPARAMBINDINFO bindinfo[]);
 +
 +    [call_as(SetParameterInfo)]
-+    HRESULT RemoteSetParameterInfo(
-+            [in] DB_UPARAMS cParams,
-+            [in, unique, size_is(cParams)] const DB_UPARAMS * rgParamOrdinals,
-+            [in, unique, size_is(cParams)] const DBPARAMBINDINFO * rgParamBindInfo,
-+            [out] IErrorInfo ** ppErrorInfoRem
-+    );
++    HRESULT RemoteSetParameterInfo([in] DB_UPARAMS uparams, [in, unique, size_is(uparams)] const DB_UPARAMS *ordinals,
++            [in, unique, size_is(uparams)] const DBPARAMBINDINFO *bindinfo, [out] IErrorInfo **error);
 +
 +#endif
 +}
@@ -197,6 +157,3 @@ index fe5e45c32b9..0ef5fd61e4e 100644
  
  cpp_quote("#include <accctrl.h>")
  
--- 
-2.28.0
-
