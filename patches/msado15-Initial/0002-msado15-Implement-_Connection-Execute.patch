@@ -1,12 +1,14 @@
-From f74872eb7d83dde571d60546e0b15564de244bfb Mon Sep 17 00:00:00 2001
+From ae28d28d53e7326f4973bc7dd0ffaada6746dcc4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 21 Oct 2020 14:55:17 +1100
-Subject: msado15: Implement _Connection Execute
+Date: Thu, 29 Oct 2020 09:46:09 +1100
+Subject: [PATCH] msado15: Implement _Connection Execute
 
-WIP
+---
+ dlls/msado15/connection.c | 206 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 205 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index fd15d5a443f..7763fe873f3 100644
+index fd15d5a443f..c467303ddd4 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
 @@ -24,6 +24,7 @@
@@ -17,16 +19,17 @@ index fd15d5a443f..7763fe873f3 100644
  #include "olectl.h"
  #include "msado15_backcompat.h"
  
-@@ -34,6 +35,8 @@
+@@ -34,6 +35,9 @@
  
  WINE_DEFAULT_DEBUG_CHANNEL(msado15);
  
 +DEFINE_GUID(DBPROPSET_ROWSET,            0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++DEFINE_GUID(DBGUID_DEFAULT,              0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
 +
  struct connection;
  
  struct connection_point
-@@ -256,8 +259,130 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+@@ -256,8 +260,208 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
  static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
                                            LONG options, _Recordset **record_set )
  {
@@ -69,7 +72,85 @@ index fd15d5a443f..7763fe873f3 100644
 +
 +            hr = ICommand_QueryInterface(cmd, &IID_ICommandText, (void**)&comandText);
 +            FIXME("ICommandText %s\n", hr == S_OK ? "Yes" : "No");
-+            if (SUCCEEDED(hr)) ICommandText_Release(comandText);
++            if (SUCCEEDED(hr))
++            {
++                hr = ICommandText_SetCommandText(comandText, &DBGUID_DEFAULT, command);
++                FIXME("ICommandText_SetCommandText 0x%08x\n", hr);
++                if (SUCCEEDED(hr))
++                {
++                    DBROWCOUNT affected;
++                    IUnknown *rowset;
++                    IRowsetInfo *rowsetinfo;
++                    //IRowsetLocate *rowsetlocate;
++
++                    hr = ICommandText_Execute(comandText, NULL, &IID_IUnknown, NULL, &affected, &rowset);
++                    FIXME("ICommandText_Execute 0x%08x %p (%ld)\n", hr, rowset, affected);
++
++                    hr = IUnknown_QueryInterface(rowset, &IID_IRowsetInfo, (void**)&rowsetinfo);
++                    FIXME("IRowsetInfo %s\n", hr == S_OK ? "Yes" : "No");
++                    if (SUCCEEDED(hr))
++                    {
++                        int i;
++                        ULONG cnt;
++                        DBPROPIDSET rowidset[2];
++                        DBPROPSET *propset;
++
++                        DBPROPID propids[] = {
++                                DBPROP_OTHERUPDATEDELETE,
++                                DBPROP_OTHERINSERT,
++                                DBPROP_CANHOLDROWS,
++                                DBPROP_CANSCROLLBACKWARDS,
++                                DBPROP_UPDATABILITY,
++                                DBPROP_IRowsetLocate,
++                                DBPROP_IRowsetScroll,
++                                DBPROP_IRowsetUpdate,
++                                DBPROP_IRowsetResynch,
++                                DBPROP_IConnectionPointContainer,
++                                DBPROP_BOOKMARKSKIPPED,
++                                DBPROP_IRowsetFind,
++                                DBPROP_IRowsetRefresh,
++                                DBPROP_LOCKMODE,
++                                DBPROP_IRowsetIndex,
++                                DBPROP_IRowsetCurrentIndex,
++                                DBPROP_REMOVEDELETED
++                        };
++
++                        DBPROPID propids1[] = {
++                                DBPROP_AUTH_INTEGRATED
++                        };
++
++                        rowidset[0].cPropertyIDs = ARRAY_SIZE(propids);
++                        rowidset[0].guidPropertySet = DBPROPSET_ROWSET;
++                        rowidset[0].rgPropertyIDs = propids;
++
++                        rowidset[1].cPropertyIDs = ARRAY_SIZE(propids1);
++                        rowidset[1].guidPropertySet = DBPROPSET_PROVIDERROWSET;
++                        rowidset[1].rgPropertyIDs = propids1;
++
++                        hr = IRowsetInfo_GetProperties(rowsetinfo, 2, rowidset, &cnt, &propset);
++                        FIXME("IRowsetInfo_GetProperties 0x%08x %s (%d)\n", hr, hr == S_OK ? "Yes" : "No", cnt);
++
++                        for (i = 0; i < cnt; i++)
++                        {
++                            int j;
++FIXME("  count %d\n", propset[i].cProperties);
++                            for (j=0; j < propset[i].cProperties; j++)
++                            {
++                                FIXME("  rgPropertyIDs[%d]: 0x%08x, %s\n", j, propset[i].rgProperties[j].dwStatus, debugstr_variant(&propset[i].rgProperties[j].vValue));
++                            }
++                        }
++
++                        IRowsetInfo_Release(rowsetinfo);
++                    }
++
++                    /*hr = IUnknown_QueryInterface(rowset, &IID_IRowsetLocate, (void**)&rowsetlocate);
++                    FIXME("IRowsetLocate %s\n", hr == S_OK ? "Yes" : "No");
++                    if (SUCCEEDED(hr)) IRowsetLocate_Release(rowsetlocate);*/
++
++                    IUnknown_Release(rowset);
++                }
++                ICommandText_Release(comandText);
++            }
 +
 +            hr = ICommand_QueryInterface(cmd, &IID_IConvertType, (void**)&convertType);
 +            FIXME("IConvertType %s\n", hr == S_OK ? "Yes" : "No");
@@ -158,3 +239,6 @@ index fd15d5a443f..7763fe873f3 100644
  }
  
  static HRESULT WINAPI connection_BeginTrans( _Connection *iface, LONG *transaction_level )
+-- 
+2.28.0
+
