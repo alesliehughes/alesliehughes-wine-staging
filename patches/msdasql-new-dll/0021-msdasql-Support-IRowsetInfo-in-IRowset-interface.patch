@@ -1,0 +1,114 @@
+From 1d2faf268e6ae0500b00bb8bc0e071416512c31c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 29 Oct 2020 10:27:30 +1100
+Subject: [PATCH 1/2] msdasql: Support IRowsetInfo in IRowset interface
+
+---
+ dlls/msdasql/session.c | 63 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 865450867b0..a563fe12424 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -387,6 +387,7 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
+ struct msdasql_rowset
+ {
+     IRowset IRowset_iface;
++    IRowsetInfo IRowsetInfo_iface;
+     LONG refs;
+ };
+ 
+@@ -395,6 +396,11 @@ static inline struct msdasql_rowset *impl_from_IRowset( IRowset *iface )
+     return CONTAINING_RECORD( iface, struct msdasql_rowset, IRowset_iface );
+ }
+ 
++static inline struct msdasql_rowset *impl_from_IRowsetInfo( IRowsetInfo *iface )
++{
++    return CONTAINING_RECORD( iface, struct msdasql_rowset, IRowsetInfo_iface );
++}
++
+ static HRESULT WINAPI msdasql_rowset_QueryInterface(IRowset *iface, REFIID riid,  void **ppv)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
+@@ -406,6 +412,10 @@ static HRESULT WINAPI msdasql_rowset_QueryInterface(IRowset *iface, REFIID riid,
+        IsEqualGUID(&IID_IRowset, riid)) {
+         *ppv = &rowset->IRowset_iface;
+     }
++    else if (IsEqualGUID(&IID_IRowsetInfo, riid))
++    {
++        *ppv = &rowset->IRowsetInfo_iface;
++    }
+ 
+     if(*ppv) {
+         IUnknown_AddRef((IUnknown*)*ppv);
+@@ -497,6 +507,58 @@ static const struct IRowsetVtbl msdasql_rowset =
+     msdasql_rowset_RestartPosition
+ };
+ 
++static HRESULT WINAPI rowset_info_QueryInterface(IRowsetInfo *iface, REFIID riid, void **ppv)
++{
++    struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
++    return IRowset_QueryInterface(&rowset->IRowset_iface, riid, ppv);
++}
++
++static ULONG WINAPI rowset_info_AddRef(IRowsetInfo *iface)
++{
++    struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
++    return IRowset_AddRef(&rowset->IRowset_iface);
++}
++
++static ULONG WINAPI rowset_info_Release(IRowsetInfo *iface)
++{
++    struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
++    return IRowset_Release(&rowset->IRowset_iface);
++}
++
++static HRESULT WINAPI rowset_info_GetProperties(IRowsetInfo *iface, const ULONG count,
++        const DBPROPIDSET propertyidsets[], ULONG *out_count, DBPROPSET **propertysets)
++{
++    struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
++    FIXME("%p, %ld, %p, %p, %p\n", rowset, count, propertyidsets, out_count, propertysets);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI rowset_info_GetReferencedRowset(IRowsetInfo *iface, DBORDINAL ordinal,
++        REFIID riid, IUnknown **unk)
++{
++    struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
++    FIXME("%p, %ld, %s, %p\n", rowset, ordinal, debugstr_guid(riid), unk);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI rowset_info_GetSpecification(IRowsetInfo *iface, REFIID riid,
++        IUnknown **specification)
++{
++    struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
++    FIXME("%p, %s, %p\n", rowset, debugstr_guid(riid), specification);
++    return E_NOTIMPL;
++}
++
++struct IRowsetInfoVtbl rowset_info =
++{
++    rowset_info_QueryInterface,
++    rowset_info_AddRef,
++    rowset_info_Release,
++    rowset_info_GetProperties,
++    rowset_info_GetReferencedRowset,
++    rowset_info_GetSpecification
++};
++
+ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFIID riid,
+         DBPARAMS *params, DBROWCOUNT *affected, IUnknown **rowset)
+ {
+@@ -511,6 +573,7 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+         return E_OUTOFMEMORY;
+ 
+     msrowset->IRowset_iface.lpVtbl = &msdasql_rowset;
++    msrowset->IRowsetInfo_iface.lpVtbl = &rowset_info;
+     msrowset->refs = 1;
+ 
+     if (affected) *affected = 1; /* FIXME */
+-- 
+2.28.0
+
