@@ -1,0 +1,68 @@
+From 276562bb4b44fbfdd1fcafb65c88939256899e55 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 30 Oct 2020 08:05:20 +1100
+Subject: [PATCH] include: Add IRowsetChange interface
+
+---
+ include/oledb.idl  |  1 +
+ include/rstchg.idl | 36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
+ create mode 100644 include/rstchg.idl
+
+diff --git a/include/oledb.idl b/include/oledb.idl
+index cad2cb2d398..76131581beb 100644
+--- a/include/oledb.idl
++++ b/include/oledb.idl
+@@ -80,6 +80,7 @@ cpp_quote("#endif")
+ #include "cvttyp.idl"
+ #include "cmdwpr.idl"
+ #include "cmdpre.idl"
++#include "rstchg.idl"
+ 
+ cpp_quote("#include <accctrl.h>")
+ 
+diff --git a/include/rstchg.idl b/include/rstchg.idl
+new file mode 100644
+index 00000000000..973db1aab13
+--- /dev/null
++++ b/include/rstchg.idl
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (C) 2020 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#if 0
++#pragma makedep install
++#endif
++
++[
++    local,
++    object,
++    uuid(0c733a05-2a1c-11ce-ade5-00aa0044773d),
++    pointer_default(unique)
++]
++interface IRowsetChange : IUnknown
++{
++    HRESULT DeleteRows([in] HCHAPTER reserved, [in] DBCOUNTITEM count, [in, size_is(count)] const HROW rows[],
++                [out, size_is(count)] DBROWSTATUS status[] );
++
++    HRESULT SetData([in] HROW row, [in] HACCESSOR accessor, [in] void *data);
++
++    HRESULT InsertRow([in] HCHAPTER reserved, [in] HACCESSOR accessor, [in] void *data, [out] HROW *row);
++}
+-- 
+2.28.0
+
