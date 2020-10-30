@@ -1,11 +1,11 @@
-From 35fa3a3bd3242dc6dffe037e9050afd1d81a6611 Mon Sep 17 00:00:00 2001
+From d178a8a54d5da342d5f0691dd28afaa1a2d41515 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 29 Oct 2020 11:08:34 +1100
 Subject: msdasql: Dump rowset_info Properties
 
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index a563fe12424..5470383aff9 100644
+index a563fe12424..da131d5ddb7 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -25,6 +25,7 @@
@@ -16,7 +16,7 @@ index a563fe12424..5470383aff9 100644
  #include "wine/heap.h"
  #include "wine/debug.h"
  
-@@ -526,11 +527,62 @@ static ULONG WINAPI rowset_info_Release(IRowsetInfo *iface)
+@@ -526,11 +527,69 @@ static ULONG WINAPI rowset_info_Release(IRowsetInfo *iface)
  }
  
  static HRESULT WINAPI rowset_info_GetProperties(IRowsetInfo *iface, const ULONG count,
@@ -49,25 +49,32 @@ index a563fe12424..5470383aff9 100644
 +        for (j=0; j < propertyidsets[i].cPropertyIDs; j++)
 +        {
 +            FIXME("  rgPropertyIDs[%d]: 0x%08x\n", j, propertyidsets[i].rgPropertyIDs[j]);
++            propertysets[i].rgProperties[j].dwPropertyID = propertyidsets[i].cPropertyIDs;
++            propertysets[i].rgProperties[j].dwOptions = DBPROPOPTIONS_OPTIONAL;
 +            switch(propertyidsets[i].rgPropertyIDs[j])
 +            {
 +                case DBPROP_CANHOLDROWS:
++                case DBPROP_CANSCROLLBACKWARDS:
 +                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_BOOL;
 +                    V_BOOL(&propertysets[i].rgProperties[j].vValue) = VARIANT_FALSE;
 +                    break;
-+                case DBPROP_CANSCROLLBACKWARDS:
++                case DBPROP_UPDATABILITY:
 +                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_I4;
 +                    V_I4(&propertysets[i].rgProperties[j].vValue) = 0;
 +                    break;
-+                case DBPROP_UPDATABILITY:
 +                case DBPROP_IRowsetUpdate:
 +                case DBPROP_IRowsetResynch:
 +                case DBPROP_IConnectionPointContainer:
-+                    case DBPROP_REMOVEDELETED:
++                case DBPROP_BOOKMARKSKIPPED:
++                case DBPROP_REMOVEDELETED:
 +                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_BOOL;
 +                    V_BOOL(&propertysets[i].rgProperties[j].vValue) = VARIANT_FALSE;
 +                    break;
-+                case DBPROP_BOOKMARKSKIPPED:
++                case DBPROP_AUTH_INTEGRATED:
++                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_I4;
++                    V_I4(&propertysets[i].rgProperties[j].vValue) = 13;
++                    break;
++
 +                case DBPROP_IRowsetCurrentIndex:
 +                default:
 +                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_EMPTY;
@@ -82,3 +89,11 @@ index a563fe12424..5470383aff9 100644
  }
  
  static HRESULT WINAPI rowset_info_GetReferencedRowset(IRowsetInfo *iface, DBORDINAL ordinal,
+@@ -580,7 +639,6 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+ 
+     hr = IRowset_QueryInterface(&msrowset->IRowset_iface, &IID_IUnknown, (void**)rowset);
+     IRowset_Release(&msrowset->IRowset_iface);
+-
+     return hr;
+ }
+ 
