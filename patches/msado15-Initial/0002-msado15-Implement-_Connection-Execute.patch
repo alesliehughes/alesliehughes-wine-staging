@@ -1,14 +1,11 @@
-From ae28d28d53e7326f4973bc7dd0ffaada6746dcc4 Mon Sep 17 00:00:00 2001
+From 3693a34fbe895d3f74306cea54a175021b2088dd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 29 Oct 2020 09:46:09 +1100
-Subject: [PATCH] msado15: Implement _Connection Execute
+Subject: msado15: Implement _Connection Execute
 
----
- dlls/msado15/connection.c | 206 +++++++++++++++++++++++++++++++++++++-
- 1 file changed, 205 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index fd15d5a443f..c467303ddd4 100644
+index fd15d5a443f..9fcccb297b9 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
 @@ -24,6 +24,7 @@
@@ -29,7 +26,7 @@ index fd15d5a443f..c467303ddd4 100644
  struct connection;
  
  struct connection_point
-@@ -256,8 +260,208 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+@@ -256,8 +260,217 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
  static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
                                            LONG options, _Recordset **record_set )
  {
@@ -81,7 +78,9 @@ index fd15d5a443f..c467303ddd4 100644
 +                    DBROWCOUNT affected;
 +                    IUnknown *rowset;
 +                    IRowsetInfo *rowsetinfo;
-+                    //IRowsetLocate *rowsetlocate;
++                    IRowsetLocate *rowsetlocate;
++                    IRowsetChange *rowsetChange;
++                    IRowsetUpdate *rowsetUpdate;
 +
 +                    hr = ICommandText_Execute(comandText, NULL, &IID_IUnknown, NULL, &affected, &rowset);
 +                    FIXME("ICommandText_Execute 0x%08x %p (%ld)\n", hr, rowset, affected);
@@ -133,7 +132,6 @@ index fd15d5a443f..c467303ddd4 100644
 +                        for (i = 0; i < cnt; i++)
 +                        {
 +                            int j;
-+FIXME("  count %d\n", propset[i].cProperties);
 +                            for (j=0; j < propset[i].cProperties; j++)
 +                            {
 +                                FIXME("  rgPropertyIDs[%d]: 0x%08x, %s\n", j, propset[i].rgProperties[j].dwStatus, debugstr_variant(&propset[i].rgProperties[j].vValue));
@@ -143,9 +141,17 @@ index fd15d5a443f..c467303ddd4 100644
 +                        IRowsetInfo_Release(rowsetinfo);
 +                    }
 +
-+                    /*hr = IUnknown_QueryInterface(rowset, &IID_IRowsetLocate, (void**)&rowsetlocate);
++                    hr = IUnknown_QueryInterface(rowset, &IID_IRowsetChange, (void**)&rowsetChange);
++                    FIXME("IRowsetChange %s\n", hr == S_OK ? "Yes" : "No");
++                    if (SUCCEEDED(hr)) IRowsetChange_Release(rowsetChange);
++
++                    hr = IUnknown_QueryInterface(rowset, &IID_IRowsetUpdate, (void**)&rowsetUpdate);
++                    FIXME("IRowsetUpdate %s\n", hr == S_OK ? "Yes" : "No");
++                    if (SUCCEEDED(hr)) IRowsetUpdate_Release(rowsetUpdate);
++
++                    hr = IUnknown_QueryInterface(rowset, &IID_IRowsetLocate, (void**)&rowsetlocate);
 +                    FIXME("IRowsetLocate %s\n", hr == S_OK ? "Yes" : "No");
-+                    if (SUCCEEDED(hr)) IRowsetLocate_Release(rowsetlocate);*/
++                    if (SUCCEEDED(hr)) IRowsetLocate_Release(rowsetlocate);
 +
 +                    IUnknown_Release(rowset);
 +                }
@@ -239,6 +245,3 @@ index fd15d5a443f..c467303ddd4 100644
  }
  
  static HRESULT WINAPI connection_BeginTrans( _Connection *iface, LONG *transaction_level )
--- 
-2.28.0
-
