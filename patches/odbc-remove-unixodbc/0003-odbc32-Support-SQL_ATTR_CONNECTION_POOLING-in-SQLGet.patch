@@ -1,0 +1,96 @@
+From 8571ba6fe245d0753c5af78444bce6d1fa05dd7f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 7 Oct 2020 13:25:11 +1100
+Subject: [PATCH] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
+ SQLGetEnvAttr/SQLSetEnvAttr
+
+---
+ dlls/odbc32/proxyodbc.c | 58 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 56 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index c087634f924..5c93474383f 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -49,6 +49,7 @@ WINE_DECLARE_DEBUG_CHANNEL(winediag);
+ struct SQLHENV_data
+ {
+     int type;
++    SQLINTEGER pooling;
+ };
+ 
+ static SQLRETURN WINAPI null_SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionHandle)
+@@ -518,7 +519,42 @@ static SQLRETURN WINAPI null_SQLGetDiagRecW(SQLSMALLINT HandleType, SQLHANDLE Ha
+ static SQLRETURN WINAPI null_SQLGetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute, SQLPOINTER Value,
+                                            SQLINTEGER BufferLength, SQLINTEGER *StringLength)
+ {
+-    return SQL_ERROR;
++    struct SQLHENV_data *data = EnvironmentHandle;
++
++    TRACE("EnvironmentHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p\n",
++         EnvironmentHandle, Attribute, Value, BufferLength, StringLength);
++
++    if (EnvironmentHandle == SQL_NULL_HENV)
++    {
++        if (StringLength)
++            *StringLength = 0;
++        if (Value)
++            *(SQLINTEGER*)Value = 0;
++        return SQL_SUCCESS;
++    }
++
++    if (data->type != SQL_HANDLE_ENV)
++    {
++        WARN("Wrong handle type %d\n", data->type);
++        return SQL_ERROR;
++    }
++
++    switch (Attribute)
++    {
++        case SQL_ATTR_CONNECTION_POOLING:
++            if (BufferLength != sizeof(data->pooling))
++            {
++                WARN("Invalid buffer size\n");
++                return SQL_ERROR;
++            }
++            *(SQLINTEGER*)Value = data->pooling;
++            break;
++        default:
++            FIXME("Unhandle attribute %d\n", Attribute);
++            return SQL_ERROR;
++    }
++
++    return SQL_SUCCESS;
+ }
+ 
+ static SQLRETURN WINAPI null_SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT FunctionId, SQLUSMALLINT *Supported)
+@@ -718,7 +754,25 @@ static SQLRETURN WINAPI null_SQLSetDescRec(SQLHDESC DescriptorHandle, SQLSMALLIN
+ static SQLRETURN WINAPI null_SQLSetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute, SQLPOINTER Value,
+                                            SQLINTEGER StringLength)
+ {
+-    return SQL_ERROR;
++    struct SQLHENV_data *data = EnvironmentHandle;
++
++    TRACE("EnvironmentHandle %p, Attribute %d, Value %p, StringLength %d\n",
++         EnvironmentHandle, Attribute, Value, StringLength);
++
++    if(!EnvironmentHandle || data->type != SQL_HANDLE_ENV)
++        return SQL_ERROR;
++
++    switch(Attribute)
++    {
++        case SQL_ATTR_CONNECTION_POOLING:
++            data->pooling = *(SQLINTEGER*)Value;
++            break;
++        default:
++            FIXME("Unhandle attribute %d\n", Attribute);
++            return SQL_ERROR;
++    }
++
++    return SQL_SUCCESS;
+ }
+ 
+ static SQLRETURN WINAPI null_SQLSetParam(SQLHSTMT StatementHandle, SQLUSMALLINT ParameterNumber, SQLSMALLINT ValueType,
+-- 
+2.28.0
+
