@@ -1,17 +1,14 @@
-From c688e2ee47118cf69460c4a2f18d5e1d979c69a6 Mon Sep 17 00:00:00 2001
+From 948b0b021def3b4e71579839e98771f3c23e7e9e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
-Subject: [PATCH 1/3] msado15: Add Open Test
+Subject: msado15: Add Open Test
 
----
- dlls/msado15/tests/msado15.c | 61 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index adf9fb30bc2..27c459c8888 100644
+index e95df49c2c2..0aa0a17d11d 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1126,6 +1126,66 @@ static void test_ConnectionPoint(void)
+@@ -1132,14 +1132,75 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %d\n", conn_event.refs );
  }
  
@@ -41,16 +38,16 @@ index adf9fb30bc2..27c459c8888 100644
 +    V_VT(&var2) = VT_BSTR;
 +    V_BSTR(&var2) = SysAllocString(L"SELECT * FROM testing");
 +
-+    //V_VT(&var) = VT_DISPATCH;
-+    //V_DISPATCH(&var) = (IDispatch*)connection;
-+    //_Connection_AddRef(connection);
++    V_VT(&var) = VT_DISPATCH;
++    V_DISPATCH(&var) = (IDispatch*)connection;
++    _Connection_AddRef(connection);
 +
-+    /*ok( 0, "Before _Recordset_Open\n");
++    ok( 0, "Before _Recordset_Open\n");
 +    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
 +    ok( hr == S_OK, "got %08x\n", hr );
-+    ok( 0, "After _Recordset_Open\n");*/
++    ok( 0, "After _Recordset_Open\n");
 +
-+    VariantInit(&affected);
++    /*VariantInit(&affected);
 +    ok( 0, "**** Before _Connection_Execute\n");
 +    hr = _Connection_Execute(connection, V_BSTR(&var2), &affected, 0, &recordset2);
 +    ok( 0, "**** After _Connection_Execute\n");
@@ -63,7 +60,7 @@ index adf9fb30bc2..27c459c8888 100644
 +        ok( hr == S_OK, "got %08x\n", hr );
 +
 +        _Recordset_Release(recordset2);
-+    }
++    }*/
 +
 +    VariantClear(&var);
 +    VariantClear(&var2);
@@ -78,13 +75,14 @@ index adf9fb30bc2..27c459c8888 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
-@@ -1135,5 +1195,6 @@ START_TEST(msado15)
+-    test_Connection();
++    /*test_Connection();
+     test_ConnectionPoint();
+     test_Fields();
      test_Recordset();
      test_Stream();
-     test_Command();
+-    test_Command();
++    test_Command();*/
 +    test_connection_open();
      CoUninitialize();
  }
--- 
-2.28.0
-
