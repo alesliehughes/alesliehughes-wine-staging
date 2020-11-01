@@ -1,22 +1,14 @@
-From 4fcdae4f7d8919cc7bb5291038dc444b1412497b Mon Sep 17 00:00:00 2001
+From e9a2d7051518172a16323580dc6be291240adbb5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
-Subject: [PATCH 05/11] msdasql/tests: Initial tests
+Subject: msdasql/tests: Initial tests
 
----
- configure                      |  1 +
- configure.ac                   |  1 +
- dlls/msdasql/tests/Makefile.in |  6 +++
- dlls/msdasql/tests/provider.c  | 82 ++++++++++++++++++++++++++++++++++
- 4 files changed, 90 insertions(+)
- create mode 100644 dlls/msdasql/tests/Makefile.in
- create mode 100644 dlls/msdasql/tests/provider.c
 
 diff --git a/configure b/configure
-index b798739b95..e483287171 100755
+index 273d3235f8f..961f6085c3e 100755
 --- a/configure
 +++ b/configure
-@@ -20841,6 +20841,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
+@@ -21144,6 +21144,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
  wine_fn_config_makefile dlls/msdasql enable_msdasql
@@ -25,10 +17,10 @@ index b798739b95..e483287171 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index f64e860e14..04bfbac234 100644
+index 549b44138d9..49cd93cea36 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3463,6 +3463,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
+@@ -3553,6 +3553,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
  WINE_CONFIG_MAKEFILE(dlls/msdasql)
@@ -38,7 +30,7 @@ index f64e860e14..04bfbac234 100644
  WINE_CONFIG_MAKEFILE(dlls/msdmo/tests)
 diff --git a/dlls/msdasql/tests/Makefile.in b/dlls/msdasql/tests/Makefile.in
 new file mode 100644
-index 0000000000..4c8717c8e1
+index 00000000000..4c8717c8e1f
 --- /dev/null
 +++ b/dlls/msdasql/tests/Makefile.in
 @@ -0,0 +1,6 @@
@@ -50,10 +42,10 @@ index 0000000000..4c8717c8e1
 +
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
 new file mode 100644
-index 0000000000..c3020f2aba
+index 00000000000..9b6678cca6f
 --- /dev/null
 +++ b/dlls/msdasql/tests/provider.c
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,147 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -128,14 +120,76 @@ index 0000000000..c3020f2aba
 +    IDBProperties_Release(props);
 +}
 +
++static void test_sessions(void)
++{
++    IDBProperties *props;
++    IDBInitialize *dbinit = NULL;
++    IDataInitialize *datainit;
++    IDBCreateSession *dbsession = NULL;
++    IUnknown *session = NULL;
++    IOpenRowset *openrowset = NULL;
++    IDBCreateCommand *create_command = NULL;
++    IUnknown *cmd = NULL;
++    ICommandText *comand_text = NULL;
++    ICommandProperties *commandProp;
++    HRESULT hr;
++
++    BSTR connect_str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
++
++    hr = CoCreateInstance( &CLSID_MSDAINITIALIZE, NULL, CLSCTX_INPROC_SERVER, &IID_IDataInitialize,
++                                (void **)&datainit );
++    ok(hr == S_OK, "Failed to create object 0x%08x\n", hr);
++    hr = IDataInitialize_GetDataSource( datainit, NULL, CLSCTX_INPROC_SERVER, connect_str, &IID_IDBInitialize,
++                                             (IUnknown **)&dbinit );
++    SysFreeString(connect_str);
++
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBProperties, (void **)&props );
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDBInitialize_Initialize( dbinit );
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&dbsession );
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDBCreateSession_CreateSession( dbsession, NULL, &IID_IUnknown, &session );
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IUnknown_QueryInterface(session, &IID_IOpenRowset, (void**)&openrowset);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IOpenRowset_QueryInterface(openrowset, &IID_IDBCreateCommand, (void**)&create_command);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IDBCreateCommand_CreateCommand(create_command, NULL, &IID_IUnknown, (IUnknown **)&cmd);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ICommandProperties_Release(commandProp);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&comand_text);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++
++    ICommandText_Release(comand_text);
++    IUnknown_Release(cmd);
++    IDBCreateCommand_Release(create_command);
++    IOpenRowset_Release(openrowset);
++    IUnknown_Release( session );
++    IDBCreateSession_Release(dbsession);
++    IDBInitialize_Uninitialize( dbinit );
++    IDBInitialize_Release( dbinit );
++    IDataInitialize_Release( datainit );
++}
++
 +START_TEST(provider)
 +{
 +    CoInitialize(0);
 +
 +    test_Properties();
++    test_sessions();
 +
 +    CoUninitialize();
 +}
--- 
-2.26.2
-
