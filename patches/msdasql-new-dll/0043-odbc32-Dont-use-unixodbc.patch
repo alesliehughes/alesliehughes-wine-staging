@@ -1,0 +1,25 @@
+From 819caeda6c3534e4ccc436b9754521e1cda6b60c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 1 Nov 2020 20:13:13 +1100
+Subject: [PATCH] odbc32: Dont use unixodbc
+
+---
+ dlls/odbc32/unixlib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/odbc32/unixlib.c b/dlls/odbc32/unixlib.c
+index cde104aa29a..98aa0bfeacf 100644
+--- a/dlls/odbc32/unixlib.c
++++ b/dlls/odbc32/unixlib.c
+@@ -937,7 +937,7 @@ static NTSTATUS load_odbc( struct sql_funcs *funcs )
+ #ifdef SONAME_LIBODBC
+    if (!s || !s[0]) s = SONAME_LIBODBC;
+ #endif
+-   if (!s || !s[0] || !(libodbc = dlopen( s, RTLD_LAZY | RTLD_GLOBAL )))
++   if (1 || !s || !s[0] || !(libodbc = dlopen( s, RTLD_LAZY | RTLD_GLOBAL )))
+    {
+        ERR_(winediag)("failed to open library %s: %s\n", debugstr_a(s), dlerror());
+        return STATUS_DLL_NOT_FOUND;
+-- 
+2.28.0
+
