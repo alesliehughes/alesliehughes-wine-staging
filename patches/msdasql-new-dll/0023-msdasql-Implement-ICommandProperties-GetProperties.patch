@@ -1,0 +1,89 @@
+From 62766c338549f96f560fc130e62b90a3c16437e5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 2 Nov 2020 13:49:20 +1100
+Subject: [PATCH] msdasql: Implement ICommandProperties GetProperties
+
+---
+ dlls/msdasql/session.c | 64 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index da131d5ddb7..0b9170a8837 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -693,11 +693,69 @@ static ULONG WINAPI command_prop_Release(ICommandProperties *iface)
+ }
+ 
+ static HRESULT WINAPI command_prop_GetProperties(ICommandProperties *iface, ULONG count,
+-        const DBPROPIDSET propertyidsets[], ULONG *sets_cnt, DBPROPSET **propertyset)
++        const DBPROPIDSET propertyidsets[], ULONG *out_count, DBPROPSET **propertysets1)
+ {
+     struct command *command = impl_from_ICommandProperties( iface );
+-    FIXME("%p %d %p %p %p\n", command, count, propertyidsets, sets_cnt, propertyset);
+-    return E_NOTIMPL;
++    int i, j;
++    DBPROPSET *propertysets;
++
++    FIXME("%p %d %p %p %p\n", command, count, propertyidsets, out_count, propertysets1);
++
++    propertysets = CoTaskMemAlloc(count * sizeof(DBPROPSET));
++    if (!propertysets)
++        return E_OUTOFMEMORY;
++
++    memset(propertysets, 0, count * sizeof(DBPROPSET));
++    for (i=0; i < count; i++)
++    {
++        FIXME("Property Set %d\n", i);
++        FIXME("  cPropertyIDs:  %d\n", propertyidsets[i].cPropertyIDs);
++        FIXME("  guidPropertySet: %s\n", debugstr_guid(&propertyidsets[i].guidPropertySet) );
++
++        propertysets[i].rgProperties = CoTaskMemAlloc(propertyidsets[i].cPropertyIDs * sizeof(DBPROP));
++        memset(propertysets[i].rgProperties, 0, propertyidsets[i].cPropertyIDs * sizeof(DBPROP));
++
++        propertysets[i].cProperties = propertyidsets[i].cPropertyIDs;
++        for (j=0; j < propertyidsets[i].cPropertyIDs; j++)
++        {
++            FIXME("  rgPropertyIDs[%d]: 0x%08x\n", j, propertyidsets[i].rgPropertyIDs[j]);
++            propertysets[i].rgProperties[j].dwPropertyID = propertyidsets[i].cPropertyIDs;
++            propertysets[i].rgProperties[j].dwOptions = DBPROPOPTIONS_OPTIONAL;
++            switch(propertyidsets[i].rgPropertyIDs[j])
++            {
++                case DBPROP_CANHOLDROWS:
++                case DBPROP_CANSCROLLBACKWARDS:
++                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_BOOL;
++                    V_BOOL(&propertysets[i].rgProperties[j].vValue) = VARIANT_FALSE;
++                    break;
++                case DBPROP_UPDATABILITY:
++                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_I4;
++                    V_I4(&propertysets[i].rgProperties[j].vValue) = 0;
++                    break;
++                case DBPROP_IRowsetUpdate:
++                case DBPROP_IRowsetResynch:
++                case DBPROP_IConnectionPointContainer:
++                case DBPROP_BOOKMARKSKIPPED:
++                case DBPROP_REMOVEDELETED:
++                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_BOOL;
++                    V_BOOL(&propertysets[i].rgProperties[j].vValue) = VARIANT_FALSE;
++                    break;
++                case DBPROP_AUTH_INTEGRATED:
++                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_I4;
++                    V_I4(&propertysets[i].rgProperties[j].vValue) = 13;
++                    break;
++
++                case DBPROP_IRowsetCurrentIndex:
++                default:
++                    V_VT(&propertysets[i].rgProperties[j].vValue) = VT_EMPTY;
++                    propertysets[i].rgProperties[j].dwStatus = DBPROPSTATUS_NOTSUPPORTED;
++            }
++        }
++    }
++
++    *propertysets1 = propertysets;
++    *out_count = count;
++    return DB_S_ERRORSOCCURRED;
+ }
+ 
+ static HRESULT WINAPI command_prop_SetProperties(ICommandProperties *iface, ULONG count,
+-- 
+2.28.0
+

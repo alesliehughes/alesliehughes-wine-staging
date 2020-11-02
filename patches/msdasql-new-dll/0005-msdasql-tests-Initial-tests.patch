@@ -1,4 +1,4 @@
-From e9a2d7051518172a16323580dc6be291240adbb5 Mon Sep 17 00:00:00 2001
+From 86c74f8b0aee0a5a2ac751fcb1bde538c33f9eca Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
 Subject: msdasql/tests: Initial tests
@@ -42,10 +42,10 @@ index 00000000000..4c8717c8e1f
 +
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
 new file mode 100644
-index 00000000000..9b6678cca6f
+index 00000000000..4e17e906cdc
 --- /dev/null
 +++ b/dlls/msdasql/tests/provider.c
-@@ -0,0 +1,147 @@
+@@ -0,0 +1,152 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -171,6 +171,11 @@ index 00000000000..9b6678cca6f
 +
 +    hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&comand_text);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    // IConvertType
++    // ICommandWithParameters
++    // ICommandPrepare
++    // ICommandStream
 +
 +
 +    ICommandText_Release(comand_text);
