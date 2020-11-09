@@ -1,22 +1,27 @@
-From a5d03cd205eda2054bffb0a5e2768f30cc102534 Mon Sep 17 00:00:00 2001
+From 00feaca4ed5134a45ec556fd70251cb42c53a178 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Oct 2018 15:06:51 +1100
-Subject: [PATCH] odbc32: Add initial tests
+Subject: odbc32: Add initial tests
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
----
- configure.ac                   |   1 +
- dlls/odbc32/tests/Makefile.in  |   4 ++
- dlls/odbc32/tests/connection.c | 100 +++++++++++++++++++++++++++++++++
- 3 files changed, 105 insertions(+)
- create mode 100644 dlls/odbc32/tests/Makefile.in
- create mode 100644 dlls/odbc32/tests/connection.c
 
+diff --git a/configure b/configure
+index 7f251c83d99..664754a47df 100755
+--- a/configure
++++ b/configure
+@@ -21265,6 +21265,7 @@ wine_fn_config_makefile dlls/nvencodeapi enable_win32
+ wine_fn_config_makefile dlls/nvencodeapi64 enable_win64
+ wine_fn_config_makefile dlls/objsel enable_objsel
+ wine_fn_config_makefile dlls/odbc32 enable_odbc32
++wine_fn_config_makefile dlls/odbc32/tests enable_tests
+ wine_fn_config_makefile dlls/odbcbcp enable_odbcbcp
+ wine_fn_config_makefile dlls/odbccp32 enable_odbccp32
+ wine_fn_config_makefile dlls/odbccp32/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index c0d8ada1907..669fd7ad2cc 100644
+index a0e07e35f00..54ef7a41f98 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3676,6 +3676,7 @@ WINE_CONFIG_MAKEFILE(dlls/nvencodeapi,enable_win32)
+@@ -3674,6 +3674,7 @@ WINE_CONFIG_MAKEFILE(dlls/nvencodeapi,enable_win32)
  WINE_CONFIG_MAKEFILE(dlls/nvencodeapi64,enable_win64)
  WINE_CONFIG_MAKEFILE(dlls/objsel)
  WINE_CONFIG_MAKEFILE(dlls/odbc32)
@@ -36,10 +41,10 @@ index 00000000000..4d8716ed2ed
 +C_SRCS = connection.c
 diff --git a/dlls/odbc32/tests/connection.c b/dlls/odbc32/tests/connection.c
 new file mode 100644
-index 00000000000..ef89b9a1d48
+index 00000000000..06814439f22
 --- /dev/null
 +++ b/dlls/odbc32/tests/connection.c
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,130 @@
 +/*
 + * Copyright 2018 Alistair Leslie-Hughes
 + *
@@ -88,10 +93,10 @@ index 00000000000..ef89b9a1d48
 +    ok(ret == SQL_SUCCESS, "got %d\n", ret);
 +
 +    ret = SQLFreeEnv(sqlenv);
-+    todo_wine ok(ret == SQL_INVALID_HANDLE, "got %d\n", ret);
++    ok(ret == SQL_INVALID_HANDLE, "got %d\n", ret);
 +
 +    ret = SQLFreeEnv(SQL_NULL_HENV);
-+    todo_wine ok(ret == SQL_INVALID_HANDLE, "got %d\n", ret);
++    ok(ret == SQL_INVALID_HANDLE, "got %d\n", ret);
 +}
 +
 +void test_SQLGetEnvAttr(void)
@@ -106,16 +111,16 @@ index 00000000000..ef89b9a1d48
 +    value = 5;
 +    length = 12;
 +    ret = SQLGetEnvAttr(SQL_NULL_HENV, SQL_ATTR_CONNECTION_POOLING, &value, sizeof(SQLINTEGER), &length);
-+    ok(ret == SQL_SUCCESS, "got %d\n", ret);
-+    ok(value == 0, "got %d\n", value);
-+    ok(length == 0, "got %d\n", length);
++    todo_wine ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    todo_wine ok(value == 0, "got %d\n", value);
++    ok(length == 12, "got %d\n", length);
 +
 +    value = 5;
-+    length = 12;
++    length = 13;
 +    ret = SQLGetEnvAttr(SQL_NULL_HENV, SQL_ATTR_CONNECTION_POOLING, &value, 0, &length);
-+    ok(ret == SQL_SUCCESS, "got %d\n", ret);
-+    ok(value == 0, "got %d\n", value);
-+    ok(length == 0, "got %d\n", length);
++    todo_wine ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    todo_wine ok(value == 0, "got %d\n", value);
++    ok(length == 13, "got %d\n", length);
 +
 +    value = 5;
 +    length = 12;
@@ -135,11 +140,38 @@ index 00000000000..ef89b9a1d48
 +    ok(ret == SQL_SUCCESS, "got %d\n", ret);
 +}
 +
++static void test_SQLDriver(void)
++{
++    SQLHENV henv = SQL_NULL_HENV;
++    SQLRETURN ret;
++    SQLCHAR driver[256];
++    SQLCHAR attr[256];
++    SQLSMALLINT driver_ret;
++    SQLSMALLINT attr_ret;
++    SQLUSMALLINT direction;
++
++    ret = SQLAllocEnv(&henv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    ok(henv != SQL_NULL_HENV, "NULL handle\n");
++
++    direction = SQL_FETCH_FIRST;
++
++    while(SQL_SUCCEEDED(ret = SQLDrivers(henv, direction, driver, sizeof(driver),
++            &driver_ret, attr, sizeof(attr), &attr_ret)))
++    {
++        direction = SQL_FETCH_NEXT;
++
++        trace("%s - %s\n", driver, attr);
++    }
++    ok(ret == SQL_NO_DATA, "got %d\n", ret);
++
++    ret = SQLFreeEnv(henv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++}
++
 +START_TEST(connection)
 +{
 +    test_SQLAllocEnv();
 +    test_SQLGetEnvAttr();
++    test_SQLDriver();
 +}
--- 
-2.28.0
-
