@@ -1,15 +1,21 @@
-From 2e65fba2616155a16ae475f9108e0c5825fe0fdf Mon Sep 17 00:00:00 2001
+From 349eea8da3741c9039035cd3c0de888a7f9880ea Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Oct 2020 15:39:26 +1100
-Subject: include: Add ICommandWithParameters interface
+Subject: [PATCH] include: Add ICommandWithParameters interface
 
+---
+ dlls/msdaps/usrmarshal.c | 42 ++++++++++++++++++++
+ include/cmdwpr.idl       | 84 ++++++++++++++++++++++++++++++++++++++++
+ include/oledb.idl        |  1 +
+ 3 files changed, 127 insertions(+)
+ create mode 100644 include/cmdwpr.idl
 
 diff --git a/dlls/msdaps/usrmarshal.c b/dlls/msdaps/usrmarshal.c
-index c4259bbd3a1..7f107249c5d 100644
+index 917395b37bd..090b1edcc94 100644
 --- a/dlls/msdaps/usrmarshal.c
 +++ b/dlls/msdaps/usrmarshal.c
-@@ -1629,3 +1629,45 @@ HRESULT __RPC_STUB IConvertType_CanConvert_Stub(IConvertType* This, DBTYPE from,
-     FIXME("(%p)->(%d %d 0x%08x %p): stub\n", This, from, to, flags, error);
+@@ -1653,3 +1653,45 @@ HRESULT __RPC_STUB ICommandPrepare_Unprepare_Stub(ICommandPrepare* This, IErrorI
+     FIXME("(%p)->(%p): stub\n", This, error);
      return E_NOTIMPL;
  }
 +
@@ -54,7 +60,6 @@ index c4259bbd3a1..7f107249c5d 100644
 +    FIXME("(%p)->(%d %p %p %p): stub\n", This, cParams, rgParamOrdinals, rgParamBindInfo, ppErrorInfoRem);
 +    return E_NOTIMPL;
 +}
-\ No newline at end of file
 diff --git a/include/cmdwpr.idl b/include/cmdwpr.idl
 new file mode 100644
 index 00000000000..5227efb8709
@@ -146,14 +151,17 @@ index 00000000000..5227efb8709
 +#endif
 +}
 diff --git a/include/oledb.idl b/include/oledb.idl
-index fe5e45c32b9..0ef5fd61e4e 100644
+index 34b1ac7c3cd..3e9cff587f2 100644
 --- a/include/oledb.idl
 +++ b/include/oledb.idl
-@@ -78,6 +78,7 @@ cpp_quote("#endif")
- #include "cmdstrm.idl"
- #include "cmdprp.idl"
- #include "cvttyp.idl"
+@@ -81,6 +81,7 @@ cpp_quote("#endif")
+ #include "cmdpre.idl"
+ #include "rstchg.idl"
+ #include "rstupd.idl"
 +#include "cmdwpr.idl"
  
  cpp_quote("#include <accctrl.h>")
  
+-- 
+2.28.0
+
