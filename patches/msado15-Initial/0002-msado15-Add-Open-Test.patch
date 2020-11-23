@@ -1,14 +1,14 @@
-From 948b0b021def3b4e71579839e98771f3c23e7e9e Mon Sep 17 00:00:00 2001
+From 2015e1b3caa23aa524064f99ab472cba664347ee Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
 Subject: msado15: Add Open Test
 
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index e95df49c2c2..0aa0a17d11d 100644
+index cafb73d64e4..6b4c5222923 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1132,14 +1132,75 @@ static void test_ConnectionPoint(void)
+@@ -1477,6 +1477,95 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %d\n", conn_event.refs );
  }
  
@@ -38,16 +38,16 @@ index e95df49c2c2..0aa0a17d11d 100644
 +    V_VT(&var2) = VT_BSTR;
 +    V_BSTR(&var2) = SysAllocString(L"SELECT * FROM testing");
 +
-+    V_VT(&var) = VT_DISPATCH;
-+    V_DISPATCH(&var) = (IDispatch*)connection;
-+    _Connection_AddRef(connection);
++    //V_VT(&var) = VT_DISPATCH;
++    //V_DISPATCH(&var) = (IDispatch*)connection;
++    //_Connection_AddRef(connection);
 +
-+    ok( 0, "Before _Recordset_Open\n");
++    /*ok( 0, "Before _Recordset_Open\n");
 +    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
 +    ok( hr == S_OK, "got %08x\n", hr );
-+    ok( 0, "After _Recordset_Open\n");
++    ok( 0, "After _Recordset_Open\n");*/
 +
-+    /*VariantInit(&affected);
++    VariantInit(&affected);
 +    ok( 0, "**** Before _Connection_Execute\n");
 +    hr = _Connection_Execute(connection, V_BSTR(&var2), &affected, 0, &recordset2);
 +    ok( 0, "**** After _Connection_Execute\n");
@@ -55,12 +55,41 @@ index e95df49c2c2..0aa0a17d11d 100644
 +
 +    if (recordset2)
 +    {
++        VARIANT_BOOL eof, bof;
++
++        ok( 0, "**** Before _Recordset_get_BOF\n");
++        hr = _Recordset_get_BOF(recordset2, &bof);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( bof == VARIANT_FALSE, "Failed\n");
++        ok( 0, "**** After _Recordset_get_BOF\n");
++
++        ok( 0, "**** Before _Recordset_MoveFirst\n");
++        hr = _Recordset_MoveFirst(recordset2);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( 0, "**** After _Recordset_MoveFirst\n");
++
++        ok( 0, "**** Before _Recordset_MoveLast\n");
++        hr = _Recordset_MoveLast(recordset2);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( 0, "**** After _Recordset_MoveLast\n");
++
++        ok( 0, "**** Before _Recordset_MoveNext\n");
++        hr = _Recordset_MoveNext(recordset2);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( 0, "**** After _Recordset_MoveNext\n");
++
++        ok( 0, "**** Before _Recordset_get_EOF\n");
++        hr = _Recordset_get_EOF(recordset2, &eof);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( eof == VARIANT_FALSE, "Failed\n");
++        ok( 0, "**** After _Recordset_get_EOF\n");
++
 +        ok(0, "Affected %d\n", V_VT(&affected));
 +        hr = _Recordset_Close(recordset2);
 +        ok( hr == S_OK, "got %08x\n", hr );
 +
 +        _Recordset_Release(recordset2);
-+    }*/
++    }
 +
 +    VariantClear(&var);
 +    VariantClear(&var2);
@@ -75,14 +104,10 @@ index e95df49c2c2..0aa0a17d11d 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
--    test_Connection();
-+    /*test_Connection();
-     test_ConnectionPoint();
-     test_Fields();
+@@ -1487,5 +1576,6 @@ START_TEST(msado15)
      test_Recordset();
      test_Stream();
--    test_Command();
-+    test_Command();*/
+     test_Command();
 +    test_connection_open();
      CoUninitialize();
  }
