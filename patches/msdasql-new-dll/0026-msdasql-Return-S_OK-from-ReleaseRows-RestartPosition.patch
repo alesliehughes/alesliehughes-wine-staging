@@ -1,0 +1,35 @@
+From 9203d0be57d9d1cb28a42f3603cd05230cd154a5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 23 Nov 2020 16:11:07 +1100
+Subject: [PATCH] msdasql: Return S_OK from ReleaseRows/RestartPosition
+
+This is to make _Recordset MoveFirst happy when using a rowset.
+---
+ dlls/msdasql/session.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index a98c3c23709..a06d743e27f 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -510,7 +510,7 @@ static HRESULT WINAPI msdasql_rowset_ReleaseRows(IRowset *iface, DBCOUNTITEM cou
+ 
+     FIXME("%p, %ld, %p, %p, %p, %p\n", rowset, count, rows, options, ref_counts, status);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI msdasql_rowset_RestartPosition(IRowset *iface, HCHAPTER reserved)
+@@ -519,7 +519,7 @@ static HRESULT WINAPI msdasql_rowset_RestartPosition(IRowset *iface, HCHAPTER re
+ 
+     FIXME("%p, %ld\n", rowset, reserved);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static const struct IRowsetVtbl msdasql_rowset =
+-- 
+2.29.2
+

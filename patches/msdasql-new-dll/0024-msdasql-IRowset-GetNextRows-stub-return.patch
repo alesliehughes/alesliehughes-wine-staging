@@ -1,0 +1,36 @@
+From 2783179bb2f15805f5c9ce2cc6cbb0706b3cf3cb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 23 Nov 2020 15:15:44 +1100
+Subject: [PATCH] msdasql: IRowset GetNextRows stub return
+
+---
+ dlls/msdasql/session.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 0b9170a8837..45ceaa6b4a1 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -474,7 +474,18 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
+ 
+     FIXME("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
+ 
+-    return E_NOTIMPL;
++    if (!obtained || !rows)
++        return E_INVALIDARG;
++
++    *obtained = 0;
++
++    if (!count)
++        return S_OK;
++
++    *obtained = 1;
++    //*rows = NULL;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI msdasql_rowset_ReleaseRows(IRowset *iface, DBCOUNTITEM count,
+-- 
+2.29.2
+
