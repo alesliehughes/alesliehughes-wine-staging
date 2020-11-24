@@ -1,0 +1,51 @@
+From 8281da9b21dc51538e54506533a60623c4342bf7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 24 Nov 2020 14:18:38 +1100
+Subject: [PATCH] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
+
+---
+ dlls/odbc32/proxyodbc.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index f70cc637be2..04d718d47b4 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -580,12 +580,34 @@ static SQLRETURN WINAPI null_SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALL
+ static SQLRETURN WINAPI null_SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
+                                         SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
+ {
++    char *ptr = InfoValue;
++    switch(InfoType)
++    {
++        case SQL_ODBC_VER:
++            lstrcpynA(ptr, "03.80.0000", BufferLength);
++            *StringLength = strlen(ptr);
++            return SQL_SUCCESS;
++        default:
++            FIXME("Unsupported type %d\n", InfoType);
++    }
+     return SQL_ERROR;
+ }
+ 
+ static SQLRETURN WINAPI null_SQLGetInfoW(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
+                                          SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
+ {
++    WCHAR *ptr = InfoValue;
++
++    switch(InfoType)
++    {
++        case SQL_ODBC_VER:
++            lstrcpynW(ptr, L"03.80.0000", BufferLength);
++            if (StringLength)
++                *StringLength = wcslen(ptr);
++            return SQL_SUCCESS;
++        default:
++            FIXME("Unsupported type %d\n", InfoType);
++    }
+     return SQL_ERROR;
+ }
+ 
+-- 
+2.29.2
+

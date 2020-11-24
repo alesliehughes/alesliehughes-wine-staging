@@ -1,0 +1,26 @@
+From 84537ee95b0d1b0a345018dc3e8f4e7e88efa1ee Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 24 Nov 2020 16:08:31 +1100
+Subject: [PATCH] odbc32: Fake success SQLFreeConnect
+
+---
+ dlls/odbc32/proxyodbc.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 04d718d47b4..45070542aac 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -408,7 +408,8 @@ static SQLRETURN WINAPI null_SQLForeignKeysW(SQLHSTMT hstmt, SQLWCHAR *szPkCatal
+ 
+ static SQLRETURN WINAPI null_SQLFreeConnect(SQLHDBC ConnectionHandle)
+ {
+-    return SQL_ERROR;
++    FIXME("Faking success\n");
++    return SQL_SUCCESS;
+ }
+ 
+ static SQLRETURN WINAPI null_SQLFreeEnv(SQLHENV EnvironmentHandle)
+-- 
+2.29.2
+

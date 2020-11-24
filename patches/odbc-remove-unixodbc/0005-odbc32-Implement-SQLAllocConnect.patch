@@ -1,0 +1,44 @@
+From f00ccb2c12584ba788c4110b422775b67f501c29 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 24 Nov 2020 11:42:43 +1100
+Subject: [PATCH] odbc32: Implement SQLAllocConnect
+
+This should forward to SQLAllocHandle.
+---
+ dlls/odbc32/proxyodbc.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 5c93474383f..f70cc637be2 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -54,9 +54,24 @@ struct SQLHENV_data
+ 
+ static SQLRETURN WINAPI null_SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionHandle)
+ {
++    struct SQLHENV_data *data;
++
++    TRACE("EnvironmentHandle %p, ConnectionHandle %p\n", EnvironmentHandle, ConnectionHandle);
++
++    if(!ConnectionHandle)
++        return SQL_ERROR;
++
+     *ConnectionHandle = SQL_NULL_HDBC;
+-    TRACE("Not ready\n");
+-    return SQL_ERROR;
++
++    data = heap_alloc_zero(sizeof(data));
++    if (!data)
++        return SQL_ERROR;
++
++    data->type = SQL_HANDLE_DBC;
++
++    *ConnectionHandle = data;
++
++    return SQL_SUCCESS;
+ }
+ 
+ static SQLRETURN WINAPI null_SQLAllocEnv(SQLHENV *EnvironmentHandle)
+-- 
+2.29.2
+

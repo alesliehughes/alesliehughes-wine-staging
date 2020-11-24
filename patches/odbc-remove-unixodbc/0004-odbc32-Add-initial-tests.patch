@@ -1,4 +1,4 @@
-From 00feaca4ed5134a45ec556fd70251cb42c53a178 Mon Sep 17 00:00:00 2001
+From 54cc57f9d19a93db926780d9c13a17aa80c952c7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Oct 2018 15:06:51 +1100
 Subject: odbc32: Add initial tests
@@ -6,10 +6,10 @@ Subject: odbc32: Add initial tests
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 
 diff --git a/configure b/configure
-index 7f251c83d99..664754a47df 100755
+index fe8135c5fa7..f5986ae0523 100755
 --- a/configure
 +++ b/configure
-@@ -21265,6 +21265,7 @@ wine_fn_config_makefile dlls/nvencodeapi enable_win32
+@@ -21180,6 +21180,7 @@ wine_fn_config_makefile dlls/nvencodeapi enable_win32
  wine_fn_config_makefile dlls/nvencodeapi64 enable_win64
  wine_fn_config_makefile dlls/objsel enable_objsel
  wine_fn_config_makefile dlls/odbc32 enable_odbc32
@@ -18,10 +18,10 @@ index 7f251c83d99..664754a47df 100755
  wine_fn_config_makefile dlls/odbccp32 enable_odbccp32
  wine_fn_config_makefile dlls/odbccp32/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index a0e07e35f00..54ef7a41f98 100644
+index 432015c4458..4d5d80d5115 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3674,6 +3674,7 @@ WINE_CONFIG_MAKEFILE(dlls/nvencodeapi,enable_win32)
+@@ -3661,6 +3661,7 @@ WINE_CONFIG_MAKEFILE(dlls/nvencodeapi,enable_win32)
  WINE_CONFIG_MAKEFILE(dlls/nvencodeapi64,enable_win64)
  WINE_CONFIG_MAKEFILE(dlls/objsel)
  WINE_CONFIG_MAKEFILE(dlls/odbc32)
@@ -41,10 +41,10 @@ index 00000000000..4d8716ed2ed
 +C_SRCS = connection.c
 diff --git a/dlls/odbc32/tests/connection.c b/dlls/odbc32/tests/connection.c
 new file mode 100644
-index 00000000000..06814439f22
+index 00000000000..ccea72c1d6c
 --- /dev/null
 +++ b/dlls/odbc32/tests/connection.c
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,165 @@
 +/*
 + * Copyright 2018 Alistair Leslie-Hughes
 + *
@@ -69,6 +69,7 @@ index 00000000000..06814439f22
 +#include "windef.h"
 +#include "winbase.h"
 +#include "sqlext.h"
++#include "sqlucode.h"
 +#include "odbcinst.h"
 +
 +static void test_SQLAllocEnv(void)
@@ -169,9 +170,43 @@ index 00000000000..06814439f22
 +    ok(ret == SQL_SUCCESS, "got %d\n", ret);
 +}
 +
++static void test_SQLGetDiagRec(void)
++{
++    SQLHENV henv = SQL_NULL_HENV;
++    SQLHDBC connection;
++    SQLRETURN ret;
++    WCHAR version[11];
++    WCHAR       SqlState[6], Msg[SQL_MAX_MESSAGE_LENGTH];
++    SQLINTEGER    NativeError;
++    SQLSMALLINT   MsgLen;
++
++    ret = SQLAllocEnv(&henv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    ok(henv != SQL_NULL_HENV, "NULL handle\n");
++
++    ret = SQLAllocConnect(henv, &connection);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++
++    ret = SQLGetInfoW(connection, SQL_ODBC_VER, version, 22, NULL);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++    trace("ODBC_VER=%s\n", wine_dbgstr_w(version));
++
++    ret = SQLFreeConnect(connection);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++
++    NativeError = 88;
++    ret = SQLGetDiagRecW( SQL_HANDLE_ENV, henv, 1, SqlState, &NativeError, Msg, sizeof(Msg), &MsgLen);
++    ok(ret == SQL_NO_DATA, "got %d\n", ret);
++    ok(NativeError == 88, "got %d\n", NativeError);
++
++    ret = SQLFreeEnv(henv);
++    ok(ret == SQL_SUCCESS, "got %d\n", ret);
++}
++
 +START_TEST(connection)
 +{
 +    test_SQLAllocEnv();
 +    test_SQLGetEnvAttr();
 +    test_SQLDriver();
++    test_SQLGetDiagRec();
 +}
