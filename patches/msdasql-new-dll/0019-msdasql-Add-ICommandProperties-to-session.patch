@@ -1,11 +1,14 @@
-From 8f07c396627dc62dae1c9c7396935112c3183f54 Mon Sep 17 00:00:00 2001
+From a4841a147fcbcff2781ccde9277eaab0256d18bf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 27 Oct 2020 14:18:01 +1100
-Subject: msdasql: Add ICommandProperties to session
+Subject: [PATCH] msdasql: Add ICommandProperties to session
 
+---
+ dlls/msdasql/session.c | 53 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 4daf48c7fa3..c036884005f 100644
+index 35a43634ef7..07fb1b5bb92 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -317,6 +317,7 @@ static ULONG WINAPI createcommand_Release(IDBCreateCommand *iface)
@@ -96,3 +99,6 @@ index 4daf48c7fa3..c036884005f 100644
      command->refs = 1;
  
      hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
+-- 
+2.29.2
+

@@ -1,4 +1,4 @@
-From 5e99fac054222f6d23d8568604a072a7e250f13b Mon Sep 17 00:00:00 2001
+From 51a1dd02d79152ea8375b62317f7faff980daf0a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 20:16:29 +1100
 Subject: [PATCH] msdasql: Add IOpenRowset support to session
@@ -8,7 +8,7 @@ Subject: [PATCH] msdasql: Add IOpenRowset support to session
  1 file changed, 46 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 96e163b13d7..34531d5a3d1 100644
+index 1d03ae88939..5f207cb3a37 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -36,6 +36,7 @@ struct msdasql_session
@@ -91,7 +91,7 @@ index 96e163b13d7..34531d5a3d1 100644
 +    session->IOpenRowset_iface.lpVtbl = &openrowsetVtbl;
      session->refs = 1;
  
-     return IUnknown_QueryInterface((IUnknown *)session, riid, unk);
+     return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 -- 
-2.28.0
+2.29.2
 

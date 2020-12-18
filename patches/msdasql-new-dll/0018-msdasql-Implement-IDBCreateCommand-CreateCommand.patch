@@ -1,11 +1,14 @@
-From 544a4ed112b0060802ba1c5ca94afef070b69a10 Mon Sep 17 00:00:00 2001
+From 3f1f74c6682482ac8dadcbe6e631f6b85b63bbc9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Oct 2020 21:17:05 +1100
-Subject: msdasql: Implement IDBCreateCommand CreateCommand
+Subject: [PATCH] msdasql: Implement IDBCreateCommand CreateCommand
 
+---
+ dlls/msdasql/session.c | 119 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 118 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 11ff05fb179..067b630274b 100644
+index 32b17cc38a2..35a43634ef7 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -314,13 +314,130 @@ static ULONG WINAPI createcommand_Release(IDBCreateCommand *iface)
@@ -140,3 +143,6 @@ index 11ff05fb179..067b630274b 100644
  }
  
  static const IDBCreateCommandVtbl createcommandVtbl = {
+-- 
+2.29.2
+

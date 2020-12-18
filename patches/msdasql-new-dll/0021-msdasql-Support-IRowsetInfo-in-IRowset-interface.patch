@@ -1,14 +1,14 @@
-From 1d2faf268e6ae0500b00bb8bc0e071416512c31c Mon Sep 17 00:00:00 2001
+From 0c14060b490f4fe235cf950d1976bd91c3ba1db6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 29 Oct 2020 10:27:30 +1100
-Subject: [PATCH 1/2] msdasql: Support IRowsetInfo in IRowset interface
+Subject: [PATCH] msdasql: Support IRowsetInfo in IRowset interface
 
 ---
  dlls/msdasql/session.c | 63 ++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 63 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 865450867b0..a563fe12424 100644
+index d9c47ae6eeb..5d6853ac7fd 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -387,6 +387,7 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
@@ -110,5 +110,5 @@ index 865450867b0..a563fe12424 100644
  
      if (affected) *affected = 1; /* FIXME */
 -- 
-2.28.0
+2.29.2
 

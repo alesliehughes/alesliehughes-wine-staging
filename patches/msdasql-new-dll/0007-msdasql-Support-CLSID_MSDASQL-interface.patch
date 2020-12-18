@@ -1,7 +1,7 @@
-From 65cda0b1fb5499bff601fccb97fb852b471cf828 Mon Sep 17 00:00:00 2001
+From 1ca52714bd6794251ebcb87226dd6c44d9d812af Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Mar 2020 15:08:20 +1100
-Subject: [PATCH 07/11] msdasql: Support CLSID_MSDASQL interface
+Subject: [PATCH] msdasql: Support CLSID_MSDASQL interface
 
 ---
  dlls/msdasql/msdasql_classes.idl |   8 +++
@@ -9,7 +9,7 @@ Subject: [PATCH 07/11] msdasql: Support CLSID_MSDASQL interface
  2 files changed, 117 insertions(+)
 
 diff --git a/dlls/msdasql/msdasql_classes.idl b/dlls/msdasql/msdasql_classes.idl
-index 9ed0959469..00a0e99aaa 100644
+index 9ed09594699..00a0e99aaa8 100644
 --- a/dlls/msdasql/msdasql_classes.idl
 +++ b/dlls/msdasql/msdasql_classes.idl
 @@ -24,3 +24,11 @@
@@ -25,7 +25,7 @@ index 9ed0959469..00a0e99aaa 100644
 +]
 +coclass MSDAENUM { }
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 8b92c97a72..28baf27a9f 100644
+index 8b92c97a720..28baf27a9f3 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -110,6 +110,7 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
@@ -166,5 +166,5 @@ index 8b92c97a72..28baf27a9f 100644
 +}
 \ No newline at end of file
 -- 
-2.26.2
+2.29.2
 

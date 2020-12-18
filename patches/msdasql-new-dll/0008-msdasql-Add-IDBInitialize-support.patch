@@ -1,14 +1,14 @@
-From 1d621433ce86fe83ddbc94eacc888f1ec72e8e46 Mon Sep 17 00:00:00 2001
+From 523f098a7a47a2f6fd10a3dda95eba9e10fcc1f7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 13:44:12 +1000
-Subject: [PATCH 08/11] msdasql: Add IDBInitialize support
+Subject: [PATCH] msdasql: Add IDBInitialize support
 
 ---
  dlls/msdasql/msdasql_main.c | 61 ++++++++++++++++++++++++++++++++++++-
  1 file changed, 60 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 28baf27a9f..c1929192b6 100644
+index 28baf27a9f3..c1929192b65 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -243,9 +243,9 @@ struct msdasql
@@ -110,5 +110,5 @@ index 28baf27a9f..c1929192b6 100644
  
      hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
 -- 
-2.26.2
+2.29.2
 

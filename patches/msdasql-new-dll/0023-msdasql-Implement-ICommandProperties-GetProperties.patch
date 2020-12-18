@@ -1,4 +1,4 @@
-From 62766c338549f96f560fc130e62b90a3c16437e5 Mon Sep 17 00:00:00 2001
+From e90b232056b61bce25b6ee84f2db150eac6f2f2b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 2 Nov 2020 13:49:20 +1100
 Subject: [PATCH] msdasql: Implement ICommandProperties GetProperties
@@ -8,7 +8,7 @@ Subject: [PATCH] msdasql: Implement ICommandProperties GetProperties
  1 file changed, 61 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index da131d5ddb7..0b9170a8837 100644
+index 915249cdc1f..ad3ef763dea 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -693,11 +693,69 @@ static ULONG WINAPI command_prop_Release(ICommandProperties *iface)
@@ -85,5 +85,5 @@ index da131d5ddb7..0b9170a8837 100644
  
  static HRESULT WINAPI command_prop_SetProperties(ICommandProperties *iface, ULONG count,
 -- 
-2.28.0
+2.29.2
 

@@ -1,4 +1,4 @@
-From 8758ebcb60580b292fbc851e3580e71f75cc979e Mon Sep 17 00:00:00 2001
+From 9897ffc2aac12f64ad4823c71b05eab78a29d1ff Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 12:23:14 +1100
 Subject: [PATCH] msdasql: Implement IDBCreateSession CreateSession
@@ -25,10 +25,10 @@ index 455a3e2934e..47a357e5d0f 100644
  RC_SRCS = msdasql.rc
  
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 53137eb0482..e0d4fcb6236 100644
+index e376dc8a37e..96ae769a317 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -535,14 +535,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
+@@ -557,14 +557,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
      return IUnknown_Release(&provider->MSDASQL_iface);
  }
  
@@ -52,7 +52,7 @@ index 53137eb0482..e0d4fcb6236 100644
  static const struct IDBCreateSessionVtbl dbsess_vtbl =
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
 new file mode 100644
-index 00000000000..ee753c84b56
+index 00000000000..7dc5b60b35b
 --- /dev/null
 +++ b/dlls/msdasql/session.c
 @@ -0,0 +1,106 @@
@@ -160,9 +160,9 @@ index 00000000000..ee753c84b56
 +    session->session_iface.lpVtbl = &unkfactoryVtbl;
 +    session->refs = 1;
 +
-+    return IUnknown_QueryInterface((IUnknown *)session, riid, unk);
++    return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 +}
 \ No newline at end of file
 -- 
-2.28.0
+2.29.2
 

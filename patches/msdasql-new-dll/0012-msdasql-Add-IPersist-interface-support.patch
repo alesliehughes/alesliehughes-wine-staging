@@ -1,4 +1,4 @@
-From 59d8201037cc52e2f533b698b8c1466beb780f3d Mon Sep 17 00:00:00 2001
+From 29896f2a0c7d3f63356ee016dd2edf830c43f21d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 15:05:19 +1100
 Subject: [PATCH] msdasql: Add IPersist interface support
@@ -8,7 +8,7 @@ Subject: [PATCH] msdasql: Add IPersist interface support
  1 file changed, 49 insertions(+)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index e0d4fcb6236..ed064dbb17a 100644
+index 96ae769a317..a91ead31a80 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -245,6 +245,7 @@ struct msdasql
@@ -41,7 +41,7 @@ index e0d4fcb6236..ed064dbb17a 100644
      else
      {
          FIXME("(%s, %p)\n", debugstr_guid(riid), out);
-@@ -559,6 +568,45 @@ static const struct IDBCreateSessionVtbl dbsess_vtbl =
+@@ -581,6 +590,45 @@ static const struct IDBCreateSessionVtbl dbsess_vtbl =
      dbsess_CreateSession
  };
  
@@ -87,7 +87,7 @@ index e0d4fcb6236..ed064dbb17a 100644
  static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
  {
      struct msdasql *provider;
-@@ -572,6 +620,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+@@ -594,6 +642,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
      provider->IDBProperties_iface.lpVtbl = &dbprops_vtbl;
      provider->IDBInitialize_iface.lpVtbl = &dbinit_vtbl;
      provider->IDBCreateSession_iface.lpVtbl = &dbsess_vtbl;
@@ -96,5 +96,5 @@ index e0d4fcb6236..ed064dbb17a 100644
  
      hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
 -- 
-2.28.0
+2.29.2
 

@@ -1,11 +1,14 @@
-From f5205df01212c2e2699ace8c2fc229088a63ae01 Mon Sep 17 00:00:00 2001
+From d89201efe202eec3d64e75232ffa79a71bd56244 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Oct 2020 18:16:50 +1100
-Subject: msdasql: Add IDBCreateCommand to session
+Subject: [PATCH] msdasql: Add IDBCreateCommand to session
 
+---
+ dlls/msdasql/session.c | 45 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 751ac5c16a3..11ff05fb179 100644
+index 212b0373233..32b17cc38a2 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -38,6 +38,7 @@ struct msdasql_session
@@ -87,4 +90,7 @@ index 751ac5c16a3..11ff05fb179 100644
 +    session->IDBCreateCommand_iface.lpVtbl = &createcommandVtbl;
      session->refs = 1;
  
-     return IUnknown_QueryInterface((IUnknown *)session, riid, unk);
+     return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
+-- 
+2.29.2
+

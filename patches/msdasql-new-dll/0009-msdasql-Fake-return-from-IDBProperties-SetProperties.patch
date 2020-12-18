@@ -1,7 +1,7 @@
-From f63b1e647456dac484d97bacd3e6466136ba4aad Mon Sep 17 00:00:00 2001
+From a332683581db7ae1d8cf21e740d5c5191bc1fd6d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 15:33:18 +1000
-Subject: [PATCH 03/12] msdasql: Fake return from IDBProperties SetProperties
+Subject: [PATCH] msdasql: Fake return from IDBProperties SetProperties
 
 ---
  dlls/msdasql/msdasql_main.c | 24 +++++++++++++++++++++++-
@@ -47,5 +47,5 @@ index c1929192b65..7fd30721c4a 100644
  
  static const struct IDBPropertiesVtbl dbprops_vtbl =
 -- 
-2.28.0
+2.29.2
 

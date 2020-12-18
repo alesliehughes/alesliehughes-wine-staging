@@ -1,4 +1,4 @@
-From 2783179bb2f15805f5c9ce2cc6cbb0706b3cf3cb Mon Sep 17 00:00:00 2001
+From 993baed0fb974e69d4e3596f40359d0cdb954b6d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 23 Nov 2020 15:15:44 +1100
 Subject: [PATCH] msdasql: IRowset GetNextRows stub return
@@ -8,7 +8,7 @@ Subject: [PATCH] msdasql: IRowset GetNextRows stub return
  1 file changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 0b9170a8837..45ceaa6b4a1 100644
+index ad3ef763dea..5473e6f7f9d 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -474,7 +474,18 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv

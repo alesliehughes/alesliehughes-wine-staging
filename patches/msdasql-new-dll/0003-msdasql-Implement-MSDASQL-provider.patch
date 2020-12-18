@@ -1,14 +1,14 @@
-From b06f6923c8f24448ba40d347d80ff85e668bcaab Mon Sep 17 00:00:00 2001
+From 52e713f8901407ffdfb3def0264cf46f4b420d95 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Dec 2019 15:42:32 +1100
-Subject: [PATCH 03/11] msdasql: Implement MSDASQL provider
+Subject: [PATCH] msdasql: Implement MSDASQL provider
 
 ---
  dlls/msdasql/msdasql_main.c | 163 +++++++++++++++++++++++++++++++++++-
  1 file changed, 161 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index ad66213766..677eb15731 100644
+index ad662137667..677eb157313 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -24,6 +24,7 @@
@@ -198,5 +198,5 @@ index ad66213766..677eb15731 100644
 +
 +
 -- 
-2.26.2
+2.29.2
 

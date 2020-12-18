@@ -1,4 +1,4 @@
-From 712e7248c12b6bbbeb0ebe8144cf532add89b3b2 Mon Sep 17 00:00:00 2001
+From 4f39f8c92e02c29197d0cc4860f2492870199c1c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 16:37:30 +1100
 Subject: [PATCH] msdasql: Add IGetDataSource support to session
@@ -8,7 +8,7 @@ Subject: [PATCH] msdasql: Add IGetDataSource support to session
  1 file changed, 45 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index ee753c84b56..96e163b13d7 100644
+index 7dc5b60b35b..1d03ae88939 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -35,6 +35,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
@@ -90,7 +90,7 @@ index ee753c84b56..96e163b13d7 100644
 +    session->IGetDataSource_iface.lpVtbl = &datasourceVtbl;
      session->refs = 1;
  
-     return IUnknown_QueryInterface((IUnknown *)session, riid, unk);
+     return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 -- 
-2.28.0
+2.29.2
 

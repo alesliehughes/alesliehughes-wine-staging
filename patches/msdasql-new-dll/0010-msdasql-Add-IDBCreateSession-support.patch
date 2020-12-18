@@ -1,14 +1,14 @@
-From def6ee2bcdc4235e4a19cd0f57a55a73cda91d91 Mon Sep 17 00:00:00 2001
+From de35758cbc66651496424e1dd35054b1143c3816 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 15:58:52 +1000
-Subject: [PATCH 10/11] msdasql: Add IDBCreateSession support
+Subject: [PATCH] msdasql: Add IDBCreateSession support
 
 ---
  dlls/msdasql/msdasql_main.c | 53 ++++++++++++++++++++++++++++++++++---
  1 file changed, 50 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 188ebcf5fc..53137eb048 100644
+index 7fd30721c4a..e376dc8a37e 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -244,9 +244,7 @@ struct msdasql
@@ -45,7 +45,7 @@ index 188ebcf5fc..53137eb048 100644
      else
      {
          FIXME("(%s, %p)\n", debugstr_guid(riid), out);
-@@ -507,6 +514,45 @@ static const struct IDBInitializeVtbl dbinit_vtbl =
+@@ -529,6 +536,45 @@ static const struct IDBInitializeVtbl dbinit_vtbl =
      dbinit_Uninitialize
  };
  
@@ -91,7 +91,7 @@ index 188ebcf5fc..53137eb048 100644
  static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
  {
      struct msdasql *provider;
-@@ -519,6 +565,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+@@ -541,6 +587,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
      provider->MSDASQL_iface.lpVtbl = &msdsql_vtbl;
      provider->IDBProperties_iface.lpVtbl = &dbprops_vtbl;
      provider->IDBInitialize_iface.lpVtbl = &dbinit_vtbl;
@@ -100,5 +100,5 @@ index 188ebcf5fc..53137eb048 100644
  
      hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
 -- 
-2.26.2
+2.29.2
 

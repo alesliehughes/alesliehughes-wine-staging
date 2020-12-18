@@ -1,11 +1,14 @@
-From 886f5748311c8690951547e78aab9cd7c894cb08 Mon Sep 17 00:00:00 2001
+From d8902f9cf7a22dd2b6da30e522e8f8a227e0beae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2020 16:09:36 +1100
-Subject: msdasql: Dump OpenRowset properties
+Subject: [PATCH] msdasql: Dump OpenRowset properties
 
+---
+ dlls/msdasql/session.c | 51 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index fde335e6ae9..751ac5c16a3 100644
+index adcd558a28d..212b0373233 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -173,13 +173,64 @@ ULONG WINAPI openrowset_Release(IOpenRowset *iface)
@@ -73,3 +76,6 @@ index fde335e6ae9..751ac5c16a3 100644
      return E_NOTIMPL;
  }
  
+-- 
+2.29.2
+

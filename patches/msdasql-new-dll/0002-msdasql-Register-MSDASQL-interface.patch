@@ -1,7 +1,7 @@
-From efc2658c3194ec4710a5f1f77c8f14c7a1fdd347 Mon Sep 17 00:00:00 2001
+From 5fdde732d738dc9dede5a4f5ddc514cad5f105d6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 14:16:13 +1100
-Subject: [PATCH 02/11] msdasql: Register MSDASQL interface
+Subject: [PATCH] msdasql: Register MSDASQL interface
 
 ---
  dlls/msdasql/Makefile.in         |  5 +++++
@@ -15,7 +15,7 @@ Subject: [PATCH 02/11] msdasql: Register MSDASQL interface
  create mode 100644 dlls/msdasql/msdasql_classes.idl
 
 diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
-index fad4648342..b8cba6ac8c 100644
+index fad46483421..b8cba6ac8cd 100644
 --- a/dlls/msdasql/Makefile.in
 +++ b/dlls/msdasql/Makefile.in
 @@ -5,3 +5,8 @@ EXTRADLLFLAGS = -mno-cygwin
@@ -29,7 +29,7 @@ index fad4648342..b8cba6ac8c 100644
 +
 diff --git a/dlls/msdasql/msdasql.rc b/dlls/msdasql/msdasql.rc
 new file mode 100644
-index 0000000000..d2ba45b8c4
+index 00000000000..d2ba45b8c42
 --- /dev/null
 +++ b/dlls/msdasql/msdasql.rc
 @@ -0,0 +1,20 @@
@@ -55,7 +55,7 @@ index 0000000000..d2ba45b8c4
 +2 WINE_REGISTRY msdasql.rgs
 diff --git a/dlls/msdasql/msdasql.rgs b/dlls/msdasql/msdasql.rgs
 new file mode 100644
-index 0000000000..b5ac427199
+index 00000000000..b5ac427199b
 --- /dev/null
 +++ b/dlls/msdasql/msdasql.rgs
 @@ -0,0 +1,11 @@
@@ -72,7 +72,7 @@ index 0000000000..b5ac427199
 +}
 diff --git a/dlls/msdasql/msdasql_classes.idl b/dlls/msdasql/msdasql_classes.idl
 new file mode 100644
-index 0000000000..9ed0959469
+index 00000000000..9ed09594699
 --- /dev/null
 +++ b/dlls/msdasql/msdasql_classes.idl
 @@ -0,0 +1,26 @@
@@ -103,7 +103,7 @@ index 0000000000..9ed0959469
 +]
 +coclass MSDASQL { }
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 607df7b77b..ad66213766 100644
+index 607df7b77be..ad662137667 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -26,6 +26,9 @@
@@ -117,5 +117,5 @@ index 607df7b77b..ad66213766 100644
  
  static HINSTANCE msdasql_instance;
 -- 
-2.26.2
+2.29.2
 

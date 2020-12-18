@@ -1,14 +1,14 @@
-From d54b8b462cc5d4a8b45668576deaa3075212aba0 Mon Sep 17 00:00:00 2001
+From 2a33b940e9b5a6d41d4cea55ec05e21395ed4674 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 09:37:40 +1100
-Subject: [PATCH 04/11] msdasql: Support IDBProperties interface.
+Subject: [PATCH] msdasql: Support IDBProperties interface.
 
 ---
  dlls/msdasql/msdasql_main.c | 23 ++++++++++++++++++++++-
  1 file changed, 22 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 677eb15731..b55f9b6d02 100644
+index 677eb157313..b55f9b6d023 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -24,6 +24,7 @@
@@ -84,5 +84,5 @@ index 677eb15731..b55f9b6d02 100644
  
      hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
 -- 
-2.26.2
+2.29.2
 

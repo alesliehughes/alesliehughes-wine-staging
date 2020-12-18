@@ -1,14 +1,22 @@
-From 86c74f8b0aee0a5a2ac751fcb1bde538c33f9eca Mon Sep 17 00:00:00 2001
+From a4d7c365d0f9ba3a0efb8959460fc00335cbd70e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
-Subject: msdasql/tests: Initial tests
+Subject: [PATCH] msdasql/tests: Initial tests
 
+---
+ configure                      |   1 +
+ configure.ac                   |   1 +
+ dlls/msdasql/tests/Makefile.in |   6 ++
+ dlls/msdasql/tests/provider.c  | 180 +++++++++++++++++++++++++++++++++
+ 4 files changed, 188 insertions(+)
+ create mode 100644 dlls/msdasql/tests/Makefile.in
+ create mode 100644 dlls/msdasql/tests/provider.c
 
 diff --git a/configure b/configure
-index 273d3235f8f..961f6085c3e 100755
+index 449192472b8..430f311065d 100755
 --- a/configure
 +++ b/configure
-@@ -21144,6 +21144,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
+@@ -20936,6 +20936,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
  wine_fn_config_makefile dlls/msdasql enable_msdasql
@@ -17,10 +25,10 @@ index 273d3235f8f..961f6085c3e 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index 549b44138d9..49cd93cea36 100644
+index f2ec9fad7f3..4a60028ff0e 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3553,6 +3553,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
+@@ -3514,6 +3514,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
  WINE_CONFIG_MAKEFILE(dlls/msdasql)
@@ -42,10 +50,10 @@ index 00000000000..4c8717c8e1f
 +
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
 new file mode 100644
-index 00000000000..4e17e906cdc
+index 00000000000..9e954dc7f0b
 --- /dev/null
 +++ b/dlls/msdasql/tests/provider.c
-@@ -0,0 +1,152 @@
+@@ -0,0 +1,180 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -120,6 +128,45 @@ index 00000000000..4e17e906cdc
 +    IDBProperties_Release(props);
 +}
 +
++static void test_command_interfaces(IUnknown *cmd)
++{
++    HRESULT hr;
++    ICommandProperties *commandProp;
++    ICommandText *comand_text;
++    IConvertType *convertype;
++    ICommandPrepare *commandprepare;
++    ICommandStream *commandstream;
++    IColumnsInfo *colinfo;
++
++    hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ICommandProperties_Release(commandProp);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&comand_text);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ICommandText_Release(comand_text);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_IConvertType, (void**)&convertype);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    if (hr == S_OK)
++        IConvertType_Release(convertype);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_ICommandPrepare, (void**)&commandprepare);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    if (hr == S_OK)
++        ICommandPrepare_Release(commandprepare);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_IColumnsInfo, (void**)&colinfo);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    if (hr == S_OK)
++        IColumnsInfo_Release(colinfo);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_ICommandStream, (void**)&commandstream);
++    ok(hr == E_NOINTERFACE, "got 0x%08x\n", hr);
++
++    /* TODO - ICommandWithParameters */
++}
++
 +static void test_sessions(void)
 +{
 +    IDBProperties *props;
@@ -130,8 +177,7 @@ index 00000000000..4e17e906cdc
 +    IOpenRowset *openrowset = NULL;
 +    IDBCreateCommand *create_command = NULL;
 +    IUnknown *cmd = NULL;
-+    ICommandText *comand_text = NULL;
-+    ICommandProperties *commandProp;
++
 +    HRESULT hr;
 +
 +    BSTR connect_str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
@@ -164,22 +210,12 @@ index 00000000000..4e17e906cdc
 +
 +    hr = IDBCreateCommand_CreateCommand(create_command, NULL, &IID_IUnknown, (IUnknown **)&cmd);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
++    if (hr == S_OK)
++    {
++        test_command_interfaces(cmd);
++        IUnknown_Release(cmd);
++    }
 +
-+    hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
-+    ICommandProperties_Release(commandProp);
-+
-+    hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&comand_text);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
-+
-+    // IConvertType
-+    // ICommandWithParameters
-+    // ICommandPrepare
-+    // ICommandStream
-+
-+
-+    ICommandText_Release(comand_text);
-+    IUnknown_Release(cmd);
 +    IDBCreateCommand_Release(create_command);
 +    IOpenRowset_Release(openrowset);
 +    IUnknown_Release( session );
@@ -198,3 +234,6 @@ index 00000000000..4e17e906cdc
 +
 +    CoUninitialize();
 +}
+-- 
+2.29.2
+
