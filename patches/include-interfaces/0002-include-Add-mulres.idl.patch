@@ -1,20 +1,47 @@
-From de714a16308105a9c7de2e2cd544e15544c2d026 Mon Sep 17 00:00:00 2001
+From 6c4208fb2d6c8590fb4823775fd000683948ba74 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 21 Dec 2020 15:50:29 +1100
-Subject: [PATCH 2/4] include: Add mulres.idl
+Subject: [PATCH] include: Add mulres.idl
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/Makefile.in |  1 +
- include/mulres.idl  | 48 +++++++++++++++++++++++++++++++++++++++++++++
- include/oledb.idl   |  1 +
- 3 files changed, 50 insertions(+)
+ dlls/msdaps/usrmarshal.c | 14 ++++++++++++
+ include/Makefile.in      |  1 +
+ include/mulres.idl       | 48 ++++++++++++++++++++++++++++++++++++++++
+ include/oledb.idl        |  1 +
+ 4 files changed, 64 insertions(+)
  create mode 100644 include/mulres.idl
 
+diff --git a/dlls/msdaps/usrmarshal.c b/dlls/msdaps/usrmarshal.c
+index 917395b37bd..75ba1ef40dc 100644
+--- a/dlls/msdaps/usrmarshal.c
++++ b/dlls/msdaps/usrmarshal.c
+@@ -1630,6 +1630,20 @@ HRESULT __RPC_STUB IConvertType_CanConvert_Stub(IConvertType* This, DBTYPE from,
+     return E_NOTIMPL;
+ }
+ 
++HRESULT __RPC_STUB IMultipleResults_GetResult_Stub(IMultipleResults* This, IUnknown *outer,
++    DBRESULTFLAG result, REFIID riid, DBROWCOUNT *affected, IUnknown **rowset, IErrorInfo **error)
++{
++    FIXME("(%p)->(%p %d %s %p %p %p): stub\n", This, outer, result, debugstr_guid(riid), affected, rowset, error);
++    return E_NOTIMPL;
++}
++
++HRESULT CALLBACK IMultipleResults_GetResult_Proxy(IMultipleResults* This, IUnknown *outer,
++    DBRESULTFLAG result, REFIID riid, DBROWCOUNT *affected, IUnknown **rowset)
++{
++    FIXME("(%p)->(%p %d %s %p %p): stub\n", This, outer, result, debugstr_guid(riid), affected, rowset);
++    return E_NOTIMPL;
++}
++
+ HRESULT CALLBACK ICommandPrepare_Prepare_Proxy(ICommandPrepare* This, ULONG runs)
+ {
+     FIXME("(%p)->(%d): stub\n", This, runs);
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 74a1d8e0c89..0387068067e 100644
+index 5649bd6c361..eb0dacc2656 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -520,6 +520,7 @@ SOURCES = \
+@@ -524,6 +524,7 @@ SOURCES = \
  	netioapi.h \
  	netlistmgr.idl \
  	newdev.h \
