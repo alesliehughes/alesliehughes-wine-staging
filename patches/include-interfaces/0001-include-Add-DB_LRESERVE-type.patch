@@ -1,0 +1,24 @@
+From 0e15a7961beb43f7b71c666e465a905f0e54b379 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 21 Dec 2020 15:49:26 +1100
+Subject: [PATCH 1/4] include: Add DB_LRESERVE type
+
+---
+ include/oledb.idl | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/oledb.idl b/include/oledb.idl
+index 5609e219320..4e333353a5e 100644
+--- a/include/oledb.idl
++++ b/include/oledb.idl
+@@ -40,6 +40,7 @@ typedef ULONG_PTR DBREFCOUNT;
+ typedef ULONG_PTR DB_UPARAMS;
+ typedef LONG_PTR  DB_LPARAMS;
+ typedef DWORD_PTR DBHASHVALUE;
++typedef LONG_PTR DB_LRESERVE;
+ 
+ #include "dbs.idl"
+ 
+-- 
+2.29.2
+

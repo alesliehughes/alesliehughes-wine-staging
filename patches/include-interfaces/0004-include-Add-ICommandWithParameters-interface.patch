@@ -1,7 +1,7 @@
-From 349eea8da3741c9039035cd3c0de888a7f9880ea Mon Sep 17 00:00:00 2001
+From a158804ed24c4897694449bbbd38e08744add177 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Oct 2020 15:39:26 +1100
-Subject: [PATCH] include: Add ICommandWithParameters interface
+Subject: [PATCH 4/4] include: Add ICommandWithParameters interface
 
 ---
  dlls/msdaps/usrmarshal.c | 42 ++++++++++++++++++++
@@ -151,17 +151,17 @@ index 00000000000..5227efb8709
 +#endif
 +}
 diff --git a/include/oledb.idl b/include/oledb.idl
-index 34b1ac7c3cd..3e9cff587f2 100644
+index 475eb85642e..080b338412b 100644
 --- a/include/oledb.idl
 +++ b/include/oledb.idl
-@@ -81,6 +81,7 @@ cpp_quote("#endif")
- #include "cmdpre.idl"
+@@ -78,6 +78,7 @@ typedef LONG_PTR DB_LRESERVE;
  #include "rstchg.idl"
  #include "rstupd.idl"
+ #include "mulres.idl"
 +#include "cmdwpr.idl"
  
  cpp_quote("#include <accctrl.h>")
  
 -- 
-2.28.0
+2.29.2
 
