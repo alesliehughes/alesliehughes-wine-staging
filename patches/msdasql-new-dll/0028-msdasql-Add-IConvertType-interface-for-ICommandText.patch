@@ -1,0 +1,93 @@
+From 8bff5a32d267f003357877dc9d5b8c57cbd7d824 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 21 Dec 2020 11:36:50 +1100
+Subject: [PATCH] msdasql: Add IConvertType interface for ICommandText
+
+---
+ dlls/msdasql/session.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 7ee32308697..ca73e6356f3 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -320,6 +320,7 @@ struct command
+     ICommandText ICommandText_iface;
+     ICommandProperties ICommandProperties_iface;
+     IColumnsInfo IColumnsInfo_iface;
++    IConvertType IConvertType_iface;
+     LONG refs;
+ };
+ 
+@@ -338,6 +339,11 @@ static inline struct command *impl_from_IColumnsInfo( IColumnsInfo *iface )
+     return CONTAINING_RECORD( iface, struct command, IColumnsInfo_iface );
+ }
+ 
++static inline struct command *impl_from_IConvertType( IConvertType *iface )
++{
++    return CONTAINING_RECORD( iface, struct command, IConvertType_iface );
++}
++
+ static HRESULT WINAPI command_QueryInterface(ICommandText *iface, REFIID riid, void **ppv)
+ {
+     struct command *command = impl_from_ICommandText( iface );
+@@ -354,6 +360,8 @@ static HRESULT WINAPI command_QueryInterface(ICommandText *iface, REFIID riid, v
+          *ppv = &command->ICommandProperties_iface;
+     else if(IsEqualGUID(&IID_IColumnsInfo, riid))
+          *ppv = &command->IColumnsInfo_iface;
++    else if(IsEqualGUID(&IID_IConvertType, riid))
++         *ppv = &command->IConvertType_iface;
+ 
+     if(*ppv) {
+         IUnknown_AddRef((IUnknown*)*ppv);
+@@ -852,6 +860,39 @@ static struct IColumnsInfoVtbl columninfoVtbl =
+     colsinfo_MapColumnIDs
+ };
+ 
++static HRESULT WINAPI converttype_QueryInterface(IConvertType *iface, REFIID riid, void **out)
++{
++    struct command *command = impl_from_IConvertType( iface );
++    return ICommandText_QueryInterface(&command->ICommandText_iface, riid, out);
++}
++
++static ULONG WINAPI converttype_AddRef(IConvertType *iface)
++{
++    struct command *command = impl_from_IConvertType( iface );
++    return ICommandText_AddRef(&command->ICommandText_iface);
++}
++
++static ULONG WINAPI converttype_Release(IConvertType *iface)
++{
++    struct command *command = impl_from_IConvertType( iface );
++    return ICommandText_Release(&command->ICommandText_iface);
++}
++
++static HRESULT WINAPI converttype_CanConvert(IConvertType *iface, DBTYPE from, DBTYPE to, DBCONVERTFLAGS flags)
++{
++    struct command *command = impl_from_IConvertType( iface );
++    FIXME("%p, %u, %d, 0x%08x\n", command, from, to, flags);
++    return E_NOTIMPL;
++}
++
++static struct IConvertTypeVtbl converttypeVtbl =
++{
++    converttype_QueryInterface,
++    converttype_AddRef,
++    converttype_Release,
++    converttype_CanConvert
++};
++
+ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnknown *outer, REFIID riid,
+                                             IUnknown **out)
+ {
+@@ -868,6 +909,7 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+     command->ICommandText_iface.lpVtbl = &commandVtbl;
+     command->ICommandProperties_iface.lpVtbl = &commonpropsVtbl;
+     command->IColumnsInfo_iface.lpVtbl = &columninfoVtbl;
++    command->IConvertType_iface.lpVtbl = &converttypeVtbl;
+     command->refs = 1;
+ 
+     hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
+-- 
+2.29.2
+
