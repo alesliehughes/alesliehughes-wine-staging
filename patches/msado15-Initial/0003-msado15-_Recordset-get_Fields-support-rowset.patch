@@ -1,17 +1,14 @@
-From 902aa09b6802bc3282166cbaa6eea0319099deb5 Mon Sep 17 00:00:00 2001
+From 6245de3d7424215c62e5b339dce45810d9e1f4df Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 21 Nov 2020 20:19:46 +1100
-Subject: [PATCH] msado15: _Recordset get_Fields support rowset
+Subject: msado15: _Recordset get_Fields support rowset
 
----
- dlls/msado15/recordset.c | 45 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 17200d73790..cfd92bc31ce 100644
+index 17200d73790..990f1e315fc 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -721,6 +721,48 @@ static const ISupportErrorInfoVtbl fields_supporterrorinfo_vtbl =
+@@ -721,6 +721,46 @@ static const ISupportErrorInfoVtbl fields_supporterrorinfo_vtbl =
      fields_supporterrorinfo_InterfaceSupportsErrorInfo
  };
  
@@ -33,21 +30,19 @@ index 17200d73790..cfd92bc31ce 100644
 +    {
 +        for (i=0; i < columns; i++)
 +        {
-+            FIXME("Adding Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %lu, dwFlags 0x%08x,"
++            TRACE("Adding Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %lu, dwFlags 0x%08x, "
 +                  "ulColumnSize %lu, wType %d, bPrecision %d, bScale %d\n",
 +                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
 +                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
 +                  colinfo[i].bPrecision, colinfo[i].bScale);
 +
-+            if (colinfo[i].columnid.eKind == DBKIND_NAME)
-+                FIXME("columnid %s\n", debugstr_w(colinfo[i].columnid.uName.pwszName));
-+            else
-+                FIXME("eKind %d\n", colinfo[i].columnid.eKind);
-+
 +            hr = append_field(fields, colinfo[i].pwszName, colinfo[i].wType, colinfo[i].ulColumnSize,
-+                         colinfo[i].dwFlags, NULL);
++                     colinfo[i].dwFlags, NULL);
 +            if (FAILED(hr))
++            {
++                ERR("Failed to add Field name - 0x%08x\n", hr);
 +                return;
++            }
 +        }
 +
 +        CoTaskMemFree(colinfo);
@@ -60,7 +55,7 @@ index 17200d73790..cfd92bc31ce 100644
  static HRESULT fields_create( struct recordset *recordset, struct fields **ret )
  {
      struct fields *fields;
-@@ -732,6 +774,9 @@ static HRESULT fields_create( struct recordset *recordset, struct fields **ret )
+@@ -732,6 +772,9 @@ static HRESULT fields_create( struct recordset *recordset, struct fields **ret )
      fields->recordset = recordset;
      _Recordset_AddRef( &fields->recordset->Recordset_iface );
  
@@ -70,6 +65,3 @@ index 17200d73790..cfd92bc31ce 100644
      *ret = fields;
      TRACE( "returning %p\n", *ret );
      return S_OK;
--- 
-2.29.2
-

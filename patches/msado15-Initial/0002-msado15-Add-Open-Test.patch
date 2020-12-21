@@ -1,14 +1,14 @@
-From 2015e1b3caa23aa524064f99ab472cba664347ee Mon Sep 17 00:00:00 2001
+From a75f8be6f842b4137bbca017c598a6e0afa300e5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
 Subject: msado15: Add Open Test
 
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index cafb73d64e4..6b4c5222923 100644
+index cafb73d64e4..91363ad1599 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1477,6 +1477,95 @@ static void test_ConnectionPoint(void)
+@@ -1477,6 +1477,119 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %d\n", conn_event.refs );
  }
  
@@ -38,12 +38,15 @@ index cafb73d64e4..6b4c5222923 100644
 +    V_VT(&var2) = VT_BSTR;
 +    V_BSTR(&var2) = SysAllocString(L"SELECT * FROM testing");
 +
-+    //V_VT(&var) = VT_DISPATCH;
-+    //V_DISPATCH(&var) = (IDispatch*)connection;
-+    //_Connection_AddRef(connection);
++    hr = _Connection_put_CursorLocation(connection, adUseClient);
++    ok(hr == S_OK, "Failed, hr 0x%08x\n", hr);
 +
-+    /*ok( 0, "Before _Recordset_Open\n");
-+    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
++/*    V_VT(&var) = VT_DISPATCH;
++    V_DISPATCH(&var) = (IDispatch*)connection;
++    _Connection_AddRef(connection);
++
++    ok( 0, "Before _Recordset_Open\n");
++    hr = _Recordset_Open(recordset2, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
 +    ok( hr == S_OK, "got %08x\n", hr );
 +    ok( 0, "After _Recordset_Open\n");*/
 +
@@ -53,9 +56,38 @@ index cafb73d64e4..6b4c5222923 100644
 +    ok( 0, "**** After _Connection_Execute\n");
 +    ok( hr == S_OK, "got %08x\n", hr );
 +
++    /*
++0100:fixme:msdasql:msdasql_rowset_QueryInterface (00172860)->({83693a20-fbea-11cf-a785-00aa00a3f00d} 0064F824)
++0100:fixme:msdasql:msdasql_rowset_QueryInterface (00172860)->({0c733a90-2a1c-11ce-ade5-00aa0044773d} 0064F7E4) -- IMultipleResults
++0100:fixme:msdasql:msdasql_rowset_QueryInterface (00172860)->({0c733a11-2a1c-11ce-ade5-00aa0044773d} 0064F7E8) -- IColumnsInfo
++     */
++
 +    if (recordset2)
 +    {
 +        VARIANT_BOOL eof, bof;
++        LONG count;
++
++        hr = _Recordset_get_RecordCount(recordset2, &count);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( count == 2, "Failed %d\n", count);
++
++        ok( 0, "**** Before _Recordset_MoveLast\n");
++        hr = _Recordset_MoveLast(recordset2);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( 0, "**** After _Recordset_MoveLast\n");
++
++        ok( 0, "**** Before _Recordset_MoveFirst\n");
++        hr = _Recordset_MoveFirst(recordset2);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( 0, "**** After _Recordset_MoveFirst\n");
++
++
++        /* Not */
++        ok( 0, "**** Before _Recordset_get_RecordCount\n");
++        hr = _Recordset_get_RecordCount(recordset2, &count);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( count == 2, "Failed %d\n", count);
++        ok( 0, "**** After _Recordset_get_RecordCount\n");
 +
 +        ok( 0, "**** Before _Recordset_get_BOF\n");
 +        hr = _Recordset_get_BOF(recordset2, &bof);
@@ -63,15 +95,6 @@ index cafb73d64e4..6b4c5222923 100644
 +        ok( bof == VARIANT_FALSE, "Failed\n");
 +        ok( 0, "**** After _Recordset_get_BOF\n");
 +
-+        ok( 0, "**** Before _Recordset_MoveFirst\n");
-+        hr = _Recordset_MoveFirst(recordset2);
-+        ok( hr == S_OK, "got %08x\n", hr );
-+        ok( 0, "**** After _Recordset_MoveFirst\n");
-+
-+        ok( 0, "**** Before _Recordset_MoveLast\n");
-+        hr = _Recordset_MoveLast(recordset2);
-+        ok( hr == S_OK, "got %08x\n", hr );
-+        ok( 0, "**** After _Recordset_MoveLast\n");
 +
 +        ok( 0, "**** Before _Recordset_MoveNext\n");
 +        hr = _Recordset_MoveNext(recordset2);
@@ -84,9 +107,10 @@ index cafb73d64e4..6b4c5222923 100644
 +        ok( eof == VARIANT_FALSE, "Failed\n");
 +        ok( 0, "**** After _Recordset_get_EOF\n");
 +
-+        ok(0, "Affected %d\n", V_VT(&affected));
++/*        ok(0, "Affected %d\n", V_VT(&affected));
 +        hr = _Recordset_Close(recordset2);
 +        ok( hr == S_OK, "got %08x\n", hr );
++*/
 +
 +        _Recordset_Release(recordset2);
 +    }
@@ -104,7 +128,7 @@ index cafb73d64e4..6b4c5222923 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
-@@ -1487,5 +1576,6 @@ START_TEST(msado15)
+@@ -1487,5 +1600,6 @@ START_TEST(msado15)
      test_Recordset();
      test_Stream();
      test_Command();

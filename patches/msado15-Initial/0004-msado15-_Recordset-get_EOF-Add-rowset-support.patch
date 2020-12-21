@@ -35,7 +35,7 @@ index cfd92bc31ce..19c816e7a23 100644
 +        *eof = hr == DB_S_ENDOFROWSET ? VARIANT_TRUE : VARIANT_FALSE;
 +
 +        if (hr == S_OK)
-+            IRowset_ReleaseRows(recordset->row_set, 1, &rows, NULL, NULL, NULL);
++            IRowset_ReleaseRows(recordset->row_set, 1, rows, NULL, NULL, NULL);
 +    }
 +    else
 +        *eof = (!recordset->count || recordset->index >= recordset->count) ? VARIANT_TRUE : VARIANT_FALSE;
