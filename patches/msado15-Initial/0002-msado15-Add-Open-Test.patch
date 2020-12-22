@@ -1,14 +1,14 @@
-From a75f8be6f842b4137bbca017c598a6e0afa300e5 Mon Sep 17 00:00:00 2001
+From 859705b6cf43f81b9ecd52b6ffbff81385cc0c17 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
 Subject: msado15: Add Open Test
 
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index cafb73d64e4..91363ad1599 100644
+index cafb73d64e4..d485d38b07f 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1477,6 +1477,119 @@ static void test_ConnectionPoint(void)
+@@ -1477,6 +1477,142 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %d\n", conn_event.refs );
  }
  
@@ -20,6 +20,7 @@ index cafb73d64e4..91363ad1599 100644
 +    BSTR str, str2;
 +    VARIANT var, var2;
 +    VARIANT affected;
++    CursorTypeEnum cursortype;
 +
 +    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
 +    ok( hr == S_OK, "got %08x\n", hr );
@@ -41,14 +42,27 @@ index cafb73d64e4..91363ad1599 100644
 +    hr = _Connection_put_CursorLocation(connection, adUseClient);
 +    ok(hr == S_OK, "Failed, hr 0x%08x\n", hr);
 +
-+/*    V_VT(&var) = VT_DISPATCH;
++    V_VT(&var) = VT_DISPATCH;
 +    V_DISPATCH(&var) = (IDispatch*)connection;
 +    _Connection_AddRef(connection);
 +
-+    ok( 0, "Before _Recordset_Open\n");
-+    hr = _Recordset_Open(recordset2, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
++    hr = _Recordset_put_CursorLocation(recordset, adUseClient);
 +    ok( hr == S_OK, "got %08x\n", hr );
-+    ok( 0, "After _Recordset_Open\n");*/
++
++    hr = _Recordset_put_CursorType(recordset, adOpenForwardOnly);
++    ok( hr == S_OK, "got %08x\n", hr );
++
++    ok( 0, "Before _Recordset_Open\n");
++    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
++    ok( hr == S_OK, "got %08x\n", hr );
++    ok( 0, "After _Recordset_Open\n");
++
++    hr = _Recordset_get_CursorType(recordset, &cursortype);
++    ok( hr == S_OK, "got %08x\n", hr );
++    ok( cursortype == adOpenStatic, "got %d\n", cursortype );
++
++    hr = _Recordset_put_CursorLocation(recordset, adUseServer);
++    ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08x\n", hr );
 +
 +    VariantInit(&affected);
 +    ok( 0, "**** Before _Connection_Execute\n");
@@ -66,6 +80,15 @@ index cafb73d64e4..91363ad1599 100644
 +    {
 +        VARIANT_BOOL eof, bof;
 +        LONG count;
++        CursorLocationEnum location;
++
++        hr = _Recordset_get_CursorLocation(recordset2, &location);
++        ok( hr == S_OK, "got %08x\n", hr );
++        ok( location == adUseClient, "got %08x\n", hr );
++
++        /* Cannot Change Cursor Location once open */
++        hr = _Recordset_put_CursorLocation(recordset2, adUseServer);
++        ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08x\n", hr );
 +
 +        hr = _Recordset_get_RecordCount(recordset2, &count);
 +        ok( hr == S_OK, "got %08x\n", hr );
@@ -128,7 +151,7 @@ index cafb73d64e4..91363ad1599 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
-@@ -1487,5 +1600,6 @@ START_TEST(msado15)
+@@ -1487,5 +1623,6 @@ START_TEST(msado15)
      test_Recordset();
      test_Stream();
      test_Command();

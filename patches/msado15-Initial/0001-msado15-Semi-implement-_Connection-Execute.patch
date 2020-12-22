@@ -1,11 +1,11 @@
-From 87bb37fcd2a0be895a3e4e1afae5d4c5e7212aac Mon Sep 17 00:00:00 2001
+From 7918a6b315506ebac65f75408748b9d44f08fa7e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 30 Oct 2020 16:29:43 +1100
 Subject: msado15: Semi-implement _Connection Execute
 
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index fd15d5a443f..b4ff7260efa 100644
+index fd15d5a443f..32659d4d5b4 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
 @@ -34,6 +34,8 @@
@@ -17,7 +17,7 @@ index fd15d5a443f..b4ff7260efa 100644
  struct connection;
  
  struct connection_point
-@@ -256,8 +258,75 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+@@ -256,8 +258,77 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
  static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
                                            LONG options, _Recordset **record_set )
  {
@@ -73,6 +73,8 @@ index fd15d5a443f..b4ff7260efa 100644
 +        if (SUCCEEDED(hr))
 +        {
 +            ADORecordsetConstruction *construct;
++
++            _Recordset_put_CursorLocation(recordset, connection->location);
 +
 +            hr = _Recordset_QueryInterface(recordset, &IID_ADORecordsetConstruction, (void**)&construct);
 +            if (SUCCEEDED(hr))
