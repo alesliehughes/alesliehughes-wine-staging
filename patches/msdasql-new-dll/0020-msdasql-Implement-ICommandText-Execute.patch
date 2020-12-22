@@ -116,7 +116,7 @@ index 07fb1b5bb92..d9c47ae6eeb 100644
 +    return E_NOTIMPL;
 +}
 +
-+static const struct IRowsetVtbl msdasql_rowset =
++static const struct IRowsetVtbl msdasql_rowset_vtbl =
 +{
 +    msdasql_rowset_QueryInterface,
 +    msdasql_rowset_AddRef,
@@ -142,7 +142,7 @@ index 07fb1b5bb92..d9c47ae6eeb 100644
 +    if (!msrowset)
 +        return E_OUTOFMEMORY;
 +
-+    msrowset->IRowset_iface.lpVtbl = &msdasql_rowset;
++    msrowset->IRowset_iface.lpVtbl = &msdasql_rowset_vtbl;
 +    msrowset->refs = 1;
 +
 +    if (affected) *affected = 1; /* FIXME */

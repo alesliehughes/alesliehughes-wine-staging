@@ -17,17 +17,17 @@ index 5473e6f7f9d..5b70ecc1eeb 100644
      }
 +    else if (IsEqualGUID(&IID_IRowsetChange, riid))
 +    {
-+        FIXME("Asking for IID_IRowsetChange\n");
++        TRACE("IID_IRowsetChange not supported\n");
 +        return E_NOINTERFACE;
 +    }
 +    else if (IsEqualGUID(&IID_IRowsetUpdate, riid))
 +    {
-+        FIXME("Asking for IID_IRowsetUpdaten\n");
++        TRACE("IID_IRowsetUpdate not supported\n");
 +        return E_NOINTERFACE;
 +    }
 +    else if (IsEqualGUID(&IID_IRowsetLocate, riid))
 +    {
-+        FIXME("Asking for IID_IRowsetLocate\n");
++        TRACE("IID_IRowsetLocate not supported\n");
 +        return E_NOINTERFACE;
 +    }
  

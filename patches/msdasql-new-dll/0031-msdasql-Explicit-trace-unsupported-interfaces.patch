@@ -1,0 +1,33 @@
+From 6c08224f55e9eeaf8be9e9d578ff1240257a0e7e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Dec 2020 10:27:24 +1100
+Subject: [PATCH] msdasql: Explicit trace unsupported interfaces
+
+---
+ dlls/msdasql/session.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 1a00d1dd3c4..043eb5c150e 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -370,6 +370,16 @@ static HRESULT WINAPI command_QueryInterface(ICommandText *iface, REFIID riid, v
+          *ppv = &command->IConvertType_iface;
+     else if(IsEqualGUID(&IID_ICommandPrepare, riid))
+          *ppv = &command->ICommandPrepare_iface;
++    else if(IsEqualGUID(&IID_ICommandStream, riid))
++    {
++        TRACE("ICommandStream not support\n");
++        return E_NOINTERFACE;
++    }
++    else if(IsEqualGUID(&IID_IMultipleResults, riid))
++    {
++        TRACE("IMultipleResults not support\n");
++        return E_NOINTERFACE;
++    }
+ 
+     if(*ppv) {
+         IUnknown_AddRef((IUnknown*)*ppv);
+-- 
+2.29.2
+

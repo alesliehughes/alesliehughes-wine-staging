@@ -88,7 +88,7 @@ index d9c47ae6eeb..5d6853ac7fd 100644
 +    return E_NOTIMPL;
 +}
 +
-+struct IRowsetInfoVtbl rowset_info =
++struct IRowsetInfoVtbl rowset_info_vtbl =
 +{
 +    rowset_info_QueryInterface,
 +    rowset_info_AddRef,
@@ -104,8 +104,8 @@ index d9c47ae6eeb..5d6853ac7fd 100644
 @@ -511,6 +573,7 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
          return E_OUTOFMEMORY;
  
-     msrowset->IRowset_iface.lpVtbl = &msdasql_rowset;
-+    msrowset->IRowsetInfo_iface.lpVtbl = &rowset_info;
+     msrowset->IRowset_iface.lpVtbl = &msdasql_rowset_vtbl;
++    msrowset->IRowsetInfo_iface.lpVtbl = &rowset_info_vtbl;
      msrowset->refs = 1;
  
      if (affected) *affected = 1; /* FIXME */

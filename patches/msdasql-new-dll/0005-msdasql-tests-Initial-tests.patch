@@ -1,19 +1,11 @@
-From a4d7c365d0f9ba3a0efb8959460fc00335cbd70e Mon Sep 17 00:00:00 2001
+From 507dcb745856d46bdb2e2d49e5e5426cb7a67e7d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 19 Dec 2019 14:04:05 +1100
-Subject: [PATCH] msdasql/tests: Initial tests
+Subject: msdasql/tests: Initial tests
 
----
- configure                      |   1 +
- configure.ac                   |   1 +
- dlls/msdasql/tests/Makefile.in |   6 ++
- dlls/msdasql/tests/provider.c  | 180 +++++++++++++++++++++++++++++++++
- 4 files changed, 188 insertions(+)
- create mode 100644 dlls/msdasql/tests/Makefile.in
- create mode 100644 dlls/msdasql/tests/provider.c
 
 diff --git a/configure b/configure
-index 449192472b8..430f311065d 100755
+index ba0a71d4846..b923262dec1 100755
 --- a/configure
 +++ b/configure
 @@ -20936,6 +20936,7 @@ wine_fn_config_makefile dlls/msctf/tests enable_tests
@@ -50,10 +42,10 @@ index 00000000000..4c8717c8e1f
 +
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
 new file mode 100644
-index 00000000000..9e954dc7f0b
+index 00000000000..6fad0104e7c
 --- /dev/null
 +++ b/dlls/msdasql/tests/provider.c
-@@ -0,0 +1,180 @@
+@@ -0,0 +1,185 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -137,6 +129,7 @@ index 00000000000..9e954dc7f0b
 +    ICommandPrepare *commandprepare;
 +    ICommandStream *commandstream;
 +    IColumnsInfo *colinfo;
++    IMultipleResults *multiple;
 +
 +    hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
 +    ok(hr == S_OK, "got 0x%08x\n", hr);
@@ -163,6 +156,10 @@ index 00000000000..9e954dc7f0b
 +
 +    hr = IUnknown_QueryInterface(cmd, &IID_ICommandStream, (void**)&commandstream);
 +    ok(hr == E_NOINTERFACE, "got 0x%08x\n", hr);
++
++    hr = IUnknown_QueryInterface(cmd, &IID_IMultipleResults, (void**)&multiple);
++    ok(hr == E_NOINTERFACE, "got 0x%08x\n", hr);
++
 +
 +    /* TODO - ICommandWithParameters */
 +}
@@ -234,6 +231,3 @@ index 00000000000..9e954dc7f0b
 +
 +    CoUninitialize();
 +}
--- 
-2.29.2
-
