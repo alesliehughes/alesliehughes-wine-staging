@@ -1,0 +1,32 @@
+From 543938d68c25f9b20aa03909bc509d12a529f273 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Dec 2020 15:38:35 +1100
+Subject: [PATCH] msado15: Implement ADOConnectionConstruction15 get_Session
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msado15/connection.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 2a677e03ee8..71b7a523d2d 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -824,8 +824,12 @@ static HRESULT WINAPI adoconstruct_get_DSO(ADOConnectionConstruction15 *iface, I
+ static HRESULT WINAPI adoconstruct_get_Session(ADOConnectionConstruction15 *iface, IUnknown **session)
+ {
+     struct connection *connection = impl_from_ADOConnectionConstruction15( iface );
+-    FIXME("%p, %p\n", connection, session);
+-    return E_NOTIMPL;
++    TRACE("%p, %p\n", connection, session);
++
++    *session = connection->session;
++    if (*session)
++        IUnknown_AddRef(*session);
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI adoconstruct_WrapDSOandSession(ADOConnectionConstruction15 *iface, IUnknown *dso,
+-- 
+2.29.2
+

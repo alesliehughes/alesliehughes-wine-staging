@@ -1,0 +1,27 @@
+From 7e756082f6926dcd96d001ef3f78671421b08ff3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Dec 2020 16:14:14 +1100
+Subject: [PATCH] msado15: Set row_set point to NULL on close
+
+Stops a crash when Close then Release is called on a Recordset.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msado15/recordset.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 17200d73790..e915922fdc4 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -760,6 +760,7 @@ static void close_recordset( struct recordset *recordset )
+     ULONG row, col, col_count;
+ 
+     if ( recordset->row_set ) IRowset_Release( recordset->row_set );
++    recordset->row_set = NULL;
+ 
+     if (!recordset->fields) return;
+     col_count = get_column_count( recordset );
+-- 
+2.29.2
+
