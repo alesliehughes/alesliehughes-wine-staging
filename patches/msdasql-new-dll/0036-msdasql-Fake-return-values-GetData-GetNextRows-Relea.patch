@@ -1,0 +1,50 @@
+From 2b40d1e253f03c946c6041007efb63e1cd12ccb6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 30 Dec 2020 19:31:28 +1100
+Subject: [PATCH] msdasql: Fake return values
+ GetData/GetNextRows/ReleaseAccessor
+
+---
+ dlls/msdasql/session.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index a8c17f83f21..1d014e042d4 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -533,19 +533,22 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+ 
+     FIXME("%p, %ld, %ld, %p\n", rowset, row, accessor, data);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserved, DBROWOFFSET offset,
+         DBROWCOUNT count, DBCOUNTITEM *obtained, HROW **rows)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
++    static INT once;
+ 
+     FIXME("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
+ 
+     if (!obtained || !rows)
+         return E_INVALIDARG;
+ 
++    if (once++)
++        return DB_S_ENDOFROWSET;
+     *obtained = 0;
+ 
+     if (!count)
+@@ -814,7 +817,7 @@ static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSO
+ {
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
+     FIXME("%p, %lu, %p\n", rowset, accessor, count);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ struct IAccessorVtbl accessor_vtbl =
+-- 
+2.29.2
+

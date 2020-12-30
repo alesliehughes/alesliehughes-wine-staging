@@ -1,0 +1,49 @@
+From f2613517118954555c33fe81411da7a061c54852 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 30 Dec 2020 18:44:09 +1100
+Subject: [PATCH] msdasql: Fake - Return IColumnsInfo GetColumnInfo
+
+---
+ dlls/msdasql/session.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 25d2c98118a..7a382d89046 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -710,8 +710,31 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
+         DBCOLUMNINFO **colinfo, OLECHAR **stringsbuffer)
+ {
+     struct msdasql_rowset *rowset = rowset_impl_from_IColumnsInfo( iface );
++    DBCOLUMNINFO *dbcolumn;
++
+     FIXME("%p, %p, %p, %p\n", rowset, columns, colinfo, stringsbuffer);
+-    return E_NOTIMPL;
++
++    *columns = 1;
++
++    *stringsbuffer = CoTaskMemAlloc(sizeof(L"Column1"));
++    lstrcpyW(*stringsbuffer, L"Column1");
++
++    dbcolumn = CoTaskMemAlloc(sizeof(DBCOLUMNINFO));
++
++    dbcolumn->pwszName = *stringsbuffer;
++    dbcolumn->pTypeInfo = NULL;
++    dbcolumn->iOrdinal = 1;
++    dbcolumn->dwFlags = DBCOLUMNFLAGS_MAYBENULL;
++    dbcolumn->ulColumnSize = 5;
++    dbcolumn->wType = DBTYPE_I4;
++    dbcolumn->bPrecision = 1;
++    dbcolumn->bScale = 1;
++    dbcolumn->columnid.eKind = DBKIND_NAME;
++    dbcolumn->columnid.uName.pwszName = *stringsbuffer;
++
++    *colinfo = dbcolumn;
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI rowset_colsinfo_MapColumnIDs(IColumnsInfo *iface, DBORDINAL column_ids,
+-- 
+2.29.2
+
