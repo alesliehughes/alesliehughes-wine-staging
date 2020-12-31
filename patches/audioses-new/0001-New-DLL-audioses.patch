@@ -1,155 +1,46 @@
-From 12681606cce80a414dc43cdc355d9057e46ea928 Mon Sep 17 00:00:00 2001
+From d66b4a78d926233ce7159b38ec2c0ddcb481d449 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Dec 2017 11:44:41 +1100
 Subject: [PATCH 1/3] New DLL audioses
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- configure                     |  2 ++
- configure.ac                  |  1 +
- dlls/audioses/Makefile.in     |  5 +++
- dlls/audioses/audioses.spec   |  4 +++
- dlls/audioses/audioses_main.c | 76 +++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 88 insertions(+)
- create mode 100644 dlls/audioses/Makefile.in
- create mode 100644 dlls/audioses/audioses.spec
- create mode 100644 dlls/audioses/audioses_main.c
+ configure    | 2 ++
+ configure.ac | 1 +
+ 2 files changed, 3 insertions(+)
 
 diff --git a/configure b/configure
-index 4704e165b7..9a2c917fc1 100755
+index 236d8e50837..edbbf356c56 100755
 --- a/configure
 +++ b/configure
-@@ -1084,6 +1084,7 @@ enable_atl100
- enable_atl110
- enable_atl80
+@@ -1153,6 +1153,7 @@ enable_atl80
  enable_atl90
+ enable_atlthunk
+ enable_atmlib
 +enable_audioses
  enable_authz
  enable_avicap32
  enable_avifil32
-@@ -18315,6 +18316,7 @@ wine_fn_config_dll atl110 enable_atl110 clean
- wine_fn_config_dll atl80 enable_atl80 clean,implib
- wine_fn_config_test dlls/atl80/tests atl80_test
- wine_fn_config_dll atl90 enable_atl90 clean
-+wine_fn_config_dll audioses enable_audioses
- wine_fn_config_dll authz enable_authz
- wine_fn_config_dll avicap32 enable_avicap32 implib
- wine_fn_config_dll avifil32 enable_avifil32 clean,implib
+@@ -20467,6 +20468,7 @@ wine_fn_config_makefile dlls/atl90 enable_atl90
+ wine_fn_config_makefile dlls/atlthunk enable_atlthunk
+ wine_fn_config_makefile dlls/atlthunk/tests enable_tests
+ wine_fn_config_makefile dlls/atmlib enable_atmlib
++wine_fn_config_makefile dlls/audioses enable_audioses
+ wine_fn_config_makefile dlls/authz enable_authz
+ wine_fn_config_makefile dlls/avicap32 enable_avicap32
+ wine_fn_config_makefile dlls/avifil32 enable_avifil32
 diff --git a/configure.ac b/configure.ac
-index 69fad417ba..6523af21d5 100644
+index db3fd901b3c..528b35130a0 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2961,6 +2961,7 @@ WINE_CONFIG_DLL(atl110,,[clean])
- WINE_CONFIG_DLL(atl80,,[clean,implib])
- WINE_CONFIG_TEST(dlls/atl80/tests)
- WINE_CONFIG_DLL(atl90,,[clean])
-+WINE_CONFIG_DLL(audioses)
- WINE_CONFIG_DLL(authz)
- WINE_CONFIG_DLL(avicap32,,[implib])
- WINE_CONFIG_DLL(avifil32,,[clean,implib])
-diff --git a/dlls/audioses/Makefile.in b/dlls/audioses/Makefile.in
-new file mode 100644
-index 0000000000..024ebb483c
---- /dev/null
-+++ b/dlls/audioses/Makefile.in
-@@ -0,0 +1,5 @@
-+MODULE    = audioses.dll
-+
-+
-+C_SRCS = \
-+	audioses_main.c
-diff --git a/dlls/audioses/audioses.spec b/dlls/audioses/audioses.spec
-new file mode 100644
-index 0000000000..b16365d0c9
---- /dev/null
-+++ b/dlls/audioses/audioses.spec
-@@ -0,0 +1,4 @@
-+@ stdcall -private DllCanUnloadNow()
-+@ stdcall -private DllGetClassObject(ptr ptr ptr)
-+@ stdcall -private DllRegisterServer()
-+@ stdcall -private DllUnregisterServer()
-diff --git a/dlls/audioses/audioses_main.c b/dlls/audioses/audioses_main.c
-new file mode 100644
-index 0000000000..809ad108ca
---- /dev/null
-+++ b/dlls/audioses/audioses_main.c
-@@ -0,0 +1,76 @@
-+/*
-+ *
-+ * Copyright 2017 Alistair Leslie-Hughes
-+ *
-+ * The algorithm for conversion from Julian days to day/month/year is based on
-+ * that devised by Henry Fliegel, as implemented in PostgreSQL, which is
-+ * Copyright 1994-7 Regents of the University of California
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2.1 of the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
-+ */
-+
-+#include "config.h"
-+
-+#include <stdarg.h>
-+
-+#include "windef.h"
-+#include "winbase.h"
-+#include "objsafe.h"
-+#include "rpcproxy.h"
-+#include "wine/debug.h"
-+
-+WINE_DEFAULT_DEBUG_CHANNEL(audioses);
-+
-+static HINSTANCE audioses_hinstance;
-+
-+BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
-+{
-+    TRACE("(%p, %u, %p)\n", instance, reason, reserved);
-+
-+    switch (reason)
-+    {
-+        case DLL_WINE_PREATTACH:
-+            return FALSE;    /* prefer native version */
-+        case DLL_PROCESS_ATTACH:
-+            DisableThreadLibraryCalls(instance);
-+            audioses_hinstance = instance;
-+            break;
-+    }
-+
-+    return TRUE;
-+}
-+
-+HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
-+{
-+    FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
-+    return CLASS_E_CLASSNOTAVAILABLE;
-+}
-+
-+HRESULT WINAPI DllCanUnloadNow(void)
-+{
-+    return S_FALSE;
-+}
-+
-+HRESULT WINAPI DllRegisterServer(void)
-+{
-+    TRACE("()\n");
-+    return __wine_register_resources(audioses_hinstance);
-+}
-+
-+HRESULT WINAPI DllUnregisterServer(void)
-+{
-+    TRACE("()\n");
-+    return __wine_unregister_resources(audioses_hinstance);
-+}
+@@ -3066,6 +3066,7 @@ WINE_CONFIG_MAKEFILE(dlls/atl90)
+ WINE_CONFIG_MAKEFILE(dlls/atlthunk)
+ WINE_CONFIG_MAKEFILE(dlls/atlthunk/tests)
+ WINE_CONFIG_MAKEFILE(dlls/atmlib)
++WINE_CONFIG_MAKEFILE(dlls/audioses)
+ WINE_CONFIG_MAKEFILE(dlls/authz)
+ WINE_CONFIG_MAKEFILE(dlls/avicap32)
+ WINE_CONFIG_MAKEFILE(dlls/avifil32)
 -- 
-2.15.0
+2.29.2
 

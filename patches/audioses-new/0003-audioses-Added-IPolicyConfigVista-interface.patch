@@ -1,15 +1,15 @@
-From ae891407a39183fcb0d420463b25e56cb199f594 Mon Sep 17 00:00:00 2001
+From e0f3a2f9a132d52d9a1e7d7ef743baba843c957e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Dec 2017 14:34:04 +1100
 Subject: [PATCH 3/3] audioses: Added IPolicyConfigVista interface
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/audioses/audioses_main.c | 253 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 253 insertions(+)
+ dlls/audioses/audioses_main.c | 256 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 256 insertions(+)
 
 diff --git a/dlls/audioses/audioses_main.c b/dlls/audioses/audioses_main.c
-index dba6767606..94e260f4f0 100644
+index dba6767606b..31ff298b91e 100644
 --- a/dlls/audioses/audioses_main.c
 +++ b/dlls/audioses/audioses_main.c
 @@ -23,6 +23,10 @@
@@ -23,7 +23,7 @@ index dba6767606..94e260f4f0 100644
  #include <stdarg.h>
  
  #include "windef.h"
-@@ -53,8 +57,257 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
+@@ -53,8 +57,260 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
      return TRUE;
  }
  
@@ -68,6 +68,7 @@ index dba6767606..94e260f4f0 100644
 +
 +HRESULT WINAPI Policy_CreateInstance(IClassFactory *iface,IUnknown *outer, REFIID riid, void **ppv)
 +{
++    TRACE("\n");
 +    return S_OK;
 +}
 +
@@ -245,6 +246,8 @@ index dba6767606..94e260f4f0 100644
 +{
 +    vistapolicy *This;
 +
++    TRACE("\n");
++
 +    This = HeapAlloc( GetProcessHeap(), 0, sizeof(*This) );
 +    if ( !This )
 +        return E_OUTOFMEMORY;
@@ -282,5 +285,5 @@ index dba6767606..94e260f4f0 100644
      return CLASS_E_CLASSNOTAVAILABLE;
  }
 -- 
-2.15.0
+2.29.2
 
