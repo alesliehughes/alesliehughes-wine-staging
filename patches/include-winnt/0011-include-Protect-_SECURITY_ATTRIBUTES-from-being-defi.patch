@@ -1,0 +1,38 @@
+From 3c833fcfefc43dc1415992499889f759e21ab033 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 Jan 2021 08:34:49 +1100
+Subject: [PATCH] include: Protect _SECURITY_ATTRIBUTES from being defined
+ twice
+
+Rejected patch - not exactly the same as SDK. *sigh*
+Window SDK defines this structure in two files (.h and idl) one is protected(idl)
+and the other is not.
+
+---
+ include/winbase.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/winbase.h b/include/winbase.h
+index dc8aa081be4..3992c124393 100644
+--- a/include/winbase.h
++++ b/include/winbase.h
+@@ -232,6 +232,8 @@ typedef struct _OFSTRUCT
+ 
+ #define MAX_COMPUTERNAME_LENGTH    15
+ 
++#ifndef _SECURITY_ATTRIBUTES_
++#define _SECURITY_ATTRIBUTES_
+ /* The security attributes structure */
+ typedef struct _SECURITY_ATTRIBUTES
+ {
+@@ -239,6 +241,7 @@ typedef struct _SECURITY_ATTRIBUTES
+     LPVOID  lpSecurityDescriptor;
+     BOOL  bInheritHandle;
+ } SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;
++#endif
+ 
+ #ifndef _FILETIME_
+ #define _FILETIME_
+-- 
+2.29.2
+
