@@ -1,65 +1,51 @@
-From 08e1dd829e9fdda07bd2fc09ddf72e9a5c7373df Mon Sep 17 00:00:00 2001
+From f0d9517ffc978140ad78043692eea1a067befa8c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
-Subject: [PATCH] Great Hack
+Subject: Great Hack
 
----
- dlls/oledb32/convert.c   |  1 +
- dlls/oledb32/dslocator.c | 16 ++++++++++++++--
- 2 files changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
-index 81483dc0a09..894fab48818 100644
---- a/dlls/oledb32/convert.c
-+++ b/dlls/oledb32/convert.c
-@@ -314,6 +314,7 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
-     case DBTYPE_I4:
-     {
-         signed int *d = dst;
-+
-         switch(src_type)
-         {
-         case DBTYPE_EMPTY:       *d = 0; hr = S_OK;                              break;
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index c74fb5133d2..d2865a9fdd8 100644
+index c74fb5133d2..2f91dbcb8f8 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
-@@ -617,13 +617,15 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -39,6 +39,9 @@
+ #include "wine/debug.h"
+ #include "wine/heap.h"
  
-      return 0;
-  }
--
 +#include "initguid.h"
-+ #include <msado15_backcompat.h>
- static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **connection)
- {
-     DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
++#include "msado15_backcompat.h"
++
+ WINE_DEFAULT_DEBUG_CHANNEL(oledb);
+ 
+ struct datasource
+@@ -624,6 +627,7 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
      PROPSHEETHEADERW hdr;
      PROPSHEETPAGEW pages[4];
      INT_PTR ret;
-+    _Connection *conn;
++    HRESULT hr;
  
      FIXME("(%p, %p) Semi-stub\n", iface, connection);
  
-@@ -664,7 +666,17 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -663,8 +667,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+     hdr.u3.ppsp = pages;
      hdr.nPages = ARRAY_SIZE(pages);
      ret = PropertySheetW(&hdr);
- 
--    return ret ? S_OK : S_FALSE;
-+    ret = CoCreateInstance( &CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void
-+    **)connection );
-+    if (ret == S_OK)
-+{
++    FIXME("PropertySheetW return %ld\n", ret);
++    if (ret == -1)
++        return S_FALSE;
++
++    hr = CoCreateInstance( &CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)connection );
++    if (hr == S_OK)
++    {
 +        BSTR str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data "
 +                              "Source=wine_test");
++
 +        ret = _Connection_put_ConnectionString( (_Connection*)*connection, str);
 +        SysFreeString(str);
-+}
-+
-+    return ret == S_OK ? S_OK : S_FALSE;
++    }
+ 
+-    return ret ? S_OK : S_FALSE;
++    return hr == S_OK ? S_OK : S_FALSE;
  }
  
  static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
--- 
-2.29.2
-

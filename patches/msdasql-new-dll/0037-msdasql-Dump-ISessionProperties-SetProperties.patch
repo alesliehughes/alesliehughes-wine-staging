@@ -1,0 +1,60 @@
+From aec5815e74ca1280fe73af1c9409e1a1ff77eeb6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 8 Jan 2021 10:02:02 +1100
+Subject: [PATCH] msdasql: Dump ISessionProperties SetProperties
+
+---
+ dlls/msdasql/msdasql_main.c |  2 +-
+ dlls/msdasql/session.c      | 20 ++++++++++++++++++--
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index a91ead31a80..fffb1466048 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -466,7 +466,7 @@ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropert
+     for (i=0; i < rgPropertySets->cProperties; i++)
+     {
+         FIXME("Property Set %d\n", i);
+-        FIXME("  dwPropertyID: %x\n", rgPropertySets->rgProperties[i].dwPropertyID);
++        FIXME("  dwPropertyID: 0x%x\n", rgPropertySets->rgProperties[i].dwPropertyID);
+         if (V_VT(&rgPropertySets->rgProperties[i].vValue) == VT_BSTR)
+             FIXME("  vValue: %s\n", debugstr_w(V_BSTR(&rgPropertySets->rgProperties[i].vValue)));
+         else if (V_VT(&rgPropertySets->rgProperties[i].vValue) == VT_BOOL)
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 1d014e042d4..a27ffea5736 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -281,11 +281,27 @@ static HRESULT WINAPI properties_GetProperties(ISessionProperties *iface, ULONG
+ }
+ 
+ static HRESULT WINAPI properties_SetProperties(ISessionProperties *iface, ULONG count,
+-    DBPROPSET sets[])
++    DBPROPSET rgPropertySets[])
+ {
+     struct msdasql_session *session = impl_from_ISessionProperties( iface );
+-    FIXME("%p %d %p\n", session, count, sets);
++    int i;
+ 
++    FIXME("%p %d %p\n", session, count, rgPropertySets);
++
++    FIXME("count %d guidPropertySet: %s\n", rgPropertySets->cProperties, debugstr_guid(&rgPropertySets->guidPropertySet));
++    for (i=0; i < rgPropertySets->cProperties; i++)
++    {
++        FIXME("Property Set %d\n", i);
++        FIXME("  dwPropertyID: %x\n", rgPropertySets->rgProperties[i].dwPropertyID);
++        if (V_VT(&rgPropertySets->rgProperties[i].vValue) == VT_BSTR)
++            FIXME("  vValue: %s\n", debugstr_w(V_BSTR(&rgPropertySets->rgProperties[i].vValue)));
++        else if (V_VT(&rgPropertySets->rgProperties[i].vValue) == VT_BOOL)
++            FIXME("  vValue: %d\n", V_BOOL(&rgPropertySets->rgProperties[i].vValue));
++        else
++            FIXME("  vValue: %d\n", V_I4(&rgPropertySets->rgProperties[i].vValue));
++        //FIXME("  cPropertyIDs:  %d\n", rgPropertySets->rgProperties[i].cPropertyIDs);
++        //FIXME("  guidPropertySet: %s\n", rgPropertySets(&rgPropertyIDSets[i].guidPropertySet) );
++    }
+     return S_OK;
+ }
+ 
+-- 
+2.29.2
+
