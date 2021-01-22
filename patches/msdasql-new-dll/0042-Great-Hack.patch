@@ -1,11 +1,11 @@
-From f0d9517ffc978140ad78043692eea1a067befa8c Mon Sep 17 00:00:00 2001
+From 5c80f45c6b7d0247309f28719affd4815c680298 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
 Subject: Great Hack
 
 
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index c74fb5133d2..2f91dbcb8f8 100644
+index c74fb5133d2..f733d472329 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -39,6 +39,9 @@
@@ -18,7 +18,102 @@ index c74fb5133d2..2f91dbcb8f8 100644
  WINE_DEFAULT_DEBUG_CHANNEL(oledb);
  
  struct datasource
-@@ -624,6 +627,7 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -49,6 +52,12 @@ struct datasource
+     WCHAR *description;
+ };
+ 
++struct data_link_props
++{
++    /* Page 1 */
++    GUID guid;
++};
++
+ static struct datasource *create_datasource(WCHAR *guid)
+ {
+     struct datasource *data = heap_alloc_zero(sizeof(struct datasource));
+@@ -337,7 +346,12 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+     {
+         case WM_INITDIALOG:
+         {
++            PROPSHEETPAGEW *page = (PROPSHEETPAGEW *)lp;
+             HWND btn, lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
++            struct data_link_props *data = (struct data_link_props*)page->lParam;
++
++            SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)data);
++
+             create_connections_columns(lv);
+             add_connections_providers(lv);
+ 
+@@ -394,7 +408,10 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+ 
+                     if(ListView_GetItemA(lv, &item))
+                     {
+-                        if(!initialize_datasource( (struct datasource*)item.lParam))
++                        struct data_link_props *data;
++                        struct datasource *datasource = (struct datasource*)item.lParam;
++
++                        if(!initialize_datasource( datasource ))
+                         {
+                             WCHAR title[256], msg[256];
+                             LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
+@@ -403,6 +420,10 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+                             SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
+                             return TRUE;
+                         }
++
++                        data = (struct data_link_props *)GetWindowLongPtrA(hwnd, GWLP_USERDATA);
++                        if (data)
++                            data->guid = datasource->clsid;
+                     }
+                     else
+                         ERR("Failed to get selected item\n");
+@@ -485,6 +506,11 @@ static LRESULT CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
+     {
+         case WM_INITDIALOG:
+         {
++            PROPSHEETPAGEW *page = (PROPSHEETPAGEW *)lp;
++            struct data_link_props *data = (struct data_link_props*)page->lParam;
++
++            SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)data);
++
+             connection_initialize_controls(hwnd);
+             connection_fill_odbc_list(hwnd);
+             connection_toggle_controls(hwnd);
+@@ -557,6 +583,11 @@ static LRESULT CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
+     {
+         case WM_INITDIALOG:
+         {
++            PROPSHEETPAGEW *page = (PROPSHEETPAGEW *)lp;
++            struct data_link_props *data = (struct data_link_props*)page->lParam;
++
++            SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)data);
++
+             EnableWindow(GetDlgItem(hwnd, IDC_LBL_LEVEL), FALSE);
+             EnableWindow(GetDlgItem(hwnd, IDC_CBO_LEVEL), FALSE);
+             EnableWindow(GetDlgItem(hwnd, IDC_LBL_PROTECTION), FALSE);
+@@ -602,6 +633,11 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+         case WM_INITDIALOG:
+         {
+             HWND lv = GetDlgItem(hwnd, IDC_LST_PROPERTIES);
++            PROPSHEETPAGEW *page = (PROPSHEETPAGEW *)lp;
++            struct data_link_props *data = (struct data_link_props*)page->lParam;
++
++            SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)data);
++
+             create_page_all_columns(lv);
+             break;
+         }
+@@ -616,14 +652,16 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+      }
+ 
+      return 0;
+- }
++}
+ 
+ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch **connection)
+ {
+     DSLocatorImpl *This = impl_from_IDataSourceLocator(iface);
++    struct data_link_props data;
      PROPSHEETHEADERW hdr;
      PROPSHEETPAGEW pages[4];
      INT_PTR ret;
@@ -26,7 +121,33 @@ index c74fb5133d2..2f91dbcb8f8 100644
  
      FIXME("(%p, %p) Semi-stub\n", iface, connection);
  
-@@ -663,8 +667,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -638,21 +676,25 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+     pages[0].hInstance = instance;
+     pages[0].u.pszTemplate = MAKEINTRESOURCEW(IDD_PROVIDER);
+     pages[0].pfnDlgProc = data_link_properties_dlg_proc;
++    pages[0].lParam = (LPARAM)&data;
+ 
+     pages[1].dwSize = sizeof(PROPSHEETPAGEW);
+     pages[1].hInstance = instance;
+     pages[1].u.pszTemplate = MAKEINTRESOURCEW(IDD_CONNECTION);
+     pages[1].pfnDlgProc = data_link_connection_dlg_proc;
++    pages[1].lParam = (LPARAM)&data;
+ 
+     pages[2].dwSize = sizeof(PROPSHEETPAGEW);
+     pages[2].hInstance = instance;
+     pages[2].u.pszTemplate = MAKEINTRESOURCEW(IDD_ADVANCED);
+     pages[2].pfnDlgProc = data_link_advanced_dlg_proc;
++    pages[2].lParam = (LPARAM)&data;
+ 
+     pages[3].dwSize = sizeof(pages[0]);
+     pages[3].hInstance = instance;
+     pages[3].u.pszTemplate = MAKEINTRESOURCEW(IDD_ALL);
+     pages[3].pfnDlgProc = data_link_all_dlg_proc;
++    pages[3].lParam = (LPARAM)&data;
+ 
+     memset(&hdr, 0, sizeof(hdr));
+     hdr.dwSize = sizeof(hdr);
+@@ -663,8 +705,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
      hdr.u3.ppsp = pages;
      hdr.nPages = ARRAY_SIZE(pages);
      ret = PropertySheetW(&hdr);
