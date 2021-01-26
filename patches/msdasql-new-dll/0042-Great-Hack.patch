@@ -1,11 +1,11 @@
-From 5c80f45c6b7d0247309f28719affd4815c680298 Mon Sep 17 00:00:00 2001
+From 675211d2fa0776c1c0e48b8bcb69ba944edfe85d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
 Subject: Great Hack
 
 
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index c74fb5133d2..f733d472329 100644
+index c74fb5133d2..627239a9749 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -39,6 +39,9 @@
@@ -31,7 +31,64 @@ index c74fb5133d2..f733d472329 100644
  static struct datasource *create_datasource(WCHAR *guid)
  {
      struct datasource *data = heap_alloc_zero(sizeof(struct datasource));
-@@ -337,7 +346,12 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -329,6 +338,56 @@ static void add_connections_providers(HWND lv)
+     RegCloseKey(key);
+ }
+ 
++static BOOL data_link_apply(HWND hwnd)
++{
++    LVITEMA item;
++    /*
++     * FIXME: This needs to replace the connection page based off the selection.
++     *   We only care about the ODBC for now which is the default.
++     */
++
++    HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
++    if (!SendMessageW(lv, LVM_GETSELECTEDCOUNT, 0, 0))
++    {
++        WCHAR title[256], msg[256];
++
++        LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
++        LoadStringW(instance, IDS_PROVIDER_ERROR, msg, ARRAY_SIZE(msg));
++        MessageBoxW(hwnd, msg, title, MB_OK | MB_ICONEXCLAMATION);
++        SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
++        return TRUE;
++    }
++
++    item.iItem = 0;
++    item.iSubItem = 0;
++    item.stateMask = LVIS_SELECTED;
++    item.mask = LVIF_PARAM | LVIF_STATE;
++
++    if(ListView_GetItemA(lv, &item))
++    {
++        struct data_link_props *data;
++        struct datasource *datasource = (struct datasource*)item.lParam;
++
++        if(!initialize_datasource( datasource ))
++        {
++            WCHAR title[256], msg[256];
++            LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
++            LoadStringW(instance, IDS_PROVIDER_NOT_AVAIL, msg, ARRAY_SIZE(msg));
++            MessageBoxW(hwnd, msg, title, MB_OK | MB_ICONEXCLAMATION);
++            SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
++            return TRUE;
++        }
++
++        data = (struct data_link_props *)GetWindowLongPtrA(hwnd, GWLP_USERDATA);
++        if (data)
++            data->guid = datasource->clsid;
++    }
++    else
++        ERR("Failed to get selected item\n");
++
++    return FALSE;
++}
++
+ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+ {
+     TRACE("(%p, %08x, %08lx, %08lx)\n", hwnd, msg, wp, lp);
+@@ -337,7 +396,12 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
          {
@@ -44,30 +101,69 @@ index c74fb5133d2..f733d472329 100644
              create_connections_columns(lv);
              add_connections_providers(lv);
  
-@@ -394,7 +408,10 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
- 
-                     if(ListView_GetItemA(lv, &item))
-                     {
+@@ -367,48 +431,8 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+             NMHDR *hdr = ((LPNMHDR)lp);
+             switch(hdr->code)
+             {
+-                case PSN_KILLACTIVE:
+-                {
+-                    LVITEMA item;
+-                    /*
+-                     * FIXME: This needs to replace the connection page based off the selection.
+-                     *   We only care about the ODBC for now which is the default.
+-                     */
+-
+-                    HWND lv = GetDlgItem(hwnd, IDC_LST_CONNECTIONS);
+-                    if (!SendMessageW(lv, LVM_GETSELECTEDCOUNT, 0, 0))
+-                    {
+-                        WCHAR title[256], msg[256];
+-
+-                        LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
+-                        LoadStringW(instance, IDS_PROVIDER_ERROR, msg, ARRAY_SIZE(msg));
+-                        MessageBoxW(hwnd, msg, title, MB_OK | MB_ICONEXCLAMATION);
+-                        SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
+-                        return TRUE;
+-                    }
+-
+-                    item.iItem = 0;
+-                    item.iSubItem = 0;
+-                    item.stateMask = LVIS_SELECTED;
+-                    item.mask = LVIF_PARAM | LVIF_STATE;
+-
+-                    if(ListView_GetItemA(lv, &item))
+-                    {
 -                        if(!initialize_datasource( (struct datasource*)item.lParam))
-+                        struct data_link_props *data;
-+                        struct datasource *datasource = (struct datasource*)item.lParam;
-+
-+                        if(!initialize_datasource( datasource ))
-                         {
-                             WCHAR title[256], msg[256];
-                             LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
-@@ -403,6 +420,10 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
-                             SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
-                             return TRUE;
-                         }
-+
-+                        data = (struct data_link_props *)GetWindowLongPtrA(hwnd, GWLP_USERDATA);
-+                        if (data)
-+                            data->guid = datasource->clsid;
-                     }
-                     else
-                         ERR("Failed to get selected item\n");
-@@ -485,6 +506,11 @@ static LRESULT CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
+-                        {
+-                            WCHAR title[256], msg[256];
+-                            LoadStringW(instance, IDS_PROVIDER_TITLE, title, ARRAY_SIZE(title));
+-                            LoadStringW(instance, IDS_PROVIDER_NOT_AVAIL, msg, ARRAY_SIZE(msg));
+-                            MessageBoxW(hwnd, msg, title, MB_OK | MB_ICONEXCLAMATION);
+-                            SetWindowLongPtrW(hwnd, DWLP_MSGRESULT, TRUE);
+-                            return TRUE;
+-                        }
+-                    }
+-                    else
+-                        ERR("Failed to get selected item\n");
+-
+-                    return FALSE;
+-                }
++                case PSN_APPLY:
++                    return data_link_apply(hwnd);
+             }
+ 
+             break;
+@@ -416,7 +440,10 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+         case WM_COMMAND:
+         {
+             if (LOWORD(wp) == IDC_BTN_NEXT)
++            {
++                data_link_apply(hwnd);
+                 SendMessageW(GetParent(hwnd), PSM_SETCURSEL, 1, 0);
++            }
+             break;
+         }
+         default:
+@@ -485,6 +512,11 @@ static LRESULT CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
          {
@@ -79,7 +175,7 @@ index c74fb5133d2..f733d472329 100644
              connection_initialize_controls(hwnd);
              connection_fill_odbc_list(hwnd);
              connection_toggle_controls(hwnd);
-@@ -557,6 +583,11 @@ static LRESULT CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
+@@ -557,6 +589,11 @@ static LRESULT CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
      {
          case WM_INITDIALOG:
          {
@@ -91,7 +187,7 @@ index c74fb5133d2..f733d472329 100644
              EnableWindow(GetDlgItem(hwnd, IDC_LBL_LEVEL), FALSE);
              EnableWindow(GetDlgItem(hwnd, IDC_CBO_LEVEL), FALSE);
              EnableWindow(GetDlgItem(hwnd, IDC_LBL_PROTECTION), FALSE);
-@@ -602,6 +633,11 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -602,6 +639,11 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
          case WM_INITDIALOG:
          {
              HWND lv = GetDlgItem(hwnd, IDC_LST_PROPERTIES);
@@ -103,7 +199,7 @@ index c74fb5133d2..f733d472329 100644
              create_page_all_columns(lv);
              break;
          }
-@@ -616,14 +652,16 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -616,14 +658,16 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
       }
  
       return 0;
@@ -121,7 +217,7 @@ index c74fb5133d2..f733d472329 100644
  
      FIXME("(%p, %p) Semi-stub\n", iface, connection);
  
-@@ -638,21 +676,25 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -638,21 +682,25 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
      pages[0].hInstance = instance;
      pages[0].u.pszTemplate = MAKEINTRESOURCEW(IDD_PROVIDER);
      pages[0].pfnDlgProc = data_link_properties_dlg_proc;
@@ -147,7 +243,7 @@ index c74fb5133d2..f733d472329 100644
  
      memset(&hdr, 0, sizeof(hdr));
      hdr.dwSize = sizeof(hdr);
-@@ -663,8 +705,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -663,8 +711,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
      hdr.u3.ppsp = pages;
      hdr.nPages = ARRAY_SIZE(pages);
      ret = PropertySheetW(&hdr);
