@@ -1,11 +1,11 @@
-From 7918a6b315506ebac65f75408748b9d44f08fa7e Mon Sep 17 00:00:00 2001
+From 48b39cc55d4522415ce25a8b3b03165fc17b7cd6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 30 Oct 2020 16:29:43 +1100
 Subject: msado15: Semi-implement _Connection Execute
 
 
 diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index fd15d5a443f..32659d4d5b4 100644
+index 63014d7e37e..ef0d0f033e9 100644
 --- a/dlls/msado15/connection.c
 +++ b/dlls/msado15/connection.c
 @@ -34,6 +34,8 @@
@@ -17,7 +17,7 @@ index fd15d5a443f..32659d4d5b4 100644
  struct connection;
  
  struct connection_point
-@@ -256,8 +258,77 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
+@@ -266,8 +268,74 @@ static HRESULT WINAPI connection_Close( _Connection *iface )
  static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
                                            LONG options, _Recordset **record_set )
  {
@@ -30,7 +30,9 @@ index fd15d5a443f..32659d4d5b4 100644
 +    ICommand *cmd = NULL;
 +    ICommandText *comand_text = NULL;
 +    DBROWCOUNT affected;
-+    IUnknown *rowset;
++    IUnknown *rowset = NULL;
++    _Recordset *recordset = NULL;
++    ADORecordsetConstruction *construct;
 +
 +    FIXME( "%p, %s, %p, 0x%08x, %p Semi-stub\n", iface, debugstr_w(command), records_affected, options, record_set );
 +
@@ -59,33 +61,28 @@ index fd15d5a443f..32659d4d5b4 100644
 +        goto done;
 +
 +    hr = ICommandText_Execute(comand_text, NULL, &IID_IUnknown, NULL, &affected, &rowset);
-+    if (SUCCEEDED(hr))
++    if (FAILED(hr))
++        goto done;
++
++    hr = Recordset_create( (void**)&recordset);
++    if (FAILED(hr))
++        goto done;
++
++    hr = _Recordset_QueryInterface(recordset, &IID_ADORecordsetConstruction, (void**)&construct);
++    if (FAILED(hr))
++        goto done;
++
++    ADORecordsetConstruction_put_Rowset(construct, rowset);
++    ADORecordsetConstruction_Release(construct);
++
++    if (records_affected)
 +    {
-+        _Recordset *recordset;
-+
-+        if (records_affected)
-+        {
-+            V_VT(records_affected) = VT_I4;
-+            V_I4(records_affected) = affected;
-+        }
-+
-+        hr = Recordset_create( (void**)&recordset);
-+        if (SUCCEEDED(hr))
-+        {
-+            ADORecordsetConstruction *construct;
-+
-+            _Recordset_put_CursorLocation(recordset, connection->location);
-+
-+            hr = _Recordset_QueryInterface(recordset, &IID_ADORecordsetConstruction, (void**)&construct);
-+            if (SUCCEEDED(hr))
-+            {
-+                *record_set = recordset;
-+
-+                ADORecordsetConstruction_put_Rowset(construct, rowset);
-+                ADORecordsetConstruction_Release(construct);
-+            }
-+        }
++        V_VT(records_affected) = VT_I4;
++        V_I4(records_affected) = affected;
 +    }
++
++    _Recordset_put_CursorLocation(recordset, connection->location);
++    *record_set = recordset;
 +
 +done:
 +    if (rowset) IUnknown_Release(rowset);
