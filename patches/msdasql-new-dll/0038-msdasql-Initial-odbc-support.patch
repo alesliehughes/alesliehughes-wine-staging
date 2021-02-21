@@ -1,0 +1,519 @@
+From 75829ad52c931e4e5308509ec0620d27b10f2445 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 22 Feb 2021 10:06:10 +1100
+Subject: msdasql: Initial odbc support
+
+
+diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
+index 47a357e5d0f..97662abcbd3 100644
+--- a/dlls/msdasql/Makefile.in
++++ b/dlls/msdasql/Makefile.in
+@@ -1,5 +1,5 @@
+ MODULE    = msdasql.dll
+-IMPORTS   = uuid ole32 oleaut32
++IMPORTS   = uuid ole32 oleaut32 odbc32
+ 
+ EXTRADLLFLAGS = -mno-cygwin
+ 
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index 90c2074a633..2fc273673eb 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -25,6 +25,9 @@
+ #include "objbase.h"
+ #include "rpcproxy.h"
+ #include "msdasc.h"
++#include "odbcinst.h"
++#include "sqlext.h"
++#include "sqlucode.h"
+ #include "wine/heap.h"
+ #include "wine/debug.h"
+ 
+@@ -248,6 +251,12 @@ struct msdasql
+     IPersist         IPersist_iface;
+ 
+     LONG     ref;
++
++    /* ODBC Support */
++    HENV henv;
++    HDBC hdbc;
++
++    BSTR dsn;
+ };
+ 
+ static inline struct msdasql *impl_from_IUnknown(IUnknown *iface)
+@@ -331,6 +340,9 @@ static ULONG  WINAPI msdsql_Release(IUnknown *iface)
+ 
+     if (!ref)
+     {
++        SQLFreeHandle( SQL_HANDLE_DBC, provider->hdbc );
++        SQLFreeHandle( SQL_HANDLE_ENV, provider->henv );
++
+         heap_free(provider);
+     }
+ 
+@@ -470,6 +482,11 @@ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropert
+               rgPropertySets->rgProperties[i].dwStatus);
+ 
+         FIXME("  vValue: %s\n", debugstr_variant(&rgPropertySets->rgProperties[i].vValue));
++
++        if (rgPropertySets->rgProperties[i].dwPropertyID == DBPROP_INIT_DATASOURCE)
++        {
++            provider->dsn = SysAllocString( V_BSTR(&rgPropertySets->rgProperties[i].vValue));
++        }
+     }
+ 
+     // DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO  (0x0b)
+@@ -515,9 +532,29 @@ static ULONG WINAPI dbinit_Release(IDBInitialize *iface)
+ static HRESULT WINAPI dbinit_Initialize(IDBInitialize *iface)
+ {
+     struct msdasql *provider = impl_from_IDBInitialize(iface);
++    SQLRETURN ret;
+ 
+     FIXME("%p stub\n", provider);
+ 
++    ret = SQLConnectW( provider->hdbc, (SQLWCHAR *) provider->dsn,
++        SQL_NTS, (SQLWCHAR *)NULL, SQL_NTS, (SQLWCHAR *)NULL, SQL_NTS );
++
++    if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
++    {
++        WARN("Failed to connect to DSN: %s (%d)\n", debugstr_w(provider->dsn), ret);
++        return E_FAIL;
++    }
++    else if (ret == SQL_SUCCESS_WITH_INFO)
++    {
++        SQLCHAR       SqlState[6], Msg[SQL_MAX_MESSAGE_LENGTH];
++        SQLINTEGER    NativeError;
++        SQLSMALLINT   i = 1, MsgLen;
++        while(SQLGetDiagRec(SQL_HANDLE_DBC, provider->hdbc, i++, SqlState, &NativeError, Msg, sizeof(Msg), &MsgLen) != SQL_NO_DATA)
++        {
++            TRACE("%s\n", Msg);
++        }
++    }
++
+     return S_OK;
+ }
+ 
+@@ -527,6 +564,8 @@ static HRESULT WINAPI dbinit_Uninitialize(IDBInitialize *iface)
+ 
+     FIXME("%p stub\n", provider);
+ 
++    /*SQLDisconnect( provider->hdbc );*/
++
+     return S_OK;
+ }
+ 
+@@ -562,7 +601,7 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
+ }
+ 
+ /* Lazy - Move to header */
+-extern HRESULT create_db_session(REFIID riid, void **unk) DECLSPEC_HIDDEN;
++extern HRESULT create_db_session(HDBC hdbc, REFIID riid, void **unk) DECLSPEC_HIDDEN;
+ 
+ static HRESULT WINAPI dbsess_CreateSession(IDBCreateSession *iface, IUnknown *outer, REFIID riid,
+         IUnknown **session)
+@@ -572,7 +611,7 @@ static HRESULT WINAPI dbsess_CreateSession(IDBCreateSession *iface, IUnknown *ou
+ 
+     FIXME("%p, outer %p, riid %s, session %p stub\n", provider, outer, debugstr_guid(riid), session);
+ 
+-    hr = create_db_session(riid, (void**)session);
++    hr = create_db_session(provider->hdbc, riid, (void**)session);
+ 
+     return hr;
+ }
+@@ -640,6 +679,12 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+     provider->IPersist_iface.lpVtbl = &persistVtbl;
+     provider->ref = 1;
+ 
++    SQLAllocHandle( SQL_HANDLE_ENV, NULL, &provider->henv );
++    SQLSetEnvAttr( provider->henv, SQL_ATTR_ODBC_VERSION, (void *)SQL_OV_ODBC3, 0 );
++
++    SQLAllocHandle( SQL_HANDLE_DBC, provider->henv, &provider->hdbc );
++    FIXME("hdbc %p\n", provider->hdbc);
++
+     hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
+     IUnknown_Release(&provider->MSDASQL_iface);
+     return hr;
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 570f4c8c383..fa7d0c24616 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -25,6 +25,9 @@
+ #include "objbase.h"
+ #include "rpcproxy.h"
+ #include "msdasc.h"
++#include "odbcinst.h"
++#include "sqlext.h"
++#include "sqlucode.h"
+ #include "oledberr.h"
+ #include "wine/heap.h"
+ #include "wine/debug.h"
+@@ -41,6 +44,14 @@ struct msdasql_session
+     ISessionProperties ISessionProperties_iface;
+     IDBCreateCommand IDBCreateCommand_iface;
+     LONG refs;
++
++    HDBC hdbc;
++};
++
++struct msdasql_accessor
++{
++    int size;
++    void *data;
+ };
+ 
+ static inline struct msdasql_session *impl_from_IUnknown( IUnknown *iface )
+@@ -334,6 +345,9 @@ struct command
+     IConvertType IConvertType_iface;
+     ICommandPrepare ICommandPrepare_iface;
+     LONG refs;
++    HDBC hdbc;
++
++    WCHAR *query;
+ };
+ 
+ static inline struct command *impl_from_ICommandText( ICommandText *iface )
+@@ -416,6 +430,7 @@ static ULONG WINAPI command_Release(ICommandText *iface)
+     TRACE( "%p new refcount %d\n", command, refs );
+     if (!refs)
+     {
++        heap_free(command->query);
+         TRACE( "destroying %p\n", command );
+         heap_free( command );
+     }
+@@ -437,6 +452,8 @@ struct msdasql_rowset
+     IColumnsInfo IColumnsInfo_iface;
+     IAccessor IAccessor_iface;
+     LONG refs;
++
++    SQLHSTMT hstmt;
+ };
+ 
+ static inline struct msdasql_rowset *impl_from_IRowset( IRowset *iface )
+@@ -541,9 +558,12 @@ static HRESULT WINAPI msdasql_rowset_AddRefRows(IRowset *iface, DBCOUNTITEM coun
+ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR accessor, void *data)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
++    struct msdasql_accessor *access = (struct msdasql_accessor*)accessor;
+ 
+     FIXME("%p, %ld, %ld, %p\n", rowset, row, accessor, data);
+ 
++    memcpy(data, access->data, access->size);
++
+     return S_OK;
+ }
+ 
+@@ -551,22 +571,24 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
+         DBROWCOUNT count, DBCOUNTITEM *obtained, HROW **rows)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
+-    static INT once;
++    SQLRETURN ret;
+ 
+     FIXME("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
+ 
+     if (!obtained || !rows)
+         return E_INVALIDARG;
+ 
+-    if (once++)
+-        return DB_S_ENDOFROWSET;
+     *obtained = 0;
+ 
+     if (!count)
+         return S_OK;
+ 
++    ret = SQLFetch(rowset->hstmt);
++    if (ret == SQL_NO_DATA)
++        return DB_S_ENDOFROWSET;
++
++    *rows = CoTaskMemAlloc(sizeof(HROW*));
+     *obtained = 1;
+-    //*rows = NULL;
+ 
+     return S_OK;
+ }
+@@ -730,31 +752,123 @@ static ULONG  WINAPI rowset_colsinfo_Release(IColumnsInfo *iface)
+     return IRowset_Release(&rowset->IRowset_iface);
+ }
+ 
++static inline WCHAR *heap_strdupAtoW(const char *str)
++{
++    LPWSTR ret = NULL;
++
++    if(str) {
++        DWORD len;
++
++        len = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
++        ret = heap_alloc(len*sizeof(WCHAR));
++        if(ret)
++            MultiByteToWideChar(CP_ACP, 0, str, -1, ret, len);
++    }
++
++    return ret;
++}
++
++static SQLSMALLINT bindtype_to_sqltype(SQLSMALLINT type)
++{
++    switch (type)
++    {
++        case DBTYPE_I8:
++            return SQL_C_SBIGINT;
++        case DBTYPE_I4:
++            return SQL_C_SLONG;
++        case DBTYPE_WSTR:
++            return SQL_C_WCHAR;
++        default:
++            FIXME("Unsupported type %i\n", type);
++    }
++    return SQL_C_SLONG;
++}
++
++static SQLSMALLINT sqltype_to_bindtype(SQLSMALLINT type)
++{
++    switch (type)
++    {
++        case SQL_BIGINT:
++        case SQL_C_SBIGINT:
++            return DBTYPE_I8;
++        case SQL_C_SLONG:
++            return DBTYPE_I4;
++        case SQL_WVARCHAR:
++            return DBTYPE_WSTR;
++        default:
++            FIXME("Unsupported type %i\n", type);
++    }
++    return DBTYPE_I4;
++}
++
+ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDINAL *columns,
+         DBCOLUMNINFO **colinfo, OLECHAR **stringsbuffer)
+ {
+     struct msdasql_rowset *rowset = rowset_impl_from_IColumnsInfo( iface );
+     DBCOLUMNINFO *dbcolumn;
++    RETCODE ret;
++    SQLSMALLINT colcnt;
++    int i;
++    OLECHAR *ptr;
+ 
+     FIXME("%p, %p, %p, %p\n", rowset, columns, colinfo, stringsbuffer);
+ 
+-    *columns = 1;
++    SQLNumResultCols(rowset->hstmt, &colcnt);
++    FIXME("SQLNumResultCols %d\n", colcnt);
+ 
+-    *stringsbuffer = CoTaskMemAlloc(sizeof(L"Column1"));
+-    lstrcpyW(*stringsbuffer, L"Column1");
++    *columns = colcnt;
++
++    ptr = *stringsbuffer = CoTaskMemAlloc(colcnt * 256 * sizeof(WCHAR));
++    dbcolumn = CoTaskMemAlloc(colcnt * sizeof(DBCOLUMNINFO));
++
++    for (i = 0; i < colcnt; i++)
++    {
++        SQLCHAR       ColumnName[256];
++        SQLSMALLINT   ColumnNameLen;
++        SQLSMALLINT   ColumnDataType;
++        SQLULEN       ColumnDataSize;
++        SQLSMALLINT   ColumnDataDigits;
++        SQLSMALLINT   ColumnDataNullable;
++
++        ret = SQLDescribeCol(rowset->hstmt, i+1, ColumnName, 256, &ColumnNameLen, &ColumnDataType,
++                    &ColumnDataSize, &ColumnDataDigits, &ColumnDataNullable);
++        if (SQL_SUCCEEDED(ret))
++        {
++            WCHAR *columnname = heap_strdupAtoW((char*)ColumnName);
+ 
+-    dbcolumn = CoTaskMemAlloc(sizeof(DBCOLUMNINFO));
++            FIXME("%d: Column Name : %s, Column Name Len : %i, SQL Data Type : %i, Data Size : %i, DecimalDigits : %i, Nullable %i\n",
++                 i, ColumnName, (int)ColumnNameLen, (int)ColumnDataType, (int)ColumnDataSize, (int)ColumnDataDigits,
++                 (int)ColumnDataNullable);
+ 
+-    dbcolumn->pwszName = *stringsbuffer;
+-    dbcolumn->pTypeInfo = NULL;
+-    dbcolumn->iOrdinal = 1;
+-    dbcolumn->dwFlags = DBCOLUMNFLAGS_MAYBENULL;
+-    dbcolumn->ulColumnSize = 5;
+-    dbcolumn->wType = DBTYPE_I4;
+-    dbcolumn->bPrecision = 1;
+-    dbcolumn->bScale = 1;
+-    dbcolumn->columnid.eKind = DBKIND_NAME;
+-    dbcolumn->columnid.uName.pwszName = *stringsbuffer;
++            lstrcpyW(ptr, columnname);
++            heap_free(columnname);
++
++            dbcolumn[i].pwszName = ptr;
++            dbcolumn[i].pTypeInfo = NULL;
++            dbcolumn[i].iOrdinal = i+1;
++            dbcolumn[i].wType = sqltype_to_bindtype(ColumnDataType);
++
++            /* Since we dont support IRowsetChange:SetData, DBCOLUMNFLAGS_WRITEUNKNOWN must be set */
++            dbcolumn[i].dwFlags = DBCOLUMNFLAGS_WRITEUNKNOWN;
++
++            if (ColumnDataNullable)
++                dbcolumn[i].dwFlags |= DBCOLUMNFLAGS_ISNULLABLE | DBCOLUMNFLAGS_MAYBENULL;
++
++            if (dbcolumn[i].wType != DBTYPE_STR && dbcolumn[i].wType != DBTYPE_WSTR)
++                dbcolumn[i].dwFlags |= DBCOLUMNFLAGS_ISFIXEDLENGTH;
++
++            dbcolumn[i].ulColumnSize = ColumnDataSize;
++
++            dbcolumn[i].bPrecision = 1;
++            dbcolumn[i].bScale = 1;
++            dbcolumn[i].columnid.eKind = DBKIND_NAME;
++            dbcolumn[i].columnid.uName.pwszName = ptr;
++
++            ptr += ColumnNameLen + 1;
++        }
++        else
++            ERR("Failed %d\n", ret);
++    }
+ 
+     *colinfo = dbcolumn;
+ 
+@@ -808,9 +922,53 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+         DBBINDSTATUS status[])
+ {
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
++    int i;
++    struct msdasql_accessor *access;
++    char *ptr;
++    SQLSMALLINT type;
++
+     FIXME("%p 0x%08x, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
+ 
+-    *accessor = (HACCESSOR *)0xDeadBeef;
++    access = heap_alloc( sizeof(struct msdasql_accessor));
++    access->size = 0;
++    ptr = access->data = heap_alloc(1024);
++    for ( i=0; i < count; i++)
++    {
++        static SQLLEN len;
++        SQLRETURN ret;
++
++        FIXME("ord %ld. Value %ld, Len %ld, status %ld, typeinfo %p, part %d, Owner %d, io %d, Max %ld, flags %08x, type %d,  prec %d, sacle %d\n",
++              bindings[i].iOrdinal, bindings[i].obValue, bindings[i].obLength, bindings[i].obStatus, bindings[i].pTypeInfo,
++    //    DBOBJECT *pObject;
++    //    DBBINDEXT *pBindExt;
++        bindings[i].dwPart, bindings[i].dwMemOwner, bindings[i].eParamIO, bindings[i].cbMaxLen, bindings[i].dwFlags,
++        bindings[i].wType, bindings[i].bPrecision, bindings[i].bScale);
++
++        //*accessor = (HACCESSOR *)0xDeadBeef;
++        if (bindings[i].pObject)
++            FIXME("DBOBJECT 0x%08x, %s\n", bindings[i].pObject->dwFlags, debugstr_guid(&bindings[i].pObject->iid));
++
++
++        type = bindtype_to_sqltype(bindings[i].wType);
++        ret = SQLBindCol(rowset->hstmt, bindings[i].iOrdinal, type, &ptr[bindings[i].obValue-1], bindings[i].cbMaxLen, &len);
++        if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
++        {
++            SQLCHAR       SqlState[6], Msg[SQL_MAX_MESSAGE_LENGTH];
++            SQLINTEGER    NativeError;
++            SQLSMALLINT   MsgLen;
++
++            SQLGetDiagRec(SQL_HANDLE_STMT, rowset->hstmt, 1, SqlState, &NativeError, Msg, sizeof(Msg), &MsgLen);
++            ERR("Failed to bind Column %d: %s\n", i, Msg);
++        }
++        else
++        {
++            FIXME("SQLBindCol Len %d\n", len);
++            access->size += bindings[i].cbMaxLen;
++            ptr += bindings[i].cbMaxLen;
++        }
++    }
++
++    *accessor = (HACCESSOR *)access;
+     if (status)
+         *status = DBBINDSTATUS_OK;
+     return S_OK;
+@@ -827,7 +985,17 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
+ static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSOR accessor, DBREFCOUNT *count)
+ {
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
++    struct msdasql_accessor *access = accessor;
+     FIXME("%p, %lu, %p\n", rowset, accessor, count);
++
++    if (access)
++    {
++        heap_free(access->data);
++        heap_free(access);
++    }
++    if (count)
++        *count = 0;
++
+     return S_OK;
+ }
+ 
+@@ -848,9 +1016,24 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+     struct command *command = impl_from_ICommandText( iface );
+     struct msdasql_rowset *msrowset;
+     HRESULT hr;
++    RETCODE ret;
++    SQLHSTMT hstmt;
++    SQLSMALLINT results = 0;
+ 
+     FIXME("%p, %p, %s, %p %p %p\n", command, outer, debugstr_guid(riid), params, affected, rowset);
+ 
++    SQLAllocHandle(SQL_HANDLE_STMT, command->hdbc, &hstmt);
++
++    ret = SQLExecDirectW(hstmt, command->query, SQL_NTS);
++    if (ret != SQL_SUCCESS)
++    {
++        ERR("Query Failed (%d)\n", ret);
++        return E_FAIL;
++    }
++
++    ret = SQLNumResultCols(hstmt, &results);
++    FIXME("%d Results %d\n", ret, results);
++
+     msrowset = heap_alloc(sizeof(*rowset));
+     if (!msrowset)
+         return E_OUTOFMEMORY;
+@@ -860,8 +1043,9 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+     msrowset->IColumnsInfo_iface.lpVtbl = &rowset_columninfo_vtbll;
+     msrowset->IAccessor_iface.lpVtbl = &accessor_vtbl;
+     msrowset->refs = 1;
++    msrowset->hstmt = hstmt;
+ 
+-    if (affected) *affected = 1; /* FIXME */
++    if (affected) *affected = results;
+ 
+     hr = IRowset_QueryInterface(&msrowset->IRowset_iface, &IID_IUnknown, (void**)rowset);
+     IRowset_Release(&msrowset->IRowset_iface);
+@@ -886,6 +1070,9 @@ static HRESULT WINAPI command_SetCommandText(ICommandText *iface, REFGUID dialec
+ {
+     struct command *command = impl_from_ICommandText( iface );
+     FIXME("%p, %s, %s\n", command, debugstr_guid(dialect), debugstr_w(commandstr));
++
++    command->query = heap_alloc((lstrlenW(commandstr)+1)*sizeof(WCHAR));
++    wcscpy(command->query, commandstr);
+     return S_OK;
+ }
+ 
+@@ -1137,6 +1324,8 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+     command->IConvertType_iface.lpVtbl = &converttypeVtbl;
+     command->ICommandPrepare_iface.lpVtbl = &commandprepareVtbl;
+     command->refs = 1;
++    command->hdbc = session->hdbc;
++    command->query = NULL;
+ 
+     hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
+     ICommandText_Release(&command->ICommandText_iface);
+@@ -1151,7 +1340,7 @@ static const IDBCreateCommandVtbl createcommandVtbl = {
+     createcommand_CreateCommand
+ };
+ 
+-HRESULT create_db_session(REFIID riid, void **unk)
++HRESULT create_db_session(HDBC hdbc, REFIID riid, void **unk)
+ {
+     struct msdasql_session *session;
+ 
+@@ -1165,6 +1354,8 @@ HRESULT create_db_session(REFIID riid, void **unk)
+     session->ISessionProperties_iface.lpVtbl = &propertiesVtbl;
+     session->IDBCreateCommand_iface.lpVtbl = &createcommandVtbl;
+     session->refs = 1;
++    session->hdbc = hdbc;
++    FIXME("hdbc %p\n", session->hdbc);
+ 
+     return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
+ }
+\ No newline at end of file
