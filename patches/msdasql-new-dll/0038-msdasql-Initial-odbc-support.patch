@@ -1,8 +1,13 @@
-From 75829ad52c931e4e5308509ec0620d27b10f2445 Mon Sep 17 00:00:00 2001
+From 2a866a922e6078a35aa290c3123cb886402f5973 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Feb 2021 10:06:10 +1100
-Subject: msdasql: Initial odbc support
+Subject: [PATCH] msdasql: Initial odbc support
 
+---
+ dlls/msdasql/Makefile.in    |   2 +-
+ dlls/msdasql/msdasql_main.c |  49 +++++++-
+ dlls/msdasql/session.c      | 242 ++++++++++++++++++++++++++++++++----
+ 3 files changed, 269 insertions(+), 24 deletions(-)
 
 diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
 index 47a357e5d0f..97662abcbd3 100644
@@ -135,7 +140,7 @@ index 90c2074a633..2fc273673eb 100644
      IUnknown_Release(&provider->MSDASQL_iface);
      return hr;
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 570f4c8c383..fa7d0c24616 100644
+index 570f4c8c383..50576f54927 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -25,6 +25,9 @@
@@ -232,7 +237,7 @@ index 570f4c8c383..fa7d0c24616 100644
  
      return S_OK;
  }
-@@ -730,31 +752,123 @@ static ULONG  WINAPI rowset_colsinfo_Release(IColumnsInfo *iface)
+@@ -730,31 +752,127 @@ static ULONG  WINAPI rowset_colsinfo_Release(IColumnsInfo *iface)
      return IRowset_Release(&rowset->IRowset_iface);
  }
  
@@ -272,11 +277,15 @@ index 570f4c8c383..fa7d0c24616 100644
 +{
 +    switch (type)
 +    {
++        case SQL_LONGVARBINARY:
++            return DBTYPE_BYTES; /* ??? */
++
 +        case SQL_BIGINT:
 +        case SQL_C_SBIGINT:
 +            return DBTYPE_I8;
 +        case SQL_C_SLONG:
 +            return DBTYPE_I4;
++        case SQL_WLONGVARCHAR: /* ??? */
 +        case SQL_WVARCHAR:
 +            return DBTYPE_WSTR;
 +        default:
@@ -300,9 +309,7 @@ index 570f4c8c383..fa7d0c24616 100644
 -    *columns = 1;
 +    SQLNumResultCols(rowset->hstmt, &colcnt);
 +    FIXME("SQLNumResultCols %d\n", colcnt);
- 
--    *stringsbuffer = CoTaskMemAlloc(sizeof(L"Column1"));
--    lstrcpyW(*stringsbuffer, L"Column1");
++
 +    *columns = colcnt;
 +
 +    ptr = *stringsbuffer = CoTaskMemAlloc(colcnt * 256 * sizeof(WCHAR));
@@ -322,11 +329,30 @@ index 570f4c8c383..fa7d0c24616 100644
 +        if (SQL_SUCCEEDED(ret))
 +        {
 +            WCHAR *columnname = heap_strdupAtoW((char*)ColumnName);
- 
--    dbcolumn = CoTaskMemAlloc(sizeof(DBCOLUMNINFO));
++
 +            FIXME("%d: Column Name : %s, Column Name Len : %i, SQL Data Type : %i, Data Size : %i, DecimalDigits : %i, Nullable %i\n",
 +                 i, ColumnName, (int)ColumnNameLen, (int)ColumnDataType, (int)ColumnDataSize, (int)ColumnDataDigits,
 +                 (int)ColumnDataNullable);
++
++            lstrcpyW(ptr, columnname);
++            heap_free(columnname);
++
++            dbcolumn[i].pwszName = ptr;
++            dbcolumn[i].pTypeInfo = NULL;
++            dbcolumn[i].iOrdinal = i+1;
++            dbcolumn[i].wType = sqltype_to_bindtype(ColumnDataType);
++
++            /* Since we dont support IRowsetChange:SetData, DBCOLUMNFLAGS_WRITEUNKNOWN must be set */
++            dbcolumn[i].dwFlags = DBCOLUMNFLAGS_WRITEUNKNOWN;
+ 
+-    *stringsbuffer = CoTaskMemAlloc(sizeof(L"Column1"));
+-    lstrcpyW(*stringsbuffer, L"Column1");
++            if (ColumnDataNullable)
++                dbcolumn[i].dwFlags |= DBCOLUMNFLAGS_ISNULLABLE | DBCOLUMNFLAGS_MAYBENULL;
+ 
+-    dbcolumn = CoTaskMemAlloc(sizeof(DBCOLUMNINFO));
++            if (dbcolumn[i].wType != DBTYPE_STR && dbcolumn[i].wType != DBTYPE_WSTR)
++                dbcolumn[i].dwFlags |= DBCOLUMNFLAGS_ISFIXEDLENGTH;
  
 -    dbcolumn->pwszName = *stringsbuffer;
 -    dbcolumn->pTypeInfo = NULL;
@@ -338,23 +364,6 @@ index 570f4c8c383..fa7d0c24616 100644
 -    dbcolumn->bScale = 1;
 -    dbcolumn->columnid.eKind = DBKIND_NAME;
 -    dbcolumn->columnid.uName.pwszName = *stringsbuffer;
-+            lstrcpyW(ptr, columnname);
-+            heap_free(columnname);
-+
-+            dbcolumn[i].pwszName = ptr;
-+            dbcolumn[i].pTypeInfo = NULL;
-+            dbcolumn[i].iOrdinal = i+1;
-+            dbcolumn[i].wType = sqltype_to_bindtype(ColumnDataType);
-+
-+            /* Since we dont support IRowsetChange:SetData, DBCOLUMNFLAGS_WRITEUNKNOWN must be set */
-+            dbcolumn[i].dwFlags = DBCOLUMNFLAGS_WRITEUNKNOWN;
-+
-+            if (ColumnDataNullable)
-+                dbcolumn[i].dwFlags |= DBCOLUMNFLAGS_ISNULLABLE | DBCOLUMNFLAGS_MAYBENULL;
-+
-+            if (dbcolumn[i].wType != DBTYPE_STR && dbcolumn[i].wType != DBTYPE_WSTR)
-+                dbcolumn[i].dwFlags |= DBCOLUMNFLAGS_ISFIXEDLENGTH;
-+
 +            dbcolumn[i].ulColumnSize = ColumnDataSize;
 +
 +            dbcolumn[i].bPrecision = 1;
@@ -370,7 +379,7 @@ index 570f4c8c383..fa7d0c24616 100644
  
      *colinfo = dbcolumn;
  
-@@ -808,9 +922,53 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+@@ -808,9 +926,53 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
          DBBINDSTATUS status[])
  {
      struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
@@ -425,7 +434,7 @@ index 570f4c8c383..fa7d0c24616 100644
      if (status)
          *status = DBBINDSTATUS_OK;
      return S_OK;
-@@ -827,7 +985,17 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
+@@ -827,7 +989,17 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
  static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSOR accessor, DBREFCOUNT *count)
  {
      struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
@@ -443,13 +452,13 @@ index 570f4c8c383..fa7d0c24616 100644
      return S_OK;
  }
  
-@@ -848,9 +1016,24 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+@@ -848,9 +1020,29 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
      struct command *command = impl_from_ICommandText( iface );
      struct msdasql_rowset *msrowset;
      HRESULT hr;
 +    RETCODE ret;
 +    SQLHSTMT hstmt;
-+    SQLSMALLINT results = 0;
++    SQLLEN results = 0;
  
      FIXME("%p, %p, %s, %p %p %p\n", command, outer, debugstr_guid(riid), params, affected, rowset);
  
@@ -458,17 +467,22 @@ index 570f4c8c383..fa7d0c24616 100644
 +    ret = SQLExecDirectW(hstmt, command->query, SQL_NTS);
 +    if (ret != SQL_SUCCESS)
 +    {
-+        ERR("Query Failed (%d)\n", ret);
++        SQLCHAR       SqlState[6], Msg[SQL_MAX_MESSAGE_LENGTH];
++        SQLINTEGER    NativeError;
++        SQLSMALLINT   MsgLen;
++
++        SQLGetDiagRec(SQL_HANDLE_STMT, hstmt, 1, SqlState, &NativeError, Msg, sizeof(Msg), &MsgLen);
++        ERR("SQLExecDirectW Failed: %s\n", Msg);
 +        return E_FAIL;
 +    }
 +
-+    ret = SQLNumResultCols(hstmt, &results);
++    ret = SQLRowCount(hstmt, &results);
 +    FIXME("%d Results %d\n", ret, results);
 +
      msrowset = heap_alloc(sizeof(*rowset));
      if (!msrowset)
          return E_OUTOFMEMORY;
-@@ -860,8 +1043,9 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+@@ -860,8 +1052,9 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
      msrowset->IColumnsInfo_iface.lpVtbl = &rowset_columninfo_vtbll;
      msrowset->IAccessor_iface.lpVtbl = &accessor_vtbl;
      msrowset->refs = 1;
@@ -479,7 +493,7 @@ index 570f4c8c383..fa7d0c24616 100644
  
      hr = IRowset_QueryInterface(&msrowset->IRowset_iface, &IID_IUnknown, (void**)rowset);
      IRowset_Release(&msrowset->IRowset_iface);
-@@ -886,6 +1070,9 @@ static HRESULT WINAPI command_SetCommandText(ICommandText *iface, REFGUID dialec
+@@ -886,6 +1079,9 @@ static HRESULT WINAPI command_SetCommandText(ICommandText *iface, REFGUID dialec
  {
      struct command *command = impl_from_ICommandText( iface );
      FIXME("%p, %s, %s\n", command, debugstr_guid(dialect), debugstr_w(commandstr));
@@ -489,7 +503,7 @@ index 570f4c8c383..fa7d0c24616 100644
      return S_OK;
  }
  
-@@ -1137,6 +1324,8 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+@@ -1137,6 +1333,8 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
      command->IConvertType_iface.lpVtbl = &converttypeVtbl;
      command->ICommandPrepare_iface.lpVtbl = &commandprepareVtbl;
      command->refs = 1;
@@ -498,7 +512,7 @@ index 570f4c8c383..fa7d0c24616 100644
  
      hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
      ICommandText_Release(&command->ICommandText_iface);
-@@ -1151,7 +1340,7 @@ static const IDBCreateCommandVtbl createcommandVtbl = {
+@@ -1151,7 +1349,7 @@ static const IDBCreateCommandVtbl createcommandVtbl = {
      createcommand_CreateCommand
  };
  
@@ -507,7 +521,7 @@ index 570f4c8c383..fa7d0c24616 100644
  {
      struct msdasql_session *session;
  
-@@ -1165,6 +1354,8 @@ HRESULT create_db_session(REFIID riid, void **unk)
+@@ -1165,6 +1363,8 @@ HRESULT create_db_session(REFIID riid, void **unk)
      session->ISessionProperties_iface.lpVtbl = &propertiesVtbl;
      session->IDBCreateCommand_iface.lpVtbl = &createcommandVtbl;
      session->refs = 1;
@@ -517,3 +531,6 @@ index 570f4c8c383..fa7d0c24616 100644
      return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
  }
 \ No newline at end of file
+-- 
+2.30.0
+
