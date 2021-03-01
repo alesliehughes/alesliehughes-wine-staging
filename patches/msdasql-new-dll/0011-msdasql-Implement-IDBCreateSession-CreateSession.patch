@@ -1,4 +1,4 @@
-From 9897ffc2aac12f64ad4823c71b05eab78a29d1ff Mon Sep 17 00:00:00 2001
+From f40778ce502d4682d64c05c1c7f6c60426f027e2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 12:23:14 +1100
 Subject: [PATCH] msdasql: Implement IDBCreateSession CreateSession
@@ -11,11 +11,11 @@ Subject: [PATCH] msdasql: Implement IDBCreateSession CreateSession
  create mode 100644 dlls/msdasql/session.c
 
 diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
-index 455a3e2934e..47a357e5d0f 100644
+index 0f81de29e6e..394aed58620 100644
 --- a/dlls/msdasql/Makefile.in
 +++ b/dlls/msdasql/Makefile.in
 @@ -4,7 +4,8 @@ IMPORTS   = uuid ole32 oleaut32
- EXTRADLLFLAGS = -mno-cygwin
+ EXTRADLLFLAGS = -mno-cygwin -Wb,--prefer-native
  
  C_SRCS = \
 -	msdasql_main.c
@@ -25,10 +25,10 @@ index 455a3e2934e..47a357e5d0f 100644
  RC_SRCS = msdasql.rc
  
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index e376dc8a37e..96ae769a317 100644
+index 78300773dc5..9b2d81aa211 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -557,14 +557,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
+@@ -555,14 +555,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
      return IUnknown_Release(&provider->MSDASQL_iface);
  }
  
@@ -164,5 +164,5 @@ index 00000000000..7dc5b60b35b
 +}
 \ No newline at end of file
 -- 
-2.29.2
+2.30.1
 

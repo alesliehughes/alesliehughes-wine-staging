@@ -1,26 +1,15 @@
-From 06d55d7312e3b8c58baf2d7a150468c0d5caa6e1 Mon Sep 17 00:00:00 2001
+From 779dc20c01e060b2eec67f388afffd4a78b1b06e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 12:13:43 +1100
-Subject: [PATCH] New DLL msdasql
+Subject: New DLL msdasql
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
----
- configure                   |   2 +
- configure.ac                |   1 +
- dlls/msdasql/Makefile.in    |   7 ++
- dlls/msdasql/msdasql.spec   |   5 ++
- dlls/msdasql/msdasql_main.c | 131 ++++++++++++++++++++++++++++++++++++
- loader/wine.inf.in          |   2 +
- 6 files changed, 148 insertions(+)
- create mode 100644 dlls/msdasql/Makefile.in
- create mode 100644 dlls/msdasql/msdasql.spec
- create mode 100644 dlls/msdasql/msdasql_main.c
 
 diff --git a/configure b/configure
-index e79acfec9c7..449192472b8 100755
+index abef9131cad..d743c836fe3 100755
 --- a/configure
 +++ b/configure
-@@ -1459,6 +1459,7 @@ enable_mscorwks
+@@ -1464,6 +1464,7 @@ enable_mscorwks
  enable_msctf
  enable_msctfp
  enable_msdaps
@@ -28,7 +17,7 @@ index e79acfec9c7..449192472b8 100755
  enable_msdelta
  enable_msdmo
  enable_msdrm
-@@ -20934,6 +20935,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
+@@ -21147,6 +21148,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
  wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
@@ -37,10 +26,10 @@ index e79acfec9c7..449192472b8 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index 9cb41725041..f2ec9fad7f3 100644
+index 35fe23664d2..326414aae9b 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3513,6 +3513,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
+@@ -3536,6 +3536,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
  WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
@@ -50,14 +39,14 @@ index 9cb41725041..f2ec9fad7f3 100644
  WINE_CONFIG_MAKEFILE(dlls/msdmo/tests)
 diff --git a/dlls/msdasql/Makefile.in b/dlls/msdasql/Makefile.in
 new file mode 100644
-index 00000000000..fad46483421
+index 00000000000..cb27d332500
 --- /dev/null
 +++ b/dlls/msdasql/Makefile.in
 @@ -0,0 +1,7 @@
 +MODULE    = msdasql.dll
 +IMPORTS   = uuid
 +
-+EXTRADLLFLAGS = -mno-cygwin
++EXTRADLLFLAGS = -mno-cygwin -Wb,--prefer-native
 +
 +C_SRCS = \
 +	msdasql_main.c
@@ -74,10 +63,10 @@ index 00000000000..37b010b3860
 +
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
 new file mode 100644
-index 00000000000..607df7b77be
+index 00000000000..5812b98ef26
 --- /dev/null
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,129 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -116,8 +105,6 @@ index 00000000000..607df7b77be
 +
 +    switch (reason)
 +    {
-+        case DLL_WINE_PREATTACH:
-+            return FALSE;    /* prefer native version */
 +        case DLL_PROCESS_ATTACH:
 +            msdasql_instance = instance;
 +            DisableThreadLibraryCalls(instance);
@@ -210,10 +197,10 @@ index 00000000000..607df7b77be
 +    return IClassFactory_QueryInterface(&cffactory, riid, ppv);
 +}
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index 4c7f80321c9..21446819e69 100644
+index 8b92a1d758c..0414c63fd88 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -2948,6 +2948,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -2947,6 +2947,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  16422,Windows NT\Accessories,wordpad.exe
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
@@ -221,7 +208,7 @@ index 4c7f80321c9..21446819e69 100644
  16427,System\ADO,msado15.dll
  11,,*
  
-@@ -3018,6 +3019,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -3017,6 +3018,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  16427,Microsoft Shared\TextConv,
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
@@ -229,6 +216,3 @@ index 4c7f80321c9..21446819e69 100644
  16427,System\ADO,msado15.dll
  11,,*
  
--- 
-2.29.2
-

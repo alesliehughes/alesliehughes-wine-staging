@@ -138,7 +138,7 @@ index 07fb1b5bb92..d9c47ae6eeb 100644
      FIXME("%p, %p, %s, %p %p %p\n", command, outer, debugstr_guid(riid), params, affected, rowset);
 -    return E_NOTIMPL;
 +
-+    msrowset = heap_alloc(sizeof(*rowset));
++    msrowset = heap_alloc(sizeof(*msrowset));
 +    if (!msrowset)
 +        return E_OUTOFMEMORY;
 +
