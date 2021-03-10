@@ -1,0 +1,47 @@
+From 519b0c30230f2f7d77d96cdbfbea9b7ad770c071 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 11 Mar 2021 13:29:31 +1100
+Subject: [PATCH 8/8] msdasql: Implement ICommandText GetDBSession
+
+---
+ dlls/msdasql/session.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 26ac9d4afea..00f58ca76a1 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -350,6 +350,7 @@ struct command
+     ICommandPrepare ICommandPrepare_iface;
+     LONG refs;
+     HDBC hdbc;
++    IUnknown *session;
+ 
+     WCHAR *query;
+ };
+@@ -1231,8 +1232,12 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+ static HRESULT WINAPI command_GetDBSession(ICommandText *iface, REFIID riid, IUnknown **session)
+ {
+     struct command *command = impl_from_ICommandText( iface );
++    HRESULT hr;
+     FIXME("%p, %s, %p\n", command, debugstr_guid(riid), session);
+-    return E_NOTIMPL;
++
++    hr = IUnknown_QueryInterface(command->session, riid, (void**)session);
++    FIXME("ret 0x%08x\n", hr);
++    return hr;
+ }
+ 
+ static HRESULT WINAPI command_GetCommandText(ICommandText *iface, GUID *dialect, LPOLESTR *commandstr)
+@@ -1503,6 +1508,8 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+     command->hdbc = session->hdbc;
+     command->query = NULL;
+ 
++    IUnknown_QueryInterface(&session->session_iface, &IID_IUnknown, (void**)&command->session);
++
+     hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
+     ICommandText_Release(&command->ICommandText_iface);
+     FIXME("ret 0x%08x, %p\n", hr, *out);
+-- 
+2.30.1
+

@@ -1,0 +1,106 @@
+From 90082afa0beee68fa6a82ce224f2db0d1adb4320 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 11 Mar 2021 09:46:39 +1100
+Subject: [PATCH] msdasql: Add IColumnsRowset support to rowset
+
+---
+ dlls/msdasql/session.c | 55 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 71230834781..ff67c324579 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -455,6 +455,7 @@ struct msdasql_rowset
+     IRowsetInfo IRowsetInfo_iface;
+     IColumnsInfo IColumnsInfo_iface;
+     IAccessor IAccessor_iface;
++    IColumnsRowset IColumnsRowset_iface;
+     LONG refs;
+     DBBINDING *bindings;
+     DBCOUNTITEM bind_cnt;
+@@ -555,6 +556,11 @@ static inline struct msdasql_rowset *impl_from_IAccessor ( IAccessor *iface )
+     return CONTAINING_RECORD( iface, struct msdasql_rowset, IAccessor_iface );
+ }
+ 
++static inline struct msdasql_rowset *impl_from_IColumnsRowset ( IColumnsRowset *iface )
++{
++    return CONTAINING_RECORD( iface, struct msdasql_rowset, IColumnsRowset_iface );
++}
++
+ static HRESULT WINAPI msdasql_rowset_QueryInterface(IRowset *iface, REFIID riid,  void **ppv)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
+@@ -578,6 +584,10 @@ static HRESULT WINAPI msdasql_rowset_QueryInterface(IRowset *iface, REFIID riid,
+     {
+          *ppv = &rowset->IAccessor_iface;
+     }
++    else if(IsEqualGUID(&IID_IColumnsRowset, riid))
++    {
++         *ppv = &rowset->IColumnsRowset_iface;
++    }
+     else if (IsEqualGUID(&IID_IRowsetChange, riid))
+     {
+         TRACE("IID_IRowsetChange not supported\n");
+@@ -1110,6 +1120,50 @@ struct IAccessorVtbl accessor_vtbl =
+     rowset_accessor_ReleaseAccessor
+ };
+ 
++static HRESULT WINAPI column_rs_QueryInterface(IColumnsRowset *iface, REFIID riid, void **out)
++{
++    struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
++    return IRowset_QueryInterface(&rowset->IRowset_iface, riid, out);
++}
++
++static ULONG WINAPI column_rs_AddRef(IColumnsRowset *iface)
++{
++    struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
++    return IRowset_AddRef(&rowset->IRowset_iface);
++}
++
++static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
++{
++    struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
++    return IRowset_Release(&rowset->IRowset_iface);
++}
++
++static HRESULT WINAPI column_rs_GetAvailableColumns(IColumnsRowset *iface, DBORDINAL *count, DBID **columns)
++{
++    struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
++    FIXME("%p, %p, %p\n", rowset, count, columns);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI column_rs_GetColumnsRowset(IColumnsRowset *iface, IUnknown *outer, DBORDINAL count,
++        const DBID columns[], REFIID riid, ULONG property_cnt, DBPROPSET property_sets[], IUnknown **unk_rs)
++{
++    struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
++    FIXME("(%p)->(%p %ld %p %s %u, %p %p): stub\n", rowset, outer, count, columns, debugstr_guid(riid),
++          property_cnt, property_sets, unk_rs);
++    return E_NOTIMPL;
++}
++
++struct IColumnsRowsetVtbl columnrs_rs_vtbl =
++{
++    column_rs_QueryInterface,
++    column_rs_AddRef,
++    column_rs_Release,
++    column_rs_GetAvailableColumns,
++    column_rs_GetColumnsRowset
++};
++
++
+ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFIID riid,
+         DBPARAMS *params, DBROWCOUNT *affected, IUnknown **rowset)
+ {
+@@ -1144,6 +1198,7 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+     msrowset->IRowsetInfo_iface.lpVtbl = &rowset_info_vtbl;
+     msrowset->IColumnsInfo_iface.lpVtbl = &rowset_columninfo_vtbll;
+     msrowset->IAccessor_iface.lpVtbl = &accessor_vtbl;
++    msrowset->IColumnsRowset_iface.lpVtbl = &columnrs_rs_vtbl;
+     msrowset->refs = 1;
+     msrowset->bindings = NULL;
+     msrowset->bind_cnt = 0;
+-- 
+2.30.1
+
