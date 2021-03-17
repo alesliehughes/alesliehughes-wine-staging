@@ -1,0 +1,39 @@
+From 8fbbcb37ca26e33489cf94436fd1bea5ae7edec4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 Mar 2021 15:52:46 +1100
+Subject: [PATCH] msado15: Fake return recordset_get_BOF
+
+---
+ dlls/msado15/recordset.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 24524999008..1b29ee024da 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -1028,7 +1028,21 @@ static HRESULT WINAPI recordset_get_BOF( _Recordset *iface, VARIANT_BOOL *bof )
+ 
+     TRACE( "%p, %p\n", recordset, bof );
+ 
+-    *bof = (recordset->index < 0) ? VARIANT_TRUE : VARIANT_FALSE;
++    if (recordset->row_set)
++    {
++        /*DBCOUNTITEM obtained = 0;
++        HROW *rows = NULL;
++        HRESULT hr;
++
++        hr = IRowset_GetNextRows(recordset->row_set, DB_NULL_HCHAPTER, 0, 1, &obtained, &rows);
++FIXME("hr 0x%08x\n", hr);*/
++        *bof = VARIANT_FALSE;
++
++        //if (hr == S_OK)
++        //    IRowset_ReleaseRows(recordset->row_set, 1, rows, NULL, NULL, NULL);
++    }
++    else
++        *bof = (recordset->index < 0) ? VARIANT_TRUE : VARIANT_FALSE;
+     return S_OK;
+ }
+ 
+-- 
+2.30.1
+
