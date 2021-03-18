@@ -1,0 +1,28 @@
+From 1f44c2542f8c697337424475407abcdadd374d7e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Mar 2021 07:28:47 +1100
+Subject: [PATCH] msdasql: Implement ICommandText GetCommandText
+
+---
+ dlls/msdasql/session.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 00f58ca76a1..eedc65bb557 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -1244,7 +1244,10 @@ static HRESULT WINAPI command_GetCommandText(ICommandText *iface, GUID *dialect,
+ {
+     struct command *command = impl_from_ICommandText( iface );
+     FIXME("%p, %p, %p\n", command, dialect, commandstr);
+-    return E_NOTIMPL;
++
++    *commandstr = CoTaskMemAlloc( (lstrlenW(command->query)+1)*sizeof(WCHAR) );
++    wcscpy(*commandstr, command->query);
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI command_SetCommandText(ICommandText *iface, REFGUID dialect, LPCOLESTR commandstr)
+-- 
+2.30.1
+

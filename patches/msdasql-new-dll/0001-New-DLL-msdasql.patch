@@ -1,15 +1,26 @@
-From 779dc20c01e060b2eec67f388afffd4a78b1b06e Mon Sep 17 00:00:00 2001
+From 4108bee95a4faee9ea74773d4a243d76f1a827bb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 12:13:43 +1100
-Subject: New DLL msdasql
+Subject: [PATCH] New DLL msdasql
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                   |   2 +
+ configure.ac                |   1 +
+ dlls/msdasql/Makefile.in    |   7 ++
+ dlls/msdasql/msdasql.spec   |   5 ++
+ dlls/msdasql/msdasql_main.c | 129 ++++++++++++++++++++++++++++++++++++
+ loader/wine.inf.in          |   2 +
+ 6 files changed, 146 insertions(+)
+ create mode 100644 dlls/msdasql/Makefile.in
+ create mode 100644 dlls/msdasql/msdasql.spec
+ create mode 100644 dlls/msdasql/msdasql_main.c
 
 diff --git a/configure b/configure
-index abef9131cad..d743c836fe3 100755
+index 02c4c01ec86..c3162bd9551 100755
 --- a/configure
 +++ b/configure
-@@ -1464,6 +1464,7 @@ enable_mscorwks
+@@ -1444,6 +1444,7 @@ enable_mscorwks
  enable_msctf
  enable_msctfp
  enable_msdaps
@@ -17,7 +28,7 @@ index abef9131cad..d743c836fe3 100755
  enable_msdelta
  enable_msdmo
  enable_msdrm
-@@ -21147,6 +21148,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
+@@ -20846,6 +20847,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
  wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
@@ -26,10 +37,10 @@ index abef9131cad..d743c836fe3 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index 35fe23664d2..326414aae9b 100644
+index 9da645fd7af..f1b107894ec 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3536,6 +3536,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
+@@ -3538,6 +3538,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
  WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
@@ -197,22 +208,25 @@ index 00000000000..5812b98ef26
 +    return IClassFactory_QueryInterface(&cffactory, riid, ppv);
 +}
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index 8b92a1d758c..0414c63fd88 100644
+index bcabb59197e..026d5d458e3 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -2947,6 +2947,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -2926,6 +2926,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  16422,Windows NT\Accessories,wordpad.exe
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
 +16427,System\OLE DB,msdasql.dll
  16427,System\ADO,msado15.dll
- 11,,*
- 
-@@ -3017,6 +3018,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+ 66000,3,wineps.drv
+ 12,,*.sys,-
+@@ -2982,6 +2983,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  16427,Microsoft Shared\TextConv,
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
 +16427,System\OLE DB,msdasql.dll
  16427,System\ADO,msado15.dll
- 11,,*
- 
+ 66000,3,wineps.drv
+ 12,,*.sys,-
+-- 
+2.30.1
+
