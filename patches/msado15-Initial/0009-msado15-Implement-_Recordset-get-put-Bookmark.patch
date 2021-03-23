@@ -1,0 +1,43 @@
+From 350431d4275ea5e470c58607bbec9aa36db1f85c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 23 Mar 2021 12:06:31 +1100
+Subject: [PATCH] msado15: Implement _Recordset get/put Bookmark
+
+---
+ dlls/msado15/recordset.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index eda50c406f2..40dc6784413 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -1180,14 +1180,22 @@ static HRESULT WINAPI recordset_get_BOF( _Recordset *iface, VARIANT_BOOL *bof )
+ 
+ static HRESULT WINAPI recordset_get_Bookmark( _Recordset *iface, VARIANT *bookmark )
+ {
+-    FIXME( "%p, %p\n", iface, bookmark );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %p\n", iface, bookmark );
++    V_VT(bookmark) = VT_I4;
++    V_I4(bookmark) = recordset->index;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_put_Bookmark( _Recordset *iface, VARIANT bookmark )
+ {
+-    FIXME( "%p, %s\n", iface, debugstr_variant(&bookmark) );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %s\n", iface, debugstr_variant(&bookmark) );
++    if (V_VT(&bookmark) != VT_I4)
++        ERR("Unexpected type %d\n", V_VT(&bookmark));
++
++    recordset->index = V_I4(&bookmark);
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_get_CacheSize( _Recordset *iface, LONG *size )
+-- 
+2.30.2
+
