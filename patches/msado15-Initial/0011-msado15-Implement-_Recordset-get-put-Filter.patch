@@ -1,0 +1,72 @@
+From 660e123c2c8c3c398b96780e93b441138a878bc7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 24 Mar 2021 08:16:24 +1100
+Subject: msado15: Implement _Recordset get/put Filter
+
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 3b7aa8adbc8..9e5fea151c7 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -45,6 +45,7 @@ struct recordset
+     LONG               allocated;
+     LONG               index;
+     VARIANT           *data;
++    VARIANT            filter;
+     CursorLocationEnum cursor_location;
+     CursorTypeEnum     cursor_type;
+     IRowset           *row_set;
+@@ -1528,14 +1529,16 @@ static HRESULT WINAPI recordset_get_EditMode( _Recordset *iface, EditModeEnum *m
+ 
+ static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria )
+ {
+-    FIXME( "%p, %p\n", iface, criteria );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %p\n", iface, criteria );
++    return VariantCopy(criteria, &recordset->filter);
+ }
+ 
+ static HRESULT WINAPI recordset_put_Filter( _Recordset *iface, VARIANT criteria )
+ {
+-    FIXME( "%p, %s\n", iface, debugstr_variant(&criteria) );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %s\n", iface, debugstr_variant(&criteria) );
++    return VariantCopy(&recordset->filter, &criteria);;
+ }
+ 
+ static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, LONG *count )
+@@ -2072,6 +2075,8 @@ HRESULT Recordset_create( void **obj )
+     recordset->cursor_location = adUseServer;
+     recordset->cursor_type = adOpenForwardOnly;
+     recordset->row_set = NULL;
++    V_VT(&recordset->filter) = VT_I4;
++    V_I4(&recordset->filter) = 0;
+ 
+     *obj = &recordset->Recordset_iface;
+     TRACE( "returning iface %p\n", *obj );
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 47fec6d1805..63e4e3d6052 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -77,6 +77,7 @@ static void test_Recordset(void)
+     BSTR name;
+     HRESULT hr;
+     VARIANT bookmark;
++    VARIANT filter;
+ 
+     hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
+     ok( hr == S_OK, "got %08x\n", hr );
+@@ -164,6 +165,11 @@ static void test_Recordset(void)
+     hr = _Recordset_put_Bookmark( recordset, bookmark );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+ 
++    hr = _Recordset_get_Filter( recordset, &filter );
++    ok( hr == S_OK, "got %08x\n", hr );
++    ok( V_VT(&filter) == VT_I4, "got %d\n", V_VT(&filter)  );
++    ok( V_I4(&filter) == 0, "got %d\n", V_I4(&filter)  );
++
+     VariantInit( &missing );
+     hr = _Recordset_AddNew( recordset, missing, missing );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );

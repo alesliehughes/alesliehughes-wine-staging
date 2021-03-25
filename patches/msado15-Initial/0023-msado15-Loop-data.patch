@@ -1,15 +1,11 @@
-From e3d2dd408d2f70b4802d704b7c07474f9ac31ca7 Mon Sep 17 00:00:00 2001
+From 43541ec06463b45629840b166be6cf4842ab9bb4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Mar 2021 10:47:16 +1100
-Subject: [PATCH 2/2] msado15: Loop data
+Subject: msado15: Loop data
 
----
- dlls/msado15/recordset.c     | 106 ++++++++++++++++++++++++++++++++++-
- dlls/msado15/tests/msado15.c |  25 +++++++++
- 2 files changed, 130 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 9b63cf77eef..3f9e36511d4 100644
+index 9b63cf77eef..7ebe4f6d4c3 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -1298,6 +1298,7 @@ static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDIN
@@ -30,7 +26,7 @@ index 9b63cf77eef..3f9e36511d4 100644
      hr = fields_create( recordset, &recordset->fields );
      if (FAILED(hr))
      {
-@@ -1456,13 +1460,113 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1456,13 +1460,114 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
          return hr;
      }
  
@@ -62,9 +58,9 @@ index 9b63cf77eef..3f9e36511d4 100644
 +            hr = IRowset_GetData(rowset2, *row, haccessor, data);
 +            if (FAILED(hr))
 +            {
-+                IRowset_Release(rowset2);
++                //IRowset_Release(rowset2);
 +                ERR("Failed to GetData 0x%08x\n", hr);
-+                return hr;
++                break;
 +            }
 +
 +            for (datacol = 0; datacol < columns; datacol++)
@@ -132,6 +128,7 @@ index 9b63cf77eef..3f9e36511d4 100644
 +                ERR("Failed to ReleaseRows 0x%08x\n", hr);
 +
 +            hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
++FIXME("obtained %d\n", obtained);
 +        }
 +
 +        heap_free(data);
@@ -181,6 +178,3 @@ index 93d1dc4c19b..d0d36ee7567 100644
      hr = _Recordset_get_CursorType(recordset, &cursortype);
      ok( hr == S_OK, "got %08x\n", hr );
      ok( cursortype == adOpenStatic, "got %d\n", cursortype );
--- 
-2.30.2
-

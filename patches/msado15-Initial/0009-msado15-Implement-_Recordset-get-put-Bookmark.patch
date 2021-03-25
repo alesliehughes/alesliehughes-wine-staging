@@ -1,17 +1,19 @@
-From 350431d4275ea5e470c58607bbec9aa36db1f85c Mon Sep 17 00:00:00 2001
+From 683602a05db00b183e2c0df7d798223eb1e56223 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:06:31 +1100
-Subject: [PATCH] msado15: Implement _Recordset get/put Bookmark
+Subject: [PATCH v2] msado15: Implement _Recordset get/put Bookmark
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/msado15/recordset.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ dlls/msado15/recordset.c     | 22 ++++++++++++++++++----
+ dlls/msado15/tests/msado15.c | 17 +++++++++++++++++
+ 2 files changed, 35 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index eda50c406f2..40dc6784413 100644
+index a86936eb037..68d4c22d802 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -1180,14 +1180,22 @@ static HRESULT WINAPI recordset_get_BOF( _Recordset *iface, VARIANT_BOOL *bof )
+@@ -1029,14 +1029,28 @@ static HRESULT WINAPI recordset_get_BOF( _Recordset *iface, VARIANT_BOOL *bof )
  
  static HRESULT WINAPI recordset_get_Bookmark( _Recordset *iface, VARIANT *bookmark )
  {
@@ -19,6 +21,10 @@ index eda50c406f2..40dc6784413 100644
 -    return E_NOTIMPL;
 +    struct recordset *recordset = impl_from_Recordset( iface );
 +    TRACE( "%p, %p\n", iface, bookmark );
++
++    if (recordset->state == adStateClosed) return MAKE_ADO_HRESULT( adErrObjectClosed );
++    if (recordset->index < 0) return MAKE_ADO_HRESULT( adErrNoCurrentRecord );
++
 +    V_VT(bookmark) = VT_I4;
 +    V_I4(bookmark) = recordset->index;
 +    return S_OK;
@@ -30,14 +36,58 @@ index eda50c406f2..40dc6784413 100644
 -    return E_NOTIMPL;
 +    struct recordset *recordset = impl_from_Recordset( iface );
 +    TRACE( "%p, %s\n", iface, debugstr_variant(&bookmark) );
-+    if (V_VT(&bookmark) != VT_I4)
-+        ERR("Unexpected type %d\n", V_VT(&bookmark));
++
++    if (recordset->state == adStateClosed) return MAKE_ADO_HRESULT( adErrObjectClosed );
++
++    if (V_VT(&bookmark) != VT_I4) return MAKE_ADO_HRESULT( adErrInvalidArgument );
 +
 +    recordset->index = V_I4(&bookmark);
 +    return S_OK;
  }
  
  static HRESULT WINAPI recordset_get_CacheSize( _Recordset *iface, LONG *size )
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index bc9b4a24761..db606f21fab 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -74,6 +74,7 @@ static void test_Recordset(void)
+     CursorTypeEnum cursor;
+     BSTR name;
+     HRESULT hr;
++    VARIANT bookmark;
+ 
+     hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
+     ok( hr == S_OK, "got %08x\n", hr );
+@@ -153,6 +154,14 @@ static void test_Recordset(void)
+     ok( hr == S_OK, "got %08x\n", hr );
+     ok( cursor == adOpenForwardOnly, "got %d\n", cursor );
+ 
++    VariantInit( &bookmark );
++    hr = _Recordset_get_Bookmark( recordset, &bookmark );
++    ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
++
++    VariantInit( &bookmark );
++    hr = _Recordset_put_Bookmark( recordset, bookmark );
++    ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
++
+     VariantInit( &missing );
+     hr = _Recordset_AddNew( recordset, missing, missing );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+@@ -188,6 +197,14 @@ static void test_Recordset(void)
+     ok( hr == S_OK, "got %08x\n", hr );
+     ok( state == adStateOpen, "got %d\n", state );
+ 
++    VariantInit( &bookmark );
++    hr = _Recordset_get_Bookmark( recordset, &bookmark );
++    ok( hr == MAKE_ADO_HRESULT( adErrNoCurrentRecord ), "got %08x\n", hr );
++
++    VariantInit( &bookmark );
++    hr = _Recordset_put_Bookmark( recordset, bookmark );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08x\n", hr );
++
+     count = -1;
+     hr = _Recordset_get_RecordCount( recordset, &count );
+     ok( hr == S_OK, "got %08x\n", hr );
 -- 
 2.30.2
 
