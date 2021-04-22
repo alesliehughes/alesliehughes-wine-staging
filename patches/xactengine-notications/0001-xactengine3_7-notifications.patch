@@ -64,7 +64,7 @@ index e3c9535a546..642f723b52b 100644
      {
 -        FIXME("Callback XACTNOTIFICATIONTYPE_SOUNDBANKDESTROYED\n");
 +        case XACTNOTIFICATIONTYPE_SOUNDBANKDESTROYED:
-+            note.u.soundBank.pSoundBank = FACTSoundBank_GetPrivateContext(notification->wave.pSoundBank);
++            note.soundBank.pSoundBank = FACTSoundBank_GetPrivateContext(notification->wave.pSoundBank);
 +            break;
 +#if XACT3_VER >= 0x0205
 +        case XACTNOTIFICATIONTYPE_WAVEDESTROYED:
@@ -73,21 +73,21 @@ index e3c9535a546..642f723b52b 100644
 +        case XACTNOTIFICATIONTYPE_WAVEPREPARED:
 +#endif
 +        case XACTNOTIFICATIONTYPE_WAVESTOP:
-+            note.u.wave.cueIndex = notification->wave.cueIndex;
-+            note.u.wave.pCue = FACTCue_GetPrivateContext(notification->wave.pCue);
-+            note.u.wave.pSoundBank = FACTSoundBank_GetPrivateContext(notification->wave.pSoundBank);
++            note.wave.cueIndex = notification->wave.cueIndex;
++            note.wave.pCue = FACTCue_GetPrivateContext(notification->wave.pCue);
++            note.wave.pSoundBank = FACTSoundBank_GetPrivateContext(notification->wave.pSoundBank);
 +#if XACT3_VER >= 0x0205
-+            note.u.wave.pWave = FACTWave_GetPrivateContext(notification->wave.pWave);
++            note.wave.pWave = FACTWave_GetPrivateContext(notification->wave.pWave);
 +#endif
-+            note.u.wave.pWaveBank = FACTWaveBank_GetPrivateContext(notification->wave.pWaveBank);
++            note.wave.pWaveBank = FACTWaveBank_GetPrivateContext(notification->wave.pWaveBank);
 +            break;
 +        case XACTNOTIFICATIONTYPE_CUEDESTROYED:
 +        case XACTNOTIFICATIONTYPE_CUEPLAY:
 +        case XACTNOTIFICATIONTYPE_CUEPREPARED:
 +        case XACTNOTIFICATIONTYPE_CUESTOP:
-+            note.u.cue.cueIndex = notification->cue.cueIndex;
-+            note.u.cue.pCue = FACTCue_GetPrivateContext(notification->cue.pCue);
-+            note.u.cue.pSoundBank = FACTSoundBank_GetPrivateContext(notification->cue.pSoundBank);
++            note.cue.cueIndex = notification->cue.cueIndex;
++            note.cue.pCue = FACTCue_GetPrivateContext(notification->cue.pCue);
++            note.cue.pSoundBank = FACTSoundBank_GetPrivateContext(notification->cue.pSoundBank);
 +            break;
 +        default:
 +            FIXME("Unsupported callback type %d\n", notification->type);
