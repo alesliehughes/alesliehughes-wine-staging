@@ -1,0 +1,26 @@
+From a2fc6063f15ccc5b6c305b64fe0a098c92f1f591 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Apr 2021 12:55:59 +1000
+Subject: [PATCH] include: XACT_NOTIFICATION add DUMMYUNIONNAME
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ include/xact.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/xact.h b/include/xact.h
+index 03a354e69a9..153bebfa7d7 100644
+--- a/include/xact.h
++++ b/include/xact.h
+@@ -492,7 +492,7 @@ typedef struct XACT_NOTIFICATION
+         XACT_NOTIFICATION_VARIABLE variable;
+         XACT_NOTIFICATION_GUI gui;
+         XACT_NOTIFICATION_WAVE wave;
+-    };
++    } DUMMYUNIONNAME;
+ } XACT_NOTIFICATION, *LPXACT_NOTIFICATION;
+ typedef const XACT_NOTIFICATION *LPCXACT_NOTIFICATION;
+ 
+-- 
+2.30.2
+
