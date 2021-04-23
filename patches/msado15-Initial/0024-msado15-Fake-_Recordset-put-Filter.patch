@@ -1,0 +1,25 @@
+From 5f733d923b81a69373704a8b0e6fa13232ab1fa5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 23 Apr 2021 12:09:28 +1000
+Subject: [PATCH] msado15: Fake _Recordset put Filter
+
+---
+ dlls/msado15/recordset.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 82ce2e14393..4a0c1d3e3e1 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -1771,7 +1771,7 @@ static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria
+ static HRESULT WINAPI recordset_put_Filter( _Recordset *iface, VARIANT criteria )
+ {
+     FIXME( "%p, %s\n", iface, debugstr_variant(&criteria) );
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, LONG *count )
+-- 
+2.30.2
+
