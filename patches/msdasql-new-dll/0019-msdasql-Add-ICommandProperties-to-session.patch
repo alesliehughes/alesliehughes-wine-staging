@@ -1,7 +1,7 @@
-From a4841a147fcbcff2781ccde9277eaab0256d18bf Mon Sep 17 00:00:00 2001
+From c7c7a35c4e9fd68e3f6d57728ccc852c2e3eb9e2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 27 Oct 2020 14:18:01 +1100
-Subject: [PATCH] msdasql: Add ICommandProperties to session
+Subject: [PATCH 19/42] msdasql: Add ICommandProperties to session
 
 ---
  dlls/msdasql/session.c | 53 +++++++++++++++++++++++++++++++++++++++++-
@@ -100,5 +100,5 @@ index 35a43634ef7..07fb1b5bb92 100644
  
      hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
 -- 
-2.29.2
+2.30.2
 

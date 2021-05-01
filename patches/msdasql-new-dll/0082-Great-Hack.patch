@@ -1,8 +1,11 @@
-From d37c1a2b23b7fa1c0cf5892f08cf18a6010335a7 Mon Sep 17 00:00:00 2001
+From b097b8839265896d801029810c69a7f83a954e7a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
-Subject: Great Hack
+Subject: [PATCH 42/42] Great Hack
 
+---
+ dlls/oledb32/dslocator.c | 211 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 162 insertions(+), 49 deletions(-)
 
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
 index c74fb5133d2..ab551673ce1 100644
@@ -327,3 +330,6 @@ index c74fb5133d2..ab551673ce1 100644
  }
  
  static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
+-- 
+2.30.2
+

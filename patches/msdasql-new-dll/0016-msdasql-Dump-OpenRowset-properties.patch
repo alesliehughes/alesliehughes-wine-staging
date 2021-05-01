@@ -1,7 +1,7 @@
-From d8902f9cf7a22dd2b6da30e522e8f8a227e0beae Mon Sep 17 00:00:00 2001
+From 1a18b99559d30d19927bd19ca07d8e1423d8bf88 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2020 16:09:36 +1100
-Subject: [PATCH] msdasql: Dump OpenRowset properties
+Subject: [PATCH 16/42] msdasql: Dump OpenRowset properties
 
 ---
  dlls/msdasql/session.c | 51 ++++++++++++++++++++++++++++++++++++++++++
@@ -77,5 +77,5 @@ index adcd558a28d..212b0373233 100644
  }
  
 -- 
-2.29.2
+2.30.2
 

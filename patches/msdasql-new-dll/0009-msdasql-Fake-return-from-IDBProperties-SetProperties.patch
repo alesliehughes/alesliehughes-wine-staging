@@ -1,17 +1,17 @@
-From a332683581db7ae1d8cf21e740d5c5191bc1fd6d Mon Sep 17 00:00:00 2001
+From 91f4d6e412d53b3dc406e47c6aa7fd57ebb05330 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 15:33:18 +1000
-Subject: [PATCH] msdasql: Fake return from IDBProperties SetProperties
+Subject: [PATCH 09/42] msdasql: Fake return from IDBProperties SetProperties
 
 ---
  dlls/msdasql/msdasql_main.c | 24 +++++++++++++++++++++++-
  1 file changed, 23 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index c1929192b65..7fd30721c4a 100644
+index 4af0b1f5118..6ee99c1f384 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -441,11 +441,33 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
+@@ -401,11 +401,33 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
  static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropertySets,
              DBPROPSET rgPropertySets[])
  {
@@ -47,5 +47,5 @@ index c1929192b65..7fd30721c4a 100644
  
  static const struct IDBPropertiesVtbl dbprops_vtbl =
 -- 
-2.29.2
+2.30.2
 

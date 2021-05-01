@@ -1,14 +1,14 @@
-From c6a473ee913b792807863196aadeb9e0cf7284a4 Mon Sep 17 00:00:00 2001
+From 361de90c535d65516602127e81c3181fa09041f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 29 Oct 2020 09:46:38 +1100
-Subject: [PATCH] msdasql: Implement ICommandText Execute
+Subject: [PATCH 20/42] msdasql: Implement ICommandText Execute
 
 ---
  dlls/msdasql/session.c | 130 ++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 129 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 07fb1b5bb92..d9c47ae6eeb 100644
+index 07fb1b5bb92..48a0b9d9224 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -384,13 +384,141 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
@@ -155,5 +155,5 @@ index 07fb1b5bb92..d9c47ae6eeb 100644
  
  static HRESULT WINAPI command_GetDBSession(ICommandText *iface, REFIID riid, IUnknown **session)
 -- 
-2.29.2
+2.30.2
 

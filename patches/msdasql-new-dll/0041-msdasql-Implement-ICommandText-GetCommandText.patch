@@ -1,7 +1,7 @@
-From 1f44c2542f8c697337424475407abcdadd374d7e Mon Sep 17 00:00:00 2001
+From b5cbbc413f2714f6d5d77cef8442f76f8e357e10 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 19 Mar 2021 07:28:47 +1100
-Subject: [PATCH] msdasql: Implement ICommandText GetCommandText
+Subject: [PATCH 41/42] msdasql: Implement ICommandText GetCommandText
 
 ---
  dlls/msdasql/session.c | 5 ++++-
@@ -24,5 +24,5 @@ index 00f58ca76a1..eedc65bb557 100644
  
  static HRESULT WINAPI command_SetCommandText(ICommandText *iface, REFGUID dialect, LPCOLESTR commandstr)
 -- 
-2.30.1
+2.30.2
 

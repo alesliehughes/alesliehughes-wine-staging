@@ -1,14 +1,14 @@
-From 0c14060b490f4fe235cf950d1976bd91c3ba1db6 Mon Sep 17 00:00:00 2001
+From d2f465dafd62dd165db53ed622847aca88ddc0d1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 29 Oct 2020 10:27:30 +1100
-Subject: [PATCH] msdasql: Support IRowsetInfo in IRowset interface
+Subject: [PATCH 21/42] msdasql: Support IRowsetInfo in IRowset interface
 
 ---
  dlls/msdasql/session.c | 63 ++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 63 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index d9c47ae6eeb..5d6853ac7fd 100644
+index 48a0b9d9224..6eecbc9518d 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -387,6 +387,7 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
@@ -42,7 +42,7 @@ index d9c47ae6eeb..5d6853ac7fd 100644
  
      if(*ppv) {
          IUnknown_AddRef((IUnknown*)*ppv);
-@@ -497,6 +507,58 @@ static const struct IRowsetVtbl msdasql_rowset =
+@@ -497,6 +507,58 @@ static const struct IRowsetVtbl msdasql_rowset_vtbl =
      msdasql_rowset_RestartPosition
  };
  
@@ -110,5 +110,5 @@ index d9c47ae6eeb..5d6853ac7fd 100644
  
      if (affected) *affected = 1; /* FIXME */
 -- 
-2.29.2
+2.30.2
 

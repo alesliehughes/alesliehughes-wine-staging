@@ -1,7 +1,7 @@
-From 3f1f74c6682482ac8dadcbe6e631f6b85b63bbc9 Mon Sep 17 00:00:00 2001
+From 10898092774f3f1ea88224b875d7290bd02bc02e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Oct 2020 21:17:05 +1100
-Subject: [PATCH] msdasql: Implement IDBCreateCommand CreateCommand
+Subject: [PATCH 18/42] msdasql: Implement IDBCreateCommand CreateCommand
 
 ---
  dlls/msdasql/session.c | 119 ++++++++++++++++++++++++++++++++++++++++-
@@ -144,5 +144,5 @@ index 32b17cc38a2..35a43634ef7 100644
  
  static const IDBCreateCommandVtbl createcommandVtbl = {
 -- 
-2.29.2
+2.30.2
 

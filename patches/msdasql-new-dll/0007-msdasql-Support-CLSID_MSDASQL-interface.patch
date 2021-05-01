@@ -1,34 +1,17 @@
-From 1ca52714bd6794251ebcb87226dd6c44d9d812af Mon Sep 17 00:00:00 2001
+From 32c82c6d0f5eca3b5fe022909acb7707f9ded87f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Mar 2020 15:08:20 +1100
-Subject: [PATCH] msdasql: Support CLSID_MSDASQL interface
+Subject: [PATCH 07/42] msdasql: Support CLSID_MSDASQL interface
 
 ---
- dlls/msdasql/msdasql_classes.idl |   8 +++
- dlls/msdasql/msdasql_main.c      | 109 +++++++++++++++++++++++++++++++
- 2 files changed, 117 insertions(+)
+ dlls/msdasql/msdasql_main.c | 109 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 109 insertions(+)
 
-diff --git a/dlls/msdasql/msdasql_classes.idl b/dlls/msdasql/msdasql_classes.idl
-index 9ed09594699..00a0e99aaa8 100644
---- a/dlls/msdasql/msdasql_classes.idl
-+++ b/dlls/msdasql/msdasql_classes.idl
-@@ -24,3 +24,11 @@
-     uuid(c8b522cb-5cf3-11ce-ade5-00aa0044773d)
- ]
- coclass MSDASQL { }
-+
-+[
-+    progid("MSDAENUM.1"),
-+    vi_progid("MSDAENUM"),
-+    threading(both),
-+    uuid(c8b522cd-5cf3-11ce-ade5-00aa0044773d)
-+]
-+coclass MSDAENUM { }
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 8b92c97a720..28baf27a9f3 100644
+index 793f96a8580..e48d49375af 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -110,6 +110,7 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
+@@ -70,6 +70,7 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
  }
  
  static HRESULT create_msdasql_provider(REFIID riid, void **ppv);
@@ -36,7 +19,7 @@ index 8b92c97a720..28baf27a9f3 100644
  
  HRESULT WINAPI ClassFactory_CreateInstance(IClassFactory *iface, IUnknown *outer, REFIID riid, void **ppv)
  {
-@@ -132,7 +133,23 @@ static const IClassFactoryVtbl cffactoryVtbl = {
+@@ -92,7 +93,23 @@ static const IClassFactoryVtbl cffactoryVtbl = {
      ClassFactory_LockServer
  };
  
@@ -60,7 +43,7 @@ index 8b92c97a720..28baf27a9f3 100644
  
  HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
  {
-@@ -140,6 +157,8 @@ HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
+@@ -100,6 +117,8 @@ HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
  
      if (IsEqualGUID(&CLSID_MSDASQL, rclsid))
          return IClassFactory_QueryInterface(&cffactory, riid, ppv);
@@ -69,7 +52,7 @@ index 8b92c97a720..28baf27a9f3 100644
  
      return CLASS_E_CLASSNOTAVAILABLE;
  }
-@@ -448,4 +467,94 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+@@ -408,4 +427,94 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
      return hr;
  }
  
@@ -166,5 +149,5 @@ index 8b92c97a720..28baf27a9f3 100644
 +}
 \ No newline at end of file
 -- 
-2.29.2
+2.30.2
 

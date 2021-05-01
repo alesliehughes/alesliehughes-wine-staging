@@ -1,7 +1,7 @@
-From d89201efe202eec3d64e75232ffa79a71bd56244 Mon Sep 17 00:00:00 2001
+From 1d23c7bf9b9e34d42b2de1cd959a768787e197e2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Oct 2020 18:16:50 +1100
-Subject: [PATCH] msdasql: Add IDBCreateCommand to session
+Subject: [PATCH 17/42] msdasql: Add IDBCreateCommand to session
 
 ---
  dlls/msdasql/session.c | 45 ++++++++++++++++++++++++++++++++++++++++++
@@ -92,5 +92,5 @@ index 212b0373233..32b17cc38a2 100644
  
      return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 -- 
-2.29.2
+2.30.2
 

@@ -1,14 +1,14 @@
-From 50070adbdcbbdba217e2511cce74cf47e3411571 Mon Sep 17 00:00:00 2001
+From 7bf2b50e63b17c59b3e1d63037ce22b9c4cdc1a9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 23 Nov 2020 15:45:17 +1100
-Subject: [PATCH] msdasql: Explicity list interfaces queried
+Subject: [PATCH 25/42] msdasql: Explicity list interfaces queried
 
 ---
  dlls/msdasql/session.c | 15 +++++++++++++++
  1 file changed, 15 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 5473e6f7f9d..5b70ecc1eeb 100644
+index 82637678fcf..626a5cd1a4b 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -417,6 +417,21 @@ static HRESULT WINAPI msdasql_rowset_QueryInterface(IRowset *iface, REFIID riid,
@@ -34,5 +34,5 @@ index 5473e6f7f9d..5b70ecc1eeb 100644
      if(*ppv) {
          IUnknown_AddRef((IUnknown*)*ppv);
 -- 
-2.29.2
+2.30.2
 

@@ -1,14 +1,14 @@
-From 0f5a86cfe006f79b5c4fec718b25a9a778188c32 Mon Sep 17 00:00:00 2001
+From 20a13781801970b169a65b748e0648340f79baa0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 30 Dec 2020 18:59:12 +1100
-Subject: [PATCH] msdasql: Add IAccessor to rowset
+Subject: [PATCH 33/42] msdasql: Add IAccessor to rowset
 
 ---
  dlls/msdasql/session.c | 71 ++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 71 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 7a382d89046..1f89dd9af08 100644
+index 54161765eeb..dfd4148db0b 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -424,6 +424,7 @@ struct msdasql_rowset
@@ -118,5 +118,5 @@ index 7a382d89046..1f89dd9af08 100644
  
      if (affected) *affected = 1; /* FIXME */
 -- 
-2.29.2
+2.30.2
 

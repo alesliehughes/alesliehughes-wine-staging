@@ -1,7 +1,7 @@
-From efdd17e4c951f40585f715a4a00e49e237884c15 Mon Sep 17 00:00:00 2001
+From 350404e68f71a86d0635de51a5e8a9be75302a33 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 21 Dec 2020 11:53:36 +1100
-Subject: [PATCH] msdasql: Add ICommandPrepare interface for ICommandText
+Subject: [PATCH 29/42] msdasql: Add ICommandPrepare interface for ICommandText
 
 ---
  dlls/msdasql/session.c        | 50 +++++++++++++++++++++++++++++++++++
@@ -9,7 +9,7 @@ Subject: [PATCH] msdasql: Add ICommandPrepare interface for ICommandText
  2 files changed, 53 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index ca73e6356f3..6e2590e0ccd 100644
+index 29291930eaf..bac29bc87fd 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -321,6 +321,7 @@ struct command
@@ -98,10 +98,10 @@ index ca73e6356f3..6e2590e0ccd 100644
  
      hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index dcc9979c8a3..8799f4b5aec 100644
+index 94d08272201..4a39b8758f9 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
-@@ -103,17 +103,17 @@ static void test_command_interfaces(IUnknown *cmd)
+@@ -104,17 +104,17 @@ static void test_command_interfaces(IUnknown *cmd)
      ICommandText_Release(comand_text);
  
      hr = IUnknown_QueryInterface(cmd, &IID_IConvertType, (void**)&convertype);
@@ -123,5 +123,5 @@ index dcc9979c8a3..8799f4b5aec 100644
          IColumnsInfo_Release(colinfo);
  
 -- 
-2.29.2
+2.30.2
 

@@ -1,14 +1,14 @@
-From 8bff5a32d267f003357877dc9d5b8c57cbd7d824 Mon Sep 17 00:00:00 2001
+From d0325ec8a3651eb3de28ecb8946f844843bce127 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 21 Dec 2020 11:36:50 +1100
-Subject: [PATCH] msdasql: Add IConvertType interface for ICommandText
+Subject: [PATCH 28/42] msdasql: Add IConvertType interface for ICommandText
 
 ---
  dlls/msdasql/session.c | 42 ++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 42 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 7ee32308697..ca73e6356f3 100644
+index 7dfbfccca4f..29291930eaf 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -320,6 +320,7 @@ struct command
@@ -89,5 +89,5 @@ index 7ee32308697..ca73e6356f3 100644
  
      hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
 -- 
-2.29.2
+2.30.2
 

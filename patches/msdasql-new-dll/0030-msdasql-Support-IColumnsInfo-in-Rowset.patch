@@ -1,11 +1,14 @@
-From c465ed53a4905c4b9c7b75646a077333eaf3adab Mon Sep 17 00:00:00 2001
+From 123bec85ed5346c6cf15bfa48d1d20f5be9f0e5f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 23 Dec 2020 10:16:57 +1100
-Subject: msdasql: Support IColumnsInfo in Rowset
+Subject: [PATCH 30/42] msdasql: Support IColumnsInfo in Rowset
 
+---
+ dlls/msdasql/session.c | 54 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index d144abc5537..6204d96f18c 100644
+index bac29bc87fd..6013f1e09fb 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -413,6 +413,7 @@ struct msdasql_rowset
@@ -97,3 +100,6 @@ index d144abc5537..6204d96f18c 100644
      msrowset->refs = 1;
  
      if (affected) *affected = 1; /* FIXME */
+-- 
+2.30.2
+

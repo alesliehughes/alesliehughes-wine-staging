@@ -1,7 +1,7 @@
-From 833c98a117f5230e237df0716dc45bb7ec26cc6f Mon Sep 17 00:00:00 2001
+From 3576acf5dc971e1657efedb36254b2c60b36a341 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 13 Oct 2020 10:42:23 +1100
-Subject: [PATCH] msdasql: Add ISessionProperties to session
+Subject: [PATCH 15/42] msdasql: Add ISessionProperties to session
 
 ---
  dlls/msdasql/session.c | 56 ++++++++++++++++++++++++++++++++++++++++++
@@ -103,5 +103,5 @@ index 5f207cb3a37..adcd558a28d 100644
  
      return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 -- 
-2.29.2
+2.30.2
 

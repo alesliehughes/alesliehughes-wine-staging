@@ -1,14 +1,14 @@
-From 52e713f8901407ffdfb3def0264cf46f4b420d95 Mon Sep 17 00:00:00 2001
+From d14fa6984b2d539a0ed3cb8ec7952df72604a62f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 17 Dec 2019 15:42:32 +1100
-Subject: [PATCH] msdasql: Implement MSDASQL provider
+Subject: [PATCH 03/42] msdasql: Implement MSDASQL provider
 
 ---
  dlls/msdasql/msdasql_main.c | 163 +++++++++++++++++++++++++++++++++++-
  1 file changed, 161 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index ad662137667..677eb157313 100644
+index c3c54ba2606..b248515f564 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -24,6 +24,7 @@
@@ -19,7 +19,7 @@ index ad662137667..677eb157313 100644
  #include "wine/debug.h"
  
  #include "initguid.h"
-@@ -104,11 +105,13 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
+@@ -64,11 +65,13 @@ static ULONG WINAPI ClassFactory_Release(IClassFactory *iface)
      return 1;
  }
  
@@ -34,7 +34,7 @@ index ad662137667..677eb157313 100644
  }
  
  static HRESULT WINAPI ClassFactory_LockServer(IClassFactory *iface, BOOL fLock)
-@@ -130,5 +133,161 @@ static IClassFactory cffactory = { &cffactoryVtbl };
+@@ -90,5 +93,161 @@ static IClassFactory cffactory = { &cffactoryVtbl };
  HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
  {
      FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
@@ -92,7 +92,7 @@ index ad662137667..677eb157313 100644
 +    TRACE("(%p) ref=%u\n", provider, ref);
 +
 +    return ref;
-+}
+ }
 +
 +static ULONG  WINAPI msdsql_Release(IUnknown *iface)
 +{
@@ -145,7 +145,7 @@ index ad662137667..677eb157313 100644
 +    FIXME("(%p)->(%d %p %p %p)\n", provider, cPropertyIDSets, rgPropertyIDSets, pcPropertySets, prgPropertySets);
 +
 +    return E_NOTIMPL;
- }
++}
 +
 +static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPropertyIDSets,
 +            const DBPROPIDSET rgPropertyIDSets[], ULONG *pcPropertyInfoSets,
@@ -198,5 +198,5 @@ index ad662137667..677eb157313 100644
 +
 +
 -- 
-2.29.2
+2.30.2
 

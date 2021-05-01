@@ -1,7 +1,7 @@
-From 519b0c30230f2f7d77d96cdbfbea9b7ad770c071 Mon Sep 17 00:00:00 2001
+From 5e8467026d3de8c73495181aaf7bfce3bf6ee247 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Mar 2021 13:29:31 +1100
-Subject: [PATCH 8/8] msdasql: Implement ICommandText GetDBSession
+Subject: [PATCH 40/42] msdasql: Implement ICommandText GetDBSession
 
 ---
  dlls/msdasql/session.c | 9 ++++++++-
@@ -43,5 +43,5 @@ index 26ac9d4afea..00f58ca76a1 100644
      ICommandText_Release(&command->ICommandText_iface);
      FIXME("ret 0x%08x, %p\n", hr, *out);
 -- 
-2.30.1
+2.30.2
 

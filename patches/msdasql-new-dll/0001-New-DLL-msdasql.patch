@@ -1,15 +1,26 @@
-From b8d16e3ec474dfd831490e22cf43dd0cf6e99529 Mon Sep 17 00:00:00 2001
+From e61acc570d4b6a1c3aeb1fac16195dd4db8b8172 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Oct 2018 12:13:43 +1100
-Subject: New DLL msdasql
+Subject: [PATCH 01/42] New DLL msdasql
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                   |  2 +
+ configure.ac                |  1 +
+ dlls/msdasql/Makefile.in    |  7 +++
+ dlls/msdasql/msdasql.spec   |  5 ++
+ dlls/msdasql/msdasql_main.c | 91 +++++++++++++++++++++++++++++++++++++
+ loader/wine.inf.in          |  2 +
+ 6 files changed, 108 insertions(+)
+ create mode 100644 dlls/msdasql/Makefile.in
+ create mode 100644 dlls/msdasql/msdasql.spec
+ create mode 100644 dlls/msdasql/msdasql_main.c
 
 diff --git a/configure b/configure
-index 250e694c71b..82ffc571b17 100755
+index ca517b1d31a..601489e59b1 100755
 --- a/configure
 +++ b/configure
-@@ -1465,6 +1465,7 @@ enable_mscorwks
+@@ -1447,6 +1447,7 @@ enable_mscorwks
  enable_msctf
  enable_msctfp
  enable_msdaps
@@ -17,7 +28,7 @@ index 250e694c71b..82ffc571b17 100755
  enable_msdelta
  enable_msdmo
  enable_msdrm
-@@ -21146,6 +21147,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
+@@ -20779,6 +20780,7 @@ wine_fn_config_makefile dlls/msctf enable_msctf
  wine_fn_config_makefile dlls/msctf/tests enable_tests
  wine_fn_config_makefile dlls/msctfp enable_msctfp
  wine_fn_config_makefile dlls/msdaps enable_msdaps
@@ -26,10 +37,10 @@ index 250e694c71b..82ffc571b17 100755
  wine_fn_config_makefile dlls/msdmo enable_msdmo
  wine_fn_config_makefile dlls/msdmo/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index c1b846586e4..82fbbf10900 100644
+index 46bbb8a70f8..cb7001e93bc 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3538,6 +3538,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
+@@ -3443,6 +3443,7 @@ WINE_CONFIG_MAKEFILE(dlls/msctf)
  WINE_CONFIG_MAKEFILE(dlls/msctf/tests)
  WINE_CONFIG_MAKEFILE(dlls/msctfp)
  WINE_CONFIG_MAKEFILE(dlls/msdaps)
@@ -63,10 +74,10 @@ index 00000000000..37b010b3860
 +
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
 new file mode 100644
-index 00000000000..5812b98ef26
+index 00000000000..1b3f5f5ed24
 --- /dev/null
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,91 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -96,44 +107,6 @@ index 00000000000..5812b98ef26
 +#include "wine/debug.h"
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
-+
-+static HINSTANCE msdasql_instance;
-+
-+BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
-+{
-+    TRACE("(%p, %u, %p)\n", instance, reason, reserved);
-+
-+    switch (reason)
-+    {
-+        case DLL_PROCESS_ATTACH:
-+            msdasql_instance = instance;
-+            DisableThreadLibraryCalls(instance);
-+            break;
-+    }
-+
-+    return TRUE;
-+}
-+
-+HRESULT WINAPI DllCanUnloadNow(void)
-+{
-+    return S_FALSE;
-+}
-+
-+/***********************************************************************
-+ *		DllRegisterServer (MSXML3.@)
-+ */
-+HRESULT WINAPI DllRegisterServer(void)
-+{
-+    return __wine_register_resources( msdasql_instance );
-+}
-+
-+/***********************************************************************
-+ *		DllUnregisterServer (MSXML3.@)
-+ */
-+HRESULT WINAPI DllUnregisterServer(void)
-+{
-+    return __wine_unregister_resources( msdasql_instance );
-+}
 +
 +static HRESULT WINAPI ClassFactory_QueryInterface(IClassFactory *iface, REFIID riid, void **ppv)
 +{
@@ -197,10 +170,10 @@ index 00000000000..5812b98ef26
 +    return IClassFactory_QueryInterface(&cffactory, riid, ppv);
 +}
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index c855fe4408b..3cca0234291 100644
+index a20efbcce3e..62aaf9dfd02 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -2926,6 +2926,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -2659,6 +2659,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  16422,Windows NT\Accessories,wordpad.exe
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
@@ -208,7 +181,7 @@ index c855fe4408b..3cca0234291 100644
  16427,System\ADO,msado15.dll
  66000,3,wineps.drv
  12,,*.sys,-
-@@ -2982,6 +2983,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
+@@ -2715,6 +2716,7 @@ HKLM,%CurrentVersion%\Telephony\Country List\998,"SameAreaRule",,"G"
  16427,Microsoft Shared\TextConv,
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
@@ -216,3 +189,6 @@ index c855fe4408b..3cca0234291 100644
  16427,System\ADO,msado15.dll
  66000,3,wineps.drv
  12,,*.sys
+-- 
+2.30.2
+

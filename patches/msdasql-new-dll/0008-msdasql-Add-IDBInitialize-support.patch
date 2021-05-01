@@ -1,17 +1,17 @@
-From 523f098a7a47a2f6fd10a3dda95eba9e10fcc1f7 Mon Sep 17 00:00:00 2001
+From 3d9094fd8960147ad2e5d778f87301bec9666b9b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 30 May 2020 13:44:12 +1000
-Subject: [PATCH] msdasql: Add IDBInitialize support
+Subject: [PATCH 08/42] msdasql: Add IDBInitialize support
 
 ---
  dlls/msdasql/msdasql_main.c | 61 ++++++++++++++++++++++++++++++++++++-
  1 file changed, 60 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 28baf27a9f3..c1929192b65 100644
+index e48d49375af..4af0b1f5118 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -243,9 +243,9 @@ struct msdasql
+@@ -203,9 +203,9 @@ struct msdasql
  {
      IUnknown         MSDASQL_iface;
      IDBProperties    IDBProperties_iface;
@@ -22,7 +22,7 @@ index 28baf27a9f3..c1929192b65 100644
      */
  
      LONG     ref;
-@@ -261,6 +261,11 @@ static inline struct msdasql *impl_from_IDBProperties(IDBProperties *iface)
+@@ -221,6 +221,11 @@ static inline struct msdasql *impl_from_IDBProperties(IDBProperties *iface)
      return CONTAINING_RECORD(iface, struct msdasql, IDBProperties_iface);
  }
  
@@ -34,7 +34,7 @@ index 28baf27a9f3..c1929192b65 100644
  static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void **out)
  {
      struct msdasql *provider = impl_from_IUnknown(iface);
-@@ -276,6 +281,10 @@ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void *
+@@ -236,6 +241,10 @@ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void *
      {
          *out = &provider->IDBProperties_iface;
      }
@@ -45,7 +45,7 @@ index 28baf27a9f3..c1929192b65 100644
      else
      {
          FIXME("(%s, %p)\n", debugstr_guid(riid), out);
-@@ -449,6 +458,55 @@ static const struct IDBPropertiesVtbl dbprops_vtbl =
+@@ -409,6 +418,55 @@ static const struct IDBPropertiesVtbl dbprops_vtbl =
      dbprops_SetProperties
  };
  
@@ -101,7 +101,7 @@ index 28baf27a9f3..c1929192b65 100644
  static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
  {
      struct msdasql *provider;
-@@ -460,6 +518,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+@@ -420,6 +478,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
  
      provider->MSDASQL_iface.lpVtbl = &msdsql_vtbl;
      provider->IDBProperties_iface.lpVtbl = &dbprops_vtbl;
@@ -110,5 +110,5 @@ index 28baf27a9f3..c1929192b65 100644
  
      hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
 -- 
-2.29.2
+2.30.2
 

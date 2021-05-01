@@ -1,14 +1,14 @@
-From 0be7624d3cfa21ef5ab200c2f8b579bcc22d3210 Mon Sep 17 00:00:00 2001
+From 986091867b3390b2eee63cb5f04b544142ff0090 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 29 Oct 2020 11:08:34 +1100
-Subject: [PATCH] msdasql: Dump rowset_info Properties
+Subject: [PATCH 22/42] msdasql: Dump rowset_info Properties
 
 ---
  dlls/msdasql/session.c | 66 +++++++++++++++++++++++++++++++++++++++---
  1 file changed, 62 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 5d6853ac7fd..915249cdc1f 100644
+index 6eecbc9518d..a6fd15fef11 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -25,6 +25,7 @@
@@ -101,5 +101,5 @@ index 5d6853ac7fd..915249cdc1f 100644
  }
  
 -- 
-2.29.2
+2.30.2
 

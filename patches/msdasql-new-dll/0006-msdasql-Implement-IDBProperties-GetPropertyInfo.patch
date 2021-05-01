@@ -1,7 +1,7 @@
-From 5f63b6878f7801a4dfd5149cf8cfe297d4780408 Mon Sep 17 00:00:00 2001
+From d37d8c03a9561e0a53a837bc619c720f9d728ab1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Jan 2020 16:01:23 +1100
-Subject: [PATCH] msdasql: Implement IDBProperties GetPropertyInfo
+Subject: [PATCH 06/42] msdasql: Implement IDBProperties GetPropertyInfo
 
 ---
  dlls/msdasql/Makefile.in      |   2 +-
@@ -21,7 +21,7 @@ index 4debe5e6914..0f81de29e6e 100644
  EXTRADLLFLAGS = -mno-cygwin -Wb,--prefer-native
  
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 51ef968c65e..6726c9f2d45 100644
+index ae57d7f6ac1..793f96a8580 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -33,6 +33,9 @@
@@ -31,10 +31,10 @@ index 51ef968c65e..6726c9f2d45 100644
 +DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
 +DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
 +
- static HINSTANCE msdasql_instance;
- 
- BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void *reserved)
-@@ -139,6 +142,82 @@ HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
+ static HRESULT WINAPI ClassFactory_QueryInterface(IClassFactory *iface, REFIID riid, void **ppv)
+ {
+     *ppv = NULL;
+@@ -101,6 +104,82 @@ HRESULT WINAPI DllGetClassObject( REFCLSID rclsid, REFIID riid, void **ppv )
      return CLASS_E_CLASSNOTAVAILABLE;
  }
  
@@ -117,7 +117,7 @@ index 51ef968c65e..6726c9f2d45 100644
  struct msdasql
  {
      IUnknown         MSDASQL_iface;
-@@ -244,10 +323,37 @@ static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropert
+@@ -206,10 +285,37 @@ static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropert
              const DBPROPIDSET rgPropertyIDSets[], ULONG *pcPropertySets, DBPROPSET **prgPropertySets)
  {
      struct msdasql *provider = impl_from_IDBProperties(iface);
@@ -156,7 +156,7 @@ index 51ef968c65e..6726c9f2d45 100644
  }
  
  static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPropertyIDSets,
-@@ -256,19 +362,50 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
+@@ -218,19 +324,50 @@ static HRESULT WINAPI dbprops_GetPropertyInfo(IDBProperties *iface, ULONG cPrope
  {
      struct msdasql *provider = impl_from_IDBProperties(iface);
      int i;
@@ -271,5 +271,5 @@ index 6fad0104e7c..94d08272201 100644
  
          for (i = 0; i < propinfoset->cPropertyInfos; i++)
 -- 
-2.30.1
+2.30.2
 

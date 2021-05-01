@@ -1,7 +1,7 @@
-From 90082afa0beee68fa6a82ce224f2db0d1adb4320 Mon Sep 17 00:00:00 2001
+From a99e57fedece4e53417ba3c89ee3c5d5a034f95b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Mar 2021 09:46:39 +1100
-Subject: [PATCH] msdasql: Add IColumnsRowset support to rowset
+Subject: [PATCH 38/42] msdasql: Add IColumnsRowset support to rowset
 
 ---
  dlls/msdasql/session.c | 55 ++++++++++++++++++++++++++++++++++++++++++
@@ -102,5 +102,5 @@ index 71230834781..ff67c324579 100644
      msrowset->bindings = NULL;
      msrowset->bind_cnt = 0;
 -- 
-2.30.1
+2.30.2
 

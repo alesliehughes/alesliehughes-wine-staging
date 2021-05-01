@@ -1,17 +1,17 @@
-From 29896f2a0c7d3f63356ee016dd2edf830c43f21d Mon Sep 17 00:00:00 2001
+From 0ad07bd09a556a455aac8a41832ff44fe2ca8c72 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 15:05:19 +1100
-Subject: [PATCH] msdasql: Add IPersist interface support
+Subject: [PATCH 12/42] msdasql: Add IPersist interface support
 
 ---
  dlls/msdasql/msdasql_main.c | 49 +++++++++++++++++++++++++++++++++++++
  1 file changed, 49 insertions(+)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 96ae769a317..a91ead31a80 100644
+index ad0ec49a213..daf31d0f76a 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -245,6 +245,7 @@ struct msdasql
+@@ -205,6 +205,7 @@ struct msdasql
      IDBProperties    IDBProperties_iface;
      IDBInitialize    IDBInitialize_iface;
      IDBCreateSession IDBCreateSession_iface;
@@ -19,7 +19,7 @@ index 96ae769a317..a91ead31a80 100644
  
      LONG     ref;
  };
-@@ -269,6 +270,11 @@ static inline struct msdasql *impl_from_IDBCreateSession(IDBCreateSession *iface
+@@ -229,6 +230,11 @@ static inline struct msdasql *impl_from_IDBCreateSession(IDBCreateSession *iface
      return CONTAINING_RECORD(iface, struct msdasql, IDBCreateSession_iface);
  }
  
@@ -31,7 +31,7 @@ index 96ae769a317..a91ead31a80 100644
  static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void **out)
  {
      struct msdasql *provider = impl_from_IUnknown(iface);
-@@ -292,6 +298,9 @@ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void *
+@@ -252,6 +258,9 @@ static HRESULT WINAPI msdsql_QueryInterface(IUnknown *iface, REFIID riid, void *
      {
          *out = &provider->IDBCreateSession_iface;
      }
@@ -41,7 +41,7 @@ index 96ae769a317..a91ead31a80 100644
      else
      {
          FIXME("(%s, %p)\n", debugstr_guid(riid), out);
-@@ -581,6 +590,45 @@ static const struct IDBCreateSessionVtbl dbsess_vtbl =
+@@ -541,6 +550,45 @@ static const struct IDBCreateSessionVtbl dbsess_vtbl =
      dbsess_CreateSession
  };
  
@@ -87,7 +87,7 @@ index 96ae769a317..a91ead31a80 100644
  static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
  {
      struct msdasql *provider;
-@@ -594,6 +642,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
+@@ -554,6 +602,7 @@ static HRESULT create_msdasql_provider(REFIID riid, void **ppv)
      provider->IDBProperties_iface.lpVtbl = &dbprops_vtbl;
      provider->IDBInitialize_iface.lpVtbl = &dbinit_vtbl;
      provider->IDBCreateSession_iface.lpVtbl = &dbsess_vtbl;
@@ -96,5 +96,5 @@ index 96ae769a317..a91ead31a80 100644
  
      hr = IUnknown_QueryInterface(&provider->MSDASQL_iface, riid, ppv);
 -- 
-2.29.2
+2.30.2
 

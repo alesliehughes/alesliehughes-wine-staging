@@ -1,14 +1,14 @@
-From d6495bd8511bcfe1171d2886185eeccd3f24562d Mon Sep 17 00:00:00 2001
+From b8fe999215f01e31ee370fd46ce87b72a75c757d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 30 Dec 2020 19:22:50 +1100
-Subject: [PATCH] msdasql: Fake return IAccessor CreateAccessor
+Subject: [PATCH 34/42] msdasql: Fake return IAccessor CreateAccessor
 
 ---
  dlls/msdasql/session.c | 6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 1f89dd9af08..a8c17f83f21 100644
+index dfd4148db0b..4a42d587816 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -795,7 +795,11 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
@@ -25,5 +25,5 @@ index 1f89dd9af08..a8c17f83f21 100644
  
  static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR accessor,
 -- 
-2.29.2
+2.30.2
 

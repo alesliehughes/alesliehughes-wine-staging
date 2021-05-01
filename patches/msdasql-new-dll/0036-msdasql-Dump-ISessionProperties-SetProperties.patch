@@ -1,14 +1,18 @@
-From 7cdd042d343633cae8553c1d1469d7cb52fecc6d Mon Sep 17 00:00:00 2001
+From 40dd94ec67f0d920905592ebd7d63177ba34fb73 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 8 Jan 2021 10:02:02 +1100
-Subject: msdasql: Dump ISessionProperties SetProperties
+Subject: [PATCH 36/42] msdasql: Dump ISessionProperties SetProperties
 
+---
+ dlls/msdasql/msdasql_main.c | 13 ++++---------
+ dlls/msdasql/session.c      | 15 +++++++++++++--
+ 2 files changed, 17 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index a91ead31a80..90c2074a633 100644
+index daf31d0f76a..30b374df974 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -466,15 +466,10 @@ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropert
+@@ -426,15 +426,10 @@ static HRESULT WINAPI dbprops_SetProperties(IDBProperties *iface, ULONG cPropert
      for (i=0; i < rgPropertySets->cProperties; i++)
      {
          FIXME("Property Set %d\n", i);
@@ -29,7 +33,7 @@ index a91ead31a80..90c2074a633 100644
  
      // DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO  (0x0b)
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 1d014e042d4..570f4c8c383 100644
+index ff38f126efb..22a71d2f9f0 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -281,11 +281,22 @@ static HRESULT WINAPI properties_GetProperties(ISessionProperties *iface, ULONG
@@ -57,3 +61,6 @@ index 1d014e042d4..570f4c8c383 100644
      return S_OK;
  }
  
+-- 
+2.30.2
+

@@ -1,7 +1,7 @@
-From 2b40d1e253f03c946c6041007efb63e1cd12ccb6 Mon Sep 17 00:00:00 2001
+From 8a5df153c62ac410ab0f623a5eb28d24c4e418f5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 30 Dec 2020 19:31:28 +1100
-Subject: [PATCH] msdasql: Fake return values
+Subject: [PATCH 35/42] msdasql: Fake return values
  GetData/GetNextRows/ReleaseAccessor
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH] msdasql: Fake return values
  1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index a8c17f83f21..1d014e042d4 100644
+index 4a42d587816..ff38f126efb 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -533,19 +533,22 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
@@ -46,5 +46,5 @@ index a8c17f83f21..1d014e042d4 100644
  
  struct IAccessorVtbl accessor_vtbl =
 -- 
-2.29.2
+2.30.2
 

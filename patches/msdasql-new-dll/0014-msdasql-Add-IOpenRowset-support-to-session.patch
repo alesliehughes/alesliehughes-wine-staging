@@ -1,7 +1,7 @@
-From 51a1dd02d79152ea8375b62317f7faff980daf0a Mon Sep 17 00:00:00 2001
+From 8bd4810d0bd1d0763bd5718c5888836116ccf865 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 20:16:29 +1100
-Subject: [PATCH] msdasql: Add IOpenRowset support to session
+Subject: [PATCH 14/42] msdasql: Add IOpenRowset support to session
 
 ---
  dlls/msdasql/session.c | 46 ++++++++++++++++++++++++++++++++++++++++++
@@ -93,5 +93,5 @@ index 1d03ae88939..5f207cb3a37 100644
  
      return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 -- 
-2.29.2
+2.30.2
 

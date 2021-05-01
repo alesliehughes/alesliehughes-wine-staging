@@ -1,7 +1,7 @@
-From 4f39f8c92e02c29197d0cc4860f2492870199c1c Mon Sep 17 00:00:00 2001
+From ffc27a75e5f08d173b9cc8f718ee53f6f101b97e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 16:37:30 +1100
-Subject: [PATCH] msdasql: Add IGetDataSource support to session
+Subject: [PATCH 13/42] msdasql: Add IGetDataSource support to session
 
 ---
  dlls/msdasql/session.c | 45 ++++++++++++++++++++++++++++++++++++++++++
@@ -92,5 +92,5 @@ index 7dc5b60b35b..1d03ae88939 100644
  
      return IUnknown_QueryInterface((IUnknown *)&session->session_iface, riid, unk);
 -- 
-2.29.2
+2.30.2
 

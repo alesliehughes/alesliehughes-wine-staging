@@ -1,7 +1,7 @@
-From f40778ce502d4682d64c05c1c7f6c60426f027e2 Mon Sep 17 00:00:00 2001
+From 2a01eb332f7401ae267463633af25fca73efc432 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 12 Oct 2020 12:23:14 +1100
-Subject: [PATCH] msdasql: Implement IDBCreateSession CreateSession
+Subject: [PATCH 11/42] msdasql: Implement IDBCreateSession CreateSession
 
 ---
  dlls/msdasql/Makefile.in    |   3 +-
@@ -25,10 +25,10 @@ index 0f81de29e6e..394aed58620 100644
  RC_SRCS = msdasql.rc
  
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index 78300773dc5..9b2d81aa211 100644
+index 145edd36a22..ad0ec49a213 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -555,14 +555,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
+@@ -517,14 +517,20 @@ static ULONG WINAPI dbsess_Release(IDBCreateSession *iface)
      return IUnknown_Release(&provider->MSDASQL_iface);
  }
  
@@ -164,5 +164,5 @@ index 00000000000..7dc5b60b35b
 +}
 \ No newline at end of file
 -- 
-2.30.1
+2.30.2
 
