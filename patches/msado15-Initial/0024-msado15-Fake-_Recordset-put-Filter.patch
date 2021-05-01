@@ -1,25 +1,120 @@
-From 5f733d923b81a69373704a8b0e6fa13232ab1fa5 Mon Sep 17 00:00:00 2001
+From 00e12f048f68c917e0eaa6c1008ab268ea0985fa Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Apr 2021 12:09:28 +1000
-Subject: [PATCH] msado15: Fake _Recordset put Filter
+Subject: msado15: Implement _Recordset put Filter
 
----
- dlls/msado15/recordset.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 82ce2e14393..4a0c1d3e3e1 100644
+index dc2835a245f..8d0facff5eb 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -1771,7 +1771,7 @@ static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria
+@@ -49,6 +49,7 @@ struct recordset
+     CursorLocationEnum cursor_location;
+     CursorTypeEnum     cursor_type;
+     IRowset           *row_set;
++    VARIANT            filter;
+ };
+ 
+ struct fields
+@@ -1818,14 +1819,30 @@ static HRESULT WINAPI recordset_get_EditMode( _Recordset *iface, EditModeEnum *m
+ 
+ static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria )
+ {
+-    FIXME( "%p, %p\n", iface, criteria );
+-    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %p\n", iface, criteria );
++
++    if (!criteria) return MAKE_ADO_HRESULT( adErrInvalidArgument );
++
++    VariantCopy(criteria, &recordset->filter);
++    return S_OK;
+ }
+ 
  static HRESULT WINAPI recordset_put_Filter( _Recordset *iface, VARIANT criteria )
  {
-     FIXME( "%p, %s\n", iface, debugstr_variant(&criteria) );
+-    FIXME( "%p, %s\n", iface, debugstr_variant(&criteria) );
 -    return E_NOTIMPL;
++    struct recordset *recordset = impl_from_Recordset( iface );
++    TRACE( "%p, %s\n", recordset, debugstr_variant(&criteria) );
++
++    if (V_VT(&criteria) != VT_I4 && V_VT(&criteria) != VT_BSTR)
++        return MAKE_ADO_HRESULT( adErrInvalidArgument );
++
++    if (recordset->state == adStateOpen)
++    {
++        FIXME("Validating fields not preformed\n");
++    }
++
++    VariantCopy(&recordset->filter, &criteria);
 +    return S_OK;
  }
  
  static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, LONG *count )
--- 
-2.30.2
-
+@@ -2362,6 +2379,7 @@ HRESULT Recordset_create( void **obj )
+     recordset->cursor_location = adUseServer;
+     recordset->cursor_type = adOpenForwardOnly;
+     recordset->row_set = NULL;
++    VariantInit( &recordset->filter );
+ 
+     *obj = &recordset->Recordset_iface;
+     TRACE( "returning iface %p\n", *obj );
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 0410879f767..21864027edc 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -76,7 +76,7 @@ static void test_Recordset(void)
+     CursorTypeEnum cursor;
+     BSTR name;
+     HRESULT hr;
+-    VARIANT bookmark;
++    VARIANT bookmark, filter;
+ 
+     hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
+     ok( hr == S_OK, "got %08x\n", hr );
+@@ -164,6 +164,21 @@ static void test_Recordset(void)
+     hr = _Recordset_put_Bookmark( recordset, bookmark );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+ 
++    VariantInit( &filter );
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08x\n", hr );
++
++    V_VT(&filter) = VT_BSTR;
++    V_BSTR(&filter) = SysAllocString( L"field1 = 1" );
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == S_OK, "got %08x\n", hr );
++    VariantClear(&filter);
++
++    V_VT(&filter) = VT_I4;
++    V_I4(&filter) = 0;
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == S_OK, "got %08x\n", hr );
++
+     VariantInit( &missing );
+     hr = _Recordset_AddNew( recordset, missing, missing );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+@@ -242,6 +257,23 @@ static void test_Recordset(void)
+     hr = _Recordset_put_Bookmark( recordset, bookmark );
+     ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08x\n", hr );
+ 
++    V_VT(&filter) = VT_BSTR;
++    V_BSTR(&filter) = SysAllocString( L"field1 = 1" );
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == MAKE_ADO_HRESULT( adErrItemNotFound ), "got %08x\n", hr );
++    VariantClear(&filter);
++
++    V_VT(&filter) = VT_BSTR;
++    V_BSTR(&filter) = SysAllocString( L"field = 1" );
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == S_OK, "got %08x\n", hr );
++    VariantClear(&filter);
++
++    V_VT(&filter) = VT_I4;
++    V_I4(&filter) = 0;
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == S_OK, "got %08x\n", hr );
++
+     count = -1;
+     hr = _Recordset_get_RecordCount( recordset, &count );
+     ok( hr == S_OK, "got %08x\n", hr );
