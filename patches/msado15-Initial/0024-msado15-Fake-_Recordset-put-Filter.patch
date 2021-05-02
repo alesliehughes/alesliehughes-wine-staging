@@ -1,11 +1,11 @@
-From 00e12f048f68c917e0eaa6c1008ab268ea0985fa Mon Sep 17 00:00:00 2001
+From 7ba8d86073d6307f9026353f2fb279bcdd25a764 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Apr 2021 12:09:28 +1000
 Subject: msado15: Implement _Recordset put Filter
 
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index dc2835a245f..8d0facff5eb 100644
+index dc2835a245f..09d9cae6b9a 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -49,6 +49,7 @@ struct recordset
@@ -41,7 +41,7 @@ index dc2835a245f..8d0facff5eb 100644
 +    if (V_VT(&criteria) != VT_I4 && V_VT(&criteria) != VT_BSTR)
 +        return MAKE_ADO_HRESULT( adErrInvalidArgument );
 +
-+    if (recordset->state == adStateOpen)
++    if (V_VT(&criteria) == VT_BSTR && recordset->state == adStateOpen)
 +    {
 +        FIXME("Validating fields not preformed\n");
 +    }
