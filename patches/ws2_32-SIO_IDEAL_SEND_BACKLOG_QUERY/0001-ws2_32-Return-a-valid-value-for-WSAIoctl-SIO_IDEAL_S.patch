@@ -1,7 +1,7 @@
-From d6d6b91b2d9fc110452a260be50a5f6c2bb8a08b Mon Sep 17 00:00:00 2001
+From 4e31239d48313f63febb45b42410a4e40e310054 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Sep 2020 19:44:38 +1000
-Subject: [PATCH 03/10] ws2_32: Return a valid value for WSAIoctl
+Subject: [PATCH] ws2_32: Return a valid value for WSAIoctl
  SIO_IDEAL_SEND_BACKLOG_QUERY.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
@@ -11,11 +11,11 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  2 files changed, 43 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/ws2_32/socket.c b/dlls/ws2_32/socket.c
-index 396bc22978f..df2d9c54492 100644
+index 3feb902196f..76141216fbd 100644
 --- a/dlls/ws2_32/socket.c
 +++ b/dlls/ws2_32/socket.c
-@@ -4727,6 +4727,36 @@ INT WINAPI WSAIoctl(SOCKET s, DWORD code, LPVOID in_buff, DWORD in_size, LPVOID
-         break;
+@@ -3387,6 +3387,36 @@ INT WINAPI WSAIoctl(SOCKET s, DWORD code, LPVOID in_buff, DWORD in_size, LPVOID
+         return ret ? -1 : 0;
      }
  
 +    case WS_SIO_IDEAL_SEND_BACKLOG_QUERY:
@@ -50,12 +50,12 @@ index 396bc22978f..df2d9c54492 100644
 +
      case WS_SIOCATMARK:
      {
-         unsigned int oob = 0, atmark = 0;
+         DWORD ret;
 diff --git a/dlls/ws2_32/tests/sock.c b/dlls/ws2_32/tests/sock.c
-index b8bd4f7305a..9a4c44f5230 100644
+index 0a83f0f0ffc..058372bd66a 100644
 --- a/dlls/ws2_32/tests/sock.c
 +++ b/dlls/ws2_32/tests/sock.c
-@@ -5960,8 +5960,10 @@ static void test_WSASendTo(void)
+@@ -5491,8 +5491,10 @@ static void test_WSASendTo(void)
      struct sockaddr_in addr;
      char buf[12] = "hello world";
      WSABUF data_buf;
@@ -67,7 +67,7 @@ index b8bd4f7305a..9a4c44f5230 100644
  
      addr.sin_family = AF_INET;
      addr.sin_port = htons(139);
-@@ -5986,6 +5988,11 @@ static void test_WSASendTo(void)
+@@ -5517,6 +5519,11 @@ static void test_WSASendTo(void)
      ret = WSASendTo(s, &data_buf, 1, &bytesSent, 0, (struct sockaddr *)&addr, sizeof(addr), NULL, NULL);
      ok(!ret, "expected success\n");
      ok(!WSAGetLastError(), "got error %u\n", WSAGetLastError());
@@ -79,7 +79,7 @@ index b8bd4f7305a..9a4c44f5230 100644
  }
  
  static DWORD WINAPI recv_thread(LPVOID arg)
-@@ -6026,6 +6033,7 @@ static void test_WSARecv(void)
+@@ -5557,6 +5564,7 @@ static void test_WSARecv(void)
      DWORD dwret;
      BOOL bret;
      HANDLE thread, event = NULL, io_port;
@@ -87,7 +87,7 @@ index b8bd4f7305a..9a4c44f5230 100644
  
      tcp_socketpair(&src, &dest);
  
-@@ -6174,6 +6182,10 @@ static void test_WSARecv(void)
+@@ -5705,6 +5713,10 @@ static void test_WSARecv(void)
  
      CloseHandle(io_port);
  
@@ -99,5 +99,5 @@ index b8bd4f7305a..9a4c44f5230 100644
      if (server != INVALID_SOCKET)
          closesocket(server);
 -- 
-2.28.0
+2.30.2
 
