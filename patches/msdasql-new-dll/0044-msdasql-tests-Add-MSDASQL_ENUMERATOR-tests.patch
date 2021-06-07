@@ -1,17 +1,14 @@
-From 4fb08a4374d9c29b9e95b4ec113f58cc2106c972 Mon Sep 17 00:00:00 2001
+From ceb125ade1a047e65766ec4ae17fcff7e2ea1ce0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 7 Jun 2021 11:07:57 +1000
-Subject: [PATCH 3/4] msdasql/tests: Add MSDASQL_ENUMERATOR tests
+Subject: msdasql/tests: Add MSDASQL_ENUMERATOR tests
 
----
- dlls/msdasql/tests/provider.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
 
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index 4a39b8758f9..8bd5409d52c 100644
+index 4a39b8758f9..ed08b10bcbf 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
-@@ -186,12 +186,39 @@ static void test_sessions(void)
+@@ -186,12 +186,84 @@ static void test_sessions(void)
      IDataInitialize_Release( datainit );
  }
  
@@ -19,7 +16,18 @@ index 4a39b8758f9..8bd5409d52c 100644
 +{
 +    ISourcesRowset *source;
 +    IRowset *rowset, *rowset2;
++    IColumnsInfo *columninfo;
 +    HRESULT hr;
++
++    DBCOLUMNINFO colinfo_data[] =
++    {
++        { NULL,                           NULL, 0, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_ISBOOKMARK, 4,  DBTYPE_UI4,  10, 255},
++        { (WCHAR*)L"SOURCES_NAME",        NULL, 1, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 128, DBTYPE_WSTR, 255, 255 },
++        { (WCHAR*)L"SOURCES_PARSENAME",   NULL, 2, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 128, DBTYPE_WSTR, 255, 255 },
++        { (WCHAR*)L"SOURCES_DESCRIPTION", NULL, 3, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 128, DBTYPE_WSTR, 255, 255 },
++        { (WCHAR*)L"SOURCES_TYPE",        NULL, 4, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, DBTYPE_UI2, 5, 255 },
++        { (WCHAR*)L"SOURCES_ISPARENT",    NULL, 5, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, DBTYPE_BOOL, 255, 255 }
++    };
 +
 +    hr = CoCreateInstance( &CLSID_MSDASQL_ENUMERATOR, NULL, CLSCTX_INPROC_SERVER, &IID_ISourcesRowset,
 +                                (void **)&source );
@@ -37,6 +45,40 @@ index 4a39b8758f9..8bd5409d52c 100644
 +    ok(rowset != rowset2, "same pointer\n");
 +    IRowset_Release(rowset2);
 +
++    hr = IRowset_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&columninfo);
++    todo_wine ok(hr == S_OK, "got 0x%08x\n", hr);
++    if (hr == S_OK)
++    {
++        DBORDINAL columns;
++        DBCOLUMNINFO *dbcolumninfo;
++        OLECHAR *buffer;
++        int i;
++
++        hr = IColumnsInfo_GetColumnInfo(columninfo, &columns, &dbcolumninfo, &buffer);
++        ok(hr == S_OK, "got 0x%08x\n", hr);
++        ok(columns == 6, "got %lu\n", columns);
++
++        for( i = 0; i < columns; i++ )
++        {
++            if (!dbcolumninfo[i].pwszName || !colinfo_data[i].pwszName)
++                ok (dbcolumninfo[i].pwszName == colinfo_data[i].pwszName, "got %p/%p", dbcolumninfo[i].pwszName, colinfo_data[i].pwszName);
++            else
++                ok ( !wcscmp(dbcolumninfo[i].pwszName, colinfo_data[i].pwszName), "got %p/%p",
++                     debugstr_w(dbcolumninfo[i].pwszName), debugstr_w(colinfo_data[i].pwszName));
++
++            ok (dbcolumninfo[i].pTypeInfo == colinfo_data[i].pTypeInfo, "got %p/%p", dbcolumninfo[i].pTypeInfo, colinfo_data[i].pTypeInfo);
++            ok (dbcolumninfo[i].iOrdinal == colinfo_data[i].iOrdinal, "got %ld/%ld", dbcolumninfo[i].iOrdinal, colinfo_data[i].iOrdinal);
++            ok (dbcolumninfo[i].dwFlags == colinfo_data[i].dwFlags, "got 0x%08x/0x%0x8", dbcolumninfo[i].dwFlags, colinfo_data[i].dwFlags);
++            ok (dbcolumninfo[i].ulColumnSize == colinfo_data[i].ulColumnSize, "got %lu/%lu", dbcolumninfo[i].ulColumnSize, colinfo_data[i].ulColumnSize);
++            ok (dbcolumninfo[i].wType == colinfo_data[i].wType, "got %d/%d", dbcolumninfo[i].wType, colinfo_data[i].wType);
++            ok (dbcolumninfo[i].bPrecision == colinfo_data[i].bPrecision, "got %d/%d", dbcolumninfo[i].bPrecision, colinfo_data[i].bPrecision);
++            ok (dbcolumninfo[i].bScale == colinfo_data[i].bScale, "got %d/%d", dbcolumninfo[i].bScale, colinfo_data[i].bScale);
++        }
++
++        CoTaskMemFree(buffer);
++        IColumnsInfo_Release(columninfo);
++    }
++
 +    IRowset_Release(rowset);
 +    ISourcesRowset_Release(source);
 +}
@@ -51,6 +93,3 @@ index 4a39b8758f9..8bd5409d52c 100644
  
      CoUninitialize();
  }
--- 
-2.30.2
-
