@@ -1,0 +1,56 @@
+From 4fb08a4374d9c29b9e95b4ec113f58cc2106c972 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 7 Jun 2021 11:07:57 +1000
+Subject: [PATCH 3/4] msdasql/tests: Add MSDASQL_ENUMERATOR tests
+
+---
+ dlls/msdasql/tests/provider.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
+index 4a39b8758f9..8bd5409d52c 100644
+--- a/dlls/msdasql/tests/provider.c
++++ b/dlls/msdasql/tests/provider.c
+@@ -186,12 +186,39 @@ static void test_sessions(void)
+     IDataInitialize_Release( datainit );
+ }
+ 
++static void test_enumeration(void)
++{
++    ISourcesRowset *source;
++    IRowset *rowset, *rowset2;
++    HRESULT hr;
++
++    hr = CoCreateInstance( &CLSID_MSDASQL_ENUMERATOR, NULL, CLSCTX_INPROC_SERVER, &IID_ISourcesRowset,
++                                (void **)&source );
++    if ( FAILED(hr))
++    {
++        skip("Failed create Enumerator object\n");
++        return;
++    }
++
++    hr = ISourcesRowset_GetSourcesRowset(source, NULL, &IID_IRowset, 0, NULL, (IUnknown**)&rowset);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    hr = ISourcesRowset_GetSourcesRowset(source, NULL, &IID_IRowset, 0, NULL, (IUnknown**)&rowset2);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(rowset != rowset2, "same pointer\n");
++    IRowset_Release(rowset2);
++
++    IRowset_Release(rowset);
++    ISourcesRowset_Release(source);
++}
++
+ START_TEST(provider)
+ {
+     CoInitialize(0);
+ 
+     test_Properties();
+     test_sessions();
++    test_enumeration();
+ 
+     CoUninitialize();
+ }
+-- 
+2.30.2
+
