@@ -1,14 +1,14 @@
-From ceb125ade1a047e65766ec4ae17fcff7e2ea1ce0 Mon Sep 17 00:00:00 2001
+From ae4d076bba61d0a19fcefc9b6db57450222c2c56 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 7 Jun 2021 11:07:57 +1000
 Subject: msdasql/tests: Add MSDASQL_ENUMERATOR tests
 
 
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index 4a39b8758f9..ed08b10bcbf 100644
+index 6f34cf5f068..8a2fd2e50bf 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
-@@ -186,12 +186,84 @@ static void test_sessions(void)
+@@ -192,12 +192,100 @@ static void test_sessions(void)
      IDataInitialize_Release( datainit );
  }
  
@@ -17,11 +17,14 @@ index 4a39b8758f9..ed08b10bcbf 100644
 +    ISourcesRowset *source;
 +    IRowset *rowset, *rowset2;
 +    IColumnsInfo *columninfo;
++    IAccessor *accessor;
++    DBBINDING bindings = { 1, 0, 0, 512, NULL, NULL, NULL, DBPART_VALUE | DBPART_STATUS, 0, 0, 510, DBTYPE_WSTR, 0, 0 };
++    HACCESSOR hacc;
 +    HRESULT hr;
 +
 +    DBCOLUMNINFO colinfo_data[] =
 +    {
-+        { NULL,                           NULL, 0, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_ISBOOKMARK, 4,  DBTYPE_UI4,  10, 255},
++        { NULL,                           NULL, 0, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_ISBOOKMARK, 4,  DBTYPE_UI4,  10, 255 },
 +        { (WCHAR*)L"SOURCES_NAME",        NULL, 1, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 128, DBTYPE_WSTR, 255, 255 },
 +        { (WCHAR*)L"SOURCES_PARSENAME",   NULL, 2, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 128, DBTYPE_WSTR, 255, 255 },
 +        { (WCHAR*)L"SOURCES_DESCRIPTION", NULL, 3, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 128, DBTYPE_WSTR, 255, 255 },
@@ -78,6 +81,19 @@ index 4a39b8758f9..ed08b10bcbf 100644
 +        CoTaskMemFree(buffer);
 +        IColumnsInfo_Release(columninfo);
 +    }
++
++    hr = IRowset_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    /* Request only SOURCES_NAME column */
++    hr = IAccessor_CreateAccessor(accessor, DBACCESSOR_ROWDATA, 1, &bindings, 0, &hacc, NULL);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(hacc != 0, "got 0x%08x\n", hr);
++
++    hr = IAccessor_ReleaseAccessor(accessor, hacc, NULL);
++    ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    IAccessor_Release(accessor);
 +
 +    IRowset_Release(rowset);
 +    ISourcesRowset_Release(source);
