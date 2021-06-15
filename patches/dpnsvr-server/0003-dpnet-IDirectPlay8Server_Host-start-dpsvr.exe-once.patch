@@ -1,19 +1,19 @@
-From 961e523da403a1b04cd2bda5f0febe103f240b88 Mon Sep 17 00:00:00 2001
+From dcd0a8c549d9b277fdfe63e04170c4caca115c10 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 4 Dec 2017 15:29:21 +1100
 Subject: [PATCH 3/3] dpnet: IDirectPlay8Server_Host start dpsvr.exe once
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/server.c    | 51 ++++++++++++++++++++++++++++++++++++++++++++++++++
- programs/dpnsvr/main.c | 12 ++++++++++++
+ dlls/dpnet/server.c    | 51 ++++++++++++++++++++++++++++++++++++++++++
+ programs/dpnsvr/main.c | 12 ++++++++++
  2 files changed, 63 insertions(+)
 
 diff --git a/dlls/dpnet/server.c b/dlls/dpnet/server.c
-index 46d5fe2..e489562 100644
+index 977771697ac..b21d952d45b 100644
 --- a/dlls/dpnet/server.c
 +++ b/dlls/dpnet/server.c
-@@ -46,6 +46,8 @@ typedef struct IDirectPlay8ServerImpl
+@@ -45,6 +45,8 @@ typedef struct IDirectPlay8ServerImpl
      WCHAR *servername;
      void  *data;
      DWORD datasize;
@@ -22,7 +22,7 @@ index 46d5fe2..e489562 100644
  } IDirectPlay8ServerImpl;
  
  WINE_DEFAULT_DEBUG_CHANNEL(dpnet);
-@@ -96,6 +98,8 @@ static ULONG WINAPI IDirectPlay8ServerImpl_Release(IDirectPlay8Server *iface)
+@@ -95,6 +97,8 @@ static ULONG WINAPI IDirectPlay8ServerImpl_Release(IDirectPlay8Server *iface)
  
      if (!ref)
      {
@@ -31,7 +31,7 @@ index 46d5fe2..e489562 100644
          heap_free(This->servername);
          heap_free(This->data);
          heap_free(This);
-@@ -247,6 +251,49 @@ static HRESULT WINAPI IDirectPlay8ServerImpl_Host(IDirectPlay8Server *iface, con
+@@ -246,6 +250,49 @@ static HRESULT WINAPI IDirectPlay8ServerImpl_Host(IDirectPlay8Server *iface, con
      IDirectPlay8ServerImpl *This = impl_from_IDirectPlay8Server(iface);
      FIXME("(%p)->(%p %p %d %p %p %p %d)\n", This, pdnAppDesc, prgpDeviceInfo, cDeviceInfo, pdnSecurity, pdnCredentials,
                      pvPlayerContext, dwFlags);
@@ -81,7 +81,7 @@ index 46d5fe2..e489562 100644
      return E_NOTIMPL;
  }
  
-@@ -325,6 +372,10 @@ static HRESULT WINAPI IDirectPlay8ServerImpl_Close(IDirectPlay8Server *iface, DW
+@@ -324,6 +371,10 @@ static HRESULT WINAPI IDirectPlay8ServerImpl_Close(IDirectPlay8Server *iface, DW
  {
      IDirectPlay8ServerImpl *This = impl_from_IDirectPlay8Server(iface);
      FIXME("(%p)->(%d)\n", This, dwFlags);
@@ -93,10 +93,10 @@ index 46d5fe2..e489562 100644
  }
  
 diff --git a/programs/dpnsvr/main.c b/programs/dpnsvr/main.c
-index 589825f..c014726 100644
+index 0180f121a10..716c6c3886d 100644
 --- a/programs/dpnsvr/main.c
 +++ b/programs/dpnsvr/main.c
-@@ -173,6 +173,14 @@ int wmain(int argc, WCHAR *argv[])
+@@ -172,6 +172,14 @@ int __cdecl wmain(int argc, WCHAR *argv[])
      SOCKET remote;
      struct sockaddr_in addr;
      int addrlen;
@@ -111,7 +111,7 @@ index 589825f..c014726 100644
  
      if (WSAStartup(MAKEWORD(2, 2), &data))
          return 1;
-@@ -182,6 +190,8 @@ int wmain(int argc, WCHAR *argv[])
+@@ -181,6 +189,8 @@ int __cdecl wmain(int argc, WCHAR *argv[])
      /* Use a socket to comminicate with applications that have loaded us. */
      setup_local_network();
  
@@ -120,7 +120,7 @@ index 589825f..c014726 100644
      while(loop < 30)
      {
          for(i=0; i < sock_cnt; i++)
-@@ -213,6 +223,8 @@ int wmain(int argc, WCHAR *argv[])
+@@ -212,6 +222,8 @@ int __cdecl wmain(int argc, WCHAR *argv[])
          loop++;
      }
  
@@ -130,5 +130,5 @@ index 589825f..c014726 100644
      {
          closesocket(socks[i]);
 -- 
-1.9.1
+2.30.2
 

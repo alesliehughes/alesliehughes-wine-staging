@@ -1,29 +1,30 @@
-From 1d68886e48c2a9e46286c32d1bfec875bfadfd6d Mon Sep 17 00:00:00 2001
+From f61dfd503382cda1a52458d80953d51231f8ca27 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 22 Sep 2017 15:56:52 +1000
 Subject: [PATCH 1/3] dpnsvr: Listen for broadcast packets
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- programs/dpnsvr/Makefile.in |   1 +
- programs/dpnsvr/main.c      | 152 ++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 148 insertions(+), 5 deletions(-)
+ programs/dpnsvr/Makefile.in |   2 +-
+ programs/dpnsvr/main.c      | 151 ++++++++++++++++++++++++++++++++++--
+ 2 files changed, 147 insertions(+), 6 deletions(-)
 
 diff --git a/programs/dpnsvr/Makefile.in b/programs/dpnsvr/Makefile.in
-index 1dac8a4..2d46e96 100644
+index bced5ca06dd..0aee3d5a442 100644
 --- a/programs/dpnsvr/Makefile.in
 +++ b/programs/dpnsvr/Makefile.in
-@@ -1,4 +1,5 @@
+@@ -1,5 +1,5 @@
  MODULE    = dpnsvr.exe
+-
 +IMPORTS   = ws2_32 advapi32 iphlpapi
- APPMODE   = -mconsole -municode
+ EXTRADLLFLAGS = -mconsole -municode -mno-cygwin
  
  C_SRCS = \
 diff --git a/programs/dpnsvr/main.c b/programs/dpnsvr/main.c
-index 6041cbc..c795884 100644
+index cabc8a6c700..16f365aacbb 100644
 --- a/programs/dpnsvr/main.c
 +++ b/programs/dpnsvr/main.c
-@@ -15,19 +15,161 @@
+@@ -15,19 +15,160 @@
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
   */
@@ -31,10 +32,9 @@ index 6041cbc..c795884 100644
 +#include <ws2tcpip.h>
 +#include <windows.h>
 +#include <iphlpapi.h>
-+#include <wine/unicode.h>
 +
-+#include "dplay8.h"
-+#include "dpaddr.h"
++#include <dplay8.h>
++#include <dpaddr.h>
  
  #include "wine/debug.h"
  
@@ -65,7 +65,7 @@ index 6041cbc..c795884 100644
 +    PIP_ADAPTER_UNICAST_ADDRESS ua;
 +
 +    socks = HeapAlloc(GetProcessHeap(), 0, sock_max * sizeof(SOCKET));
-+    if(!socks)
++    if (!socks)
 +    {
 +        WINE_ERR("Out of memory.\n");
 +        return FALSE;
@@ -79,7 +79,7 @@ index 6041cbc..c795884 100644
 +    }
 +
 +    adapter_addresses = HeapAlloc(GetProcessHeap(), 0, size);
-+    if(!adapter_addresses)
++    if (!adapter_addresses)
 +    {
 +        WINE_ERR("Out of memory.\n");
 +        return FALSE;
@@ -144,7 +144,7 @@ index 6041cbc..c795884 100644
 +    return TRUE;
 +}
 +
- int wmain(int argc, WCHAR *argv[])
+ int __cdecl wmain(int argc, WCHAR *argv[])
  {
 -    int i;
 +    WSADATA data;
@@ -159,7 +159,7 @@ index 6041cbc..c795884 100644
 +    {
 +        for(i=0; i < sock_cnt; i++)
 +        {
-+            size_t nread = BUF_SIZE;
++            SIZE_T nread = BUF_SIZE;
 +            char buf[BUF_SIZE];
 +            nread = recv(socks[i], buf, nread, 0);
 +            if(nread != -1)
@@ -191,5 +191,5 @@ index 6041cbc..c795884 100644
      return 0;
  }
 -- 
-1.9.1
+2.30.2
 
