@@ -1,17 +1,17 @@
-From 6808e02a68c3d05e2d1909d2a4b7f875b640d3cb Mon Sep 17 00:00:00 2001
+From 97e673d265558bf9dba6bb6e57e2345d04e60122 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 4 Jun 2018 15:45:40 +1000
-Subject: [PATCH 2/2] dpnsvr: Only allow dpnsvr to start once
+Subject: [PATCH 2/3] dpnsvr: Only allow dpnsvr to start once
 
 ---
  programs/dpnsvr/main.c | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
 diff --git a/programs/dpnsvr/main.c b/programs/dpnsvr/main.c
-index 72e64d0..6afa570 100644
+index 17ea2a9cd05..50b212dd5d4 100644
 --- a/programs/dpnsvr/main.c
 +++ b/programs/dpnsvr/main.c
-@@ -201,6 +201,15 @@ int wmain(int argc, WCHAR *argv[])
+@@ -200,6 +200,15 @@ int __cdecl wmain(int argc, WCHAR *argv[])
      socklen_t addrlen;
      FD_SET readset;
      TIMEVAL delay;
@@ -27,7 +27,7 @@ index 72e64d0..6afa570 100644
  
      if (WSAStartup(MAKEWORD(2, 2), &data))
          return 1;
-@@ -249,6 +258,7 @@ int wmain(int argc, WCHAR *argv[])
+@@ -248,6 +257,7 @@ int __cdecl wmain(int argc, WCHAR *argv[])
      }
  
      KillTimer(NULL, timer);
@@ -36,5 +36,5 @@ index 72e64d0..6afa570 100644
  
      WSACleanup();
 -- 
-1.9.1
+2.30.2
 

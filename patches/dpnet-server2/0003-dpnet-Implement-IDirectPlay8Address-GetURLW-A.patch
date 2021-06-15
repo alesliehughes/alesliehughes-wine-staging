@@ -1,19 +1,32 @@
-From 17da92c23eb0657866cec7b58ee7d7c1befc549a Mon Sep 17 00:00:00 2001
+From 8042c1aa1e30f2ab5dee945f34b4243bcc2e546f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Aug 2018 12:26:19 +1000
-Subject: [PATCH v2] dpnet: Implement IDirectPlay8Address GetURLW/A.
+Subject: [PATCH 3/3] dpnet: Implement IDirectPlay8Address GetURLW/A.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dpnet/address.c       | 120 ++++++++++++++++++++++++++++++++---
- dlls/dpnet/tests/address.c | 155 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 265 insertions(+), 10 deletions(-)
+ dlls/dpnet/Makefile.in     |   2 +-
+ dlls/dpnet/address.c       | 115 ++++++++++++++++++++++++++---
+ dlls/dpnet/tests/address.c | 143 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 249 insertions(+), 11 deletions(-)
 
+diff --git a/dlls/dpnet/Makefile.in b/dlls/dpnet/Makefile.in
+index bcf07772e39..9d979a34f22 100644
+--- a/dlls/dpnet/Makefile.in
++++ b/dlls/dpnet/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = dpnet.dll
+ IMPORTLIB = dpnet
+-IMPORTS   = dxguid uuid ole32 advapi32 ws2_32
++IMPORTS   = dxguid uuid ole32 advapi32 ws2_32 user32
+ 
+ EXTRADLLFLAGS = -mno-cygwin
+ 
 diff --git a/dlls/dpnet/address.c b/dlls/dpnet/address.c
-index 0bfa2bc..533f0ea 100644
+index 6aa62a97785..6819638a2b8 100644
 --- a/dlls/dpnet/address.c
 +++ b/dlls/dpnet/address.c
-@@ -47,6 +47,22 @@ static char *heap_strdupA( const char *str )
+@@ -45,6 +45,22 @@ static char *heap_strdupA( const char *str )
      return ret;
  }
  
@@ -36,7 +49,7 @@ index 0bfa2bc..533f0ea 100644
  static BOOL add_component(IDirectPlay8AddressImpl *This, struct component *item)
  {
      if(This->comp_count == This->comp_array_size)
-@@ -258,20 +274,104 @@ static HRESULT WINAPI IDirectPlay8AddressImpl_Clear(IDirectPlay8Address *iface)
+@@ -256,20 +272,99 @@ static HRESULT WINAPI IDirectPlay8AddressImpl_Clear(IDirectPlay8Address *iface)
    return DPN_OK; 
  }
  
@@ -51,14 +64,7 @@ index 0bfa2bc..533f0ea 100644
 +    HRESULT hr = DPNERR_BUFFERTOOSMALL;
 +    int i;
 +    WCHAR buffer[1024] = {0};
-+    const static WCHAR comma[] = {';',0};
-+    const static WCHAR format_stringW[] = {'%', 's','=','%','s',0};
-+    const static WCHAR format_dword[] = {'%', 's','=','%','d',0};
-+    static const WCHAR format_guid[] = { '%', 's','=','%', '%','7','B',
-+        '%','0','8','X','-','%','0','4','X','-','%','0','4','X','-','%','0','2',
-+        'X','%','0','2','X','-',
-+        '%','0','2','X','%','0','2','X','%','0','2','X','%','0','2','X','%','0',
-+        '2','X','%','0','2','X','%','%','7','D',0};
++    int position = 0;
 +
 +    TRACE("(%p, %p, %p)\n", This, url, length);
 +
@@ -67,29 +73,31 @@ index 0bfa2bc..533f0ea 100644
 +
 +    for(i=0; i < This->comp_count; i++)
 +    {
-+        int position = strlenW(buffer);
 +        struct component *entry = This->components[i];
 +
 +        if(position)
-+            lstrcatW(&buffer[position++], comma);
++            lstrcatW(&buffer[position++], L";");
 +
 +        switch(entry->type)
 +        {
 +            case DPNA_DATATYPE_GUID:
-+                sprintfW( &buffer[position], format_guid, entry->name, entry->data.guid.Data1, entry->data.guid.Data2, entry->data.guid.Data3,
-+                      entry->data.guid.Data4[0], entry->data.guid.Data4[1], entry->data.guid.Data4[2], entry->data.guid.Data4[3],
-+                      entry->data.guid.Data4[4], entry->data.guid.Data4[5], entry->data.guid.Data4[6], entry->data.guid.Data4[7] );
++                position += wsprintfW( &buffer[position], L"%s=%%7B%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X%%7D",
++                      entry->name, entry->data.guid.Data1, entry->data.guid.Data2, entry->data.guid.Data3,
++                      entry->data.guid.Data4[0], entry->data.guid.Data4[1], entry->data.guid.Data4[2],
++                      entry->data.guid.Data4[3], entry->data.guid.Data4[4], entry->data.guid.Data4[5],
++                      entry->data.guid.Data4[6], entry->data.guid.Data4[7] );
++
 +                break;
 +            case DPNA_DATATYPE_STRING:
-+                sprintfW(&buffer[position], format_stringW, entry->name, entry->data.string);
++                position += wsprintfW(&buffer[position], L"%s=%s", entry->name, entry->data.string);
 +                break;
 +            case DPNA_DATATYPE_DWORD:
-+                sprintfW(&buffer[position], format_dword, entry->name, entry->data.value);
++                position += wsprintfW(&buffer[position], L"%s=%d", entry->name, entry->data.value);
 +                break;
 +            case DPNA_DATATYPE_STRING_ANSI:
 +            {
 +                WCHAR *str = heap_strdupAtoW(entry->data.ansi);
-+                sprintfW(&buffer[position], format_stringW, entry->name, str);
++                position += wsprintfW(&buffer[position], L"%s=%s", entry->name, str);
 +                heap_free(str);
 +                break;
 +            }
@@ -152,10 +160,10 @@ index 0bfa2bc..533f0ea 100644
  
  static HRESULT WINAPI IDirectPlay8AddressImpl_GetSP(IDirectPlay8Address *iface, GUID *pguidSP)
 diff --git a/dlls/dpnet/tests/address.c b/dlls/dpnet/tests/address.c
-index a1dcdef..526f41f 100644
+index a8d31c9854a..0e8b8da3b09 100644
 --- a/dlls/dpnet/tests/address.c
 +++ b/dlls/dpnet/tests/address.c
-@@ -305,6 +305,159 @@ static void address_setsp(void)
+@@ -304,6 +304,147 @@ static void address_setsp(void)
      }
  }
  
@@ -163,18 +171,6 @@ index a1dcdef..526f41f 100644
 +{
 +    HRESULT hr;
 +    IDirectPlay8Address *localaddr = NULL;
-+    static const WCHAR urlW1[] = {'x','-','d','i','r','e','c','t','p','l','a','y',':','/','p','r','o','v','i','d','e','r',
-+                                  '=','%','7','B','E','B','F','E','7','B','A','0','-','6','2','8','D','-','1','1','D','2',
-+                                  '-','A','E','0','F','-','0','0','6','0','9','7','B','0','1','4','1','1','%','7','D',0 };
-+    static const WCHAR urlW2[] = {'x','-','d','i','r','e','c','t','p','l','a','y',':','/','p','r','o','v','i','d','e','r',
-+                                  '=','%','7','B','E','B','F','E','7','B','A','0','-','6','2','8','D','-','1','1','D','2',
-+                                  '-','A','E','0','F','-','0','0','6','0','9','7','B','0','1','4','1','1','%','7','D',
-+                                  ';','p','o','r','t','=','4','3','2','1',0 };
-+    static const WCHAR urlW3[] = {'x','-','d','i','r','e','c','t','p','l','a','y',':','/','p','r','o','v','i','d','e','r',
-+                                  '=','%','7','B','E','B','F','E','7','B','A','0','-','6','2','8','D','-','1','1','D','2',
-+                                  '-','A','E','0','F','-','0','0','6','0','9','7','B','0','1','4','1','1','%','7','D',
-+                                  ';','p','o','r','t','=','4','3','2','1',';','h','o','s','t','n','a','m','e','=','l',
-+                                  'o','c','a','l','h','o','s','t', 0 };
 +
 +    hr = CoCreateInstance( &CLSID_DirectPlay8Address, NULL, CLSCTX_ALL, &IID_IDirectPlay8Address, (LPVOID*)&localaddr);
 +    ok(hr == S_OK, "Failed to create IDirectPlay8Address object\n");
@@ -202,7 +198,7 @@ index a1dcdef..526f41f 100644
 +
 +        hr = IDirectPlay8Address_GetURLW(localaddr, buffer, &bufflen);
 +        ok(hr == S_OK, "got 0x%08x\n", hr);
-+        ok(!lstrcmpW(urlW1, buffer), "got %s\n", wine_dbgstr_w(buffer));
++        ok(!lstrcmpW(L"x-directplay:/provider=%7BEBFE7BA0-628D-11D2-AE0F-006097B01411%7D", buffer), "got %s\n", wine_dbgstr_w(buffer));
 +        HeapFree(GetProcessHeap(), 0, buffer);
 +
 +        hr = IDirectPlay8Address_AddComponent(localaddr, DPNA_KEY_PORT, &port, sizeof(DWORD), DPNA_DATATYPE_DWORD);
@@ -220,7 +216,7 @@ index a1dcdef..526f41f 100644
 +
 +        hr = IDirectPlay8Address_GetURLW(localaddr, buffer, &bufflen);
 +        ok(hr == S_OK, "got 0x%08x\n", hr);
-+        ok(!lstrcmpW(urlW2, buffer), "got %s\n", wine_dbgstr_w(buffer));
++        ok(!lstrcmpW(L"x-directplay:/provider=%7BEBFE7BA0-628D-11D2-AE0F-006097B01411%7D;port=4321", buffer), "got %s\n", wine_dbgstr_w(buffer));
 +        HeapFree(GetProcessHeap(), 0, buffer);
 +
 +        hr = IDirectPlay8Address_AddComponent(localaddr, DPNA_KEY_HOSTNAME, &localhost, sizeof(localhost), DPNA_DATATYPE_STRING);
@@ -233,7 +229,7 @@ index a1dcdef..526f41f 100644
 +
 +        hr = IDirectPlay8Address_GetURLW(localaddr, buffer, &bufflen);
 +        ok(hr == S_OK, "got 0x%08x\n", hr);
-+        ok(!lstrcmpW(urlW3, buffer), "got %s\n", wine_dbgstr_w(buffer));
++        ok(!lstrcmpW(L"x-directplay:/provider=%7BEBFE7BA0-628D-11D2-AE0F-006097B01411%7D;port=4321;hostname=localhost", buffer), "got %s\n", wine_dbgstr_w(buffer));
 +        HeapFree(GetProcessHeap(), 0, buffer);
 +
 +        IDirectPlay8Address_Release(localaddr);
@@ -315,7 +311,7 @@ index a1dcdef..526f41f 100644
  static void address_duplicate(void)
  {
      HRESULT hr;
-@@ -382,6 +535,8 @@ START_TEST(address)
+@@ -381,6 +522,8 @@ START_TEST(address)
      address_addcomponents();
      address_setsp();
      address_duplicate();
@@ -325,5 +321,5 @@ index a1dcdef..526f41f 100644
      CoUninitialize();
  }
 -- 
-1.9.1
+2.30.2
 

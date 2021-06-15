@@ -1,29 +1,30 @@
-From affaab851b37df2917425c8753279507bfe29987 Mon Sep 17 00:00:00 2001
+From d82ffc239f78cc4f010c8c1519928db70b215366 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 22 Sep 2017 15:56:52 +1000
-Subject: [PATCH 1/2] dpnsvr: Listen for broadcast packets
+Subject: [PATCH 1/3] dpnsvr: Listen for broadcast packets
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- programs/dpnsvr/Makefile.in |   1 +
- programs/dpnsvr/main.c      | 231 +++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 228 insertions(+), 4 deletions(-)
+ programs/dpnsvr/Makefile.in |   2 +-
+ programs/dpnsvr/main.c      | 234 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 229 insertions(+), 7 deletions(-)
 
 diff --git a/programs/dpnsvr/Makefile.in b/programs/dpnsvr/Makefile.in
-index 1dac8a4..a99055b 100644
+index bced5ca06dd..d3ebaa17b49 100644
 --- a/programs/dpnsvr/Makefile.in
 +++ b/programs/dpnsvr/Makefile.in
-@@ -1,4 +1,5 @@
+@@ -1,5 +1,5 @@
  MODULE    = dpnsvr.exe
+-
 +IMPORTS   = ws2_32 advapi32 iphlpapi user32
- APPMODE   = -mconsole -municode
+ EXTRADLLFLAGS = -mconsole -municode -mno-cygwin
  
  C_SRCS = \
 diff --git a/programs/dpnsvr/main.c b/programs/dpnsvr/main.c
-index 6041cbc..72e64d0 100644
+index cabc8a6c700..17ea2a9cd05 100644
 --- a/programs/dpnsvr/main.c
 +++ b/programs/dpnsvr/main.c
-@@ -15,19 +15,242 @@
+@@ -15,19 +15,241 @@
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
   */
@@ -31,15 +32,15 @@ index 6041cbc..72e64d0 100644
 +#include <ws2tcpip.h>
 +#include <windows.h>
 +#include <iphlpapi.h>
-+#include <wine/unicode.h>
  
 +#include "dplay8.h"
 +#include "dpaddr.h"
 +#include "wine/heap.h"
  #include "wine/debug.h"
  
- WINE_DEFAULT_DEBUG_CHANNEL(dpnsvr);
- 
+-WINE_DEFAULT_DEBUG_CHANNEL(dpnsvr);
++ WINE_DEFAULT_DEBUG_CHANNEL(dpnsvr);
++
 +#include "pshpack1.h"
 +struct ENUM_QUERY
 +{
@@ -74,7 +75,7 @@ index 6041cbc..72e64d0 100644
 +    PIP_ADAPTER_UNICAST_ADDRESS ua;
 +
 +    socks = heap_alloc(sock_max * sizeof(SOCKET));
-+    if(!socks)
++    if (!socks)
 +    {
 +        WINE_ERR("Out of memory.\n");
 +        return FALSE;
@@ -170,15 +171,15 @@ index 6041cbc..72e64d0 100644
 +
 +static void DoMsgs(void)
 +{
-+	MSG msg = {0};
-+	while (PeekMessageW(&msg, NULL, 0, 0, QS_ALLINPUT | PM_REMOVE))
-+	{
-+		TranslateMessage(&msg);
-+		DispatchMessageW(&msg);
-+	}
++    MSG msg = {0};
++    while (PeekMessageW(&msg, NULL, 0, 0, QS_ALLINPUT | PM_REMOVE))
++    {
++        TranslateMessage(&msg);
++        DispatchMessageW(&msg);
++    }
 +}
 +
-+static void dump_enum_query_packet(void *buf, size_t bufsize, struct sockaddr *addr, socklen_t addrlen)
++static void dump_enum_query_packet(void *buf, SIZE_T bufsize, struct sockaddr *addr, socklen_t addrlen)
 +{
 +    struct ENUM_QUERY *query;
 +    char ip[256];
@@ -202,12 +203,13 @@ index 6041cbc..72e64d0 100644
 +}
 +
 +#define BUF_SIZE 1024
-+
- int wmain(int argc, WCHAR *argv[])
+ 
+ int __cdecl wmain(int argc, WCHAR *argv[])
  {
+-    int i;
 +    char buf[BUF_SIZE];
 +    WSADATA data;
-     int i;
++     int i;
 +    DWORD timer;
 +    struct sockaddr addr;
 +    socklen_t addrlen;
@@ -228,7 +230,7 @@ index 6041cbc..72e64d0 100644
 +
 +        if (select(0, &readset, NULL, NULL, &delay) > 0)
 +        {
-+            size_t nread;
++            SIZE_T nread;
 +
 +            for (i=0; i < sock_cnt; i++)
 +            {
@@ -271,5 +273,5 @@ index 6041cbc..72e64d0 100644
      return 0;
  }
 -- 
-1.9.1
+2.30.2
 
