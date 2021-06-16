@@ -1,34 +1,35 @@
-From 08e7f4b6b61287e50f60a2d061fdbeb837524211 Mon Sep 17 00:00:00 2001
+From 2a9c370ec4849ed9e39a244c747200d740b7b1d2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 5 Apr 2020 14:39:35 +1000
-Subject: [PATCH v2 2/2] dmime: Parse Wave track stream
+Subject: [PATCH] dmime: Parse Wave track stream
+
+Tron 2.0
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/dmime/dmime_private.h |   7 ++
+ dlls/dmime/dmime_private.h |   6 ++
  dlls/dmime/wavetrack.c     | 196 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 201 insertions(+), 2 deletions(-)
+ 2 files changed, 200 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dmime/dmime_private.h b/dlls/dmime/dmime_private.h
-index 9759039a03e9..f7431e882f42 100644
+index c2221a15fd2..6ab47292b39 100644
 --- a/dlls/dmime/dmime_private.h
 +++ b/dlls/dmime/dmime_private.h
-@@ -86,6 +86,13 @@ typedef struct _DMUS_PRIVATE_TEMPO_ITEM {
+@@ -86,6 +86,12 @@ typedef struct _DMUS_PRIVATE_TEMPO_ITEM {
    DMUS_IO_TEMPO_ITEM item;
  } DMUS_PRIVATE_TEMPO_ITEM, *LPDMUS_PRIVATE_TEMPO_ITEM;
  
 +struct wave_item {
-+    struct list entry; /* for listing elements */
++    struct list entry;
 +    DMUS_IO_WAVE_TRACK_HEADER header;
-+
 +    IDirectMusicObject *object;
 +};
 +
- typedef struct _DMUS_PRIVATE_SEGMENT_ITEM {
+ typedef struct _DMUS_PRIVATE_GRAPH_TOOL {
    struct list entry; /* for listing elements */
-   DMUS_IO_SEGMENT_ITEM_HEADER header;
+   DWORD dwIndex;
 diff --git a/dlls/dmime/wavetrack.c b/dlls/dmime/wavetrack.c
-index 1c6b08b52355..23406e0794d0 100644
+index 1c6b08b5235..92419729fce 100644
 --- a/dlls/dmime/wavetrack.c
 +++ b/dlls/dmime/wavetrack.c
 @@ -20,6 +20,8 @@
@@ -113,10 +114,10 @@ index 1c6b08b52355..23406e0794d0 100644
 +        TRACE("Found DMUS_IO_WAVE_ITEM_HEADER\n");
 +        TRACE("  - lVolume %d\n", header.lVolume);
 +        TRACE("  - dwVariations %d\n", header.dwVariations);
-+        TRACE("  - rtTime %d\n", header.rtTime);
-+        TRACE("  - rtStartOffset %d\n", header.rtStartOffset);
-+        TRACE("  - rtReserved %d\n", header.rtReserved);
-+        TRACE("  - rtDuration %d\n", header.rtDuration);
++        TRACE("  - rtTime %s\n", wine_dbgstr_longlong(header.rtTime));
++        TRACE("  - rtStartOffset %s\n", wine_dbgstr_longlong(header.rtStartOffset));
++        TRACE("  - rtReserved %s\n", wine_dbgstr_longlong(header.rtReserved));
++        TRACE("  - rtDuration %s\n", wine_dbgstr_longlong(header.rtDuration));
 +        TRACE("  - dwLoopStart %d\n", header.dwLoopStart);
 +        TRACE("  - dwLoopEnd %d\n", header.dwLoopEnd);
 +        TRACE("  - dwFlags 0x%08x\n", header.dwFlags);
@@ -272,5 +273,5 @@ index 1c6b08b52355..23406e0794d0 100644
      DMIME_LockModule();
      hr = IDirectMusicTrack8_QueryInterface(&track->IDirectMusicTrack8_iface, lpcGUID, ppobj);
 -- 
-2.26.2
+2.30.2
 
