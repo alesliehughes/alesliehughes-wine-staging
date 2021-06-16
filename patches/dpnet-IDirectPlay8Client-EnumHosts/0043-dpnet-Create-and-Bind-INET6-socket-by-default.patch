@@ -103,7 +103,7 @@ index 3e1f392d986..3dd89bd4b80 100644
 +        s = getaddrinfo(NULL, sport, &hints, &result);
 +        if (s != 0)
 +        {
-+            ERR("getaddrinfo failed: %s\n", gai_strerror(s));
++            ERR("getaddrinfo failed: %s\n", gai_strerrorA(s));
 +            goto incomplete;
 +        }
 +
