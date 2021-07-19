@@ -1,0 +1,25 @@
+From 815cd3e6f6312db052e1556e2d7ecbcc7e8e013a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Jul 2021 16:04:28 +1000
+Subject: [PATCH] dbghelp: Limit module name lookup to 32 characters
+
+---
+ dlls/dbghelp/module.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
+index 247aadcef0e..c498e1d91d1 100644
+--- a/dlls/dbghelp/module.c
++++ b/dlls/dbghelp/module.c
+@@ -246,7 +246,7 @@ struct module* module_find_by_nameW(const struct process* pcs, const WCHAR* name
+ 
+     for (module = pcs->lmodules; module; module = module->next)
+     {
+-        if (!wcsicmp(name, module->module.ModuleName)) return module;
++        if (!wcsnicmp(name, module->module.ModuleName, ARRAYSIZE(module->module.ModuleName))) return module;
+     }
+     SetLastError(ERROR_INVALID_NAME);
+     return NULL;
+-- 
+2.30.2
+
