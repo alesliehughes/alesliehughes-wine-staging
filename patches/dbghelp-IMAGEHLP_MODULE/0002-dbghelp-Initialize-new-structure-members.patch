@@ -1,0 +1,35 @@
+From b1a9bb9f1d84731b981c2d46c1ec1a9f44b10fbc Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 16 Jul 2021 07:56:21 +1000
+Subject: [PATCH v4 2/2] dbghelp: Initialize new structure members
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dbghelp/module.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dlls/dbghelp/module.c b/dlls/dbghelp/module.c
+index cadb285accb..247aadcef0e 100644
+--- a/dlls/dbghelp/module.c
++++ b/dlls/dbghelp/module.c
+@@ -207,6 +207,8 @@ struct module* module_new(struct process* pcs, const WCHAR* name,
+     module->module.TypeInfo = FALSE;
+     module->module.SourceIndexed = FALSE;
+     module->module.Publics = FALSE;
++    module->module.MachineType = 0;
++    module->module.Reserved = 0;
+ 
+     module->reloc_delta       = 0;
+     module->type              = type;
+@@ -1201,6 +1203,8 @@ BOOL  WINAPI SymGetModuleInfo64(HANDLE hProcess, DWORD64 dwAddr,
+     mi64.TypeInfo      = miw64.TypeInfo;
+     mi64.SourceIndexed = miw64.SourceIndexed;
+     mi64.Publics       = miw64.Publics;
++    mi64.MachineType   = miw64.MachineType;
++    mi64.Reserved      = miw64.Reserved;
+ 
+     memcpy(ModuleInfo, &mi64, ModuleInfo->SizeOfStruct);
+ 
+-- 
+2.30.2
+
