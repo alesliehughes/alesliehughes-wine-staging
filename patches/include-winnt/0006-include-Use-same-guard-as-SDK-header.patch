@@ -1,7 +1,7 @@
-From f031aad7ad6ed4fe8f051fd791b01a17f0ba3daa Mon Sep 17 00:00:00 2001
+From b4079d928777811da3c43c3c5a3ca8673ce7b87a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 2 Aug 2019 14:19:35 +1000
-Subject: [PATCH 9/9] include: Use same guard as SDK header.
+Subject: [PATCH 6/8] include: Use same guard as SDK header.
 
 ---
  include/atlbase.h | 4 ++--
@@ -9,7 +9,7 @@ Subject: [PATCH 9/9] include: Use same guard as SDK header.
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/include/atlbase.h b/include/atlbase.h
-index f3e4e89716..82d7f5915b 100644
+index 08053ff557e..bb74ec531a6 100644
 --- a/include/atlbase.h
 +++ b/include/atlbase.h
 @@ -18,8 +18,8 @@
@@ -24,7 +24,7 @@ index f3e4e89716..82d7f5915b 100644
  #include <atliface.h>
  #include <atlexcept.h>
 diff --git a/include/atlcom.h b/include/atlcom.h
-index c141fbea47..093a2a5e92 100644
+index c141fbea473..093a2a5e925 100644
 --- a/include/atlcom.h
 +++ b/include/atlcom.h
 @@ -19,7 +19,7 @@

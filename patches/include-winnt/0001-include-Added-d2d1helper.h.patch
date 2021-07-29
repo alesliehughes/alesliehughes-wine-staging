@@ -1,7 +1,7 @@
-From 0e821964fb7d618ecd2deeb96c46ad4edb08ede3 Mon Sep 17 00:00:00 2001
+From 52b918628cb8912c36a3e67d79e2b74ceec52927 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Jul 2019 13:40:01 +1000
-Subject: [PATCH 1/9] include: Added d2d1helper.h
+Subject: [PATCH 1/8] include: Added d2d1helper.h
 
 ---
  include/Makefile.in  |  1 +
@@ -10,20 +10,20 @@ Subject: [PATCH 1/9] include: Added d2d1helper.h
  create mode 100644 include/d2d1helper.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index d4676f0fdd..5e8c4ce737 100644
+index 9b397ffa183..6516b1f85d5 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -83,6 +83,7 @@ SOURCES = \
- 	d2d1.idl \
+@@ -101,6 +101,7 @@ SOURCES = \
  	d2d1_1.idl \
  	d2d1_2.idl \
+ 	d2d1effects.idl \
 +	d2d1helper.h \
  	d2dbasetypes.h \
  	d2derr.h \
  	d3d.h \
 diff --git a/include/d2d1helper.h b/include/d2d1helper.h
 new file mode 100644
-index 0000000000..3430b5b04e
+index 00000000000..3430b5b04ee
 --- /dev/null
 +++ b/include/d2d1helper.h
 @@ -0,0 +1,30 @@

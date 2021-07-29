@@ -1,34 +1,35 @@
-From a3bbd2b503cb310627c758de48974ba62fe73713 Mon Sep 17 00:00:00 2001
+From c8dd66e5c28a1cd3e05ded1647ae0bd57bc11bc1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 18 Jul 2019 13:40:45 +1000
-Subject: [PATCH 3/9] include: Added ktmw32.h
+Date: Fri, 6 Jan 2017 13:50:00 +1100
+Subject: [PATCH 3/8] include: add msvcrt/new.h
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- include/Makefile.in |  1 +
- include/ktmw32.h    | 32 ++++++++++++++++++++++++++++++++
- 2 files changed, 33 insertions(+)
- create mode 100644 include/ktmw32.h
+ include/Makefile.in  |  1 +
+ include/msvcrt/new.h | 23 +++++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+ create mode 100644 include/msvcrt/new.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 12fb563d6a..07c0475c2c 100644
+index 07a447dc3c0..6392cf4fcbd 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -337,6 +337,7 @@ SOURCES = \
- 	ksguid.h \
- 	ksmedia.h \
- 	ksuuids.h \
-+	ktmw32.h \
- 	libloaderapi.h \
- 	lm.h \
- 	lmaccess.h \
-diff --git a/include/ktmw32.h b/include/ktmw32.h
+@@ -488,6 +488,7 @@ SOURCES = \
+ 	msvcrt/mbctype.h \
+ 	msvcrt/mbstring.h \
+ 	msvcrt/memory.h \
++	msvcrt/new.h \
+ 	msvcrt/process.h \
+ 	msvcrt/search.h \
+ 	msvcrt/setjmp.h \
+diff --git a/include/msvcrt/new.h b/include/msvcrt/new.h
 new file mode 100644
-index 0000000000..060eb28ac5
+index 00000000000..cafc770530d
 --- /dev/null
-+++ b/include/ktmw32.h
-@@ -0,0 +1,32 @@
++++ b/include/msvcrt/new.h
+@@ -0,0 +1,23 @@
 +/*
-+ * Copyright 2019 Alistair Leslie-Hughes
++ * Copyright (C) 2017 Alistair Leslie-Hughes
 + *
 + * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
@@ -45,20 +46,11 @@ index 0000000000..060eb28ac5
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
 +
-+#ifndef _KTMUSER_
-+#define _KTMUSER_
++#ifndef __WINE_NEW_H__
++#define __WINE_NEW_H__
 +
-+#ifdef __cplusplus
-+extern "C" {
++
 +#endif
-+
-+/* TODO */
-+
-+#ifdef __cplusplus
-+}
-+#endif
-+
-+#endif /* _KTMUSER_ */
 -- 
 2.17.1
 

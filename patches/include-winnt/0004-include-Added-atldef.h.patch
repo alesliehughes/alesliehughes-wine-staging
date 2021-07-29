@@ -1,7 +1,7 @@
-From 34fa241e676794f0657a16fc21c4cd46f8587da3 Mon Sep 17 00:00:00 2001
+From 48f4719d3222d47d64a15a017428f1c44f09ddb4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 30 Jul 2019 09:37:34 +1000
-Subject: [PATCH 6/9] include: Added atldef.h
+Subject: [PATCH 4/8] include: Added atldef.h
 
 ---
  include/Makefile.in |  1 +
@@ -10,10 +10,10 @@ Subject: [PATCH 6/9] include: Added atldef.h
  create mode 100644 include/atldef.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 7081ee0d67..c91a7e539c 100644
+index 6392cf4fcbd..38bc34d02e0 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -22,6 +22,7 @@ SOURCES = \
+@@ -25,6 +25,7 @@ SOURCES = \
  	asysta.idl \
  	atlbase.h \
  	atlcom.h \
@@ -23,7 +23,7 @@ index 7081ee0d67..c91a7e539c 100644
  	atlwin.h \
 diff --git a/include/atldef.h b/include/atldef.h
 new file mode 100644
-index 0000000000..a93a53c09b
+index 00000000000..a93a53c09b2
 --- /dev/null
 +++ b/include/atldef.h
 @@ -0,0 +1,64 @@

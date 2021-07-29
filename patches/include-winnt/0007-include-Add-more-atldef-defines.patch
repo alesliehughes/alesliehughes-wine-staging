@@ -1,14 +1,14 @@
-From 14b41ad40bc8bdc3aecbd16b1da2d7cbbd776408 Mon Sep 17 00:00:00 2001
+From 11ced8800171edef179793dba13b21906bda0244 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Jan 2020 11:17:50 +1100
-Subject: [PATCH] include: Add more atldef defines
+Subject: [PATCH 7/8] include: Add more atldef defines
 
 ---
  include/atldef.h | 24 ++++++++++++++++++++++++
  1 file changed, 24 insertions(+)
 
 diff --git a/include/atldef.h b/include/atldef.h
-index a93a53c09b..f61264c99e 100644
+index a93a53c09b2..f61264c99e6 100644
 --- a/include/atldef.h
 +++ b/include/atldef.h
 @@ -44,6 +44,30 @@

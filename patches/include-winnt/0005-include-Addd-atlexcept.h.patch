@@ -1,7 +1,7 @@
-From 5f6a3da53bd93398615a1cbb59d3d75239d87114 Mon Sep 17 00:00:00 2001
+From 7271b0050a568076ae94a3a61079fd22d73a39c2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 30 Jul 2019 09:38:09 +1000
-Subject: [PATCH 7/9] include: Addd atlexcept.h
+Subject: [PATCH 5/8] include: Addd atlexcept.h
 
 ---
  include/Makefile.in |  1 +
@@ -11,10 +11,10 @@ Subject: [PATCH 7/9] include: Addd atlexcept.h
  create mode 100644 include/atlexcept.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index c91a7e539c..21e65c3194 100644
+index 38bc34d02e0..209c90f6e89 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -23,6 +23,7 @@ SOURCES = \
+@@ -26,6 +26,7 @@ SOURCES = \
  	atlbase.h \
  	atlcom.h \
  	atldef.h \
@@ -23,7 +23,7 @@ index c91a7e539c..21e65c3194 100644
  	atlthunk.h \
  	atlwin.h \
 diff --git a/include/atlbase.h b/include/atlbase.h
-index b8c4f65651..f3e4e89716 100644
+index ebf16748055..08053ff557e 100644
 --- a/include/atlbase.h
 +++ b/include/atlbase.h
 @@ -22,6 +22,7 @@
@@ -36,7 +36,7 @@ index b8c4f65651..f3e4e89716 100644
  /* Wine extension: we (ab)use _ATL_VER to handle struct layout differences between ATL versions. */
 diff --git a/include/atlexcept.h b/include/atlexcept.h
 new file mode 100644
-index 0000000000..7360a48ddb
+index 00000000000..7360a48ddbc
 --- /dev/null
 +++ b/include/atlexcept.h
 @@ -0,0 +1,51 @@
