@@ -1,0 +1,96 @@
+From 05a66699330fc3d1c5d6d8866f70c580185e7f81 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 30 Jul 2021 11:12:51 +1000
+Subject: [PATCH] include: More ATL defines
+
+---
+ include/atldef.h | 55 ++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 44 insertions(+), 11 deletions(-)
+
+diff --git a/include/atldef.h b/include/atldef.h
+index f61264c99e6..61a64ac2783 100644
+--- a/include/atldef.h
++++ b/include/atldef.h
+@@ -37,12 +37,28 @@
+ #define ATLASSERT(x)
+ #endif
+ 
++#ifndef ATLASSUME
++#define ATLASSUME(x)
++#endif
++
++#ifndef ATLENSURE
++#define ATLENSURE(expr)
++#endif
++
++#define ATL_NOINLINE
++
++#define _ATL_DECLSPEC_ALLOCATOR
++
+ #ifndef _FormatMessage_format_string_
+ #define _FormatMessage_format_string_
+ #endif
+ 
+ #define ATLAPI HRESULT __stdcall
+ #define ATLAPI_(x) x __stdcall
++#define ATLINLINE inline
++
++/* Belongs elsewhere */
++#define ATLTRACE(...)
+ 
+ #define ATL_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
+ #define ATL_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
+@@ -56,22 +72,39 @@
+ 
+ #define ATL_IS_INTRESOURCE(x) (((ULONG_PTR)(x) >> 16) == 0)
+ 
+-#define ATL_RT_CURSOR           ATL_MAKEINTRESOURCE(1)
+-#define ATL_RT_BITMAP           ATL_MAKEINTRESOURCE(2)
+-#define ATL_RT_ICON             ATL_MAKEINTRESOURCE(3)
+-#define ATL_RT_MENU             ATL_MAKEINTRESOURCE(4)
+-#define ATL_RT_DIALOG           ATL_MAKEINTRESOURCE(5)
+-#define ATL_RT_STRING           ATL_MAKEINTRESOURCE(6)
+-#define ATL_RT_FONTDIR          ATL_MAKEINTRESOURCE(7)
+-#define ATL_RT_FONT             ATL_MAKEINTRESOURCE(8)
+-#define ATL_RT_ACCELERATOR      ATL_MAKEINTRESOURCE(9)
+-#define ATL_RT_RCDATA           ATL_MAKEINTRESOURCE(10)
+-#define ATL_RT_MESSAGETABLE     ATL_MAKEINTRESOURCE(11)
++#define ATL_RT_CURSOR           ATL_MAKEINTRESOURCEA(1)
++#define ATL_RT_BITMAP           ATL_MAKEINTRESOURCEA(2)
++#define ATL_RT_ICON             ATL_MAKEINTRESOURCEA(3)
++#define ATL_RT_MENU             ATL_MAKEINTRESOURCEA(4)
++#define ATL_RT_DIALOG           ATL_MAKEINTRESOURCEA(5)
++#define ATL_RT_STRING           ATL_MAKEINTRESOURCEA(6)
++#define ATL_RT_FONTDIR          ATL_MAKEINTRESOURCEA(7)
++#define ATL_RT_FONT             ATL_MAKEINTRESOURCEA(8)
++#define ATL_RT_ACCELERATOR      ATL_MAKEINTRESOURCEA(9)
++#define ATL_RT_RCDATA           ATL_MAKEINTRESOURCEA(10)
++#define ATL_RT_MESSAGETABLE     ATL_MAKEINTRESOURCEA(11)
++
++#define ATL_DIFFERENCE          11
++#define ATL_RT_GROUP_CURSOR     ATL_MAKEINTRESOURCEW((ULONG_PTR)ATL_RT_CURSOR + ATL_DIFFERENCE)
++#define ATL_RT_GROUP_ICON       ATL_MAKEINTRESOURCEW((ULONG_PTR)ATL_RT_ICON + ATL_DIFFERENCE)
++#define ATL_RT_VERSION          ATL_MAKEINTRESOURCEA(16)
++#define ATL_RT_DLGINCLUDE       ATL_MAKEINTRESOURCEA(17)
++#define ATL_RT_PLUGPLAY         ATL_MAKEINTRESOURCEA(19)
++#define ATL_RT_VXD              ATL_MAKEINTRESOURCEA(20)
++#define ATL_RT_ANICURSOR        ATL_MAKEINTRESOURCEA(21)
++#define ATL_RT_ANIICON          ATL_MAKEINTRESOURCEA(22)
++#define ATL_RT_HTML             ATL_MAKEINTRESOURCEA(23)
+ 
+ #define AtlThrow ATL::AtlThrowImpl
+ 
+ #ifdef __cplusplus
+ 
++template < typename T >
++inline T* SAL_Assume_bytecap_for_opt_(T* buf, size_t dwLen)
++{
++    return buf;
++}
++
+ namespace ATL
+ {
+     template <typename T>
+-- 
+2.17.1
+
