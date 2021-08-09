@@ -1,45 +1,96 @@
-From 9244ca1fd01d947d767c85ac5d59aca84d4145b0 Mon Sep 17 00:00:00 2001
+From 8d102423c92d3cbaaf04b8daba9a1c341fce537c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 18 Jul 2021 17:51:30 +1000
-Subject: [PATCH 1/2] ntoskrnl.exe: Add MmCopyMemory stub
+Subject: [PATCH] ntoskrnl.exe: Add MmCopyMemory stub
 
 ---
- dlls/ntoskrnl.exe/ntoskrnl.c        | 11 ++++++++++-
+ dlls/ntoskrnl.exe/ntoskrnl.c        | 68 +++++++++++++++++++++++++++++
  dlls/ntoskrnl.exe/ntoskrnl.exe.spec |  1 +
- include/ddk/ntddk.h                 | 12 ++++++++++++
- 3 files changed, 23 insertions(+), 1 deletion(-)
+ dlls/ntoskrnl.exe/tests/driver.c    | 11 +++++
+ include/ddk/ntddk.h                 | 12 +++++
+ 4 files changed, 92 insertions(+)
 
 diff --git a/dlls/ntoskrnl.exe/ntoskrnl.c b/dlls/ntoskrnl.exe/ntoskrnl.c
-index 7d0cabc6ba6..83c90c6a1f2 100644
+index cefb76f7cb4..effa6d0512f 100644
 --- a/dlls/ntoskrnl.exe/ntoskrnl.c
 +++ b/dlls/ntoskrnl.exe/ntoskrnl.c
-@@ -2742,7 +2742,6 @@ PVOID WINAPI MmMapIoSpace( PHYSICAL_ADDRESS PhysicalAddress, DWORD NumberOfBytes
-     return NULL;
- }
- 
--
- /***********************************************************************
-  *           MmLockPagableSectionByHandle  (NTOSKRNL.EXE.@)
-  */
-@@ -4041,6 +4040,16 @@ NTSTATUS WINAPI MmCopyVirtualMemory(PEPROCESS fromprocess, void *fromaddress, PE
+@@ -4041,6 +4041,74 @@ NTSTATUS WINAPI MmCopyVirtualMemory(PEPROCESS fromprocess, void *fromaddress, PE
      return STATUS_NOT_IMPLEMENTED;
  }
  
++struct file_id
++{
++    BYTE ObjectId[16];
++};
++
++/* internal representation of loaded modules */
++typedef struct _wine_modref
++{
++    LDR_DATA_TABLE_ENTRY  ldr;
++    struct file_id        id;
++    int                   alloc_deps;
++    int                   nDeps;
++    struct _wine_modref **deps;
++} WINE_MODREF;
++
 +/***********************************************************************
 + *           MmCopyMemory   (NTOSKRNL.EXE.@)
 + */
 +NTSTATUS WINAPI MmCopyMemory(void *target, MM_COPY_ADDRESS source, SIZE_T size, ULONG flags, SIZE_T *transferred)
 +{
++    PLIST_ENTRY mark, entry;
++    PLDR_DATA_TABLE_ENTRY mod;
++    WINE_MODREF *hmod = NULL;
++    IMAGE_BASE_RELOCATION *rel = NULL;
++
 +    FIXME( "stub: %p, %p, %lu, 0x%08x, %p\n", target, source.VirtualAddress, size, flags, transferred );
-+    *transferred = 0;
-+    return STATUS_NOT_IMPLEMENTED;
++
++    mark = &NtCurrentTeb()->Peb->LdrData->InMemoryOrderModuleList;
++    for (entry = mark->Flink; entry != mark; entry = entry->Flink)
++    {
++        mod = CONTAINING_RECORD(entry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
++        {
++            IMAGE_NT_HEADERS *nt;
++            char *base;
++
++            hmod = CONTAINING_RECORD(mod, WINE_MODREF, ldr);
++
++            nt = RtlImageNtHeader( hmod->ldr.DllBase );
++            base = (char *)nt->OptionalHeader.ImageBase;
++
++            FIXME("Module %s, base %p, base+ %p\n", debugstr_w(hmod->ldr.BaseDllName.Buffer), base, base + mod->SizeOfImage);
++
++            if ( (char*)source.VirtualAddress >= base && (char*)source.VirtualAddress <= (char*)(base + mod->SizeOfImage))
++            {
++                FIXME("Cheating\n");
++                break;
++            }
++
++            hmod = NULL;
++        }
++    }
++
++    if (!hmod)
++    {
++        FIXME("NOT Found\n");
++
++        *transferred = 0;
++        return STATUS_PARTIAL_COPY;
++    }
++
++    FIXME( "hmod->ldr.DllBase %p -> %x\n", hmod->ldr.DllBase, (char*)source.VirtualAddress - (char*)mod->DllBase);
++    rel = get_rva( hmod->ldr.DllBase, (char*)source.VirtualAddress - (char*)hmod->ldr.DllBase );
++
++    memcpy(target, rel, size);
++    *transferred = size;
++    return STATUS_SUCCESS;
 +}
 +
  /*********************************************************************
   *           KeEnterGuardedRegion    (NTOSKRNL.@)
   */
 diff --git a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
-index 622c498d7e8..381576db017 100644
+index 4e5ec59c0b4..7a5b2cb8454 100644
 --- a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
 +++ b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
 @@ -691,6 +691,7 @@
@@ -50,6 +101,28 @@ index 622c498d7e8..381576db017 100644
  @ stdcall MmCopyVirtualMemory(ptr ptr ptr ptr long long ptr)
  @ stub MmCreateMdl
  @ stdcall MmCreateSection(ptr long ptr ptr long long long ptr)
+diff --git a/dlls/ntoskrnl.exe/tests/driver.c b/dlls/ntoskrnl.exe/tests/driver.c
+index 80a2540f054..70507e2fd1c 100644
+--- a/dlls/ntoskrnl.exe/tests/driver.c
++++ b/dlls/ntoskrnl.exe/tests/driver.c
+@@ -395,6 +395,17 @@ static void test_load_driver(void)
+     ret = PsRemoveLoadImageNotifyRoutine(test_load_image_notify_routine);
+     ok(ret == STATUS_PROCEDURE_NOT_FOUND, "Got unexpected status %#x.\n", ret);
+ 
++    {
++        char buf[4096];
++        MM_COPY_ADDRESS addr;
++        SIZE_T trans;
++
++        addr.VirtualAddress = 0x0000000010000000;
++
++        ret = MmCopyMemory(buf, addr, 4096, MM_COPY_MEMORY_VIRTUAL, &trans);
++        ok(ret == STATUS_PARTIAL_COPY, "Got unexpected status %#x.\n", ret);
++    }
++
+     ok(test_load_image_notify_count == 0, "Got unexpected test_load_image_notify_count %u.\n",
+             test_load_image_notify_count);
+     RtlFreeUnicodeString(&image_path);
 diff --git a/include/ddk/ntddk.h b/include/ddk/ntddk.h
 index 41ad3d721bd..d4dc4c23731 100644
 --- a/include/ddk/ntddk.h
