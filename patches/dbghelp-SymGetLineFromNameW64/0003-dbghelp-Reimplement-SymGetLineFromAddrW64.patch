@@ -1,0 +1,119 @@
+From 9eda8a27c92b146b316d7fb3cf1a5d14f00995c5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Jul 2021 14:28:28 +1000
+Subject: [PATCH] dbghelp: Reimplement SymGetLineFromAddrW64
+
+There is an issue with copy_line_W64_from_64 where converting to unicode the string would be truncated.
+This issue is caused by the use of the pointer return by fetch_buffer, in this cause both arguments
+passed to MultiByteToWideChar would be the same pointer.
+
+SymGetLineFromAddrW64
+- Call SymGetLineFromAddr64
+-   returns il64->Filename = fetch_buffer;
+- Call copy_line_W64_from_64
+-  Line->Filename = fetch_buffer;
+-  Calls MultiByteToWideChar (.., il64->Filename, .. Line->Filename..)
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/dbghelp/symbol.c | 69 ++++++++++++++++++++++++++++++-------------
+ 1 file changed, 48 insertions(+), 21 deletions(-)
+
+diff --git a/dlls/dbghelp/symbol.c b/dlls/dbghelp/symbol.c
+index b2b4d578910..c701a973c2a 100644
+--- a/dlls/dbghelp/symbol.c
++++ b/dlls/dbghelp/symbol.c
+@@ -1528,6 +1528,38 @@ BOOL symt_fill_func_line_info(const struct module* module, const struct symt_fun
+     return FALSE;
+ }
+ 
++static BOOL symt_fill_func_line_info_w(const struct module* module, const struct symt_function* func,
++                              DWORD64 addr, IMAGEHLP_LINEW64* line)
++{
++    struct line_info*   dli = NULL;
++    BOOL                found = FALSE;
++    int                 i;
++
++    assert(func->symt.tag == SymTagFunction);
++
++    for (i=vector_length(&func->vlines)-1; i>=0; i--)
++    {
++        dli = vector_at(&func->vlines, i);
++        if (!dli->is_source_file)
++        {
++            if (found || dli->u.pc_offset > addr) continue;
++            line->LineNumber = dli->line_number;
++            line->Address    = dli->u.pc_offset;
++            line->Key        = dli;
++            found = TRUE;
++            continue;
++        }
++        if (found)
++        {
++            WCHAR *dospath = wine_get_dos_file_name(source_get(module, dli->u.source_file));
++            wcscpy(line->FileName, dospath);
++            HeapFree( GetProcessHeap(), 0, dospath );
++            return TRUE;
++        }
++    }
++    return FALSE;
++}
++
+ /***********************************************************************
+  *		SymGetSymNext64 (DBGHELP.@)
+  */
+@@ -1587,22 +1619,6 @@ static void copy_line_64_from_32(IMAGEHLP_LINE64* l64, const IMAGEHLP_LINE* l32)
+     l64->Address = l32->Address;
+ }
+ 
+-/******************************************************************
+- *		copy_line_W64_from_32 (internal)
+- *
+- */
+-static void copy_line_W64_from_64(struct process* pcs, IMAGEHLP_LINEW64* l64w, const IMAGEHLP_LINE64* l64)
+-{
+-    unsigned len;
+-
+-    l64w->Key = l64->Key;
+-    l64w->LineNumber = l64->LineNumber;
+-    len = MultiByteToWideChar(CP_ACP, 0, l64->FileName, -1, NULL, 0);
+-    if ((l64w->FileName = fetch_buffer(pcs, len * sizeof(WCHAR))))
+-        MultiByteToWideChar(CP_ACP, 0, l64->FileName, -1, l64w->FileName, len);
+-    l64w->Address = l64->Address;
+-}
+-
+ /******************************************************************
+  *		copy_line_32_from_64 (internal)
+  *
+@@ -1666,12 +1682,23 @@ BOOL WINAPI SymGetLineFromAddr64(HANDLE hProcess, DWORD64 dwAddr,
+ BOOL WINAPI SymGetLineFromAddrW64(HANDLE hProcess, DWORD64 dwAddr, 
+                                   PDWORD pdwDisplacement, PIMAGEHLP_LINEW64 Line)
+ {
+-    IMAGEHLP_LINE64     il64;
++    struct module_pair  pair;
++    struct symt_ht*     symt;
+ 
+-    il64.SizeOfStruct = sizeof(il64);
+-    if (!SymGetLineFromAddr64(hProcess, dwAddr, pdwDisplacement, &il64))
+-        return FALSE;
+-    copy_line_W64_from_64(process_find_by_handle(hProcess), Line, &il64);
++    TRACE("%p %s %p %p\n", hProcess, wine_dbgstr_longlong(dwAddr), pdwDisplacement, Line);
++
++    if (Line->SizeOfStruct < sizeof(*Line)) return FALSE;
++
++    pair.pcs = process_find_by_handle(hProcess);
++    if (!pair.pcs) return FALSE;
++    pair.requested = module_find_by_addr(pair.pcs, dwAddr, DMT_UNKNOWN);
++    if (!module_get_debug(&pair)) return FALSE;
++    if ((symt = symt_find_nearest(pair.effective, dwAddr)) == NULL) return FALSE;
++
++    if (symt->symt.tag != SymTagFunction) return FALSE;
++    if (!symt_fill_func_line_info_w(pair.effective, (struct symt_function*)symt,
++                                  dwAddr, Line)) return FALSE;
++    *pdwDisplacement = dwAddr - Line->Address;
+     return TRUE;
+ }
+ 
+-- 
+2.30.2
+
