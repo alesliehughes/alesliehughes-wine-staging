@@ -1,14 +1,14 @@
-From b097b8839265896d801029810c69a7f83a954e7a Mon Sep 17 00:00:00 2001
+From 8dd12eb7b88a1ebe08f3894988c5f8f4f66fd04a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
-Subject: [PATCH 42/42] Great Hack
+Subject: [PATCH] Great Hack
 
 ---
  dlls/oledb32/dslocator.c | 211 ++++++++++++++++++++++++++++++---------
  1 file changed, 162 insertions(+), 49 deletions(-)
 
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index c74fb5133d2..ab551673ce1 100644
+index 95fd7687560..8230ef15f47 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -39,6 +39,9 @@
@@ -98,10 +98,10 @@ index c74fb5133d2..ab551673ce1 100644
 +    return FALSE;
 +}
 +
- static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      TRACE("(%p, %08x, %08lx, %08lx)\n", hwnd, msg, wp, lp);
-@@ -337,13 +406,15 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -337,13 +406,15 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
          {
@@ -121,7 +121,7 @@ index c74fb5133d2..ab551673ce1 100644
              break;
          }
          case WM_DESTROY:
-@@ -367,48 +438,8 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -367,48 +438,8 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
              NMHDR *hdr = ((LPNMHDR)lp);
              switch(hdr->code)
              {
@@ -172,7 +172,7 @@ index c74fb5133d2..ab551673ce1 100644
              }
  
              break;
-@@ -416,7 +447,10 @@ static LRESULT CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -416,7 +447,10 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
          case WM_COMMAND:
          {
              if (LOWORD(wp) == IDC_BTN_NEXT)
@@ -184,7 +184,7 @@ index c74fb5133d2..ab551673ce1 100644
              break;
          }
          default:
-@@ -485,11 +519,51 @@ static LRESULT CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -485,11 +519,51 @@ static INT_PTR CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
          {
@@ -236,7 +236,7 @@ index c74fb5133d2..ab551673ce1 100644
          case WM_COMMAND:
          {
              switch LOWORD(wp)
-@@ -557,6 +631,11 @@ static LRESULT CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
+@@ -557,6 +631,11 @@ static INT_PTR CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
      {
          case WM_INITDIALOG:
          {
@@ -248,7 +248,7 @@ index c74fb5133d2..ab551673ce1 100644
              EnableWindow(GetDlgItem(hwnd, IDC_LBL_LEVEL), FALSE);
              EnableWindow(GetDlgItem(hwnd, IDC_CBO_LEVEL), FALSE);
              EnableWindow(GetDlgItem(hwnd, IDC_LBL_PROTECTION), FALSE);
-@@ -602,9 +681,26 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -602,9 +681,26 @@ static INT_PTR CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
          case WM_INITDIALOG:
          {
              HWND lv = GetDlgItem(hwnd, IDC_LST_PROPERTIES);
@@ -275,7 +275,7 @@ index c74fb5133d2..ab551673ce1 100644
          case WM_COMMAND:
          {
              if (LOWORD(wp) == IDC_BTN_EDIT)
-@@ -616,14 +712,16 @@ static LRESULT CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -616,14 +712,16 @@ static INT_PTR CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
       }
  
       return 0;
@@ -331,5 +331,5 @@ index c74fb5133d2..ab551673ce1 100644
  
  static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
 -- 
-2.30.2
+2.33.0
 
