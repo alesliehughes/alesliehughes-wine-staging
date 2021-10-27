@@ -1,0 +1,179 @@
+From 2f54415657fc66f664c160c220b657b24ab623a3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 18 Feb 2021 21:04:32 +1100
+Subject: [PATCH 3/4] msado15 dumpings setProp
+
+---
+ dlls/msado15/connection.c   | 25 ++++++++--
+ dlls/msdasql/msdasql_main.c | 92 ++++++++++++++++++++++++++++++++++---
+ 2 files changed, 108 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 191e991e62c..1b286067a3f 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -399,10 +399,13 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+         hr = IDBProperties_SetProperties(props, 1, &propset);
+         FIXME("IDBProperties_SetProperties 0x%08x\n", hr);
+ 
+-        /*{
++        {
+             DBPROPIDSET propidset;
+-            ULONG count;
++            ULONG count = 0, infocount;
+             DBPROPSET *propset = NULL;
++            DBPROPINFOSET *propinfoset;
++            int i;
++            WCHAR *desc;
+ 
+             propidset.rgPropertyIDs = NULL;
+             propidset.cPropertyIDs = 0;
+@@ -410,7 +413,23 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+ 
+             hr = IDBProperties_GetProperties(props, 1, &propidset, &count, &propset);
+             FIXME("IDBProperties_GetProperties 0x%08x, %d, %p (%d)\n", hr, count, propset, propset->cProperties);
+-        }*/
++            for (i=0; i < propset->cProperties; i++)
++            {
++                FIXME("%02d: 0x%08x, opt %d, status %d, value %s\n", i, propset->rgProperties[i].dwPropertyID, propset->rgProperties[i].dwOptions,
++                      propset->rgProperties[i].dwStatus, debugstr_variant(&propset->rgProperties[i].vValue));
++            }
++
++            infocount = 0;
++            hr = IDBProperties_GetPropertyInfo(props, 1, &propidset, &infocount, &propinfoset, &desc);
++            FIXME("IDBProperties_GetPropertyInfo 0x%08x, %d, %p (%s)\n", hr, infocount, propinfoset, debugstr_guid(&propinfoset->guidPropertySet));
++
++            for (i=0; i < propinfoset->cPropertyInfos; i++)
++            {
++                FIXME("%02d: 0x%s, prop 0x%08x, flags %d, type %d, value %s\n", i, debugstr_w(propinfoset->rgPropertyInfos[i].pwszDescription),
++                      propinfoset->rgPropertyInfos[i].dwPropertyID, propinfoset->rgPropertyInfos[i].dwFlags,
++                      propinfoset->rgPropertyInfos[i].vtType, debugstr_variant(&propinfoset->rgPropertyInfos[i].vValues));
++            }
++        }
+ }
+     IDBProperties_Release(props);
+ 
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index 90c2074a633..fc53f63b84e 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -369,7 +369,8 @@ static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropert
+             const DBPROPIDSET rgPropertyIDSets[], ULONG *pcPropertySets, DBPROPSET **prgPropertySets)
+ {
+     struct msdasql *provider = impl_from_IDBProperties(iface);
+-    int i, j;
++    int i;
++    //int j;
+     DBPROPSET *propset;
+ 
+     FIXME("(%p)->(%d %p %p %p)\n", provider, cPropertyIDSets, rgPropertyIDSets, pcPropertySets, prgPropertySets);
+@@ -379,22 +380,101 @@ static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropert
+     propset = CoTaskMemAlloc(rgPropertyIDSets[0].cPropertyIDs * sizeof(DBPROPSET));
+     propset->guidPropertySet = DBPROPSET_DBINIT;
+ 
++
+     for (i=0; i < cPropertyIDSets; i++)
+     {
+         FIXME("Property Set %d\n", i);
+         FIXME("  cPropertyIDs:  %d\n", rgPropertyIDSets[i].cPropertyIDs);
+         FIXME("  guidPropertySet: %s\n", debugstr_guid(&rgPropertyIDSets[i].guidPropertySet) );
+ 
+-        propset->cProperties = rgPropertyIDSets[i].cPropertyIDs;
++        propset->cProperties = 14; //rgPropertyIDSets[i].cPropertyIDs;
+         propset->rgProperties = CoTaskMemAlloc(propset->cProperties * sizeof(DBPROP));
+ 
+-        for (j=0; j < propset->cProperties; j++)
++        propset->rgProperties[0].dwPropertyID = DBPROP_AUTH_PASSWORD;
++        propset->rgProperties[0].dwOptions = 1;
++        propset->rgProperties[0].dwStatus = 0;
++        VariantInit(&propset->rgProperties[0].vValue);
++
++        propset->rgProperties[1].dwPropertyID = DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO;
++        propset->rgProperties[1].dwOptions = 1;
++        propset->rgProperties[1].dwStatus = 0;
++        V_VT(&propset->rgProperties[1].vValue) = VT_BOOL;
++        V_BOOL(&propset->rgProperties[1].vValue) = VARIANT_FALSE;
++
++        propset->rgProperties[2].dwPropertyID = DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO;
++        propset->rgProperties[2].dwOptions = 1;
++        propset->rgProperties[2].dwStatus = 0;
++        VariantInit(&propset->rgProperties[2].vValue);
++
++        propset->rgProperties[3].dwPropertyID = DBPROP_INIT_DATASOURCE;
++        propset->rgProperties[3].dwOptions = 0;
++        propset->rgProperties[3].dwStatus = 0;
++        V_VT(&propset->rgProperties[3].vValue) = VT_BSTR;
++        V_BSTR(&propset->rgProperties[3].vValue) = SysAllocString(L"wine_test");
++
++        propset->rgProperties[4].dwPropertyID = DBPROP_INIT_HWND;
++        propset->rgProperties[4].dwOptions = 1;
++        propset->rgProperties[4].dwStatus = 0;
++        VariantInit(&propset->rgProperties[4].vValue);
++
++        propset->rgProperties[5].dwPropertyID = DBPROP_INIT_LOCATION;
++        propset->rgProperties[5].dwOptions = 1;
++        propset->rgProperties[5].dwStatus = 0;
++        VariantInit(&propset->rgProperties[5].vValue);
++
++        propset->rgProperties[6].dwPropertyID = DBPROP_INIT_MODE;
++        propset->rgProperties[6].dwOptions = 1;
++        propset->rgProperties[6].dwStatus = 0;
++        VariantInit(&propset->rgProperties[6].vValue);
++
++        propset->rgProperties[7].dwPropertyID = DBPROP_INIT_PROMPT;
++        propset->rgProperties[7].dwOptions = 1;
++        propset->rgProperties[7].dwStatus = 0;
++        V_VT(&propset->rgProperties[7].vValue) = VT_I2;
++        V_I2(&propset->rgProperties[7].vValue) = 4;
++
++        propset->rgProperties[8].dwPropertyID = DBPROP_INIT_TIMEOUT;
++        propset->rgProperties[8].dwOptions = 1;
++        propset->rgProperties[8].dwStatus = 0;
++        V_VT(&propset->rgProperties[8].vValue) = VT_I4;
++        V_I4(&propset->rgProperties[8].vValue) = 15;
++
++        propset->rgProperties[9].dwPropertyID = DBPROP_INIT_PROVIDERSTRING;
++        propset->rgProperties[9].dwOptions = 1;
++        propset->rgProperties[9].dwStatus = 0;
++        VariantInit(&propset->rgProperties[9].vValue);
++
++        propset->rgProperties[10].dwPropertyID = DBPROP_INIT_LCID;
++        propset->rgProperties[10].dwOptions = 1;
++        propset->rgProperties[10].dwStatus = 0;
++        V_VT(&propset->rgProperties[10].vValue) = VT_I4;
++        V_I4(&propset->rgProperties[10].vValue) = 3081;
++
++        propset->rgProperties[11].dwPropertyID = DBPROP_INIT_CATALOG;
++        propset->rgProperties[11].dwOptions = 1;
++        propset->rgProperties[11].dwStatus = 0;
++        VariantInit(&propset->rgProperties[11].vValue);
++
++        propset->rgProperties[12].dwPropertyID = DBPROP_INIT_OLEDBSERVICES;
++        propset->rgProperties[12].dwOptions = 0;
++        propset->rgProperties[12].dwStatus = 0;
++        V_VT(&propset->rgProperties[12].vValue) = VT_I4;
++        V_I4(&propset->rgProperties[12].vValue) = -5;
++
++        propset->rgProperties[13].dwPropertyID = DBPROP_INIT_GENERALTIMEOUT;
++        propset->rgProperties[13].dwOptions = 1;
++        propset->rgProperties[13].dwStatus = 0;
++        VariantInit(&propset->rgProperties[13].vValue);
++
++
++        /*for (j=0; j < propset->cProperties; j++)
+         {
+-            FIXME("  rgPropertyIDs[%d]: %d\n", j, rgPropertyIDSets[i].rgPropertyIDs[j]);
++            //FIXME("  rgPropertyIDs[%d]: %d\n", j, rgPropertyIDSets[i].rgPropertyIDs[j]);
++            FIXME("  rgPropertyIDs[%d]: %d\n", j, ids[j]);
+ 
+-            propset->rgProperties[j].dwPropertyID = rgPropertyIDSets[i].rgPropertyIDs[j];
++            propset->rgProperties[j].dwPropertyID = ids[j];
+             VariantInit(&propset->rgProperties[j].vValue);
+-        }
++        }*/
+     }
+ 
+     *prgPropertySets = propset;
+-- 
+2.30.0
+

@@ -1,0 +1,75 @@
+From aecb3551c511ae2a7a56d441a2e01db5266f5613 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 18 Feb 2021 14:00:18 +1100
+Subject: [PATCH 1/4] SetValues sdfsdfsdf
+
+---
+ dlls/msado15/connection.c | 48 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 46 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 500be033199..191e991e62c 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -377,12 +377,56 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+                                              (IUnknown **)&dbinit )) != S_OK) goto done;
+     if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBProperties, (void **)&props )) != S_OK) goto done;
+ 
++{
++        DBPROPSET propset;
++        DBPROP prop1[2];
++
++        memset(prop1, 0, sizeof(prop1));
++        prop1[0].dwPropertyID = DBPROP_INIT_TIMEOUT;
++        prop1[0].dwOptions = DBPROPOPTIONS_OPTIONAL;
++        V_VT(&prop1[0].vValue) = VT_I4;
++        V_I4(&prop1[0].vValue) = 15;
++
++        prop1[1].dwPropertyID = DBPROP_INIT_OLEDBSERVICES;
++        prop1[1].dwOptions = DBPROPOPTIONS_REQUIRED;
++        V_VT(&prop1[1].vValue) = VT_I4;
++        V_I4(&prop1[1].vValue) = -5;
++
++        propset.cProperties    = 2;
++        propset.rgProperties   = prop1;
++        propset.guidPropertySet = DBPROPSET_DBINIT;
++
++        hr = IDBProperties_SetProperties(props, 1, &propset);
++        FIXME("IDBProperties_SetProperties 0x%08x\n", hr);
++
++        /*{
++            DBPROPIDSET propidset;
++            ULONG count;
++            DBPROPSET *propset = NULL;
++
++            propidset.rgPropertyIDs = NULL;
++            propidset.cPropertyIDs = 0;
++            propidset.guidPropertySet = DBPROPSET_DBINIT;
++
++            hr = IDBProperties_GetProperties(props, 1, &propidset, &count, &propset);
++            FIXME("IDBProperties_GetProperties 0x%08x, %d, %p (%d)\n", hr, count, propset, propset->cProperties);
++        }*/
++}
++    IDBProperties_Release(props);
++
+     /* TODO - Update username/password if required. */
+     if ((userid && *userid) || (password && *password))
+         FIXME("Username/password parameters currently not supported\n");
+ 
+-    if ((hr = IDBInitialize_Initialize( dbinit )) != S_OK) goto done;
+-    if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&session )) != S_OK) goto done;
++    if ((hr = IDBInitialize_Initialize( dbinit )) != S_OK){
++        FIXME("IDBInitialize_Initialize\n");
++        goto done;
++    }
++    if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&session )) != S_OK)
++    {
++        FIXME("IDBInitialize_QueryInterface\n");
++goto done;
++}
+     if ((hr = IDBCreateSession_CreateSession( session, NULL, &IID_IUnknown, &connection->session )) == S_OK)
+     {
+         connection->state = adStateOpen;
+-- 
+2.30.0
+

@@ -1,0 +1,46 @@
+From 47aa95a5d2781619dc9d785543b463253e892109 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Mar 2021 07:53:09 +1100
+Subject: [PATCH] msado15: Field tests
+
+---
+ dlls/msado15/tests/msado15.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 823444ffb4a..3a30edfc6df 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1545,6 +1545,29 @@ static void test_connection_open(void)
+     ok( hr == S_OK, "got %08x\n", hr );
+     ok( 0, "After _Recordset_Open\n");
+ 
++    {
++        Fields *fields;
++        Field *field;
++        BSTR name;
++        VARIANT val, index;
++
++
++        hr = _Recordset_get_Fields( recordset, &fields );
++
++        name = SysAllocString( L"id" );
++        V_VT( &index ) = VT_BSTR;
++        V_BSTR( &index ) = name;
++        hr = Fields_get_Item( fields, index, &field );
++        ok( hr == S_OK, "got %08x\n", hr );
++        SysFreeString( name );
++
++        hr = Field_get_Value(field, &val);
++        ok( hr == S_OK, "got %08x\n", hr );
++
++        Field_Release(field);
++        Fields_Release(fields);
++    }
++
+     hr = _Recordset_get_CursorType(recordset, &cursortype);
+     ok( hr == S_OK, "got %08x\n", hr );
+     todo_wine ok( cursortype == adOpenStatic, "got %d\n", cursortype );
+-- 
+2.30.1
+

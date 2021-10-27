@@ -1,0 +1,72 @@
+From a16c0ab2af417bef640c4b4b548aa26c93e72c07 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 24 Mar 2021 16:10:13 +1100
+Subject: [PATCH] msado15: Dump field props
+
+---
+ dlls/msado15/tests/msado15.c | 42 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 41 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 678ba57a5e2..ee42fd2b22e 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1581,7 +1581,10 @@ static void test_connection_open(void)
+         Field *field;
+         BSTR name;
+         VARIANT val, index;
+-
++        Properties *props;
++        Property *prop;
++        LONG count;
++        int i;
+ 
+         hr = _Recordset_get_Fields( recordset, &fields );
+ 
+@@ -1597,6 +1600,43 @@ static void test_connection_open(void)
+         ok( V_VT(&val) == VT_I4, "got %d\n", V_VT(&val) );
+         ok( V_I4(&val) == 1, "got %d\n", V_I4(&val) );
+ 
++        hr = Field_get_Properties(field, &props);
++        ok( hr == S_OK, "got %08x\n", hr );
++
++        count = -1;
++        hr = Properties_get_Count(props, &count);
++        ok( hr == S_OK, "got %08x\n", hr );
++        todo_wine ok( 9, "got %d\n", count );
++
++        for (i=0; i < count; i++)
++        {
++            V_VT( &index ) = VT_I4;
++            V_I4( &index ) = i;
++            hr = Properties_get_Item(props, index, &prop);
++            ok( hr == S_OK, "got %08x\n", hr );
++            if (SUCCEEDED(hr))
++            {
++                BSTR name;
++                VARIANT value;
++
++                hr = Property_get_Name(prop, &name);
++                ok( hr == S_OK, "got %08x\n", hr );
++
++                hr = Property_get_Value(prop, &value);
++                ok( hr == S_OK, "got %08x\n", hr );
++
++                ok(0, "%d. Name %s (%s)\n", i , debugstr_w(name), debugstr_variant(&value));
++                SysFreeString(name);
++            }
++        }
++
++        V_VT( &index ) = VT_I4;
++        V_I4( &index ) = 1000;
++        hr = Properties_get_Item(props, index, &prop);
++        ok( hr == MAKE_ADO_HRESULT(adErrItemNotFound), "got %08x\n", hr );
++
++        Properties_Release(props);
++
+         Field_Release(field);
+         Fields_Release(fields);
+     }
+-- 
+2.30.2
+

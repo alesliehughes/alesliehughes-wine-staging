@@ -1,0 +1,190 @@
+From 364957fd587baa05f0d5925aa2eeab6d405a121c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Feb 2021 14:18:02 +1100
+Subject: [PATCH 5/5] rwoset getinfo
+
+---
+ dlls/msado15/connection.c    | 56 ++++++++++++++++++++++++++++++++++++
+ dlls/msado15/tests/msado15.c |  2 +-
+ dlls/msdasql/session.c       | 38 ++++++++++++++++++++----
+ 3 files changed, 89 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 500be033199..eaae1a1eafb 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -326,6 +326,62 @@ static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARI
+         V_I4(records_affected) = affected;
+     }
+ 
++{
++    IAccessor *access;
++
++    hr = IUnknown_QueryInterface(rowset, &IID_IAccessor, (void**)&access);
++    FIXME("0x%08x\n", hr);
++    if (hr == S_OK)
++    {
++        DBBINDING bindings;
++        HACCESSOR haccess;
++
++        bindings.iOrdinal = 1;
++        bindings.obValue = 1;
++        bindings.obLength = 8;
++        bindings.obStatus = DBSTATUS_E_BADSTATUS;
++        bindings.pTypeInfo = NULL;
++        bindings.pObject = NULL;
++        //    DBBINDEXT *pBindExt;
++        bindings.dwPart = 7;
++        bindings.dwMemOwner = 0;
++        bindings.eParamIO = 0;
++        bindings.cbMaxLen = 5;
++        bindings.dwFlags = 0;
++        bindings.wType = 3;
++        bindings.bPrecision = 1;
++        bindings.bScale = 1;
++
++        hr = IAccessor_CreateAccessor(access, DBACCESSOR_ROWDATA, 1, &bindings, 0, &haccess, NULL);
++        FIXME("IAccessor_CreateAccessor = 0x%08x\n", hr);
++        if (hr == S_OK)
++{
++            DBREFCOUNT cnt;
++            DBCOUNTITEM obtained;
++            HROW *row = NULL;
++            IRowset *prow = NULL;
++
++            hr = IUnknown_QueryInterface(rowset, &IID_IRowset, (void**)&prow);
++            FIXME("IUnknown_QueryInterface IID_IRowset = 0x%08x\n", hr);
++
++            while (hr == S_OK)
++            {
++                hr = IRowset_GetNextRows( prow, 0, 0, 1, &obtained, &row);
++                FIXME("IRowset_GetNextRows = 0x%08x (%lu) %p\n", hr, obtained, row);
++
++                IRowset_ReleaseRows(prow, 1, row, NULL, NULL, NULL);
++            }
++
++
++            hr = IAccessor_ReleaseAccessor(access, haccess, &cnt);
++
++            FIXME("IAccessor_ReleaseAccessor = 0x%08x (%lu)\n", hr, cnt);
++}
++
++    }
++
++}
++
+     _Recordset_put_CursorLocation(recordset, connection->location);
+     *record_set = recordset;
+ 
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 4de75102e12..6f62f8d2cec 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1520,7 +1520,7 @@ static void test_connection_open(void)
+     hr = _Recordset_put_CursorLocation(recordset, adUseClient);
+     ok( hr == S_OK, "got %08x\n", hr );
+ 
+-    hr = _Recordset_put_CursorType(recordset, adOpenForwardOnly);
++    hr = _Recordset_put_CursorType(recordset, adOpenDynamic);
+     ok( hr == S_OK, "got %08x\n", hr );
+ 
+     ok( 0, "Before _Recordset_Open\n");
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index a27ffea5736..bb518bbb81a 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -442,6 +442,8 @@ struct msdasql_rowset
+     IColumnsInfo IColumnsInfo_iface;
+     IAccessor IAccessor_iface;
+     LONG refs;
++
++    int rows;
+ };
+ 
+ static inline struct msdasql_rowset *impl_from_IRowset( IRowset *iface )
+@@ -556,22 +558,21 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
+         DBROWCOUNT count, DBCOUNTITEM *obtained, HROW **rows)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
+-    static INT once;
+ 
+     FIXME("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
+ 
+     if (!obtained || !rows)
+         return E_INVALIDARG;
+ 
+-    if (once++)
+-        return DB_S_ENDOFROWSET;
+     *obtained = 0;
++    if (rowset->rows++ == 2)
++        return DB_S_NONEXTROWSET;
+ 
+     if (!count)
+         return S_OK;
+ 
+     *obtained = 1;
+-    //*rows = NULL;
++    *rows = (HROW*)(0xDEADBEEA + rowset->rows);
+ 
+     return S_OK;
+ }
+@@ -704,7 +705,9 @@ static HRESULT WINAPI rowset_info_GetSpecification(IRowsetInfo *iface, REFIID ri
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );
+     FIXME("%p, %s, %p\n", rowset, debugstr_guid(riid), specification);
+-    return E_NOTIMPL;
++
++    *specification = NULL;
++    return S_FALSE;
+ }
+ 
+ struct IRowsetInfoVtbl rowset_info_vtbl =
+@@ -815,7 +818,26 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
+     FIXME("%p 0x%08x, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
+ 
+-    *accessor = (HACCESSOR *)0xDeadBeef;
++    FIXME("ord %ld. Value %ld, Len %ld, status %ld, typeinfo %p, part %d, Owner %d, io %d, Max %ld, flags %08x, type %d,  prec %d, sacle %d\n",
++          bindings[0].iOrdinal,
++    bindings[0].obValue,
++    bindings[0].obLength,
++    bindings[0].obStatus,
++    bindings[0].pTypeInfo,
++//    DBOBJECT *pObject;
++//    DBBINDEXT *pBindExt;
++    bindings[0].dwPart,
++    bindings[0].dwMemOwner,
++    bindings[0].eParamIO,
++    bindings[0].cbMaxLen,
++    bindings[0].dwFlags,
++    bindings[0].wType,
++    bindings[0].bPrecision,
++    bindings[0].bScale);
++    //*accessor = (HACCESSOR *)0xDeadBeef;
++    if (bindings[0].pObject)
++        FIXME("DBOBJECT 0x%08x, %s\n", bindings[0].pObject->dwFlags, debugstr_guid(&bindings[0].pObject->iid));
++
+     if (status)
+         *status = DBBINDSTATUS_OK;
+     return S_OK;
+@@ -833,6 +855,9 @@ static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSO
+ {
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
+     FIXME("%p, %lu, %p\n", rowset, accessor, count);
++
++    if (*count)
++        *count = 0;
+     return S_OK;
+ }
+ 
+@@ -865,6 +890,7 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+     msrowset->IColumnsInfo_iface.lpVtbl = &rowset_columninfo_vtbll;
+     msrowset->IAccessor_iface.lpVtbl = &accessor_vtbl;
+     msrowset->refs = 1;
++    msrowset->rows = 0;
+ 
+     if (affected) *affected = 1; /* FIXME */
+ 
+-- 
+2.30.0
+

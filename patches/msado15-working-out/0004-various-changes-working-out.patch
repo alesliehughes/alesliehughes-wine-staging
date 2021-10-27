@@ -1,0 +1,124 @@
+From c0e64b986d0a43646e418489a5957657189464d8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Feb 2021 10:35:41 +1100
+Subject: [PATCH 4/4] various changes working out
+
+---
+ dlls/msado15/connection.c    |  7 +++++--
+ dlls/msado15/tests/msado15.c |  6 ++++--
+ dlls/msdasql/msdasql_main.c  |  2 +-
+ dlls/oledb32/datainit.c      | 15 ++++++++++++++-
+ 4 files changed, 24 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index 1b286067a3f..4e40339b914 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -390,7 +390,7 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+         prop1[1].dwPropertyID = DBPROP_INIT_OLEDBSERVICES;
+         prop1[1].dwOptions = DBPROPOPTIONS_REQUIRED;
+         V_VT(&prop1[1].vValue) = VT_I4;
+-        V_I4(&prop1[1].vValue) = -5;
++        V_I4(&prop1[1].vValue) = 2147483643;
+ 
+         propset.cProperties    = 2;
+         propset.rgProperties   = prop1;
+@@ -431,7 +431,10 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+             }
+         }
+ }
+-    IDBProperties_Release(props);
++    //IDBProperties_Release(props);
++    {
++
++    }
+ 
+     /* TODO - Update username/password if required. */
+     if ((userid && *userid) || (password && *password))
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 4de75102e12..48331ef1a23 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1502,8 +1502,10 @@ static void test_connection_open(void)
+     str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
+     str2 = SysAllocStringLen(NULL, 0);
+ 
++    ok( 0, "Before _Connection_Open\n");
+     hr = _Connection_Open(connection, str, str2, str2, 0);
+     ok( hr == S_OK, "got %08x\n", hr );
++    ok( 0, "After _Connection_Open\n");
+     SysFreeString(str);
+     SysFreeString(str2);
+ 
+@@ -1622,13 +1624,13 @@ static void test_connection_open(void)
+ START_TEST(msado15)
+ {
+     CoInitialize( NULL );
+-    test_Connection();
++    /*test_Connection();
+     test_ADORecordsetConstruction();
+     test_ConnectionPoint();
+     test_Fields();
+     test_Recordset();
+     test_Stream();
+-    test_Command();
++    test_Command();*/
+     test_connection_open();
+     CoUninitialize();
+ }
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index fc53f63b84e..37b6b48dcf6 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -459,7 +459,7 @@ static HRESULT WINAPI dbprops_GetProperties(IDBProperties *iface, ULONG cPropert
+         propset->rgProperties[12].dwOptions = 0;
+         propset->rgProperties[12].dwStatus = 0;
+         V_VT(&propset->rgProperties[12].vValue) = VT_I4;
+-        V_I4(&propset->rgProperties[12].vValue) = -5;
++        V_I4(&propset->rgProperties[12].vValue) = 2147483641; // 2147483643
+ 
+         propset->rgProperties[13].dwPropertyID = DBPROP_INIT_GENERALTIMEOUT;
+         propset->rgProperties[13].dwOptions = 1;
+diff --git a/dlls/oledb32/datainit.c b/dlls/oledb32/datainit.c
+index ec26d0a11ee..840816bd40e 100644
+--- a/dlls/oledb32/datainit.c
++++ b/dlls/oledb32/datainit.c
+@@ -428,6 +428,7 @@ static HRESULT parse_init_string(const WCHAR *initstring, struct dbprops *props)
+     const WCHAR *start;
+     WCHAR *eq;
+     HRESULT hr = S_OK;
++    BSTR value, name;
+ 
+     list_init(&props->props);
+     props->count = 0;
+@@ -436,7 +437,7 @@ static HRESULT parse_init_string(const WCHAR *initstring, struct dbprops *props)
+     while (start && (eq = wcschr(start, '=')))
+     {
+         WCHAR *delim, quote;
+-        BSTR value, name;
++
+ 
+         name = SysAllocStringLen(start, eq - start);
+         /* skip equal sign to get value */
+@@ -485,6 +486,18 @@ static HRESULT parse_init_string(const WCHAR *initstring, struct dbprops *props)
+         }
+     }
+ 
++    name = SysAllocString(L"OLE DB Services");
++    value = SysAllocString(L"2147483641");
++    hr = add_dbprop_to_list(props, name, value);
++
++    name = SysAllocString(L"Locale Identifier");
++    value = SysAllocString(L"3081");
++    hr = add_dbprop_to_list(props, name, value);
++
++    name = SysAllocString(L"General Timeout");
++    value = SysAllocString(L"15");
++    hr = add_dbprop_to_list(props, name, value);
++
+     if (FAILED(hr))
+         free_dbprop_list(props);
+ 
+-- 
+2.30.0
+

@@ -1,0 +1,165 @@
+From 9b403e81e15005646a783c5cb917655b89e2c3df Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 3 Mar 2021 12:23:23 +1100
+Subject: [PATCH] msado15: Create accessor handle
+
+---
+ dlls/msado15/recordset.c | 107 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 107 insertions(+)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 0bd6b7ed61c..365e799e7a1 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -25,6 +25,7 @@
+ #include "msado15_backcompat.h"
+ #include "oledb.h"
+ #include "oledberr.h"
++#include "sqlucode.h"
+ 
+ #include "wine/debug.h"
+ #include "wine/heap.h"
+@@ -49,6 +50,7 @@ struct recordset
+     CursorLocationEnum cursor_location;
+     CursorTypeEnum     cursor_type;
+     IRowset           *row_set;
++    HACCESSOR          haccessor;
+ };
+ 
+ struct fields
+@@ -860,6 +862,8 @@ static void close_recordset( struct recordset *recordset )
+ {
+     ULONG row, col, col_count;
+ 
++    // TODO if (recordset->haccessor)
++
+     if ( recordset->row_set ) IRowset_Release( recordset->row_set );
+     recordset->row_set = NULL;
+ 
+@@ -1292,6 +1296,92 @@ static HRESULT WINAPI recordset_MoveLast( _Recordset *iface )
+     return S_OK;
+ }
+ 
++#define ROUND_SIZE(size) (((size) + sizeof(void *) - 1) & ~(sizeof(void *) - 1))
++
++static HRESULT create_accessor(IUnknown *rowset, HACCESSOR *haccessor)
++{
++    HRESULT hr;
++    IColumnsInfo *columninfo;
++    IAccessor *accessor;
++    DBORDINAL columns, i;
++    DBCOLUMNINFO *colinfo;
++    OLECHAR *stringsbuffer;
++    DBBINDING *bindings;
++
++    hr = IUnknown_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&columninfo);
++    if (FAILED(hr))
++        return hr;
++
++    hr = IUnknown_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
++    if (FAILED(hr))
++    {
++        IColumnsInfo_Release(columninfo);
++        return hr;
++    }
++
++    hr = IColumnsInfo_GetColumnInfo(columninfo, &columns, &colinfo, &stringsbuffer);
++    if (SUCCEEDED(hr))
++    {
++        DBBINDSTATUS *dbstatus;
++        DBBYTEOFFSET offset = 1;
++
++        bindings = heap_alloc(sizeof(DBBINDING) * columns);
++        dbstatus = heap_alloc(sizeof(DBBINDSTATUS) * columns);
++        for (i=0; i < columns; i++)
++        {
++            FIXME("Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %lu, dwFlags 0x%08x, "
++                  "ulColumnSize %lu, wType %d, bPrecision %d, bScale %d\n",
++                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
++                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
++                  colinfo[i].bPrecision, colinfo[i].bScale);
++
++            bindings[i].iOrdinal = colinfo[i].iOrdinal;
++            bindings[i].obValue = offset;
++            bindings[i].pTypeInfo = NULL;
++            bindings[i].pObject = NULL;
++            bindings[i].pBindExt = NULL;
++            bindings[i].dwPart = DBPART_VALUE | DBPART_LENGTH | DBPART_STATUS;
++            bindings[i].dwMemOwner = DBMEMOWNER_CLIENTOWNED;
++            bindings[i].eParamIO = 0;
++
++            if ( colinfo[i].wType == DBTYPE_WSTR)
++            {
++                bindings[i].cbMaxLen = (colinfo[i].ulColumnSize + 1) * sizeof(WCHAR);
++            }
++            else
++                bindings[i].cbMaxLen = colinfo[i].ulColumnSize;
++
++            offset += bindings[i].cbMaxLen;
++
++            bindings[i].dwFlags = 0;
++            bindings[i].wType = colinfo[i].wType;
++            bindings[i].bPrecision = colinfo[i].bPrecision;
++            bindings[i].bScale = colinfo[i].bScale;
++        }
++
++        offset = ROUND_SIZE(offset);
++        for (i=0; i < columns; i++)
++        {
++            bindings[i].obLength = offset;
++            bindings[i].obStatus = offset + sizeof(bindings[i].obLength);
++
++            offset += sizeof(bindings[i].obLength) + sizeof(bindings[i].obStatus);
++        }
++
++        hr = IAccessor_CreateAccessor(accessor, DBACCESSOR_ROWDATA, columns, bindings, 0, haccessor, dbstatus);
++
++        heap_free(bindings);
++        heap_free(dbstatus);
++
++        CoTaskMemFree(colinfo);
++        CoTaskMemFree(stringsbuffer);
++    }
++
++    IColumnsInfo_Release(columninfo);
++
++    return hr;
++}
++
+ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
+                                       CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
+ {
+@@ -1346,6 +1436,22 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+     if (FAILED(hr))
+         return hr;
+ 
++    if ((hr = fields_create( recordset, &recordset->fields )) != S_OK)
++        return hr;
++
++    if (!resize_recordset( recordset, affected )) return E_OUTOFMEMORY;
++
++
++    hr = create_accessor(rowset, &recordset->haccessor);
++    if (FAILED(hr))
++    {
++        IUnknown_Release(rowset);
++        return hr;
++    }
++
++    recordset->count = affected;
++    recordset->index = affected ? 0 : -1;
++
+     ADORecordsetConstruction_put_Rowset(&recordset->ADORecordsetConstruction_iface, rowset);
+     recordset->cursor_type = cursor_type;
+     recordset->state = adStateOpen;
+@@ -1931,6 +2037,7 @@ HRESULT Recordset_create( void **obj )
+     recordset->cursor_location = adUseServer;
+     recordset->cursor_type = adOpenForwardOnly;
+     recordset->row_set = NULL;
++    recordset->haccessor = 0;
+ 
+     *obj = &recordset->Recordset_iface;
+     TRACE( "returning iface %p\n", *obj );
+-- 
+2.30.1
+
