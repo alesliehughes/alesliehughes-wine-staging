@@ -129,7 +129,7 @@ index 32b17cc38a2..35a43634ef7 100644
      FIXME("%p, %p, %s, %p\n", session, outer, debugstr_guid(riid), out);
 -    return E_NOTIMPL;
 +
-+    command = heap_alloc(sizeof(*session));
++    command = heap_alloc(sizeof(*command));
 +    if (!command)
 +        return E_OUTOFMEMORY;
 +
