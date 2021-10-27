@@ -1,0 +1,142 @@
+From fe852b8ca05eb316b6e15e8dd25b944e907af765 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 4 Nov 2020 10:08:50 +1100
+Subject: [PATCH] mf: Support MF_RATE_CONTROL_SERVICE service
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/mf/sar.c      | 74 ++++++++++++++++++++++++++++++++++++++++++++++
+ dlls/mf/tests/mf.c |  4 +++
+ 2 files changed, 78 insertions(+)
+
+diff --git a/dlls/mf/sar.c b/dlls/mf/sar.c
+index e318576e80e..a8f609c12ea 100644
+--- a/dlls/mf/sar.c
++++ b/dlls/mf/sar.c
+@@ -82,6 +82,7 @@ struct audio_renderer
+     IMFSimpleAudioVolume IMFSimpleAudioVolume_iface;
+     IMFAudioStreamVolume IMFAudioStreamVolume_iface;
+     IMFAudioPolicy IMFAudioPolicy_iface;
++    IMFRateSupport IMFRateSupport_iface;
+     IMFAsyncCallback render_callback;
+     LONG refcount;
+     IMFMediaEventQueue *event_queue;
+@@ -164,6 +165,11 @@ static struct audio_renderer *impl_from_IMFAudioPolicy(IMFAudioPolicy *iface)
+     return CONTAINING_RECORD(iface, struct audio_renderer, IMFAudioPolicy_iface);
+ }
+ 
++static struct audio_renderer *impl_from_IMFRateSupport(IMFRateSupport *iface)
++{
++    return CONTAINING_RECORD(iface, struct audio_renderer, IMFRateSupport_iface);
++}
++
+ static struct audio_renderer *impl_from_IMFStreamSink(IMFStreamSink *iface)
+ {
+     return CONTAINING_RECORD(iface, struct audio_renderer, IMFStreamSink_iface);
+@@ -793,6 +799,10 @@ static HRESULT WINAPI audio_renderer_get_service_GetService(IMFGetService *iface
+     {
+         *obj = &renderer->IMFAudioPolicy_iface;
+     }
++    else if (IsEqualGUID(service, &MF_RATE_CONTROL_SERVICE) && IsEqualIID(riid, &IID_IMFRateSupport))
++    {
++        *obj = &renderer->IMFRateSupport_iface;
++    }
+     else
+         FIXME("Unsupported service %s, interface %s.\n", debugstr_guid(service), debugstr_guid(riid));
+ 
+@@ -1137,6 +1147,69 @@ static const IMFAudioPolicyVtbl audio_renderer_policy_vtbl =
+     audio_renderer_policy_GetIconPath,
+ };
+ 
++static HRESULT WINAPI mf_rate_support_QueryInterface(IMFRateSupport *iface, REFIID riid, void **obj)
++{
++    TRACE("%p, %s, %p.\n", iface, debugstr_guid(riid), obj);
++
++    if (IsEqualIID(riid, &IID_IMFRateSupport) ||
++            IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IMFRateSupport_AddRef(iface);
++        return S_OK;
++    }
++
++    WARN("Unsupported interface %s.\n", debugstr_guid(riid));
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI mf_rate_support_AddRef(IMFRateSupport *iface)
++{
++    struct audio_renderer *renderer = impl_from_IMFRateSupport(iface);
++    return IMFMediaSink_AddRef(&renderer->IMFMediaSink_iface);
++}
++
++static ULONG WINAPI mf_rate_support_Release(IMFRateSupport *iface)
++{
++    struct audio_renderer *renderer = impl_from_IMFRateSupport(iface);
++    return IMFMediaSink_Release(&renderer->IMFMediaSink_iface);
++}
++
++static HRESULT WINAPI mf_rate_support_GetSlowestRate(IMFRateSupport *iface, MFRATE_DIRECTION direction,
++    BOOL thin, float *rate)
++{
++    FIXME("%p, %d, %d, %p.\n", iface, direction, thin, rate);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI mf_rate_support_GetFastestRate(IMFRateSupport *iface, MFRATE_DIRECTION direction,
++    BOOL thin, float *rate)
++{
++    FIXME("%p, %d, %d, %p.\n", iface, direction, thin, rate);
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI mf_rate_support_IsRateSupported(IMFRateSupport *iface, BOOL thin,
++    float rate, float *nearest_supported_rate)
++{
++    FIXME("%p, %d, %f, %p.\n", iface, thin, rate, nearest_supported_rate);
++
++    return E_NOTIMPL;
++}
++
++struct IMFRateSupportVtbl mfratesupportVtbl =
++{
++    mf_rate_support_QueryInterface,
++    mf_rate_support_AddRef,
++    mf_rate_support_Release,
++    mf_rate_support_GetSlowestRate,
++    mf_rate_support_GetFastestRate,
++    mf_rate_support_IsRateSupported
++};
++
+ static HRESULT sar_create_mmdevice(IMFAttributes *attributes, struct audio_renderer *renderer)
+ {
+     WCHAR *endpoint;
+@@ -1851,6 +1924,7 @@ static HRESULT sar_create_object(IMFAttributes *attributes, void *user_context,
+     renderer->IMFAudioStreamVolume_iface.lpVtbl = &audio_renderer_stream_volume_vtbl;
+     renderer->IMFAudioPolicy_iface.lpVtbl = &audio_renderer_policy_vtbl;
+     renderer->render_callback.lpVtbl = &audio_renderer_render_callback_vtbl;
++    renderer->IMFRateSupport_iface.lpVtbl = &mfratesupportVtbl;
+     renderer->refcount = 1;
+     InitializeCriticalSection(&renderer->cs);
+     renderer->buffer_ready_event = CreateEventW(NULL, FALSE, FALSE, NULL);
+diff --git a/dlls/mf/tests/mf.c b/dlls/mf/tests/mf.c
+index 6fb3262074b..3b24cf8ba50 100644
+--- a/dlls/mf/tests/mf.c
++++ b/dlls/mf/tests/mf.c
+@@ -3101,6 +3101,10 @@ todo_wine
+     ok(hr == S_OK, "Failed to get interface, hr %#x.\n", hr);
+     IUnknown_Release(unk);
+ 
++    hr = MFGetService((IUnknown *)sink, &MF_RATE_CONTROL_SERVICE, &IID_IMFRateSupport, (void **)&unk);
++    ok(hr == S_OK, "Failed to get interface, hr %#x.\n", hr);
++    IUnknown_Release(unk);
++
+     /* Shutdown */
+     EXPECT_REF(present_clock, 2);
+     hr = IMFMediaSink_Shutdown(sink);
+-- 
+2.28.0
+
