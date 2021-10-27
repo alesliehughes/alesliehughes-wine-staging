@@ -3,6 +3,10 @@ From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 20 Jan 2020 16:01:23 +1100
 Subject: [PATCH 06/42] msdasql: Implement IDBProperties GetPropertyInfo
 
+
+NOTE: The GetProperties part of this patch need to be implemented.
+
+
 ---
  dlls/msdasql/Makefile.in      |   2 +-
  dlls/msdasql/msdasql_main.c   | 149 ++++++++++++++++++++++++++++++++--
