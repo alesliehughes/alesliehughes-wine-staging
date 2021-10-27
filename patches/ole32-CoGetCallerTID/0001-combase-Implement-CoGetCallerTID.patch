@@ -1,0 +1,63 @@
+From 8ef499a0939cc80cc30c1b3ad598e8ff85161777 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 10 Nov 2015 14:24:28 +1100
+Subject: [PATCH] combase: Implement CoGetCallerTID
+
+Fixes https://bugs.winehq.org/show_bug.cgi?id=????
+---
+ dlls/combase/combase.c | 37 +++++++++++++++++++++++++++++++++----
+ 1 file changed, 33 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/combase/combase.c b/dlls/combase/combase.c
+index 4677972656f..636f1e12f50 100644
+--- a/dlls/combase/combase.c
++++ b/dlls/combase/combase.c
+@@ -3297,12 +3297,41 @@ HRESULT WINAPI CoEnableCallCancellation(void *reserved)
+ }
+ 
+ /***********************************************************************
+- *           CoGetCallerTID    (combase.@)
++ *              CoGetCallerTID        [OLE32.@]
+  */
+-HRESULT WINAPI CoGetCallerTID(DWORD *tid)
++HRESULT WINAPI CoGetCallerTID(DWORD *threadid)
+ {
+-    FIXME("stub!\n");
+-    return E_NOTIMPL;
++  /*
++  Receives the apartment ID of the caller's thread.
++
++  For a single threaded apartment (STA), this is the current thread ID.
++  For a multithreaded apartment (MTA), the value is 0.
++  For a neutral apartment (NA), the value is -1.
++
++S_TRUE   - The caller's thread ID is set and the caller is in the same process.
++
++S_FALSE  -  The caller's thread ID is set and the caller is in a different process.
++
++   */
++    struct apartment *apt;
++
++    TRACE("%p\n", threadid);
++
++    apt = apartment_get_current_or_mta();
++    if (!apt)
++    {
++        *threadid = -1;
++    }
++    else
++    {
++        if(!apt->multi_threaded)
++            *threadid = apt->tid;
++        else
++            *threadid = 0;
++    }
++
++
++  return TRUE;
+ }
+ 
+ /***********************************************************************
+-- 
+2.33.0
+
