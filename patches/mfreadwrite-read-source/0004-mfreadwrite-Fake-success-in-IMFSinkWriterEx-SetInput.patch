@@ -1,0 +1,26 @@
+From d5374340cd9bf6faf9b057c8c1c6fb9b6e96db95 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 3 Jan 2019 13:42:30 +1100
+Subject: [PATCH 4/4] mfreadwrite: Fake success in IMFSinkWriterEx
+ SetInputMediaType
+
+---
+ dlls/mfreadwrite/writer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/mfreadwrite/writer.c b/dlls/mfreadwrite/writer.c
+index c3425eb9ff2..8cf29d9a5c2 100644
+--- a/dlls/mfreadwrite/writer.c
++++ b/dlls/mfreadwrite/writer.c
+@@ -299,7 +299,7 @@ static HRESULT WINAPI mfsinkwriter_SetInputMediaType(IMFSinkWriterEx *iface, DWO
+ {
+     struct mfsinkwriter *This = impl_from_IMFSinkWriterEx(iface);
+     FIXME("%p, %d, %p, %p\n", This, index, type, parameters);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI mfsinkwriter_BeginWriting(IMFSinkWriterEx *iface)
+-- 
+2.33.0
+
