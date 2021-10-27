@@ -1,0 +1,80 @@
+From b4cd6cb74ae42f9367ae1f13caed276228f94818 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 20 Sep 2021 15:56:41 +1000
+Subject: [PATCH] msmpeg2vdec: New dll
+
+---
+ dlls/msmpeg2vdec/Makefile.in      |  5 +++++
+ dlls/msmpeg2vdec/msmpeg2vdec.c    | 32 +++++++++++++++++++++++++++++++
+ dlls/msmpeg2vdec/msmpeg2vdec.spec |  8 ++++++++
+ 3 files changed, 61 insertions(+), 10 deletions(-)
+ create mode 100644 dlls/msmpeg2vdec/Makefile.in
+ create mode 100644 dlls/msmpeg2vdec/msmpeg2vdec.c
+ create mode 100644 dlls/msmpeg2vdec/msmpeg2vdec.spec
+
+diff --git a/dlls/msmpeg2vdec/Makefile.in b/dlls/msmpeg2vdec/Makefile.in
+new file mode 100644
+index 00000000000..dc5a917bdb8
+--- /dev/null
++++ b/dlls/msmpeg2vdec/Makefile.in
+@@ -0,0 +1,5 @@
++MODULE    = msmpeg2vdec.dll
++
++
++C_SRCS = \
++	msmpeg2vdec.c
+diff --git a/dlls/msmpeg2vdec/msmpeg2vdec.c b/dlls/msmpeg2vdec/msmpeg2vdec.c
+new file mode 100644
+index 00000000000..2e0c3c51140
+--- /dev/null
++++ b/dlls/msmpeg2vdec/msmpeg2vdec.c
+@@ -0,0 +1,32 @@
++/*
++ * Copyright 2021 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(msmpeg2vdec);
++
++HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **obj)
++{
++    FIXME("(%s, %s, %p) stub!\n", debugstr_guid(rclsid), debugstr_guid(riid), obj);
++
++    return CLASS_E_CLASSNOTAVAILABLE;
++}
+diff --git a/dlls/msmpeg2vdec/msmpeg2vdec.spec b/dlls/msmpeg2vdec/msmpeg2vdec.spec
+new file mode 100644
+index 00000000000..3d6969dbcf1
+--- /dev/null
++++ b/dlls/msmpeg2vdec/msmpeg2vdec.spec
+@@ -0,0 +1,8 @@
++@ stub GetH264DecoderFunctionTable
++@ stub ?GetSurface@CVIDEOfilter@@QAEJHPAEJ@Z
++@ stub ?GetSurfaceSize@CVIDEOfilter@@QAEJHPAJ@Z
++@ stub ?LoadSurface@CVIDEOfilter@@QAEJHPAEK@Z
++@ stdcall -private DllCanUnloadNow()
++@ stdcall -private DllGetClassObject(ptr ptr ptr)
++@ stdcall -private DllRegisterServer()
++@ stdcall -private DllUnregisterServer()
+-- 
+2.33.0
+
