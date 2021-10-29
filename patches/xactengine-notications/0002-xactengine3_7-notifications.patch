@@ -1,14 +1,11 @@
-From 1d1d011d407e805887b8018c3fccc5fe3446abb8 Mon Sep 17 00:00:00 2001
+From a5439a8a6d3706ee6c3ea13cd76deee1484083d4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 12 Sep 2020 14:10:18 +1000
-Subject: [PATCH 2/2] xactengine3_7: notifications
+Subject: xactengine3_7: notifications
 
----
- dlls/xactengine3_7/xact_dll.c | 59 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 58 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/xactengine3_7/xact_dll.c b/dlls/xactengine3_7/xact_dll.c
-index 326f79f0ecd..424d767beaa 100644
+index 326f79f0ecd..62084f9234f 100644
 --- a/dlls/xactengine3_7/xact_dll.c
 +++ b/dlls/xactengine3_7/xact_dll.c
 @@ -329,6 +329,8 @@ static HRESULT WINAPI IXACT3SoundBankImpl_Prepare(IXACT3SoundBank *iface,
@@ -55,7 +52,7 @@ index 326f79f0ecd..424d767beaa 100644
  
      /* Older versions of FAudio don't pass through the context */
      if (!engine)
-@@ -845,7 +854,43 @@ static void FACTCALL fact_notification_cb(const FACTNotification *notification)
+@@ -845,7 +854,45 @@ static void FACTCALL fact_notification_cb(const FACTNotification *notification)
          return;
      }
  
@@ -83,12 +80,14 @@ index 326f79f0ecd..424d767beaa 100644
 +#endif
 +            note.wave.pWaveBank = FACTWaveBank_GetPrivateContext(notification->wave.pWaveBank);
 +            break;
-+        case XACTNOTIFICATIONTYPE_CUEDESTROYED:
++
 +        case XACTNOTIFICATIONTYPE_CUEPLAY:
 +        case XACTNOTIFICATIONTYPE_CUEPREPARED:
 +        case XACTNOTIFICATIONTYPE_CUESTOP:
-+            note.cue.cueIndex = notification->cue.cueIndex;
 +            note.cue.pCue = FACTCue_GetPrivateContext(notification->cue.pCue);
++            /* Fall through */
++        case XACTNOTIFICATIONTYPE_CUEDESTROYED:
++            note.cue.cueIndex = notification->cue.cueIndex;
 +            note.cue.pSoundBank = FACTSoundBank_GetPrivateContext(notification->cue.pSoundBank);
 +            break;
 +        default:
@@ -100,7 +99,7 @@ index 326f79f0ecd..424d767beaa 100644
  }
  
  static HRESULT WINAPI IXACT3EngineImpl_Initialize(IXACT3Engine *iface,
-@@ -961,6 +1006,8 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
+@@ -961,6 +1008,8 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateSoundBank(IXACT3Engine *iface,
      sb->fact_soundbank = fsb;
      *ppSoundBank = &sb->IXACT3SoundBank_iface;
  
@@ -109,7 +108,7 @@ index 326f79f0ecd..424d767beaa 100644
      TRACE("Created SoundBank: %p\n", sb);
  
      return S_OK;
-@@ -1037,6 +1084,8 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
+@@ -1037,6 +1086,8 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateInMemoryWaveBank(IXACT3Engine *ifac
  
      send_wavebank_notification(This, &wb->IXACT3WaveBank_iface);
  
@@ -118,7 +117,7 @@ index 326f79f0ecd..424d767beaa 100644
      TRACE("Created in-memory WaveBank: %p\n", wb);
  
      return S_OK;
-@@ -1087,6 +1136,8 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateStreamingWaveBank(IXACT3Engine *ifa
+@@ -1087,6 +1138,8 @@ static HRESULT WINAPI IXACT3EngineImpl_CreateStreamingWaveBank(IXACT3Engine *ifa
  
      send_wavebank_notification(This, &wb->IXACT3WaveBank_iface);
  
@@ -127,7 +126,7 @@ index 326f79f0ecd..424d767beaa 100644
      TRACE("Created streaming WaveBank: %p\n", wb);
  
      return S_OK;
-@@ -1135,6 +1186,8 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareInMemoryWave(IXACT3Engine *iface,
+@@ -1135,6 +1188,8 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareInMemoryWave(IXACT3Engine *iface,
      wave->fact_wave = fwave;
      *ppWave = &wave->IXACT3Wave_iface;
  
@@ -136,7 +135,7 @@ index 326f79f0ecd..424d767beaa 100644
      TRACE("Created Wave: %p\n", wave);
  
      return S_OK;
-@@ -1197,6 +1250,8 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareStreamingWave(IXACT3Engine *iface,
+@@ -1197,6 +1252,8 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareStreamingWave(IXACT3Engine *iface,
      wave->fact_wave = fwave;
      *ppWave = &wave->IXACT3Wave_iface;
  
@@ -145,7 +144,7 @@ index 326f79f0ecd..424d767beaa 100644
      TRACE("Created Wave: %p\n", wave);
  
      return S_OK;
-@@ -1234,6 +1289,8 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareWave(IXACT3Engine *iface,
+@@ -1234,6 +1291,8 @@ static HRESULT WINAPI IXACT3EngineImpl_PrepareWave(IXACT3Engine *iface,
      wave->fact_wave = fwave;
      *ppWave = &wave->IXACT3Wave_iface;
  
@@ -154,6 +153,3 @@ index 326f79f0ecd..424d767beaa 100644
      TRACE("Created Wave: %p\n", wave);
  
      return S_OK;
--- 
-2.33.0
-

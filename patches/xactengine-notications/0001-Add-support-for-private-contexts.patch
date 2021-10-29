@@ -1,13 +1,8 @@
-From bf9c9fd5b9b4fde8a30dde2f385e4941f81cacc3 Mon Sep 17 00:00:00 2001
+From 71be762c3d84b84c3d9249f80467797ce3519bb6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 12 Sep 2020 16:31:09 +1000
-Subject: [PATCH 1/2] Add support for private contexts
+Subject: Add support for private contexts
 
----
- libs/faudio/include/FACT.h      | 12 ++++++++
- libs/faudio/src/FACT.c          | 52 ++++++++++++++++++++++++++++++---
- libs/faudio/src/FACT_internal.h | 12 ++++++++
- 3 files changed, 72 insertions(+), 4 deletions(-)
 
 diff --git a/libs/faudio/include/FACT.h b/libs/faudio/include/FACT.h
 index 579b7168812..084b1e55cfe 100644
@@ -33,10 +28,20 @@ index 579b7168812..084b1e55cfe 100644
  }
  #endif /* __cplusplus */
 diff --git a/libs/faudio/src/FACT.c b/libs/faudio/src/FACT.c
-index 5eca83b389f..cea960d6710 100644
+index 5eca83b389f..e2e7b10058d 100644
 --- a/libs/faudio/src/FACT.c
 +++ b/libs/faudio/src/FACT.c
-@@ -1798,6 +1798,9 @@ uint32_t FACTWaveBank_Prepare(
+@@ -1177,6 +1177,9 @@ uint32_t FACTSoundBank_Prepare(
+ 	(*ppCue)->notifyOnDestroy = 0;
+ 	(*ppCue)->usercontext = NULL;
+ 
++	/* User data */
++	(*ppCue)->privatecontext = NULL;
++
+ 	/* Sound data */
+ 	(*ppCue)->data = &pSoundBank->cues[nCueIndex];
+ 	if ((*ppCue)->data->flags & 0x04)
+@@ -1798,6 +1801,9 @@ uint32_t FACTWaveBank_Prepare(
  	(*ppWave)->pitch = 0;
  	(*ppWave)->loopCount = nLoopCount;
  
@@ -46,7 +51,7 @@ index 5eca83b389f..cea960d6710 100644
  	/* TODO: Convert dwPlayOffset to a byte offset */
  	FAudio_assert(dwPlayOffset == 0);
  #if 0
-@@ -2175,11 +2178,14 @@ uint32_t FACTWave_Stop(FACTWave *pWave, uint32_t dwFlags)
+@@ -2175,11 +2181,14 @@ uint32_t FACTWave_Stop(FACTWave *pWave, uint32_t dwFlags)
  	{
  		FACTNotification note;
  		note.type = FACTNOTIFICATIONTYPE_WAVESTOP;
@@ -65,7 +70,7 @@ index 5eca83b389f..cea960d6710 100644
  		pWave->parentBank->parentEngine->notificationCallback(&note);
  	}
  
-@@ -3018,4 +3024,42 @@ uint32_t FACTCue_SetOutputVoiceMatrix(
+@@ -3018,4 +3027,42 @@ uint32_t FACTCue_SetOutputVoiceMatrix(
  	return 0;
  }
  
@@ -152,6 +157,3 @@ index 6bf522e64c4..52d07e5f9d3 100644
  };
  
  /* Internal functions */
--- 
-2.33.0
-
