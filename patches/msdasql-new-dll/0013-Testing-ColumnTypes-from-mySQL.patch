@@ -1,0 +1,193 @@
+From d5fa85466c39f84038c2a02e3ec583f946c4b02c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 19 Nov 2021 11:20:42 +1100
+Subject: [PATCH 13/13] Testing ColumnTypes from mySQL
+
+---
+ dlls/msado15/connection.c     |  5 ++-
+ dlls/msdasql/session.c        | 12 ++++++
+ dlls/msdasql/tests/provider.c | 74 +++++++++++++++++++++++++++++++----
+ 3 files changed, 82 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
+index ce7750fef66..4c3ce1f28ee 100644
+--- a/dlls/msado15/connection.c
++++ b/dlls/msado15/connection.c
+@@ -382,13 +382,16 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
+                                 (void **)&datainit )) != S_OK) return hr;
+     if ((hr = IDataInitialize_GetDataSource( datainit, NULL, CLSCTX_INPROC_SERVER, connect_str, &IID_IDBInitialize,
+                                              (IUnknown **)&dbinit )) != S_OK) goto done;
+-    if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBProperties, (void **)&props )) != S_OK) goto done;
++    //if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBProperties, (void **)&props )) != S_OK) goto done;
+ 
+     /* TODO - Update username/password if required. */
+     if ((userid && *userid) || (password && *password))
+         FIXME("Username/password parameters currently not supported\n");
+ 
++    hr = IDBInitialize_Initialize( dbinit );
++FIXME("1. IDBInitialize_Initialize 0x%08x\n", hr);
+     if ((hr = IDBInitialize_Initialize( dbinit )) != S_OK) goto done;
++FIXME("2. IDBInitialize_Initialize 0x%08x\n", hr);
+     if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&session )) != S_OK) goto done;
+     if ((hr = IDBCreateSession_CreateSession( session, NULL, &IID_IUnknown, &connection->session )) == S_OK)
+     {
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 840e506e8d8..811bf3952d0 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -838,6 +838,18 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+             continue;
+         }
+ 
++        if (rowset->bindings[i].cbMaxLen > 1024)
++{
++            SQLWCHAR data[4096];
++            SQLLEN size;
++            SQLRETURN ret;
++
++            ret = SQLGetData( rowset->hstmt, i+1, SQL_C_WCHAR, &data, 4096, &size);
++
++            FIXME("%d: %s\n", ret, debugstr_w(data));
++            continue;
++}
++
+         dwPart = rowset->bindings[i].dwPart;
+         pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
+         pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
+diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
+index 4bfdb7ae54c..150aa4c6103 100644
+--- a/dlls/msdasql/tests/provider.c
++++ b/dlls/msdasql/tests/provider.c
+@@ -39,7 +39,7 @@ DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0
+ DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+ 
+ 
+-static BOOL db_created;
++static BOOL db_created = TRUE;
+ static char mdbpath[MAX_PATH];
+ 
+ static const VARTYPE intptr_vartype = (sizeof(void *) == 8 ? VT_I8 : VT_I4);
+@@ -343,7 +343,7 @@ static void test_command_interfaces(IUnknown *cmd)
+ 
+     hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+-    test_command_properties(commandProp);
++    //test_command_properties(commandProp);
+     ICommandProperties_Release(commandProp);
+ 
+     hr = IUnknown_QueryInterface(cmd, &IID_ICommandWithParameters, (void**)&cmdwithparams);
+@@ -450,6 +450,37 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
+     ICommandText_Release(comand_text);
+ }
+ 
++static char *dump_flags(DWORD flags)
++{
++    static char buffer[2048];
++
++    memset(buffer, 0, sizeof(buffer));
++    if(flags & DBCOLUMNFLAGS_ISBOOKMARK)
++        strcat(buffer, "DBCOLUMNFLAGS_ISBOOKMARK | ");
++    if(flags & DBCOLUMNFLAGS_MAYDEFER)
++        strcat(buffer, "DBCOLUMNFLAGS_MAYDEFER | ");
++    if(flags & DBCOLUMNFLAGS_WRITE)
++        strcat(buffer, "DBCOLUMNFLAGS_WRITE | ");
++    if(flags & DBCOLUMNFLAGS_WRITEUNKNOWN)
++        strcat(buffer, "DBCOLUMNFLAGS_WRITEUNKNOWN | ");
++    if(flags & DBCOLUMNFLAGS_ISFIXEDLENGTH)
++        strcat(buffer, "DBCOLUMNFLAGS_ISFIXEDLENGTH | ");
++    if(flags & DBCOLUMNFLAGS_ISNULLABLE)
++        strcat(buffer, "DBCOLUMNFLAGS_ISNULLABLE | ");
++    if(flags & DBCOLUMNFLAGS_MAYBENULL)
++        strcat(buffer, "DBCOLUMNFLAGS_MAYBENULL | ");
++    if(flags & DBCOLUMNFLAGS_ISLONG)
++        strcat(buffer, "DBCOLUMNFLAGS_ISLONG | ");
++    if(flags & DBCOLUMNFLAGS_ISROWID)
++        strcat(buffer, "DBCOLUMNFLAGS_ISROWID | ");
++    if(flags & DBCOLUMNFLAGS_ISROWVER)
++        strcat(buffer, "DBCOLUMNFLAGS_ISROWVER | ");
++    if(flags & DBCOLUMNFLAGS_CACHEDEFERRED)
++        strcat(buffer, "DBCOLUMNFLAGS_CACHEDEFERRED");
++
++    return buffer;
++}
++
+ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
+ {
+     IRowsetInfo *info;
+@@ -477,6 +508,33 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
+ 
+     hr = IRowset_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&col_info);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
++
++    if (hr == S_OK)
++    {
++        DBORDINAL columns;
++        DBCOLUMNINFO *dbcolumninfo;
++        OLECHAR *buffer;
++        int i;
++
++        hr = IColumnsInfo_GetColumnInfo(col_info, &columns, &dbcolumninfo, &buffer);
++        ok(hr == S_OK, "got 0x%08x\n", hr);
++
++        for( i = 0; i < columns; i++ )
++        {
++            ok (0, "%d *************\n", i);
++            ok (0, "Name       : %s\n", debugstr_w(dbcolumninfo[i].pwszName));
++
++            //ok (dbcolumninfo[i].pTypeInfo == colinfo_data[i].pTypeInfo, "got %p/%p", dbcolumninfo[i].pTypeInfo, colinfo_data[i].pTypeInfo);
++            //ok (0, "Ordinal    : %ld\n", dbcolumninfo[i].iOrdinal);
++            ok (0, "Flags      : 0x%08x (%s)\n", dbcolumninfo[i].dwFlags, dump_flags(dbcolumninfo[i].dwFlags));
++            ok (0, "Column Size: %lu\n", dbcolumninfo[i].ulColumnSize);
++            ok (0, "Type       : %d\n", dbcolumninfo[i].wType);
++            //ok (0, "got %d\n", dbcolumninfo[i].bPrecision);
++            //ok (0, "got %d\n", dbcolumninfo[i].bScale);
++        }
++
++        CoTaskMemFree(buffer);
++    }
+     IColumnsInfo_Release(col_info);
+ 
+     hr = IRowset_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
+@@ -508,8 +566,8 @@ static void test_command_rowset(IUnknown *cmd)
+     hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&comand_text);
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+-    hr = ICommandText_SetCommandText(comand_text, &DBGUID_DEFAULT, L"CREATE TABLE testing (col1 INT, col2 SHORT)");
+-    ok(hr == S_OK, "got 0x%08x\n", hr);
++    /*hr = ICommandText_SetCommandText(comand_text, &DBGUID_DEFAULT, L"CREATE TABLE testing (col1 INT, col2 SHORT)");
++    /ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+     affected = 9999;
+     hr = ICommandText_Execute(comand_text, NULL, &IID_IRowset, NULL, &affected, &unk);
+@@ -518,8 +576,8 @@ static void test_command_rowset(IUnknown *cmd)
+     todo_wine ok(affected == -1, "got %ld\n", affected);
+     if (unk != NULL)
+         IUnknown_Release(unk);
+-
+-    hr = ICommandText_SetCommandText(comand_text, &DBGUID_DEFAULT, L"select * from testing");
++    */
++    hr = ICommandText_SetCommandText(comand_text, &DBGUID_DEFAULT, L"select * from all_data_types");
+     ok(hr == S_OK, "got 0x%08x\n", hr);
+ 
+     affected = 9999;
+@@ -810,7 +868,7 @@ START_TEST(provider)
+ {
+     CoInitialize(0);
+ 
+-    setup_database();
++    //setup_database();
+ 
+     test_msdasql();
+     test_Properties();
+@@ -818,7 +876,7 @@ START_TEST(provider)
+ 
+     test_enumeration();
+ 
+-    cleanup_database();
++    //cleanup_database();
+ 
+     CoUninitialize();
+ }
+-- 
+2.33.0
+

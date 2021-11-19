@@ -1,0 +1,51 @@
+From 65a292cd06554956289a78a0a3f00bf387d17a62 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 Nov 2021 16:45:18 +1100
+Subject: [PATCH 11/13] msdasql: Bindings stuff and info
+
+For large data (Variable length data). Memos etc.
+
+They provide a ISequalStream interface, we need to write to.
+
+So, these needs to be unbound, and marked as deferred, and then
+fetched on a per column bases while we write to the stream.
+---
+ dlls/msdasql/session.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index ac087cc1451..6386a8ce9bb 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -794,6 +794,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+         CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
+     FIXME("%p, %ld, %ld, %p\n", rowset, row, accessor, data);
+ 
++    FIXME("rowset->bind_cnt %d\n", rowset->bind_cnt);
+     //memcpy(data, access->data, access->size);
+     for(i=0; i < rowset->bind_cnt; i++)
+     {
+@@ -807,6 +808,11 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+         DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
+         DBLENGTH*           pulDstLength;
+ 
++        FIXME("ObValue %d, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
++        if(rowset->bindings[i].pObject)
++            FIXME("DBOBJECT 0x%08x, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
++                    debugstr_guid(&rowset->bindings[i].pObject->iid));
++
+         dwPart = rowset->bindings[i].dwPart;
+         pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
+         pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
+@@ -1185,7 +1191,7 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+ 
+     access = heap_alloc( sizeof(struct msdasql_accessor));
+     access->size = 0;
+-    ptr = access->data = heap_alloc(1024);
++    ptr = access->data = heap_alloc(4096);
+     for ( i=0; i < count; i++)
+     {
+         SQLRETURN ret;
+-- 
+2.33.0
+

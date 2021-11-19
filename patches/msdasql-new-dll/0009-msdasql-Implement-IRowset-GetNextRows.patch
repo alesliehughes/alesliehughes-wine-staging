@@ -1,0 +1,36 @@
+From af432a80dec887282bbcb3057bf5d185efe93fa7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 Nov 2021 15:31:29 +1100
+Subject: [PATCH 09/13] msdasql: Implement IRowset GetNextRows
+
+---
+ dlls/msdasql/session.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 2b0034600fd..61c83b19c85 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -790,8 +790,17 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
+         DBROWCOUNT count, DBCOUNTITEM *obtained, HROW **rows)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
+-    FIXME("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
+-    return E_NOTIMPL;
++    SQLRETURN ret;
++
++    TRACE("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
++
++    ret = SQLFetch(rowset->hstmt);
++    if (ret == SQL_NO_DATA)
++        return DB_S_ENDOFROWSET;
++
++    *rows = CoTaskMemAlloc(sizeof(HROW*));
++    *obtained = 1;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI msdasql_rowset_ReleaseRows(IRowset *iface, DBCOUNTITEM count,
+-- 
+2.33.0
+

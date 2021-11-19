@@ -1,0 +1,48 @@
+From 6d670ffcce1cadfc27cab4f63084652260427505 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 7 Nov 2021 19:11:57 +1100
+Subject: [PATCH 02/13] msdasql: Implement ICommandProperties SetProperties.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/msdasql/session.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 9cd41eedfd8..f9538e5d4d9 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -1098,7 +1098,29 @@ static HRESULT WINAPI command_prop_SetProperties(ICommandProperties *iface, ULON
+         DBPROPSET propertyset[])
+ {
+     struct command *command = impl_from_ICommandProperties( iface );
+-    FIXME("%p %p\n", command, propertyset);
++    int i, j, k;
++
++    TRACE("%p %d, %p\n", command, count, propertyset);
++
++    for(i=0; i < count; i++)
++    {
++        TRACE("set %s, count %d\n", debugstr_guid(&propertyset[i].guidPropertySet), propertyset[i].cProperties);
++        for(j=0; j < propertyset[i].cProperties; j++)
++        {
++            for(k=0; k < ARRAY_SIZE(command->properties); k++)
++            {
++                if (command->properties[k].id == propertyset[i].rgProperties[j].dwPropertyID)
++                {
++                    TRACE("Found property 0x%08x\n", command->properties[k].id);
++                    if (command->properties[k].readonly)
++                        WARN("Attempting to set Readonly property\n");
++                    else
++                        VariantCopy(&command->properties[k].value, &propertyset[i].rgProperties[j].vValue);
++                    break;
++                }
++            }
++        }
++    }
+     return S_OK;
+ }
+ 
+-- 
+2.33.0
+

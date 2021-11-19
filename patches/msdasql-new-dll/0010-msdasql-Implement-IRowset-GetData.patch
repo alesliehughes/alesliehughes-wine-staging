@@ -1,0 +1,94 @@
+From 6b9da6d51864713254a0f41055fe755c191acb9d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 Nov 2021 15:49:11 +1100
+Subject: [PATCH 10/13] msdasql: Implement IRowset GetData
+
+---
+ dlls/msdasql/msdasql_main.c |  2 ++
+ dlls/msdasql/session.c      | 46 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 47 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
+index fd882f34f08..4ec55a92860 100644
+--- a/dlls/msdasql/msdasql_main.c
++++ b/dlls/msdasql/msdasql_main.c
+@@ -30,6 +30,8 @@
+ 
+ #include "initguid.h"
+ #include "msdasql.h"
++#include "msdaguid.h"
++#include "msdadc.h"
+ #include "odbcinst.h"
+ #include "sqlext.h"
+ #include "sqlucode.h"
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 61c83b19c85..ac087cc1451 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -25,6 +25,8 @@
+ #include "objbase.h"
+ #include "rpcproxy.h"
+ #include "msdasc.h"
++#include "msdadc.h"
++#include "msdaguid.h"
+ #include "sqlext.h"
+ #include "sqlucode.h"
+ #include "wine/heap.h"
+@@ -779,11 +781,53 @@ static HRESULT WINAPI msdasql_rowset_AddRefRows(IRowset *iface, DBCOUNTITEM coun
+     return E_NOTIMPL;
+ }
+ 
++static IDataConvert *convert = NULL;
++
+ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR accessor, void *data)
+ {
+     struct msdasql_rowset *rowset = impl_from_IRowset( iface );
++    struct msdasql_accessor *access = (struct msdasql_accessor*)accessor;
++    int i;
++    HRESULT hr;
++
++    if (!convert)
++        CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
+     FIXME("%p, %ld, %ld, %p\n", rowset, row, accessor, data);
+-    return E_NOTIMPL;
++
++    //memcpy(data, access->data, access->size);
++    for(i=0; i < rowset->bind_cnt; i++)
++    {
++        void *pSrc = &access->data[rowset->bindings[i].obValue];
++        void *pDst;
++        ULONG                       dwSrcStatus = 0;
++        ULONG                       *pdwDstStatus;
++        DWORD                       dwPart;
++        //DBTYPE                      dwSrcType;
++        DBTYPE                      dwDstType = rowset->bindings[i].wType;
++        DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
++        DBLENGTH*           pulDstLength;
++
++        dwPart = rowset->bindings[i].dwPart;
++        pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
++        pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
++        pdwDstStatus = dwPart & DBPART_STATUS ? (ULONG *) ((BYTE*)data + rowset->bindings[i].obStatus) : NULL;
++        //rowset->bindings[i]
++//        memcpy(data, access->data, access->size);
++
++        hr = IDataConvert_DataConvert(convert, rowset->bindings[i].wType, dwDstType, ulSrcLength, pulDstLength, pSrc, pDst,
++                                      rowset->bindings[i].cbMaxLen, dwSrcStatus, pdwDstStatus,
++                                      rowset->bindings[i].bPrecision, rowset->bindings[i].bScale,
++                                      DBDATACONVERT_DEFAULT);
++
++        if (dwDstType == 130)
++            FIXME("value: %s\n", debugstr_w(pDst));
++        else if(dwDstType == 3)
++            FIXME("value: %d\n", *(int*)pDst);
++        if (hr != S_OK)
++            ERR("Column %d, failed to convert type\n", i);
++    }
++
++     return S_OK;
+ }
+ 
+ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserved, DBROWOFFSET offset,
+-- 
+2.33.0
+
