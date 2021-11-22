@@ -1,7 +1,7 @@
-From ad77364229d35ae9d7b87ac697e691dba5e2409d Mon Sep 17 00:00:00 2001
+From 08c1a630a527fbef05502de8bdba77ce31e9dc77 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Nov 2021 13:38:12 +1100
-Subject: [PATCH 05/13] msdasql: Implement IColumnsInfo GetColumnInfo
+Subject: [PATCH 06/15] msdasql: Implement IColumnsInfo GetColumnInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 230 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index b24d8c18463..99073564a0d 100644
+index f7a128fa61a..2016111b56b 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -60,6 +60,154 @@ static DWORD propsid[79] = {
@@ -167,7 +167,7 @@ index b24d8c18463..99073564a0d 100644
  struct msdasql_session
  {
      IUnknown session_iface;
-@@ -727,8 +875,88 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
+@@ -732,8 +880,88 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
          DBCOLUMNINFO **colinfo, OLECHAR **stringsbuffer)
  {
      struct msdasql_rowset *rowset = rowset_impl_from_IColumnsInfo( iface );

@@ -1,7 +1,7 @@
-From d5fa85466c39f84038c2a02e3ec583f946c4b02c Mon Sep 17 00:00:00 2001
+From f1c2b308bf0ab9fccd6f62c8ca45e72549b0c3d5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 19 Nov 2021 11:20:42 +1100
-Subject: [PATCH 13/13] Testing ColumnTypes from mySQL
+Subject: [PATCH 14/15] Testing ColumnTypes from mySQL
 
 ---
  dlls/msado15/connection.c     |  5 ++-
@@ -32,10 +32,10 @@ index ce7750fef66..4c3ce1f28ee 100644
      if ((hr = IDBCreateSession_CreateSession( session, NULL, &IID_IUnknown, &connection->session )) == S_OK)
      {
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 840e506e8d8..811bf3952d0 100644
+index 656a1aad32a..fd128ec69ee 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -838,6 +838,18 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -843,6 +843,18 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
              continue;
          }
  

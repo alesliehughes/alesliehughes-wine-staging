@@ -1,7 +1,7 @@
-From 3efea1e5212e38358301a75ffe37784a6bb54f45 Mon Sep 17 00:00:00 2001
+From 3ba6a7d806bbf583661016677b1c6146a41d6491 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 7 Nov 2021 20:10:35 +1100
-Subject: [PATCH 01/13] msdasql: Implement ICommandProperties GetProperties
+Subject: [PATCH 01/15] msdasql: Implement ICommandProperties GetProperties
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

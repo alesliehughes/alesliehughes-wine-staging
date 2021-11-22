@@ -1,7 +1,7 @@
-From 6b9da6d51864713254a0f41055fe755c191acb9d Mon Sep 17 00:00:00 2001
+From 1cb68001493904eb79fd07b64d012a50bafdf695 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 17 Nov 2021 15:49:11 +1100
-Subject: [PATCH 10/13] msdasql: Implement IRowset GetData
+Subject: [PATCH 11/15] msdasql: Implement IRowset GetData
 
 ---
  dlls/msdasql/msdasql_main.c |  2 ++
@@ -22,7 +22,7 @@ index fd882f34f08..4ec55a92860 100644
  #include "sqlext.h"
  #include "sqlucode.h"
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 61c83b19c85..ac087cc1451 100644
+index 75aa2415cfa..1d48a1b3051 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -25,6 +25,8 @@
@@ -34,7 +34,7 @@ index 61c83b19c85..ac087cc1451 100644
  #include "sqlext.h"
  #include "sqlucode.h"
  #include "wine/heap.h"
-@@ -779,11 +781,53 @@ static HRESULT WINAPI msdasql_rowset_AddRefRows(IRowset *iface, DBCOUNTITEM coun
+@@ -784,11 +786,53 @@ static HRESULT WINAPI msdasql_rowset_AddRefRows(IRowset *iface, DBCOUNTITEM coun
      return E_NOTIMPL;
  }
  

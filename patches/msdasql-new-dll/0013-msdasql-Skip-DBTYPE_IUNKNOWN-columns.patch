@@ -1,17 +1,17 @@
-From bc8bb574f615e46309d1fdeebec5268ab10b7111 Mon Sep 17 00:00:00 2001
+From 46c3a30c9c5a06f7433ebf69ffc8359de05ba298 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Nov 2021 10:07:11 +1100
-Subject: [PATCH 12/13] msdasql: Skip DBTYPE_IUNKNOWN columns
+Subject: [PATCH 13/15] msdasql: Skip DBTYPE_IUNKNOWN columns
 
 ---
  dlls/msdasql/session.c | 29 +++++++++++++++++++++++++++++
  1 file changed, 29 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 6386a8ce9bb..840e506e8d8 100644
+index afd01d63d88..656a1aad32a 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -813,6 +813,31 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -818,6 +818,31 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
              FIXME("DBOBJECT 0x%08x, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
                      debugstr_guid(&rowset->bindings[i].pObject->iid));
  
@@ -43,7 +43,7 @@ index 6386a8ce9bb..840e506e8d8 100644
          dwPart = rowset->bindings[i].dwPart;
          pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
          pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
-@@ -1207,6 +1232,10 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+@@ -1212,6 +1237,10 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
              FIXME("DBOBJECT 0x%08x, %s currently not supported\n", bindings[i].pObject->dwFlags,
                      debugstr_guid(&bindings[i].pObject->iid));
  

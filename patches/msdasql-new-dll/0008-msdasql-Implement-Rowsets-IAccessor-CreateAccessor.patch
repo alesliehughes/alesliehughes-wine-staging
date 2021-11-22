@@ -1,7 +1,7 @@
-From e9d839aa5dbe576ca15357b6619d65861bc5f214 Mon Sep 17 00:00:00 2001
+From 29e01ab4108db34e215c52597bb4507d071d2f9f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 14 Nov 2021 09:43:40 +1100
-Subject: [PATCH 07/13] msdasql: Implement Rowsets IAccessor CreateAccessor
+Subject: [PATCH 08/15] msdasql: Implement Rowsets IAccessor CreateAccessor
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 93 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 8889499fd8b..e84aedd3a73 100644
+index 54d07bd3217..4623a9bf7ef 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -125,6 +125,26 @@ static const char *debugstr_dbtype(DBTYPE type)
@@ -39,7 +39,7 @@ index 8889499fd8b..e84aedd3a73 100644
  static SQLSMALLINT sqltype_to_bindtype(SQLSMALLINT type, BOOL sign)
  {
      switch (type)
-@@ -623,6 +643,12 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
+@@ -628,6 +648,12 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
      return E_NOTIMPL;
  }
  
@@ -52,7 +52,7 @@ index 8889499fd8b..e84aedd3a73 100644
  struct msdasql_rowset
  {
      IRowset IRowset_iface;
-@@ -633,6 +659,9 @@ struct msdasql_rowset
+@@ -638,6 +664,9 @@ struct msdasql_rowset
      IUnknown *caller;
      LONG refs;
  
@@ -62,7 +62,7 @@ index 8889499fd8b..e84aedd3a73 100644
      /* ODBC support */
      SQLHSTMT hstmt;
  };
-@@ -1088,8 +1117,55 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+@@ -1093,8 +1122,55 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
          DBBINDSTATUS status[])
  {
      struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
@@ -120,7 +120,7 @@ index 8889499fd8b..e84aedd3a73 100644
  }
  
  static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR accessor,
-@@ -1103,8 +1179,20 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
+@@ -1108,8 +1184,20 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
  static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSOR accessor, DBREFCOUNT *count)
  {
      struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
@@ -142,7 +142,7 @@ index 8889499fd8b..e84aedd3a73 100644
  }
  
  struct IAccessorVtbl accessor_vtbl =
-@@ -1201,6 +1289,8 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+@@ -1209,6 +1297,8 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
          msrowset->refs = 1;
          ICommandText_QueryInterface(iface, &IID_IUnknown, (void**)&msrowset->caller);
          msrowset->hstmt = hstmt;

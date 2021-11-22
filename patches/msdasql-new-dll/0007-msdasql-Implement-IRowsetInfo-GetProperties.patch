@@ -1,7 +1,7 @@
-From 7ebd4291d0ce2d6bcdd1a9967a3457f30ea64167 Mon Sep 17 00:00:00 2001
+From 29a65b61562141a1fc576382fdac6eeaf9683b80 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Nov 2021 14:52:24 +1100
-Subject: [PATCH 06/13] msdasql: Implement IRowsetInfo GetProperties
+Subject: [PATCH 07/15] msdasql: Implement IRowsetInfo GetProperties
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 84 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 99073564a0d..8889499fd8b 100644
+index 2016111b56b..54d07bd3217 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -815,8 +815,90 @@ static HRESULT WINAPI rowset_info_GetProperties(IRowsetInfo *iface, const ULONG
+@@ -820,8 +820,90 @@ static HRESULT WINAPI rowset_info_GetProperties(IRowsetInfo *iface, const ULONG
          const DBPROPIDSET propertyidsets[], ULONG *out_count, DBPROPSET **propertysets)
  {
      struct msdasql_rowset *rowset = impl_from_IRowsetInfo( iface );

@@ -1,17 +1,17 @@
-From 53dfcfefd0cb1122c304d2530c6fba967521d1dd Mon Sep 17 00:00:00 2001
+From 26af1d90a39d37d6f37b1cb5070fb50cc1cc6eba Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 14 Nov 2021 19:20:44 +1100
-Subject: [PATCH 08/13] msdasql: Implement IColumnsRowset GetAvailableColumns
+Subject: [PATCH 09/15] msdasql: Implement IColumnsRowset GetAvailableColumns
 
 ---
  dlls/msdasql/session.c | 12 ++++++++++--
  1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index e84aedd3a73..2b0034600fd 100644
+index 4623a9bf7ef..78e53fd617d 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -1227,8 +1227,16 @@ static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
+@@ -1232,8 +1232,16 @@ static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
  static HRESULT WINAPI column_rs_GetAvailableColumns(IColumnsRowset *iface, DBORDINAL *count, DBID **columns)
  {
      struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );

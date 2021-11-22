@@ -1,7 +1,7 @@
-From 6d670ffcce1cadfc27cab4f63084652260427505 Mon Sep 17 00:00:00 2001
+From 3823be44a92e200bfb526fc3c3f3234b5fc3c46c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 7 Nov 2021 19:11:57 +1100
-Subject: [PATCH 02/13] msdasql: Implement ICommandProperties SetProperties.
+Subject: [PATCH 02/15] msdasql: Implement ICommandProperties SetProperties.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
