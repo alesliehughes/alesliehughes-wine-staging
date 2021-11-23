@@ -1,4 +1,4 @@
-From 3dbe67daf2dc94ff2c8f6b7b247e70a6175b3daf Mon Sep 17 00:00:00 2001
+From bf93491d0a866b36f3ed8c9e37281f6ab601fa1b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 17 Nov 2021 15:31:29 +1100
 Subject: [PATCH 10/15] msdasql: Implement IRowset GetNextRows
@@ -8,10 +8,10 @@ Subject: [PATCH 10/15] msdasql: Implement IRowset GetNextRows
  1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 78e53fd617d..75aa2415cfa 100644
+index b43b2d47c65..5037342df58 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -795,8 +795,17 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
+@@ -862,8 +862,17 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
          DBROWCOUNT count, DBCOUNTITEM *obtained, HROW **rows)
  {
      struct msdasql_rowset *rowset = impl_from_IRowset( iface );

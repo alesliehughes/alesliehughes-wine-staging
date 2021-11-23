@@ -1,7 +1,7 @@
-From 08c1a630a527fbef05502de8bdba77ce31e9dc77 Mon Sep 17 00:00:00 2001
+From 2b64cbfb049f2bbaf54a17b8f4417ad169d5c5a7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Nov 2021 13:38:12 +1100
-Subject: [PATCH 06/15] msdasql: Implement IColumnsInfo GetColumnInfo
+Subject: [PATCH 07/15] msdasql: Implement IColumnsInfo GetColumnInfo
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,12 +9,12 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 230 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index f7a128fa61a..2016111b56b 100644
+index 063edf776ef..132ff3aaaff 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -60,6 +60,154 @@ static DWORD propsid[79] = {
-         DBPROP_AUTH_PERSIST_SENSITIVE_AUTHINFO, DBPROP_AUTH_USERID, DBPROP_BLOCKINGSTORAGEOBJECTS
- };
+@@ -134,6 +134,154 @@ static struct msdasql_prop msdasql_init_props[] =
+ #define ROWSET_PROP_COUNT 68
+ #define DATASOURCE_PROP_COUNT 12
  
 +#define SQLTYPE_TO_STR(x) case x: return #x
 +
@@ -167,7 +167,7 @@ index f7a128fa61a..2016111b56b 100644
  struct msdasql_session
  {
      IUnknown session_iface;
-@@ -732,8 +880,88 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
+@@ -799,8 +947,88 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
          DBCOLUMNINFO **colinfo, OLECHAR **stringsbuffer)
  {
      struct msdasql_rowset *rowset = rowset_impl_from_IColumnsInfo( iface );

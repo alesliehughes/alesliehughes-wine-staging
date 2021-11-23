@@ -1,25 +1,26 @@
-From 1a86b1825734e5dd60c01f5715c19ed9e15132ff Mon Sep 17 00:00:00 2001
+From 8b3b6531f3b6e3459e24baf2719bfaa806eaf0d4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Nov 2021 16:44:51 +1100
-Subject: [PATCH 04/15] msdasql: Implement ICommandPrepare Prepare
+Subject: [PATCH 05/15] msdasql: Implement ICommandPrepare Prepare
 
+The handle should be make NULL when it's passed to EXECUTE.
 ---
  dlls/msdasql/session.c | 23 +++++++++++++++++++++++
  1 file changed, 23 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index f9538e5d4d9..14ae853bb64 100644
+index 98b2b4e6c5d..281d99a0bd8 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -335,6 +335,7 @@ struct command
+@@ -402,6 +402,7 @@ struct command
      LONG refs;
      WCHAR *query;
      IUnknown *session;
 +    SQLHSTMT hstmt;
  
-     struct command_props properties[79];
+     struct msdasql_prop properties[80];
  };
-@@ -456,6 +457,10 @@ static ULONG WINAPI command_Release(ICommandText *iface)
+@@ -523,6 +524,10 @@ static ULONG WINAPI command_Release(ICommandText *iface)
          TRACE( "destroying %p\n", command );
          if (command->session)
              IUnknown_Release(command->session);
@@ -30,7 +31,7 @@ index f9538e5d4d9..14ae853bb64 100644
          heap_free( command->query );
          heap_free( command );
      }
-@@ -1230,7 +1235,24 @@ static ULONG WINAPI commandprepare_Release(ICommandPrepare *iface)
+@@ -1304,7 +1309,24 @@ static ULONG WINAPI commandprepare_Release(ICommandPrepare *iface)
  static HRESULT WINAPI commandprepare_Prepare(ICommandPrepare *iface, ULONG runs)
  {
      struct command *command = impl_from_ICommandPrepare( iface );
@@ -55,14 +56,14 @@ index f9538e5d4d9..14ae853bb64 100644
      return S_OK;
  }
  
-@@ -1327,6 +1349,7 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+@@ -1400,6 +1422,7 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
      command->ICommandWithParameters_iface.lpVtbl = &command_with_params_vtbl;
      command->refs = 1;
      command->query = NULL;
 +    command->hstmt = NULL;
  
-     for(i = 0; i < ARRAY_SIZE(command->properties); i++)
-     {
+     memcpy(command->properties, msdasql_init_props, sizeof(msdasql_init_props));
+ 
 -- 
 2.33.0
 

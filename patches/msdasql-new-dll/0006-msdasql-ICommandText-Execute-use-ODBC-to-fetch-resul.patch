@@ -1,7 +1,7 @@
-From 0f19f2533db32e1becaa0aeab2e0803a81999112 Mon Sep 17 00:00:00 2001
+From da9420e3cd15cc44642e0c6e413a13bcbb2b2344 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Nov 2021 11:14:39 +1100
-Subject: [PATCH 05/15] msdasql: ICommandText Execute use ODBC to fetch results
+Subject: [PATCH 06/15] msdasql: ICommandText Execute use ODBC to fetch results
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -45,7 +45,7 @@ index 7d7f67c2c78..42bb8697030 100644
 +HRESULT create_db_session(REFIID riid, IUnknown *datasource, HDBC hdbc, void **unk) DECLSPEC_HIDDEN;
 +void dump_sql_diag_records(SQLSMALLINT type, SQLHANDLE handle) DECLSPEC_HIDDEN;
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 14ae853bb64..f7a128fa61a 100644
+index 281d99a0bd8..063edf776ef 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -25,6 +25,8 @@
@@ -57,7 +57,7 @@ index 14ae853bb64..f7a128fa61a 100644
  #include "wine/heap.h"
  #include "wine/debug.h"
  
-@@ -68,6 +70,8 @@ struct msdasql_session
+@@ -142,6 +144,8 @@ struct msdasql_session
      LONG refs;
  
      IUnknown *datasource;
@@ -66,16 +66,16 @@ index 14ae853bb64..f7a128fa61a 100644
  };
  
  static inline struct msdasql_session *impl_from_IUnknown( IUnknown *iface )
-@@ -338,6 +342,8 @@ struct command
+@@ -405,6 +409,8 @@ struct command
      SQLHSTMT hstmt;
  
-     struct command_props properties[79];
+     struct msdasql_prop properties[80];
 +
 +    HDBC hdbc;
  };
  
  static inline struct command *impl_from_ICommandText( ICommandText *iface )
-@@ -483,6 +489,9 @@ struct msdasql_rowset
+@@ -550,6 +556,9 @@ struct msdasql_rowset
      IColumnsRowset IColumnsRowset_iface;
      IUnknown *caller;
      LONG refs;
@@ -85,7 +85,7 @@ index 14ae853bb64..f7a128fa61a 100644
  };
  
  static inline struct msdasql_rowset *impl_from_IRowset( IRowset *iface )
-@@ -579,6 +588,7 @@ static ULONG WINAPI msdasql_rowset_Release(IRowset *iface)
+@@ -646,6 +655,7 @@ static ULONG WINAPI msdasql_rowset_Release(IRowset *iface)
      TRACE( "%p new refcount %d\n", rowset, refs );
      if (!refs)
      {
@@ -93,7 +93,7 @@ index 14ae853bb64..f7a128fa61a 100644
          TRACE( "destroying %p\n", rowset );
  
          if (rowset->caller)
-@@ -851,24 +861,48 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+@@ -926,24 +936,48 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
  {
      struct command *command = impl_from_ICommandText( iface );
      struct msdasql_rowset *msrowset;
@@ -152,15 +152,15 @@ index 14ae853bb64..f7a128fa61a 100644
  
      hr = IRowset_QueryInterface(&msrowset->IRowset_iface, riid, (void**)rowset);
      IRowset_Release(&msrowset->IRowset_iface);
-@@ -1350,6 +1384,7 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+@@ -1423,6 +1457,7 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
      command->refs = 1;
      command->query = NULL;
      command->hstmt = NULL;
 +    command->hdbc = session->hdbc;
  
-     for(i = 0; i < ARRAY_SIZE(command->properties); i++)
-     {
-@@ -1446,7 +1481,7 @@ static const IDBCreateCommandVtbl createcommandVtbl =
+     memcpy(command->properties, msdasql_init_props, sizeof(msdasql_init_props));
+ 
+@@ -1441,7 +1476,7 @@ static const IDBCreateCommandVtbl createcommandVtbl =
      createcommand_CreateCommand
  };
  
@@ -169,7 +169,7 @@ index 14ae853bb64..f7a128fa61a 100644
  {
      struct msdasql_session *session;
      HRESULT hr;
-@@ -1462,6 +1497,7 @@ HRESULT create_db_session(REFIID riid, IUnknown *datasource, void **unk)
+@@ -1457,6 +1492,7 @@ HRESULT create_db_session(REFIID riid, IUnknown *datasource, void **unk)
      session->IDBCreateCommand_iface.lpVtbl = &createcommandVtbl;
      IUnknown_QueryInterface(datasource, &IID_IUnknown, (void**)&session->datasource);
      session->refs = 1;
@@ -178,10 +178,10 @@ index 14ae853bb64..f7a128fa61a 100644
      hr = IUnknown_QueryInterface(&session->session_iface, riid, unk);
      IUnknown_Release(&session->session_iface);
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index c40f92a273b..4bfdb7ae54c 100644
+index 211116dc382..540e2c2fafc 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
-@@ -516,7 +516,7 @@ static void test_command_rowset(IUnknown *cmd)
+@@ -515,7 +515,7 @@ static void test_command_rowset(IUnknown *cmd)
      ok(hr == S_OK, "got 0x%08x\n", hr);
      todo_wine ok(unk == NULL, "Unexepcted value\n");
      todo_wine ok(affected == -1, "got %ld\n", affected);

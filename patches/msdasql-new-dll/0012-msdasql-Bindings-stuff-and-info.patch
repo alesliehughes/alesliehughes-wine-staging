@@ -1,4 +1,4 @@
-From 1c49f658114d8f23620019226aa767c4f9f34388 Mon Sep 17 00:00:00 2001
+From f6fc85652dc5d87b0760e650195a2ddcf9025fc8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 17 Nov 2021 16:45:18 +1100
 Subject: [PATCH 12/15] msdasql: Bindings stuff and info
@@ -14,10 +14,10 @@ fetched on a per column bases while we write to the stream.
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 1d48a1b3051..afd01d63d88 100644
+index 8a0c6ba7a62..6b0d8de0e69 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -799,6 +799,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -866,6 +866,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
          CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
      FIXME("%p, %ld, %ld, %p\n", rowset, row, accessor, data);
  
@@ -25,7 +25,7 @@ index 1d48a1b3051..afd01d63d88 100644
      //memcpy(data, access->data, access->size);
      for(i=0; i < rowset->bind_cnt; i++)
      {
-@@ -812,6 +813,11 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -879,6 +880,11 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
          DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
          DBLENGTH*           pulDstLength;
  
@@ -37,7 +37,7 @@ index 1d48a1b3051..afd01d63d88 100644
          dwPart = rowset->bindings[i].dwPart;
          pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
          pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
-@@ -1190,7 +1196,7 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+@@ -1257,7 +1263,7 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
  
      access = heap_alloc( sizeof(struct msdasql_accessor));
      access->size = 0;

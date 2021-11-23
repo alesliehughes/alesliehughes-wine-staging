@@ -1,7 +1,7 @@
-From b0e0dfc89348dee3e711616f50d3145903b0332e Mon Sep 17 00:00:00 2001
+From cfe6b52ebddff10c8c76448928214a7cf8ae931a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 8 Nov 2021 18:19:20 +1100
-Subject: [PATCH 03/15] msdasql: Connect to DSN in IDBInitialize Initialize.
+Subject: [PATCH 04/15] msdasql: Connect to DSN in IDBInitialize Initialize.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---

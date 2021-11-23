@@ -1,17 +1,21 @@
-From 26af1d90a39d37d6f37b1cb5070fb50cc1cc6eba Mon Sep 17 00:00:00 2001
+From a79755a7099bb059ab0424e8e31c7da2338a1098 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 14 Nov 2021 19:20:44 +1100
-Subject: [PATCH 09/15] msdasql: Implement IColumnsRowset GetAvailableColumns
+Subject: [PATCH 03/15] msdasql: Implement IColumnsRowset GetAvailableColumns
 
+The functions returns a series of custom columns to make a row unique.
+For us, it's safe to return no extra columns at this stage.
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/msdasql/session.c | 12 ++++++++++--
  1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 4623a9bf7ef..78e53fd617d 100644
+index 533cb6ae28a..98b2b4e6c5d 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -1232,8 +1232,16 @@ static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
+@@ -886,8 +886,16 @@ static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
  static HRESULT WINAPI column_rs_GetAvailableColumns(IColumnsRowset *iface, DBORDINAL *count, DBID **columns)
  {
      struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
