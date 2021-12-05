@@ -1,4 +1,4 @@
-From 4e31239d48313f63febb45b42410a4e40e310054 Mon Sep 17 00:00:00 2001
+From 0d989df910f6b856157cdefe28c02f478491c2e9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 15 Sep 2020 19:44:38 +1000
 Subject: [PATCH] ws2_32: Return a valid value for WSAIoctl
@@ -6,22 +6,65 @@ Subject: [PATCH] ws2_32: Return a valid value for WSAIoctl
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/ws2_32/socket.c     | 30 ++++++++++++++++++++++++++++++
- dlls/ws2_32/tests/sock.c | 14 +++++++++++++-
- 2 files changed, 43 insertions(+), 1 deletion(-)
+ dlls/ntdll/unix/socket.c | 31 +++++++++++++++++++++++++++++++
+ dlls/ws2_32/socket.c     | 17 +++++++++++++++++
+ dlls/ws2_32/tests/sock.c | 13 ++++++++++++-
+ include/wine/afd.h       |  1 +
+ 4 files changed, 61 insertions(+), 1 deletion(-)
 
+diff --git a/dlls/ntdll/unix/socket.c b/dlls/ntdll/unix/socket.c
+index 2e79b9baa0f..6d92a087850 100644
+--- a/dlls/ntdll/unix/socket.c
++++ b/dlls/ntdll/unix/socket.c
+@@ -1424,6 +1424,37 @@ NTSTATUS sock_ioctl( HANDLE handle, HANDLE event, PIO_APC_ROUTINE apc, void *apc
+             break;
+         }
+ 
++        case IOCTL_AFD_WINE_SEND_BACKLOG_QUERY:
++        {
++            int proto;
++            unsigned protolen = sizeof(protolen);
++
++            if ((status = server_get_unix_fd( handle, 0, &fd, &needs_close, NULL, NULL )))
++                return status;
++
++            if (out_size < sizeof(DWORD))
++            {
++                status = STATUS_BUFFER_TOO_SMALL;
++                break;
++            }
++
++            if (getsockopt( fd, SOL_SOCKET, SO_PROTOCOL, &proto, &protolen ) < 0)
++            {
++                status = sock_errno_to_status( errno );
++                break;
++            }
++
++            if(proto != IPPROTO_TCP)
++            {
++                status = STATUS_NOT_SUPPORTED;
++                break;
++            }
++
++            *(DWORD*)out_buffer = 0x10000; /* 64k */
++
++            break;
++        }
++
+         case IOCTL_AFD_WINE_SIOCATMARK:
+         {
+             int value, ret;
 diff --git a/dlls/ws2_32/socket.c b/dlls/ws2_32/socket.c
-index 3feb902196f..76141216fbd 100644
+index 2db441bee3c..dd9759c5580 100644
 --- a/dlls/ws2_32/socket.c
 +++ b/dlls/ws2_32/socket.c
-@@ -3387,6 +3387,36 @@ INT WINAPI WSAIoctl(SOCKET s, DWORD code, LPVOID in_buff, DWORD in_size, LPVOID
+@@ -1997,6 +1997,23 @@ INT WINAPI WSAIoctl(SOCKET s, DWORD code, LPVOID in_buff, DWORD in_size, LPVOID
          return ret ? -1 : 0;
      }
  
-+    case WS_SIO_IDEAL_SEND_BACKLOG_QUERY:
++    case SIO_IDEAL_SEND_BACKLOG_QUERY:
 +    {
-+        int ret, proto;
-+        unsigned protolen = sizeof(protolen);
++        DWORD ret;
 +
 +        if (!out_buff)
 +        {
@@ -29,57 +72,44 @@ index 3feb902196f..76141216fbd 100644
 +            return SOCKET_ERROR;
 +        }
 +
-+        if ( (fd = get_sock_fd( s, 0, NULL )) == -1)
-+            return SOCKET_ERROR;
-+
-+        ret = getsockopt(fd, SOL_SOCKET, SO_PROTOCOL, &proto, &protolen);
-+        if(ret || proto != IPPROTO_TCP)
-+        {
-+            TRACE("ret %d, proto %d\n", ret, proto);
-+            release_sock_fd( s, fd );
-+            SetLastError(WSAEOPNOTSUPP);
-+            return SOCKET_ERROR;
-+        }
-+
-+        total = sizeof(DWORD);
-+        *(DWORD*)out_buff = 0x10000; /* 64k */
-+
-+        release_sock_fd( s, fd );
-+        break;
++        ret = server_ioctl_sock( s, IOCTL_AFD_WINE_SEND_BACKLOG_QUERY, in_buff, in_size,
++                                 out_buff, out_size, ret_size, overlapped, completion );
++        SetLastError( ret );
++        if (!ret) *ret_size = sizeof(u_long);
++        return ret ? -1 : 0;
 +    }
 +
-     case WS_SIOCATMARK:
+     case SIOCATMARK:
      {
          DWORD ret;
 diff --git a/dlls/ws2_32/tests/sock.c b/dlls/ws2_32/tests/sock.c
-index 0a83f0f0ffc..058372bd66a 100644
+index 02713a7c625..b87aef07b52 100644
 --- a/dlls/ws2_32/tests/sock.c
 +++ b/dlls/ws2_32/tests/sock.c
-@@ -5491,8 +5491,10 @@ static void test_WSASendTo(void)
-     struct sockaddr_in addr;
+@@ -5962,8 +5962,9 @@ static void test_WSASendTo(void)
+     struct sockaddr_in addr, ret_addr;
      char buf[12] = "hello world";
      WSABUF data_buf;
 -    DWORD bytesSent;
 +    DWORD bytesSent, size;
-     int ret;
+     int ret, len;
 +    ULONG backlog = 0;
-+    int iret;
  
      addr.sin_family = AF_INET;
      addr.sin_port = htons(139);
-@@ -5517,6 +5519,11 @@ static void test_WSASendTo(void)
-     ret = WSASendTo(s, &data_buf, 1, &bytesSent, 0, (struct sockaddr *)&addr, sizeof(addr), NULL, NULL);
-     ok(!ret, "expected success\n");
-     ok(!WSAGetLastError(), "got error %u\n", WSAGetLastError());
+@@ -5999,6 +6000,11 @@ static void test_WSASendTo(void)
+     ok(!ret, "got error %u\n", WSAGetLastError());
+     ok(ret_addr.sin_family == AF_INET, "got family %u\n", ret_addr.sin_family);
+     ok(ret_addr.sin_port, "expected nonzero port\n");
 +
-+    iret = WSAIoctl(s, SIO_IDEAL_SEND_BACKLOG_QUERY, NULL, 0, &backlog, sizeof(backlog), &size, NULL, NULL);
-+    ok(iret == SOCKET_ERROR && WSAGetLastError() == WSAEOPNOTSUPP,
-+       "WSAIoctl() failed: %d/%d\n", iret, WSAGetLastError());
++    ret = WSAIoctl(s, SIO_IDEAL_SEND_BACKLOG_QUERY, NULL, 0, &backlog, sizeof(backlog), &size, NULL, NULL);
++    ok(ret == SOCKET_ERROR && WSAGetLastError() == WSAEOPNOTSUPP,
++       "WSAIoctl() failed: %d/%d\n", ret, WSAGetLastError());
 +    closesocket(s);
  }
  
  static DWORD WINAPI recv_thread(LPVOID arg)
-@@ -5557,6 +5564,7 @@ static void test_WSARecv(void)
+@@ -6039,6 +6045,7 @@ static void test_WSARecv(void)
      DWORD dwret;
      BOOL bret;
      HANDLE thread, event = NULL, io_port;
@@ -87,7 +117,7 @@ index 0a83f0f0ffc..058372bd66a 100644
  
      tcp_socketpair(&src, &dest);
  
-@@ -5705,6 +5713,10 @@ static void test_WSARecv(void)
+@@ -6187,6 +6194,10 @@ static void test_WSARecv(void)
  
      CloseHandle(io_port);
  
@@ -98,6 +128,18 @@ index 0a83f0f0ffc..058372bd66a 100644
  end:
      if (server != INVALID_SOCKET)
          closesocket(server);
+diff --git a/include/wine/afd.h b/include/wine/afd.h
+index 3b8bdcb9e5d..ef4bfa97897 100644
+--- a/include/wine/afd.h
++++ b/include/wine/afd.h
+@@ -238,6 +238,7 @@ struct afd_get_events_params
+ #define IOCTL_AFD_WINE_SET_IP_RECVTTL                   WINE_AFD_IOC(294)
+ #define IOCTL_AFD_WINE_GET_IP_RECVTOS                   WINE_AFD_IOC(295)
+ #define IOCTL_AFD_WINE_SET_IP_RECVTOS                   WINE_AFD_IOC(296)
++#define IOCTL_AFD_WINE_SEND_BACKLOG_QUERY               WINE_AFD_IOC(297)
+ 
+ struct afd_create_params
+ {
 -- 
-2.30.2
+2.33.0
 
