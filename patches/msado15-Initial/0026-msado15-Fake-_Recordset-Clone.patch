@@ -1,0 +1,30 @@
+From 5fbdf98b0a8ddfd1fd40a090cdb1a76ff30dcd4a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 21 Jan 2022 10:24:07 +1100
+Subject: [PATCH 2/2] msado15: Fake _Recordset Clone
+
+---
+ dlls/msado15/recordset.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index deddd936e7c..b6c4cd65f54 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -2053,8 +2053,12 @@ static HRESULT WINAPI recordset_CompareBookmarks( _Recordset *iface, VARIANT boo
+ 
+ static HRESULT WINAPI recordset_Clone( _Recordset *iface, LockTypeEnum lock_type, _Recordset **obj )
+ {
++    struct recordset *recordset = impl_from_Recordset( iface );
+     FIXME( "%p, %d, %p\n", iface, lock_type, obj );
+-    return E_NOTIMPL;
++
++    *obj = iface;
++    recordset_AddRef( iface );
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_Resync( _Recordset *iface, AffectEnum affect_records, ResyncEnum resync_values )
+-- 
+2.34.1
+
