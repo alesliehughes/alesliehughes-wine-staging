@@ -1,14 +1,14 @@
-From e43cff2f4790adaac3a6e094f90bbfb807a1e4bc Mon Sep 17 00:00:00 2001
+From 1cfe339d31fb122d2393626ed1c493eb92a6c096 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
-Subject: [PATCH 1/2] msado15: Create rowset bindings.
+Subject: [PATCH] msado15: Create rowset bindings.
 
 ---
  dlls/msado15/recordset.c | 131 +++++++++++++++++++++++++++++++++++++++
  1 file changed, 131 insertions(+)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index bef85b78a27..9b63cf77eef 100644
+index 4c9c40651e8..40ea96c163b 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -19,7 +19,7 @@ index bef85b78a27..9b63cf77eef 100644
  
  #include "wine/debug.h"
  #include "wine/heap.h"
-@@ -1285,6 +1286,84 @@ static HRESULT WINAPI recordset_MoveLast( _Recordset *iface )
+@@ -1480,6 +1481,84 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
@@ -104,7 +104,7 @@ index bef85b78a27..9b63cf77eef 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1295,6 +1374,12 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1490,6 +1569,12 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -117,8 +117,8 @@ index bef85b78a27..9b63cf77eef 100644
  
      FIXME( "%p, %s, %s, %d, %d, %d Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
             cursor_type, lock_type, options );
-@@ -1339,6 +1424,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
-     if (FAILED(hr))
+@@ -1534,6 +1619,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+     if (FAILED(hr) || !rowset)
          return hr;
  
 +    hr = fields_create( recordset, &recordset->fields );
@@ -171,5 +171,5 @@ index bef85b78a27..9b63cf77eef 100644
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
 -- 
-2.30.2
+2.34.1
 

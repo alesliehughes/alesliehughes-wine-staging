@@ -1,14 +1,17 @@
-From 859705b6cf43f81b9ecd52b6ffbff81385cc0c17 Mon Sep 17 00:00:00 2001
+From 724a6214d181686d1f6f200001a55788787bb733 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
-Subject: msado15: Add Open Test
+Subject: [PATCH] msado15: Add Open Test
 
+---
+ dlls/msado15/tests/msado15.c | 137 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 137 insertions(+)
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index cafb73d64e4..d485d38b07f 100644
+index 25c9c6f8356..5e6ceec473a 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1477,6 +1477,142 @@ static void test_ConnectionPoint(void)
+@@ -1492,6 +1492,142 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %d\n", conn_event.refs );
  }
  
@@ -151,10 +154,13 @@ index cafb73d64e4..d485d38b07f 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
-@@ -1487,5 +1623,6 @@ START_TEST(msado15)
+@@ -1502,5 +1638,6 @@ START_TEST(msado15)
      test_Recordset();
      test_Stream();
      test_Command();
 +    test_connection_open();
      CoUninitialize();
  }
+-- 
+2.34.1
+

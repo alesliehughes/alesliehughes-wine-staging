@@ -1,14 +1,18 @@
-From 43541ec06463b45629840b166be6cf4842ab9bb4 Mon Sep 17 00:00:00 2001
+From eeda3ac4831491a5457d051ec9e0692409381113 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Mar 2021 10:47:16 +1100
-Subject: msado15: Loop data
+Subject: [PATCH] msado15: Loop data
 
+---
+ dlls/msado15/recordset.c     | 107 ++++++++++++++++++++++++++++++++++-
+ dlls/msado15/tests/msado15.c |  25 ++++++++
+ 2 files changed, 131 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 9b63cf77eef..7ebe4f6d4c3 100644
+index 40ea96c163b..fa5c763ea3c 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -1298,6 +1298,7 @@ static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDIN
+@@ -1493,6 +1493,7 @@ static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDIN
      DBBINDING *bindings;
      DBBYTEOFFSET offset;
  
@@ -16,8 +20,8 @@ index 9b63cf77eef..7ebe4f6d4c3 100644
      hr = IUnknown_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&columninfo);
      if (FAILED(hr))
          return hr;
-@@ -1424,6 +1425,9 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
-     if (FAILED(hr))
+@@ -1619,6 +1620,9 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+     if (FAILED(hr) || !rowset)
          return hr;
  
 +    /* We want to create the field member variable without mapping the rowset fields, this will
@@ -26,7 +30,7 @@ index 9b63cf77eef..7ebe4f6d4c3 100644
      hr = fields_create( recordset, &recordset->fields );
      if (FAILED(hr))
      {
-@@ -1456,13 +1460,114 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1651,13 +1655,114 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
          return hr;
      }
  
@@ -143,10 +147,10 @@ index 9b63cf77eef..7ebe4f6d4c3 100644
      IAccessor_Release(accessor);
  
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 93d1dc4c19b..d0d36ee7567 100644
+index 5e6ceec473a..2e0b90a6d2c 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1549,6 +1549,31 @@ static void test_connection_open(void)
+@@ -1537,6 +1537,31 @@ static void test_connection_open(void)
      ok( hr == S_OK, "got %08x\n", hr );
      ok( 0, "After _Recordset_Open\n");
  
@@ -178,3 +182,6 @@ index 93d1dc4c19b..d0d36ee7567 100644
      hr = _Recordset_get_CursorType(recordset, &cursortype);
      ok( hr == S_OK, "got %08x\n", hr );
      ok( cursortype == adOpenStatic, "got %d\n", cursortype );
+-- 
+2.34.1
+

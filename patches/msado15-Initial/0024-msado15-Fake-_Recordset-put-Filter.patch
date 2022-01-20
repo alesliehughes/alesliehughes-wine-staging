@@ -1,11 +1,15 @@
-From 7ba8d86073d6307f9026353f2fb279bcdd25a764 Mon Sep 17 00:00:00 2001
+From 4c00508cef2428162202ca158c21504c960cd0bc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Apr 2021 12:09:28 +1000
-Subject: msado15: Implement _Recordset put Filter
+Subject: [PATCH] msado15: Implement _Recordset put Filter
 
+---
+ dlls/msado15/recordset.c     | 26 ++++++++++++++++++++++----
+ dlls/msado15/tests/msado15.c | 34 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 55 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index dc2835a245f..09d9cae6b9a 100644
+index fa5c763ea3c..ada425ba7f3 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -49,6 +49,7 @@ struct recordset
@@ -16,7 +20,7 @@ index dc2835a245f..09d9cae6b9a 100644
  };
  
  struct fields
-@@ -1818,14 +1819,30 @@ static HRESULT WINAPI recordset_get_EditMode( _Recordset *iface, EditModeEnum *m
+@@ -1817,14 +1818,30 @@ static HRESULT WINAPI recordset_get_EditMode( _Recordset *iface, EditModeEnum *m
  
  static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria )
  {
@@ -51,7 +55,7 @@ index dc2835a245f..09d9cae6b9a 100644
  }
  
  static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, LONG *count )
-@@ -2362,6 +2379,7 @@ HRESULT Recordset_create( void **obj )
+@@ -2361,6 +2378,7 @@ HRESULT Recordset_create( void **obj )
      recordset->cursor_location = adUseServer;
      recordset->cursor_type = adOpenForwardOnly;
      recordset->row_set = NULL;
@@ -60,10 +64,10 @@ index dc2835a245f..09d9cae6b9a 100644
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 0410879f767..21864027edc 100644
+index 2e0b90a6d2c..cd383bc7a2f 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -76,7 +76,7 @@ static void test_Recordset(void)
+@@ -58,7 +58,7 @@ static void test_Recordset(void)
      CursorTypeEnum cursor;
      BSTR name;
      HRESULT hr;
@@ -72,7 +76,7 @@ index 0410879f767..21864027edc 100644
  
      hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
      ok( hr == S_OK, "got %08x\n", hr );
-@@ -164,6 +164,21 @@ static void test_Recordset(void)
+@@ -117,6 +117,21 @@ static void test_Recordset(void)
      hr = _Recordset_put_Bookmark( recordset, bookmark );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
  
@@ -94,7 +98,7 @@ index 0410879f767..21864027edc 100644
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
-@@ -242,6 +257,23 @@ static void test_Recordset(void)
+@@ -212,6 +227,23 @@ static void test_Recordset(void)
      hr = _Recordset_put_Bookmark( recordset, bookmark );
      ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08x\n", hr );
  
@@ -118,3 +122,6 @@ index 0410879f767..21864027edc 100644
      count = -1;
      hr = _Recordset_get_RecordCount( recordset, &count );
      ok( hr == S_OK, "got %08x\n", hr );
+-- 
+2.34.1
+
