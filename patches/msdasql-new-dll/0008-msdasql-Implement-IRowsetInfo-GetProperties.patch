@@ -93,7 +93,7 @@ index 132ff3aaaff..d71cf87a9c7 100644
 +                case DBPROP_IRowsetCurrentIndex:
 +                    V_VT(&propset[i].rgProperties[j].vValue) = VT_EMPTY;
 +                    propset[i].rgProperties[j].dwStatus = DBPROPSTATUS_NOTSUPPORTED;
-+                    hr = DB_S_ERRORSOCCURRED;
++                    /* hr = DB_S_ERRORSOCCURRED;*/
 +            }
 +        }
 +    }
