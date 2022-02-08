@@ -1,25 +1,25 @@
-From bf93491d0a866b36f3ed8c9e37281f6ab601fa1b Mon Sep 17 00:00:00 2001
+From bf17cea56cede2979a7af006b8fd53c6f39baa2c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 17 Nov 2021 15:31:29 +1100
-Subject: [PATCH 10/15] msdasql: Implement IRowset GetNextRows
+Subject: [PATCH] msdasql: Implement IRowset GetNextRows
 
 ---
  dlls/msdasql/session.c | 13 +++++++++++--
  1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index b43b2d47c65..5037342df58 100644
+index 189dedd7e47..17f8fcfbcc3 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -862,8 +862,17 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
+@@ -880,8 +880,17 @@ static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserv
          DBROWCOUNT count, DBCOUNTITEM *obtained, HROW **rows)
  {
      struct msdasql_rowset *rowset = impl_from_IRowset( iface );
--    FIXME("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
+-    FIXME("%p, %Id, %Id, %Id, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
 -    return E_NOTIMPL;
 +    SQLRETURN ret;
 +
-+    TRACE("%p, %ld, %ld, %ld, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
++    TRACE("%p, %I64d, %I64d, %I64d, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
 +
 +    ret = SQLFetch(rowset->hstmt);
 +    if (ret == SQL_NO_DATA)
@@ -32,5 +32,5 @@ index b43b2d47c65..5037342df58 100644
  
  static HRESULT WINAPI msdasql_rowset_ReleaseRows(IRowset *iface, DBCOUNTITEM count,
 -- 
-2.33.0
+2.34.1
 

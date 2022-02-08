@@ -1,18 +1,18 @@
-From 84458452e94660f6479c8e316deea50cefb9ce39 Mon Sep 17 00:00:00 2001
+From e702433060bf92773bff2ccf77363032e97a77ca Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 14 Nov 2021 09:43:40 +1100
-Subject: [PATCH 09/15] msdasql: Implement Rowsets IAccessor CreateAccessor
+Subject: [PATCH] msdasql: Implement Rowsets IAccessor CreateAccessor
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/msdasql/session.c | 96 ++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 93 insertions(+), 3 deletions(-)
+ dlls/msdasql/session.c | 80 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 78 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index d71cf87a9c7..b43b2d47c65 100644
+index 76e55421ff0..189dedd7e47 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -199,6 +199,26 @@ static const char *debugstr_dbtype(DBTYPE type)
+@@ -197,6 +197,26 @@ static const char *debugstr_dbtype(DBTYPE type)
      }
  }
  
@@ -39,7 +39,7 @@ index d71cf87a9c7..b43b2d47c65 100644
  static SQLSMALLINT sqltype_to_bindtype(SQLSMALLINT type, BOOL sign)
  {
      switch (type)
-@@ -695,6 +715,12 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
+@@ -714,6 +734,12 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
      return E_NOTIMPL;
  }
  
@@ -52,28 +52,28 @@ index d71cf87a9c7..b43b2d47c65 100644
  struct msdasql_rowset
  {
      IRowset IRowset_iface;
-@@ -705,6 +731,9 @@ struct msdasql_rowset
+@@ -724,6 +750,9 @@ struct msdasql_rowset
      IUnknown *caller;
      LONG refs;
- 
+     SQLHSTMT hstmt;
++
 +    DBBINDING *bindings;
 +    DBCOUNTITEM bind_cnt;
-+
-     /* ODBC support */
-     SQLHSTMT hstmt;
  };
-@@ -1160,8 +1189,55 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+ 
+ static inline struct msdasql_rowset *impl_from_IRowset( IRowset *iface )
+@@ -1177,8 +1206,55 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
          DBBINDSTATUS status[])
  {
      struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
--    FIXME("%p 0x%08x, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
+-    FIXME("%p, 0x%08lx, %Id, %p, %Id, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
 -    return E_NOTIMPL;
 +    int i;
 +    struct msdasql_accessor *access;
 +    char *ptr;
 +    SQLSMALLINT type;
 +
-+    TRACE("%p 0x%08x, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
++    TRACE("%p 0x%08lx, %I64d, %p, %I64d, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
 +
 +    heap_free(rowset->bindings); // ??? Varify.
 +    rowset->bindings = heap_alloc(sizeof(DBBINDING) * count);
@@ -88,15 +88,15 @@ index d71cf87a9c7..b43b2d47c65 100644
 +    {
 +        SQLRETURN ret;
 +
-+        TRACE("ord %ld. Value %ld, Len %ld, status %ld, typeinfo %p, part %d, Owner %d, io %d,"
-+              "Max %ld, flags %08x, type %d,  prec %d, sacle %d\n",
++        TRACE("ord %I64d. Value %I64d, Len %I64d, status %I64d, typeinfo %p, part %ld, Owner %ld, io %ld,"
++              "Max %I64d, flags %08lx, type %d,  prec %d, sacle %d\n",
 +                bindings[i].iOrdinal, bindings[i].obValue, bindings[i].obLength, bindings[i].obStatus,
 +                bindings[i].pTypeInfo, bindings[i].dwPart, bindings[i].dwMemOwner, bindings[i].eParamIO,
 +                bindings[i].cbMaxLen, bindings[i].dwFlags, bindings[i].wType, bindings[i].bPrecision,
 +                bindings[i].bScale);
 +
 +        if (bindings[i].pObject)
-+            FIXME("DBOBJECT 0x%08x, %s currently not supported\n", bindings[i].pObject->dwFlags,
++            FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", bindings[i].pObject->dwFlags,
 +                    debugstr_guid(&bindings[i].pObject->iid));
 +
 +        type = bindtype_to_sqltype(bindings[i].wType);
@@ -120,37 +120,6 @@ index d71cf87a9c7..b43b2d47c65 100644
  }
  
  static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR accessor,
-@@ -1175,8 +1251,20 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
- static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSOR accessor, DBREFCOUNT *count)
- {
-     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
-+    struct msdasql_accessor *access =(struct msdasql_accessor *)accessor;
-+
-     FIXME("%p, %lu, %p\n", rowset, accessor, count);
--    return E_NOTIMPL;
-+
-+    if (access)
-+    {
-+        heap_free(access->data);
-+        heap_free(access);
-+    }
-+
-+    if (count)
-+        *count = 0;
-+
-+    return S_OK;
- }
- 
- struct IAccessorVtbl accessor_vtbl =
-@@ -1284,6 +1372,8 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
-         msrowset->refs = 1;
-         ICommandText_QueryInterface(iface, &IID_IUnknown, (void**)&msrowset->caller);
-         msrowset->hstmt = hstmt;
-+        msrowset->bindings = NULL;
-+        msrowset->bind_cnt = 0;
-     }
- 
-     if (affected)
 -- 
-2.33.0
+2.34.1
 

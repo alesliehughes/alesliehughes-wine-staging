@@ -1,8 +1,7 @@
-From 2080bce290ac6a5d735fccdede0a698f73b99eda Mon Sep 17 00:00:00 2001
+From 83a624946d6781710897a9198f3815d5e5233a3d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Nov 2021 16:17:01 +1100
-Subject: [PATCH 15/15] msdasql: HACK - IColumnsInfo GetColumnInfo for
- ICommandText
+Subject: [PATCH] msdasql: HACK - IColumnsInfo GetColumnInfo for ICommandText
 
 This needs to return columns.
 
@@ -12,14 +11,14 @@ columns without issues.  We should cache these values, as they aren't
 going to change between GetColumnInfo(Command), and GetColumnInfo(Rowset).
 ---
  dlls/msdasql/session.c        | 15 +++++-
- dlls/msdasql/tests/provider.c | 96 +++++++++++++++++++++++------------
- 2 files changed, 77 insertions(+), 34 deletions(-)
+ dlls/msdasql/tests/provider.c | 90 +++++++++++++++++++++++------------
+ 2 files changed, 73 insertions(+), 32 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 7b238ca7425..8a8542c5499 100644
+index 338f7219f13..90576fb2cdd 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -1769,7 +1769,20 @@ static HRESULT WINAPI colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDINAL *col
+@@ -1773,7 +1773,20 @@ static HRESULT WINAPI colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDINAL *col
  {
      struct command *command = impl_from_IColumnsInfo( iface );
      FIXME("%p, %p, %p, %p\n", command, columns, colinfo, stringsbuffer);
@@ -42,7 +41,7 @@ index 7b238ca7425..8a8542c5499 100644
  
  static HRESULT WINAPI colsinfo_MapColumnIDs(IColumnsInfo *iface, DBORDINAL column_ids,
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index 9a8795695e8..ebd4ea08898 100644
+index e2ee60280c2..03913d6e681 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
 @@ -43,6 +43,37 @@ static char mdbpath[MAX_PATH];
@@ -93,58 +92,47 @@ index 9a8795695e8..ebd4ea08898 100644
 +    DBCOLUMNINFO *dbcolumninfo;
 +    OLECHAR *buffer;
  
-     hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&comand_text);
-     ok(hr == S_OK, "got 0x%08x\n", hr);
+     hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&command_text);
+     ok(hr == S_OK, "got 0x%08lx\n", hr);
 @@ -394,6 +430,12 @@ static void test_command_text(IUnknown *cmd)
-     hr = ICommandText_GetCommandText(comand_text, &dialect, &str);
-     ok(hr == DB_E_NOCOMMAND, "got 0x%08x\n", hr);
+     hr = ICommandText_GetCommandText(command_text, &dialect, &str);
+     ok(hr == DB_E_NOCOMMAND, "got 0x%08lx\n", hr);
  
 +    hr = IUnknown_QueryInterface(cmd, &IID_IColumnsInfo, (void**)&colinfo);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
 +
 +    hr = IColumnsInfo_GetColumnInfo(colinfo, &columns, &dbcolumninfo, &buffer);
-+    ok(hr == DB_E_NOCOMMAND, "got 0x%08x\n", hr);
++    ok(hr == DB_E_NOCOMMAND, "got 0x%08lx\n", hr);
 +
  if (0)
  {
      /* Crashes under windows */
-@@ -410,7 +452,6 @@ if (0)
-     hr = ICommandText_SetCommandText(comand_text, &DBGUID_DEFAULT, L"select * from testing");
-     ok(hr == S_OK, "got 0x%08x\n", hr);
- 
--
-     hr = ICommandText_GetCommandText(comand_text, NULL, &str);
-     ok(hr == S_OK, "got 0x%08x\n", hr);
-     ok (!lstrcmpW(L"select * from testing", str), "got %s\n", debugstr_w(str));
-@@ -430,6 +471,26 @@ if (0)
+@@ -430,6 +472,23 @@ if (0)
      ok (!lstrcmpW(L"select * from testing", str), "got %s\n", debugstr_w(str));
      HeapFree(GetProcessHeap(), 0, str);
  
-+    hr = IColumnsInfo_GetColumnInfo(colinfo, &columns, &dbcolumninfo, &buffer);
-+    ok(hr == DB_E_NOTPREPARED, "got 0x%08x\n", hr);
-+
-+    hr = ICommandText_QueryInterface(comand_text, &IID_ICommandPrepare, (void**)&commandprepare);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
++    hr = ICommandText_QueryInterface(command_text, &IID_ICommandPrepare, (void**)&commandprepare);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
 +
 +    ok (0, "*************\n");
 +    hr = ICommandPrepare_Prepare(commandprepare, 1);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
 +    ok (0, " *************\n");
 +
 +    hr = IColumnsInfo_GetColumnInfo(colinfo, &columns, &dbcolumninfo, &buffer);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
-+    ok(columns == 3, "got %d\n", columns);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++    ok(columns == 3, "got %I64d\n", columns);
 +
 +    CoTaskMemFree(dbcolumninfo);
 +    CoTaskMemFree(buffer);
 +
 +    ICommandPrepare_Release(commandprepare);
 +    IColumnsInfo_Release(colinfo);
-     ICommandText_Release(comand_text);
+     ICommandText_Release(command_text);
  }
  
-@@ -449,37 +510,6 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
-     ICommandText_Release(comand_text);
+@@ -449,37 +508,6 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
+     ICommandText_Release(command_text);
  }
  
 -static char *dump_flags(DWORD flags)
@@ -181,15 +169,6 @@ index 9a8795695e8..ebd4ea08898 100644
  static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
  {
      IRowsetInfo *info;
-@@ -508,7 +538,7 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
-     hr = IRowset_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&col_info);
-     ok(hr == S_OK, "got 0x%08x\n", hr);
- 
--    if (hr == S_OK)
-+    if (hr == S_OK && FALSE)
-     {
-         DBORDINAL columns;
-         DBCOLUMNINFO *dbcolumninfo;
 -- 
-2.33.0
+2.34.1
 

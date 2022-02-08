@@ -1,18 +1,33 @@
-From a89b992658b41bc1eb421a74c3f448ba973a6419 Mon Sep 17 00:00:00 2001
+From 726d106bb945f1a97c829dde4553db4abccc8319 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Nov 2021 10:07:11 +1100
-Subject: [PATCH 13/15] msdasql: Skip DBTYPE_IUNKNOWN columns
+Subject: [PATCH] msdasql: Skip DBTYPE_IUNKNOWN columns
 
 ---
- dlls/msdasql/session.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ dlls/msdasql/session.c | 33 +++++++++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 6b0d8de0e69..a26ef6d5223 100644
+index 6163fa33f66..d38f1064396 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -885,6 +885,31 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
-             FIXME("DBOBJECT 0x%08x, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
+@@ -884,7 +884,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+         CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
+ 
+     FIXME("%p, %Id, %Id, %p\n", rowset, row, accessor, data);
+-    FIXME("rowset->bind_cnt %ld\n", rowset->bind_cnt);
++    FIXME("rowset->bind_cnt %I64d\n", rowset->bind_cnt);
+     //memcpy(data, access->data, access->size);
+     for(i=0; i < rowset->bind_cnt; i++)
+     {
+@@ -898,11 +898,36 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+         DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
+         DBLENGTH*           pulDstLength;
+ 
+-        FIXME("ObValue %ld, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
++        FIXME("ObValue %I64d, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
+         if(rowset->bindings[i].pObject)
+             FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
                      debugstr_guid(&rowset->bindings[i].pObject->iid));
  
 +        if (rowset->bindings[i].wType == DBTYPE_IUNKNOWN)
@@ -23,7 +38,7 @@ index 6b0d8de0e69..a26ef6d5223 100644
 +            //LONG_PTR val;
 +
 +            hr = CreateStreamOnHGlobal(NULL, TRUE, &steam);
-+            FIXME("CreateStreamOnHGlobal 0x%08x\n", hr);
++            FIXME("CreateStreamOnHGlobal 0x%08lx\n", hr);
 +
 +            hr = IStream_QueryInterface(steam, &IID_IUnknown, (void**)&pIUnknown);
 +            //*(IUnknown **)pSrc = &pIUnknown;
@@ -31,20 +46,20 @@ index 6b0d8de0e69..a26ef6d5223 100644
 +            *(IUnknown**)(pSrc) = *(IUnknown**)&pIUnknown;
 +            //hr = IStream_QueryInterface(steam, &IID_IUnknown, &pSrc);
 +
-+            FIXME("IStream_QueryInterface 0x%08x (%x, %p)\n", hr, *(LONG_PTR*)(pSrc) ,pIUnknown);
++            FIXME("IStream_QueryInterface 0x%08lx (%I64d, %p)\n", hr, *(LONG_PTR*)(pSrc) ,pIUnknown);
 +//FIXME("pIUnknown %p\n", pIUnknown);
 +  //          if (pIUnknown)
 +    //            hr = IUnknown_QueryInterface(pIUnknown, &IID_ISequentialStream, (void**)&pISequentialStream);
 +
-+            FIXME("Skipping streaming data %x\n", hr);
++            FIXME("Skipping streaming data %lx\n", hr);
 +            continue;
 +        }
 +
          dwPart = rowset->bindings[i].dwPart;
          pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
          pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
-@@ -1279,6 +1304,10 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
-             FIXME("DBOBJECT 0x%08x, %s currently not supported\n", bindings[i].pObject->dwFlags,
+@@ -1296,6 +1321,10 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+             FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", bindings[i].pObject->dwFlags,
                      debugstr_guid(&bindings[i].pObject->iid));
  
 +        /* Don't bind Columns that will route though an interface, eg Blobs, Large text field */
@@ -55,5 +70,5 @@ index 6b0d8de0e69..a26ef6d5223 100644
          ret = SQLBindCol(rowset->hstmt, bindings[i].iOrdinal, type, &ptr[bindings[i].obValue],
                              bindings[i].cbMaxLen, (SQLLEN*)&ptr[bindings[i].obLength]);
 -- 
-2.33.0
+2.34.1
 

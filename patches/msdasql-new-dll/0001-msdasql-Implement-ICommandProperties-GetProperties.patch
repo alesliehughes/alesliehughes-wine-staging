@@ -1,20 +1,20 @@
-From 9354a78c4a11ec63a1c8d21adc2f1b86a533a464 Mon Sep 17 00:00:00 2001
+From a23be6038b062faff3ad204598e23fe8bff12de4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 7 Nov 2021 20:10:35 +1100
-Subject: [PATCH 01/15] msdasql: Implement ICommandProperties GetProperties
+Subject: [PATCH v4 1/3] msdasql: Implement ICommandProperties GetProperties
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/msdasql/msdasql_main.c   |   1 +
- dlls/msdasql/session.c        | 217 +++++++++++++++++++++++++++++++++-
+ dlls/msdasql/session.c        | 215 +++++++++++++++++++++++++++++++++-
  dlls/msdasql/tests/provider.c | 145 +++++++++++++++++++++++
- 3 files changed, 361 insertions(+), 2 deletions(-)
+ 3 files changed, 359 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index bc208a74cc5..84afdb06145 100644
+index 3e1af95b1a7..ae57811799a 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
-@@ -37,6 +37,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
+@@ -40,6 +40,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
  
  DEFINE_GUID(DBPROPSET_DATASOURCEINFO, 0xc8b522bb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
  DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
@@ -23,10 +23,10 @@ index bc208a74cc5..84afdb06145 100644
  DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
  
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index b4239c59037..9ef29d6b29e 100644
+index 199eb0830d6..0c503665068 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -35,6 +35,103 @@
+@@ -36,6 +36,102 @@
  
  WINE_DEFAULT_DEBUG_CHANNEL(msdasql);
  
@@ -36,8 +36,7 @@ index b4239c59037..9ef29d6b29e 100644
 +    DBPROPFLAGS flags;
 +    VARTYPE     vartype;
 +
-+    VARIANT_BOOL bool_val;
-+    LONG_PTR    long_val;
++    LONG value;
 +};
 +
 +static struct msdasql_prop msdasql_init_props[] =
@@ -46,7 +45,7 @@ index b4239c59037..9ef29d6b29e 100644
 +    { DBPROP_BLOCKINGSTORAGEOBJECTS,          DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_BOOKMARKS,                       DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_BOOKMARKSKIPPED,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
-+    { DBPROP_BOOKMARKTYPE,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, VARIANT_FALSE, 1 },
++    { DBPROP_BOOKMARKTYPE,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 1 },
 +    { DBPROP_CANFETCHBACKWARDS,               DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_CANHOLDROWS,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_CANSCROLLBACKWARDS,              DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
@@ -56,10 +55,10 @@ index b4239c59037..9ef29d6b29e 100644
 +    { DBPROP_IMMOBILEROWS,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_LITERALBOOKMARKS,                DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_LITERALIDENTITY,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_TRUE },
-+    { DBPROP_MAXOPENROWS,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 0 },
-+    { DBPROP_MAXPENDINGROWS,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, VARIANT_FALSE, 0 },
-+    { DBPROP_MAXROWS,                         DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, VARIANT_FALSE, 0 },
-+    { DBPROP_NOTIFICATIONPHASES,              DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 31 },
++    { DBPROP_MAXOPENROWS,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, 0 },
++    { DBPROP_MAXPENDINGROWS,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4,  0 },
++    { DBPROP_MAXROWS,                         DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 0 },
++    { DBPROP_NOTIFICATIONPHASES,              DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, 31 },
 +    { DBPROP_OTHERUPDATEDELETE,               DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_OWNINSERT,                       DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_OWNUPDATEDELETE,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
@@ -68,9 +67,9 @@ index b4239c59037..9ef29d6b29e 100644
 +    { DBPROP_REMOVEDELETED,                   DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_REPORTMULTIPLECHANGES,           DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_ROWRESTRICT,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
-+    { DBPROP_ROWTHREADMODEL,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 2 },
++    { DBPROP_ROWTHREADMODEL,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, 2 },
 +    { DBPROP_TRANSACTEDOBJECT,                DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
-+    { DBPROP_UPDATABILITY,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 0 },
++    { DBPROP_UPDATABILITY,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, 0 },
 +    { DBPROP_STRONGIDENTITY,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_IAccessor,                       DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_IColumnsInfo,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_TRUE },
@@ -85,37 +84,37 @@ index b4239c59037..9ef29d6b29e 100644
 +    { DBPROP_IRowsetUpdate,                   DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_ISupportErrorInfo,               DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_ISequentialStream,               DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
-+    { DBPROP_NOTIFYCOLUMNSET,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWDELETE,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWFIRSTCHANGE,            DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWINSERT,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWRESYNCH,                DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWSETRELEASE,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWSETFETCHPOSITIONCHANGE, DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWUNDOCHANGE,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWUNDODELETE,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWUNDOINSERT,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
-+    { DBPROP_NOTIFYROWUPDATE,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 3 },
++    { DBPROP_NOTIFYCOLUMNSET,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWDELETE,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWFIRSTCHANGE,            DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWINSERT,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWRESYNCH,                DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWSETRELEASE,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWSETFETCHPOSITIONCHANGE, DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWUNDOCHANGE,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWUNDODELETE,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWUNDOINSERT,             DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
++    { DBPROP_NOTIFYROWUPDATE,                 DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4,  3 },
 +    { DBPROP_CHANGEINSERTEDROWS,              DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_RETURNPENDINGINSERTS,            DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_IConvertType,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_BOOL, VARIANT_TRUE },
-+    { DBPROP_NOTIFICATIONGRANULARITY,         DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, VARIANT_FALSE, 1 },
++    { DBPROP_NOTIFICATIONGRANULARITY,         DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 1 },
 +    { DBPROP_IMultipleResults,                DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
-+    { DBPROP_ACCESSORDER,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 0, 1 },
-+    { DBPROP_BOOKMARKINFO,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 0 },
++    { DBPROP_ACCESSORDER,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 1 },
++    { DBPROP_BOOKMARKINFO,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, 0 },
 +    { DBPROP_UNIQUEROWS,                      DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_IRowsetFind,                     DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_IRowsetScroll,                   DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_IRowsetRefresh,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_TRUE },
-+    { DBPROP_FINDCOMPAREOPS,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, VARIANT_FALSE, 27 },
++    { DBPROP_FINDCOMPAREOPS,                  DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ, VT_I4, 27 },
 +    { DBPROP_ORDEREDBOOKMARKS,                DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_CLIENTCURSOR,                    DBPROPFLAGS_ROWSET | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_TRUE },
 +    { DBPROP_ABORTPRESERVE,                   DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_ACTIVESESSIONS,                  DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_ASYNCTXNCOMMIT,                  DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_AUTH_CACHE_AUTHINFO,             DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
-+    { DBPROP_AUTH_ENCRYPT_PASSWORD,           DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, VARIANT_FALSE, 0 },
-+    { DBPROP_AUTH_INTEGRATED,                 DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, VARIANT_FALSE, 14 },
++    { DBPROP_AUTH_ENCRYPT_PASSWORD,           DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 0 },
++    { DBPROP_AUTH_INTEGRATED,                 DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_I4, 14 },
 +    { DBPROP_AUTH_MASK_PASSWORD,              DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_AUTH_PASSWORD,                   DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
 +    { DBPROP_AUTH_PERSIST_ENCRYPTED,          DBPROPFLAGS_DATASOURCEINFO | DBPROPFLAGS_READ | DBPROPFLAGS_WRITE, VT_BOOL, VARIANT_FALSE },
@@ -130,25 +129,25 @@ index b4239c59037..9ef29d6b29e 100644
  struct msdasql_session
  {
      IUnknown session_iface;
-@@ -305,6 +402,8 @@ struct command
-     LONG refs;
-     WCHAR *query;
+@@ -332,6 +428,8 @@ struct command
      IUnknown *session;
+     HDBC hdbc;
+     SQLHSTMT hstmt;
 +
 +    struct msdasql_prop properties[80];
  };
  
  static inline struct command *impl_from_ICommandText( ICommandText *iface )
-@@ -933,8 +1032,120 @@ static HRESULT WINAPI command_prop_GetProperties(ICommandProperties *iface, ULON
+@@ -993,8 +1091,119 @@ static HRESULT WINAPI command_prop_GetProperties(ICommandProperties *iface, ULON
          const DBPROPIDSET propertyidsets[], ULONG *sets_cnt, DBPROPSET **propertyset)
  {
      struct command *command = impl_from_ICommandProperties( iface );
--    FIXME("%p %d %p %p %p\n", command, count, propertyidsets, sets_cnt, propertyset);
+-    FIXME("%p %lu %p %p %p\n", command, count, propertyidsets, sets_cnt, propertyset);
 -    return E_NOTIMPL;
 +    DBPROPSET *propset = NULL;
 +    int i, j, k;
 +
-+    TRACE("%p %d %p %p %p\n", command, count, propertyidsets, sets_cnt, propertyset);
++    TRACE("%p %ld %p %p %p\n", command, count, propertyidsets, sets_cnt, propertyset);
 +
 +    /* All Properties */
 +    if (count == 0)
@@ -173,11 +172,11 @@ index b4239c59037..9ef29d6b29e 100644
 +            V_VT(&propset[0].rgProperties[j].vValue) = command->properties[j].vartype;
 +            if (command->properties[j].vartype == VT_BOOL)
 +            {
-+                V_BOOL(&propset[0].rgProperties[j].vValue) = command->properties[j].bool_val;
++                V_BOOL(&propset[0].rgProperties[j].vValue) = command->properties[j].value;
 +            }
 +            else if (command->properties[j].vartype == VT_I4)
 +            {
-+                V_I4(&propset[0].rgProperties[j].vValue) = command->properties[j].long_val;
++                V_I4(&propset[0].rgProperties[j].vValue) = command->properties[j].value;
 +            }
 +            else
 +                ERR("Unknown variant type %d\n", command->properties[j].vartype);
@@ -192,7 +191,6 @@ index b4239c59037..9ef29d6b29e 100644
 +            CoTaskMemFree(propset);
 +            return E_OUTOFMEMORY;
 +        }
-+
 +        i=0;
 +        for (j=ROWSET_PROP_COUNT; j < ROWSET_PROP_COUNT+propset[1].cProperties; j++)
 +        {
@@ -201,11 +199,11 @@ index b4239c59037..9ef29d6b29e 100644
 +            V_VT(&propset[1].rgProperties[i].vValue) = command->properties[j].vartype;
 +            if (command->properties[j].vartype == VT_BOOL)
 +            {
-+                V_BOOL(&propset[1].rgProperties[i].vValue) = command->properties[j].bool_val;
++                V_BOOL(&propset[1].rgProperties[i].vValue) = command->properties[j].value;
 +            }
 +            else if (command->properties[j].vartype == VT_I4)
 +            {
-+                V_I4(&propset[1].rgProperties[i].vValue) = command->properties[j].long_val;
++                V_I4(&propset[1].rgProperties[i].vValue) = command->properties[j].value;
 +            }
 +            else
 +                ERR("Unknown variant type %d\n", command->properties[j].vartype);
@@ -222,7 +220,7 @@ index b4239c59037..9ef29d6b29e 100644
 +
 +        for (i=0; i < count; i++)
 +        {
-+            TRACE("Property id %d (count %d, set %s)\n", i, propertyidsets[i].cPropertyIDs,
++            TRACE("Property id %d (count %ld, set %s)\n", i, propertyidsets[i].cPropertyIDs,
 +                    debugstr_guid(&propertyidsets[i].guidPropertySet));
 +
 +            propset[i].cProperties = propertyidsets[i].cPropertyIDs;
@@ -239,11 +237,11 @@ index b4239c59037..9ef29d6b29e 100644
 +                        V_VT(&propset[i].rgProperties[i].vValue) = command->properties[j].vartype;
 +                        if (command->properties[j].vartype == VT_BOOL)
 +                        {
-+                            V_BOOL(&propset[i].rgProperties[i].vValue) = command->properties[j].bool_val;
++                            V_BOOL(&propset[i].rgProperties[i].vValue) = command->properties[j].value;
 +                        }
 +                        else if (command->properties[j].vartype == VT_I4)
 +                        {
-+                            V_I4(&propset[i].rgProperties[i].vValue) = command->properties[j].long_val;
++                            V_I4(&propset[i].rgProperties[i].vValue) = command->properties[j].value;
 +                        }
 +                        else
 +                            ERR("Unknown variant type %d\n", command->properties[j].vartype);
@@ -262,9 +260,9 @@ index b4239c59037..9ef29d6b29e 100644
  }
  
  static HRESULT WINAPI command_prop_SetProperties(ICommandProperties *iface, ULONG count,
-@@ -1148,6 +1359,8 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
-     command->refs = 1;
-     command->query = NULL;
+@@ -1227,6 +1436,8 @@ static HRESULT WINAPI createcommand_CreateCommand(IDBCreateCommand *iface, IUnkn
+     command->hdbc = session->hdbc;
+     command->hstmt = NULL;
  
 +    memcpy(command->properties, msdasql_init_props, sizeof(msdasql_init_props));
 +
@@ -272,7 +270,7 @@ index b4239c59037..9ef29d6b29e 100644
  
      hr = ICommandText_QueryInterface(&command->ICommandText_iface, riid, (void**)out);
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index b520b127d67..211116dc382 100644
+index d261e34e987..00fa9194459 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
 @@ -34,6 +34,7 @@
@@ -321,16 +319,16 @@ index b520b127d67..211116dc382 100644
 +    };
 +
 +    hr = ICommandProperties_GetProperties(props, 0, NULL, &count, &propset);
-+    ok(hr == S_OK, "got 0x%08x\n", hr);
-+    ok(count == 2, "got %d\n", count);
-+    ok(propset[0].cProperties == 68, "got %d\n", propset[0].cProperties);
-+    ok(propset[1].cProperties == 12, "got %d\n", propset[1].cProperties);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++    ok(count == 2, "got %ld\n", count);
++    ok(propset[0].cProperties == 68, "got %ld\n", propset[0].cProperties);
++    ok(propset[1].cProperties == 12, "got %ld\n", propset[1].cProperties);
 +
 +    ok(IsEqualGUID(&DBPROPSET_ROWSET, &propset[0].guidPropertySet), "got %s\n",
 +        debugstr_guid(&propset[0].guidPropertySet));
 +    for (i = 0; i < propset[0].cProperties; i++)
 +    {
-+        ok(propset[0].rgProperties[i].dwPropertyID == row_props[i], "%d: got 0x%08x\n", i, propset[0].rgProperties[i].dwPropertyID);
++        ok(propset[0].rgProperties[i].dwPropertyID == row_props[i], "%d: got 0x%08lx\n", i, propset[0].rgProperties[i].dwPropertyID);
 +
 +        switch(propset[0].rgProperties[i].dwPropertyID )
 +        {
@@ -338,7 +336,7 @@ index b520b127d67..211116dc382 100644
 +            case DBPROP_NOTIFICATIONGRANULARITY:
 +            case DBPROP_ACCESSORDER:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_I4(&propset[0].rgProperties[i].vValue) == 1, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_I4(&propset[0].rgProperties[i].vValue) == 1, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_MAXOPENROWS:
 +            case DBPROP_MAXPENDINGROWS:
@@ -346,19 +344,19 @@ index b520b127d67..211116dc382 100644
 +            case DBPROP_UPDATABILITY:
 +            case DBPROP_BOOKMARKINFO:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_I4(&propset[0].rgProperties[i].vValue) == 0, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_I4(&propset[0].rgProperties[i].vValue) == 0, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_FINDCOMPAREOPS:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_I4(&propset[0].rgProperties[i].vValue) == 27, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_I4(&propset[0].rgProperties[i].vValue) == 27, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_NOTIFICATIONPHASES:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_I4(&propset[0].rgProperties[i].vValue) == 31, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_I4(&propset[0].rgProperties[i].vValue) == 31, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_ROWTHREADMODEL:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_I4(&propset[0].rgProperties[i].vValue) == 2, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_I4(&propset[0].rgProperties[i].vValue) == 2, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_NOTIFYCOLUMNSET:
 +            case DBPROP_NOTIFYROWDELETE:
@@ -372,7 +370,7 @@ index b520b127d67..211116dc382 100644
 +            case DBPROP_NOTIFYROWUNDOINSERT:
 +            case DBPROP_NOTIFYROWUPDATE:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_I4(&propset[0].rgProperties[i].vValue) == 3, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_I4(&propset[0].rgProperties[i].vValue) == 3, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_BLOCKINGSTORAGEOBJECTS:
 +            case DBPROP_IMMOBILEROWS:
@@ -391,11 +389,11 @@ index b520b127d67..211116dc382 100644
 +            case DBPROP_ORDEREDBOOKMARKS:
 +            case DBPROP_CLIENTCURSOR:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_BOOL, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_BOOL(&propset[0].rgProperties[i].vValue) == VARIANT_TRUE, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_BOOL(&propset[0].rgProperties[i].vValue) == VARIANT_TRUE, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +            default:
 +                ok(V_VT(&propset[0].rgProperties[i].vValue) == VT_BOOL, "%d: got %d\n", i, V_VT(&propset[0].rgProperties[i].vValue));
-+                ok(V_BOOL(&propset[0].rgProperties[i].vValue) == VARIANT_FALSE, "%d: got %d\n", i, V_I4(&propset[0].rgProperties[i].vValue));
++                ok(V_BOOL(&propset[0].rgProperties[i].vValue) == VARIANT_FALSE, "%d: got %ld\n", i, V_I4(&propset[0].rgProperties[i].vValue));
 +                break;
 +        }
 +    }
@@ -404,25 +402,25 @@ index b520b127d67..211116dc382 100644
 +        debugstr_guid(&propset[1].guidPropertySet));
 +    for (i = 0; i < propset[1].cProperties; i++)
 +    {
-+        ok(propset[1].rgProperties[i].dwPropertyID == prov_props[i], "%d: got 0x%08x\n", i, propset[1].rgProperties[i].dwPropertyID);
++        ok(propset[1].rgProperties[i].dwPropertyID == prov_props[i], "%d: got 0x%08lx\n", i, propset[1].rgProperties[i].dwPropertyID);
 +
 +        switch(propset[1].rgProperties[i].dwPropertyID )
 +        {
 +            case DBPROP_AUTH_ENCRYPT_PASSWORD:
 +                ok(V_VT(&propset[1].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[1].rgProperties[i].vValue));
-+                ok(V_I4(&propset[1].rgProperties[i].vValue) == 0, "%d: got %d\n", i, V_I4(&propset[1].rgProperties[i].vValue));
++                ok(V_I4(&propset[1].rgProperties[i].vValue) == 0, "%d: got %ld\n", i, V_I4(&propset[1].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_AUTH_INTEGRATED:
 +                ok(V_VT(&propset[1].rgProperties[i].vValue) == VT_I4, "%d: got %d\n", i, V_VT(&propset[1].rgProperties[i].vValue));
-+                ok(V_I4(&propset[1].rgProperties[i].vValue) == 14, "%d: got %d\n", i, V_I4(&propset[1].rgProperties[i].vValue));
++                ok(V_I4(&propset[1].rgProperties[i].vValue) == 14, "%d: got %ld\n", i, V_I4(&propset[1].rgProperties[i].vValue));
 +                break;
 +            case DBPROP_BLOCKINGSTORAGEOBJECTS:
 +                ok(V_VT(&propset[1].rgProperties[i].vValue) == VT_BOOL, "%d: got %d\n", i, V_VT(&propset[1].rgProperties[i].vValue));
-+                ok(V_BOOL(&propset[1].rgProperties[i].vValue) == VARIANT_FALSE, "%d: got %d\n", i, V_I4(&propset[1].rgProperties[i].vValue));
++                ok(V_BOOL(&propset[1].rgProperties[i].vValue) == VARIANT_FALSE, "%d: got %ld\n", i, V_I4(&propset[1].rgProperties[i].vValue));
 +                break;
 +            default:
 +                ok(V_VT(&propset[1].rgProperties[i].vValue) == VT_BOOL, "%d: got %d\n", i, V_VT(&propset[1].rgProperties[i].vValue));
-+                ok(V_BOOL(&propset[1].rgProperties[i].vValue) == VARIANT_FALSE, "%d: got %d\n", i, V_I4(&propset[1].rgProperties[i].vValue));
++                ok(V_BOOL(&propset[1].rgProperties[i].vValue) == VARIANT_FALSE, "%d: got %ld\n", i, V_I4(&propset[1].rgProperties[i].vValue));
 +                break;
 +        }
 +    }
@@ -436,11 +434,11 @@ index b520b127d67..211116dc382 100644
 @@ -198,6 +342,7 @@ static void test_command_interfaces(IUnknown *cmd)
  
      hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
-     ok(hr == S_OK, "got 0x%08x\n", hr);
+     ok(hr == S_OK, "got 0x%08lx\n", hr);
 +    test_command_properties(commandProp);
      ICommandProperties_Release(commandProp);
  
      hr = IUnknown_QueryInterface(cmd, &IID_ICommandWithParameters, (void**)&cmdwithparams);
 -- 
-2.33.0
+2.34.1
 

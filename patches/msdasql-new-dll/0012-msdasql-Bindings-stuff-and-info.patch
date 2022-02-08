@@ -1,7 +1,7 @@
-From f6fc85652dc5d87b0760e650195a2ddcf9025fc8 Mon Sep 17 00:00:00 2001
+From 622636f314ba373bf2ccc3acfbf0d13f30dc5ef3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 17 Nov 2021 16:45:18 +1100
-Subject: [PATCH 12/15] msdasql: Bindings stuff and info
+Subject: [PATCH] msdasql: Bindings stuff and info
 
 For large data (Variable length data). Memos etc.
 
@@ -14,30 +14,30 @@ fetched on a per column bases while we write to the stream.
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 8a0c6ba7a62..6b0d8de0e69 100644
+index e271f36afa9..6163fa33f66 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -866,6 +866,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -884,6 +884,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
          CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
-     FIXME("%p, %ld, %ld, %p\n", rowset, row, accessor, data);
  
-+    FIXME("rowset->bind_cnt %d\n", rowset->bind_cnt);
+     FIXME("%p, %Id, %Id, %p\n", rowset, row, accessor, data);
++    FIXME("rowset->bind_cnt %ld\n", rowset->bind_cnt);
      //memcpy(data, access->data, access->size);
      for(i=0; i < rowset->bind_cnt; i++)
      {
-@@ -879,6 +880,11 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -897,6 +898,11 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
          DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
          DBLENGTH*           pulDstLength;
  
-+        FIXME("ObValue %d, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
++        FIXME("ObValue %ld, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
 +        if(rowset->bindings[i].pObject)
-+            FIXME("DBOBJECT 0x%08x, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
++            FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
 +                    debugstr_guid(&rowset->bindings[i].pObject->iid));
 +
          dwPart = rowset->bindings[i].dwPart;
          pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
          pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
-@@ -1257,7 +1263,7 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+@@ -1274,7 +1280,7 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
  
      access = heap_alloc( sizeof(struct msdasql_accessor));
      access->size = 0;
@@ -47,5 +47,5 @@ index 8a0c6ba7a62..6b0d8de0e69 100644
      {
          SQLRETURN ret;
 -- 
-2.33.0
+2.34.1
 

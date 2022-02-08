@@ -1,7 +1,7 @@
-From 0de245cfe2c028b113dab4705bbb81429a206608 Mon Sep 17 00:00:00 2001
+From d7a11eed59bfbeb857c423bf71d1b15d5dc53b6a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 7 Nov 2021 19:11:57 +1100
-Subject: [PATCH 02/15] msdasql: Implement ICommandProperties SetProperties.
+Subject: [PATCH v4 2/3] msdasql: Implement ICommandProperties SetProperties.
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
@@ -9,37 +9,37 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 35 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 9ef29d6b29e..533cb6ae28a 100644
+index 0c503665068..810370a4b78 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -1152,7 +1152,41 @@ static HRESULT WINAPI command_prop_SetProperties(ICommandProperties *iface, ULON
+@@ -1210,7 +1210,41 @@ static HRESULT WINAPI command_prop_SetProperties(ICommandProperties *iface, ULON
          DBPROPSET propertyset[])
  {
      struct command *command = impl_from_ICommandProperties( iface );
--    FIXME("%p %p\n", command, propertyset);
+-    FIXME("%p, %lu, %p\n", command, count, propertyset);
 +    int i, j, k;
 +
-+    TRACE("%p %d, %p\n", command, count, propertyset);
++    TRACE("%p %lu, %p\n", command, count, propertyset);
 +
 +    for(i=0; i < count; i++)
 +    {
-+        TRACE("set %s, count %d\n", debugstr_guid(&propertyset[i].guidPropertySet), propertyset[i].cProperties);
++        TRACE("set %s, count %ld\n", debugstr_guid(&propertyset[i].guidPropertySet), propertyset[i].cProperties);
 +        for(j=0; j < propertyset[i].cProperties; j++)
 +        {
 +            for(k=0; k < ARRAY_SIZE(command->properties); k++)
 +            {
 +                if (command->properties[k].property_id == propertyset[i].rgProperties[j].dwPropertyID)
 +                {
-+                    TRACE("Found property 0x%08x\n", command->properties[k].property_id);
++                    TRACE("Found property 0x%08lx\n", command->properties[k].property_id);
 +                    if (command->properties[k].flags & DBPROPFLAGS_WRITE)
 +                    {
 +                        if (command->properties[k].vartype == VT_BOOL)
 +                        {
-+                            command->properties[k].bool_val = V_BOOL(&propertyset[i].rgProperties[j].vValue);
++                            command->properties[k].value = V_BOOL(&propertyset[i].rgProperties[j].vValue);
 +                        }
 +                        else if (command->properties[k].vartype == VT_I4)
 +                        {
-+                            command->properties[k].long_val = V_I4(&propertyset[i].rgProperties[j].vValue);
++                            command->properties[k].value = V_I4(&propertyset[i].rgProperties[j].vValue);
 +                        }
 +                        else
 +                            ERR("Unknown variant type %d\n", command->properties[j].vartype);
@@ -56,5 +56,5 @@ index 9ef29d6b29e..533cb6ae28a 100644
  }
  
 -- 
-2.33.0
+2.34.1
 
