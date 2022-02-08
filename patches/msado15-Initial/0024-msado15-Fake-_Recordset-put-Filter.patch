@@ -1,15 +1,11 @@
-From 4c00508cef2428162202ca158c21504c960cd0bc Mon Sep 17 00:00:00 2001
+From a46bb9dffc9ac751920a40a5e90b2c6df87031f6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Apr 2021 12:09:28 +1000
-Subject: [PATCH] msado15: Implement _Recordset put Filter
+Subject: msado15: Implement _Recordset put Filter
 
----
- dlls/msado15/recordset.c     | 26 ++++++++++++++++++++++----
- dlls/msado15/tests/msado15.c | 34 +++++++++++++++++++++++++++++++++-
- 2 files changed, 55 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index fa5c763ea3c..ada425ba7f3 100644
+index 3c7921c205e..fe46a9f3c42 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -49,6 +49,7 @@ struct recordset
@@ -54,7 +50,7 @@ index fa5c763ea3c..ada425ba7f3 100644
 +    return S_OK;
  }
  
- static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, LONG *count )
+ static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, ADO_LONGPTR *count )
 @@ -2361,6 +2378,7 @@ HRESULT Recordset_create( void **obj )
      recordset->cursor_location = adUseServer;
      recordset->cursor_type = adOpenForwardOnly;
@@ -64,10 +60,10 @@ index fa5c763ea3c..ada425ba7f3 100644
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 2e0b90a6d2c..cd383bc7a2f 100644
+index 324ef8425b9..d578fd9b391 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -58,7 +58,7 @@ static void test_Recordset(void)
+@@ -59,7 +59,7 @@ static void test_Recordset(void)
      CursorTypeEnum cursor;
      BSTR name;
      HRESULT hr;
@@ -76,7 +72,7 @@ index 2e0b90a6d2c..cd383bc7a2f 100644
  
      hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
      ok( hr == S_OK, "got %08x\n", hr );
-@@ -117,6 +117,21 @@ static void test_Recordset(void)
+@@ -118,6 +118,21 @@ static void test_Recordset(void)
      hr = _Recordset_put_Bookmark( recordset, bookmark );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
  
@@ -98,9 +94,9 @@ index 2e0b90a6d2c..cd383bc7a2f 100644
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
-@@ -212,6 +227,23 @@ static void test_Recordset(void)
-     hr = _Recordset_put_Bookmark( recordset, bookmark );
-     ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08x\n", hr );
+@@ -234,6 +249,23 @@ static void test_Recordset(void)
+     ok( fields2 == fields, "expected same object\n" );
+     Fields_Release( fields2 );
  
 +    V_VT(&filter) = VT_BSTR;
 +    V_BSTR(&filter) = SysAllocString( L"field1 = 1" );
@@ -120,8 +116,5 @@ index 2e0b90a6d2c..cd383bc7a2f 100644
 +    ok( hr == S_OK, "got %08x\n", hr );
 +
      count = -1;
-     hr = _Recordset_get_RecordCount( recordset, &count );
-     ok( hr == S_OK, "got %08x\n", hr );
--- 
-2.34.1
-
+     hr = Fields_get_Count( fields2, &count );
+     ok( count == 1, "got %d\n", count );
