@@ -1,4 +1,4 @@
-From 1cfe339d31fb122d2393626ed1c493eb92a6c096 Mon Sep 17 00:00:00 2001
+From d090aa389e2373208e2bba32f4f4bc0c7deeea43 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
 Subject: [PATCH] msado15: Create rowset bindings.
@@ -8,7 +8,7 @@ Subject: [PATCH] msado15: Create rowset bindings.
  1 file changed, 131 insertions(+)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 4c9c40651e8..40ea96c163b 100644
+index 52d7306f3ff..0889b3a6236 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -115,7 +115,7 @@ index 4c9c40651e8..40ea96c163b 100644
 +    DBORDINAL columns;
 +    DBBYTEOFFSET datasize;
  
-     FIXME( "%p, %s, %s, %d, %d, %d Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
+     FIXME( "%p, %s, %s, %d, %d, %ld Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
             cursor_type, lock_type, options );
 @@ -1534,6 +1619,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
