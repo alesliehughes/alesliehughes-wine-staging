@@ -1,11 +1,15 @@
-From a46bb9dffc9ac751920a40a5e90b2c6df87031f6 Mon Sep 17 00:00:00 2001
+From 4664a18c95c744b86418dc49d6939223dfd7d204 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Apr 2021 12:09:28 +1000
-Subject: msado15: Implement _Recordset put Filter
+Subject: [PATCH] msado15: Implement _Recordset put Filter
 
+---
+ dlls/msado15/recordset.c     | 26 ++++++++++++++++++++++----
+ dlls/msado15/tests/msado15.c | 34 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 55 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 3c7921c205e..fe46a9f3c42 100644
+index e0b8c6fd2b0..c1037f8b51e 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -49,6 +49,7 @@ struct recordset
@@ -60,7 +64,7 @@ index 3c7921c205e..fe46a9f3c42 100644
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 324ef8425b9..d578fd9b391 100644
+index cebe0eccc9c..67840c7e2fe 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
 @@ -59,7 +59,7 @@ static void test_Recordset(void)
@@ -71,10 +75,10 @@ index 324ef8425b9..d578fd9b391 100644
 +    VARIANT bookmark, filter;
  
      hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
-     ok( hr == S_OK, "got %08x\n", hr );
+     ok( hr == S_OK, "got %08lx\n", hr );
 @@ -118,6 +118,21 @@ static void test_Recordset(void)
      hr = _Recordset_put_Bookmark( recordset, bookmark );
-     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
  
 +    VariantInit( &filter );
 +    hr = _Recordset_put_Filter( recordset, filter );
@@ -93,7 +97,7 @@ index 324ef8425b9..d578fd9b391 100644
 +
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
-     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08x\n", hr );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
 @@ -234,6 +249,23 @@ static void test_Recordset(void)
      ok( fields2 == fields, "expected same object\n" );
      Fields_Release( fields2 );
@@ -117,4 +121,7 @@ index 324ef8425b9..d578fd9b391 100644
 +
      count = -1;
      hr = Fields_get_Count( fields2, &count );
-     ok( count == 1, "got %d\n", count );
+     ok( count == 1, "got %ld\n", count );
+-- 
+2.34.1
+
