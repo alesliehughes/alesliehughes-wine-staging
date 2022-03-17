@@ -1,0 +1,148 @@
+From d0914ab5b2c4209092bb15a0158d2fac856c50b9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 2 Mar 2022 20:14:33 +1100
+Subject: [PATCH 3/3] mf/tests: Add HttpSchemePlugin Test
+
+---
+ dlls/mf/tests/mf.c | 106 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 105 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/mf/tests/mf.c b/dlls/mf/tests/mf.c
+index e61442bb512..1cc7f86bab3 100644
+--- a/dlls/mf/tests/mf.c
++++ b/dlls/mf/tests/mf.c
+@@ -1122,6 +1122,7 @@ static void test_sequencer_source(void)
+ struct test_callback
+ {
+     IMFAsyncCallback IMFAsyncCallback_iface;
++    HANDLE event;
+ };
+ 
+ static HRESULT WINAPI testcallback_QueryInterface(IMFAsyncCallback *iface, REFIID riid, void **obj)
+@@ -6924,6 +6925,108 @@ failed:
+     CoUninitialize();
+ }
+ 
++extern const CLSID CLSID_HttpSchemePlugin;
++
++static struct test_callback *impl_from_IMFAsyncCallback(IMFAsyncCallback *iface)
++{
++    return CONTAINING_RECORD(iface, struct test_callback, IMFAsyncCallback_iface);
++}
++
++static HRESULT WINAPI http_testcallback_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
++{
++    struct test_callback *callback = impl_from_IMFAsyncCallback(iface);
++    IMFMediaEventQueue *queue;
++    IUnknown *state, *obj;
++    HRESULT hr;
++
++    ok(result != NULL, "Unexpected result object.\n");
++
++    state = IMFAsyncResult_GetStateNoAddRef(result);
++    if (state && SUCCEEDED(IUnknown_QueryInterface(state, &IID_IMFMediaEventQueue, (void **)&queue)))
++    {
++        IMFMediaEvent *event = NULL, *event2;
++
++        //if (is_win8_plus)
++        {
++            hr = IMFMediaEventQueue_GetEvent(queue, MF_EVENT_FLAG_NO_WAIT, &event);
++            ok(hr == MF_E_MULTIPLE_SUBSCRIBERS, "Failed to get event, hr %#x.\n", hr);
++
++            hr = IMFMediaEventQueue_GetEvent(queue, 0, &event);
++            ok(hr == MF_E_MULTIPLE_SUBSCRIBERS, "Failed to get event, hr %#x.\n", hr);
++
++            hr = IMFMediaEventQueue_EndGetEvent(queue, result, &event);
++            ok(hr == S_OK, "Failed to finalize GetEvent, hr %#x.\n", hr);
++
++            hr = IMFMediaEventQueue_EndGetEvent(queue, result, &event2);
++            ok(hr == E_FAIL, "Unexpected result, hr %#x.\n", hr);
++
++            if (event)
++                IMFMediaEvent_Release(event);
++        }
++
++        hr = IMFAsyncResult_GetObject(result, &obj);
++        ok(hr == E_POINTER, "Unexpected hr %#x.\n", hr);
++
++        IMFMediaEventQueue_Release(queue);
++
++        SetEvent(callback->event);
++    }
++
++    return E_NOTIMPL;
++}
++
++static const IMFAsyncCallbackVtbl httptestcallbackvtbl =
++{
++    testcallback_QueryInterface,
++    testcallback_AddRef,
++    testcallback_Release,
++    testcallback_GetParameters,
++    http_testcallback_Invoke,
++};
++
++static struct test_callback * create_test_callback(const IMFAsyncCallbackVtbl *vtbl)
++{
++    struct test_callback *callback = calloc(1, sizeof(*callback));
++
++    callback->IMFAsyncCallback_iface.lpVtbl = vtbl ? vtbl : &testcallbackvtbl;
++
++    return callback;
++}
++
++static const IMFAsyncCallbackVtbl testcallbackvtbl;
++
++static void test_HttpSchemePlugin(void)
++{
++    struct test_callback *callback;
++    HRESULT hr;
++    IMFSchemeHandler *scheme_handler;
++    IUnknown *cancel_cookie;
++
++    hr = CoInitialize(NULL);
++    ok(hr == S_OK, "Failed to initialize, hr %#x.\n", hr);
++
++    hr = CoCreateInstance(&CLSID_HttpSchemePlugin, NULL, CLSCTX_INPROC_SERVER, &IID_IMFSchemeHandler,
++            (void **)&scheme_handler);
++    ok(hr == S_OK, "Failed to create handler object, hr %#x.\n", hr);
++    if (FAILED(hr))
++        goto failed;
++
++    callback = create_test_callback(&httptestcallbackvtbl);
++
++    callback->event = CreateEventA(NULL, FALSE, FALSE, NULL);
++    cancel_cookie = NULL;
++    hr = IMFSchemeHandler_BeginCreateObject(scheme_handler, L"http://localhost/somethingtodownload", MF_RESOLUTION_MEDIASOURCE, NULL, &cancel_cookie,
++            &callback->IMFAsyncCallback_iface, (IUnknown *)scheme_handler);
++    ok(hr == S_OK, "Create request failed, hr %#x.\n", hr);
++    ok(!!cancel_cookie, "Unexpected cancel object.\n");
++    IUnknown_Release(cancel_cookie);
++
++    IMFSchemeHandler_Release(scheme_handler);
++
++failed:
++    CoUninitialize();
++}
++
+ START_TEST(mf)
+ {
+     init_functions();
+@@ -6934,7 +7037,7 @@ START_TEST(mf)
+         return;
+     }
+ 
+-    test_topology();
++    test_topology();
+     test_topology_tee_node();
+     test_topology_loader();
+     test_topology_loader_evr();
+@@ -6960,4 +7063,5 @@ START_TEST(mf)
+     test_wma_encoder();
+     test_wma_decoder();
+     test_h264_decoder();
++    test_HttpSchemePlugin();
+ }
+-- 
+2.34.1
+

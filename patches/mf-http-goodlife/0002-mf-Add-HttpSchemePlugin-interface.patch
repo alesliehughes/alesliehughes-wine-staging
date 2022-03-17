@@ -1,0 +1,582 @@
+From 76cfa73cb9dacdd8ee105a4b5796bac9dafd9829 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Feb 2022 18:27:04 +1100
+Subject: [PATCH 2/3] mf: Add HttpSchemePlugin interface
+
+WIP
+---
+ dlls/mf/Makefile.in |   3 +-
+ dlls/mf/http.c      | 492 ++++++++++++++++++++++++++++++++++++++++++++
+ dlls/mf/main.c      |   5 +
+ dlls/mf/mf.idl      |   7 +
+ 4 files changed, 506 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/mf/http.c
+
+diff --git a/dlls/mf/Makefile.in b/dlls/mf/Makefile.in
+index 36727d4d4e3..b96793fd30a 100644
+--- a/dlls/mf/Makefile.in
++++ b/dlls/mf/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = mf.dll
+ IMPORTLIB = mf
+-IMPORTS   = advapi32 mfplat ole32 uuid mfuuid strmiids
++IMPORTS   = advapi32 mfplat ole32 uuid mfuuid strmiids winhttp
+ DELAYIMPORTS = evr user32
+ 
+ EXTRADLLFLAGS = -Wb,--prefer-native
+@@ -9,6 +9,7 @@ C_SRCS = \
+ 	clock.c \
+ 	copier.c \
+ 	evr.c \
++	http.c \
+ 	main.c \
+ 	quality.c \
+ 	samplegrabber.c \
+diff --git a/dlls/mf/http.c b/dlls/mf/http.c
+new file mode 100644
+index 00000000000..84b6da3fc70
+--- /dev/null
++++ b/dlls/mf/http.c
+@@ -0,0 +1,492 @@
++/*
++ * Copyright (C) 2022 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#include <stdarg.h>
++
++#define COBJMACROS
++
++#include "windef.h"
++#include "winbase.h"
++#include "mfidl.h"
++#include "rpcproxy.h"
++#include "winhttp.h"
++
++#include "mf_private.h"
++
++#include "wine/debug.h"
++#include "wine/list.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(mfplat);
++
++struct http_scheme_handler_result
++{
++    struct list entry;
++    IMFAsyncResult *result;
++    MF_OBJECT_TYPE obj_type;
++    IUnknown *object;
++};
++
++struct http_scheme_handler
++{
++    IMFSchemeHandler IMFSchemeHandler_iface;
++    IMFAsyncCallback IMFAsyncCallback_iface;
++    LONG refcount;
++    IMFSourceResolver *resolver;
++    struct list results;
++    CRITICAL_SECTION cs;
++};
++
++static struct http_scheme_handler *impl_from_IMFSchemeHandler(IMFSchemeHandler *iface)
++{
++    return CONTAINING_RECORD(iface, struct http_scheme_handler, IMFSchemeHandler_iface);
++}
++
++static struct http_scheme_handler *impl_from_IMFAsyncCallback(IMFAsyncCallback *iface)
++{
++    return CONTAINING_RECORD(iface, struct http_scheme_handler, IMFAsyncCallback_iface);
++}
++
++static HRESULT WINAPI http_scheme_handler_QueryInterface(IMFSchemeHandler *iface, REFIID riid, void **obj)
++{
++    TRACE("%p, %s, %p.\n", iface, debugstr_guid(riid), obj);
++
++    if (IsEqualIID(riid, &IID_IMFSchemeHandler) ||
++            IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IMFSchemeHandler_AddRef(iface);
++        return S_OK;
++    }
++
++    WARN("Unsupported %s.\n", debugstr_guid(riid));
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI http_scheme_handler_AddRef(IMFSchemeHandler *iface)
++{
++    struct http_scheme_handler *handler = impl_from_IMFSchemeHandler(iface);
++    ULONG refcount = InterlockedIncrement(&handler->refcount);
++
++    TRACE("%p, refcount %lu.\n", handler, refcount);
++
++    return refcount;
++}
++
++static ULONG WINAPI http_scheme_handler_Release(IMFSchemeHandler *iface)
++{
++    struct http_scheme_handler *handler = impl_from_IMFSchemeHandler(iface);
++    ULONG refcount = InterlockedDecrement(&handler->refcount);
++    struct http_scheme_handler_result *result, *next;
++
++    TRACE("%p, refcount %lu.\n", iface, refcount);
++
++    if (!refcount)
++    {
++        LIST_FOR_EACH_ENTRY_SAFE(result, next, &handler->results, struct http_scheme_handler_result, entry)
++        {
++            list_remove(&result->entry);
++            IMFAsyncResult_Release(result->result);
++            if (result->object)
++                IUnknown_Release(result->object);
++            free(result);
++        }
++        DeleteCriticalSection(&handler->cs);
++        if (handler->resolver)
++            IMFSourceResolver_Release(handler->resolver);
++        free(handler);
++    }
++
++    return refcount;
++}
++
++static HRESULT WINAPI http_scheme_handler_EndCreateObject(IMFSchemeHandler *iface, IMFAsyncResult *result,
++        MF_OBJECT_TYPE *obj_type, IUnknown **object)
++{
++    struct http_scheme_handler *handler = impl_from_IMFSchemeHandler(iface);
++    struct http_scheme_handler_result *found = NULL, *cur;
++    HRESULT hr;
++
++    TRACE("%p, %p, %p, %p.\n", iface, result, obj_type, object);
++
++    EnterCriticalSection(&handler->cs);
++
++    LIST_FOR_EACH_ENTRY(cur, &handler->results, struct http_scheme_handler_result, entry)
++    {
++        if (result == cur->result)
++        {
++            list_remove(&cur->entry);
++            found = cur;
++            break;
++        }
++    }
++
++    LeaveCriticalSection(&handler->cs);
++
++    if (found)
++    {
++        *obj_type = found->obj_type;
++        *object = found->object;
++        hr = IMFAsyncResult_GetStatus(found->result);
++        IMFAsyncResult_Release(found->result);
++        free(found);
++    }
++    else
++    {
++        *obj_type = MF_OBJECT_INVALID;
++        *object = NULL;
++        hr = MF_E_UNEXPECTED;
++    }
++
++    return hr;
++}
++
++struct create_object_context
++{
++    IUnknown IUnknown_iface;
++    LONG refcount;
++
++    IPropertyStore *props;
++    HINTERNET hrequest;
++    HINTERNET hconnect;
++    HINTERNET hsession;
++    DWORD flags;
++};
++
++static struct create_object_context *impl_from_IUnknown(IUnknown *iface)
++{
++    return CONTAINING_RECORD(iface, struct create_object_context, IUnknown_iface);
++}
++
++static HRESULT WINAPI create_object_context_QueryInterface(IUnknown *iface, REFIID riid, void **obj)
++{
++    TRACE("%p, %s, %p.\n", iface, debugstr_guid(riid), obj);
++
++    if (IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IUnknown_AddRef(iface);
++        return S_OK;
++    }
++
++    WARN("Unsupported %s.\n", debugstr_guid(riid));
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI create_object_context_AddRef(IUnknown *iface)
++{
++    struct create_object_context *context = impl_from_IUnknown(iface);
++    ULONG refcount = InterlockedIncrement(&context->refcount);
++
++    TRACE("%p, refcount %lu.\n", iface, refcount);
++
++    return refcount;
++}
++
++static ULONG WINAPI create_object_context_Release(IUnknown *iface)
++{
++    struct create_object_context *context = impl_from_IUnknown(iface);
++    ULONG refcount = InterlockedDecrement(&context->refcount);
++
++    TRACE("%p, refcount %lu.\n", iface, refcount);
++
++    if (!refcount)
++    {
++        if (context->props)
++            IPropertyStore_Release(context->props);
++        WinHttpCloseHandle( context->hrequest );
++        WinHttpCloseHandle( context->hconnect );
++        WinHttpCloseHandle( context->hsession );
++        free(context);
++    }
++
++    return refcount;
++}
++
++static const IUnknownVtbl create_object_context_vtbl =
++{
++    create_object_context_QueryInterface,
++    create_object_context_AddRef,
++    create_object_context_Release,
++};
++
++static HRESULT WINAPI http_scheme_handler_BeginCreateObject(IMFSchemeHandler *iface, const WCHAR *url, DWORD flags,
++        IPropertyStore *props, IUnknown **cancel_cookie, IMFAsyncCallback *callback, IUnknown *state)
++{
++    struct http_scheme_handler *handler = impl_from_IMFSchemeHandler(iface);
++    static const WCHAR *acceptW[] = {L"*/*", NULL};
++    struct create_object_context *context;
++    IMFAsyncResult *caller, *item;
++    HRESULT hr = S_OK;
++    URL_COMPONENTS url_comp;
++    HINTERNET hsession, hconnect = NULL, hrequest = NULL;
++    BOOL ret;
++    WCHAR *hostname;
++    DWORD len, content_length;
++    void *buffer;
++
++    FIXME("%p, %s, %#lx, %p, %p, %p, %p.\n", handler, debugstr_w(url), flags, props, cancel_cookie, callback, state);
++
++    if (cancel_cookie)
++        *cancel_cookie = NULL;
++
++    memset(&url_comp, 0, sizeof(URL_COMPONENTSW));
++    url_comp.dwStructSize = sizeof(URL_COMPONENTSW);
++    url_comp.dwHostNameLength = 1;
++    url_comp.dwUrlPathLength = 1;
++    url_comp.dwExtraInfoLength = 1;
++
++    if (!(WinHttpCrackUrl(url, lstrlenW(url), 0, &url_comp)))
++    {
++        WARN("InternetCrackUrlW failed: %lu\n", GetLastError());
++        return E_FAIL;
++    }
++
++    if (!(hsession = WinHttpOpen( L"Wine NSPlayer/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
++                          WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0)))
++    {
++        WARN("WinHttpOpen failed: %lu\n", GetLastError());
++        return E_FAIL;
++    }
++
++    hostname = malloc( (url_comp.dwHostNameLength + 1) * sizeof(WCHAR));
++    lstrcpynW(hostname, url_comp.lpszHostName, url_comp.dwHostNameLength+1);
++FIXME("Hostname %s:%d\n", debugstr_w(hostname), url_comp.nPort);
++    hconnect = WinHttpConnect(hsession, hostname, url_comp.nPort, 0);
++    free(hostname);
++    if (!hconnect)
++    {
++        WARN("WinHttpConnect failed: %lu\n", GetLastError());
++        WinHttpCloseHandle( hsession );
++        return FALSE;
++    }
++
++    hrequest = WinHttpOpenRequest( hconnect, L"GET", url_comp.lpszUrlPath, NULL, WINHTTP_NO_REFERER,
++                                   acceptW, WINHTTP_FLAG_REFRESH );
++    if (!hrequest)
++    {
++        WARN("WinHttpOpenRequest failed: %lu\n", GetLastError());
++        WinHttpCloseHandle( hconnect );
++        WinHttpCloseHandle( hsession );
++        return FALSE;
++    }
++
++    ret = WinHttpSendRequest( hrequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0,
++                                   0, 0 );
++    if (!ret)
++    {
++        WARN("WinHttpSendRequest failed: %lu\n", GetLastError());
++        WinHttpCloseHandle( hrequest );
++        WinHttpCloseHandle( hconnect );
++        WinHttpCloseHandle( hsession );
++        return FALSE;
++    }
++
++    ret = WinHttpReceiveResponse(hrequest, NULL);
++    if (!ret)
++    {
++        WARN("WinHttpReceiveResponse failed: %lu\n", GetLastError());
++        WinHttpCloseHandle( hrequest );
++        WinHttpCloseHandle( hconnect );
++        WinHttpCloseHandle( hsession );
++        return FALSE;
++    }
++
++    len = sizeof(content_length);
++    ret = WinHttpQueryHeaders(hrequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, NULL, &content_length, &len, NULL);
++
++    FIXME("Status code %ld\n", content_length);
++
++    //FIXME("content_length %ld\n", content_length);
++
++    buffer = malloc(content_length);
++    if (!buffer)
++    {
++        ERR("Memory allocation error\n");
++        return E_OUTOFMEMORY;
++    }
++
++    if (FAILED(hr = MFCreateAsyncResult(NULL, callback, state, &caller)))
++        return hr;
++
++    if (!(context = malloc(sizeof(*context))))
++    {
++        IMFAsyncResult_Release(caller);
++        return E_OUTOFMEMORY;
++    }
++
++    context->IUnknown_iface.lpVtbl = &create_object_context_vtbl;
++    context->refcount = 1;
++    context->props = props;
++    if (context->props)
++        IPropertyStore_AddRef(context->props);
++    context->flags = flags;
++
++    context->hrequest = hrequest;
++    context->hconnect = hconnect;
++    context->hsession = hsession;
++
++    hr = MFCreateAsyncResult(&context->IUnknown_iface, &handler->IMFAsyncCallback_iface, (IUnknown *)caller, &item);
++    IUnknown_Release(&context->IUnknown_iface);
++    if (SUCCEEDED(hr))
++    {
++        if (SUCCEEDED(hr = MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_IO, item)))
++        {
++            if (cancel_cookie)
++            {
++                *cancel_cookie = (IUnknown *)caller;
++                IUnknown_AddRef(*cancel_cookie);
++            }
++        }
++
++        IMFAsyncResult_Release(item);
++    }
++    IMFAsyncResult_Release(caller);
++
++    return hr;
++}
++
++static HRESULT WINAPI http_scheme_handler_CancelObjectCreation(IMFSchemeHandler *iface, IUnknown *cancel_cookie)
++{
++    struct http_scheme_handler *handler = impl_from_IMFSchemeHandler(iface);
++
++    FIXME("%p, %p.\n", handler, cancel_cookie);
++
++    return MF_E_UNEXPECTED;
++}
++
++static const IMFSchemeHandlerVtbl http_scheme_handler_vtbl =
++{
++    http_scheme_handler_QueryInterface,
++    http_scheme_handler_AddRef,
++    http_scheme_handler_Release,
++    http_scheme_handler_BeginCreateObject,
++    http_scheme_handler_EndCreateObject,
++    http_scheme_handler_CancelObjectCreation,
++};
++
++static HRESULT WINAPI http_scheme_handler_callback_QueryInterface(IMFAsyncCallback *iface, REFIID riid, void **obj)
++{
++    if (IsEqualIID(riid, &IID_IMFAsyncCallback) ||
++            IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IMFAsyncCallback_AddRef(iface);
++        return S_OK;
++    }
++
++    WARN("Unsupported %s.\n", debugstr_guid(riid));
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI http_scheme_handler_callback_AddRef(IMFAsyncCallback *iface)
++{
++    struct http_scheme_handler *handler = impl_from_IMFAsyncCallback(iface);
++    return IMFSchemeHandler_AddRef(&handler->IMFSchemeHandler_iface);
++}
++
++static ULONG WINAPI http_scheme_handler_callback_Release(IMFAsyncCallback *iface)
++{
++    struct http_scheme_handler *handler = impl_from_IMFAsyncCallback(iface);
++    return IMFSchemeHandler_Release(&handler->IMFSchemeHandler_iface);
++}
++
++static HRESULT WINAPI http_scheme_handler_callback_GetParameters(IMFAsyncCallback *iface, DWORD *flags, DWORD *queue)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_scheme_handler_callback_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
++{
++    IUnknown *context_object;
++    struct create_object_context *context;
++    HRESULT hr;
++
++    FIXME("\n");
++
++    if (FAILED(hr = IMFAsyncResult_GetObject(result, &context_object)))
++    {
++        WARN("Expected context set for callee result.\n");
++        return hr;
++    }
++
++    context = impl_from_IUnknown(context_object);
++    if (!context)
++        return E_FAIL;
++
++    /// ?????
++        /*if (InternetReadFile(hrequest, buffer, content_length, &len))
++    {
++        HANDLE hFile;
++
++        hFile = CreateFileW(L"C:\\temp\\output.tmp", GENERIC_WRITE, 0, NULL, CREATE_NEW,
++                            FILE_ATTRIBUTE_NORMAL, NULL);
++        if (hFile == INVALID_HANDLE_VALUE)
++        {
++            ERR("Cannot create File\n");
++            return E_FAIL;
++        }
++
++        if (!WriteFile(hFile, buffer, content_length, &len, NULL))
++        {
++            ERR("WriteFile Failed\n");
++        }
++
++        CloseHandle(hFile);
++    }
++    else
++        ERR("InternetReadFile Failed %ld\n", GetLastError());
++
++    InternetCloseHandle(hrequest);
++    InternetCloseHandle(hconnect);
++    InternetCloseHandle(hinternet);*/
++
++    return E_NOTIMPL;
++}
++
++static const IMFAsyncCallbackVtbl http_scheme_handler_callback_vtbl =
++{
++    http_scheme_handler_callback_QueryInterface,
++    http_scheme_handler_callback_AddRef,
++    http_scheme_handler_callback_Release,
++    http_scheme_handler_callback_GetParameters,
++    http_scheme_handler_callback_Invoke,
++};
++
++HRESULT http_scheme_handler_construct(REFIID riid, void **obj)
++{
++    struct http_scheme_handler *handler;
++    HRESULT hr;
++
++    TRACE("%s, %p.\n", debugstr_guid(riid), obj);
++
++    if (!(handler = calloc(1, sizeof(*handler))))
++        return E_OUTOFMEMORY;
++
++    handler->IMFSchemeHandler_iface.lpVtbl = &http_scheme_handler_vtbl;
++    handler->IMFAsyncCallback_iface.lpVtbl = &http_scheme_handler_callback_vtbl;
++    handler->refcount = 1;
++    list_init(&handler->results);
++    InitializeCriticalSection(&handler->cs);
++
++    hr = IMFSchemeHandler_QueryInterface(&handler->IMFSchemeHandler_iface, riid, obj);
++    IMFSchemeHandler_Release(&handler->IMFSchemeHandler_iface);
++
++    return hr;
++}
+\ No newline at end of file
+diff --git a/dlls/mf/main.c b/dlls/mf/main.c
+index 6b1d9293c8a..08eafdb4ec9 100644
+--- a/dlls/mf/main.c
++++ b/dlls/mf/main.c
+@@ -34,6 +34,7 @@
+ WINE_DEFAULT_DEBUG_CHANNEL(mfplat);
+ 
+ extern const GUID CLSID_FileSchemePlugin;
++extern const GUID CLSID_HttpSchemePlugin;
+ 
+ struct activate_object
+ {
+@@ -995,7 +996,10 @@ static HRESULT file_scheme_handler_construct(REFIID riid, void **obj)
+     return hr;
+ }
+ 
++HRESULT http_scheme_handler_construct(REFIID riid, void **obj);
++
+ static struct class_factory file_scheme_handler_factory = { { &class_factory_vtbl }, file_scheme_handler_construct };
++static struct class_factory http_scheme_handler_factory = { { &class_factory_vtbl }, http_scheme_handler_construct };
+ 
+ static const struct class_object
+ {
+@@ -1005,6 +1009,7 @@ static const struct class_object
+ class_objects[] =
+ {
+     { &CLSID_FileSchemePlugin, &file_scheme_handler_factory.IClassFactory_iface },
++    { &CLSID_HttpSchemePlugin, &http_scheme_handler_factory.IClassFactory_iface },
+ };
+ 
+ /*******************************************************************************
+diff --git a/dlls/mf/mf.idl b/dlls/mf/mf.idl
+index 289a521b4f2..9e5c75c118d 100644
+--- a/dlls/mf/mf.idl
++++ b/dlls/mf/mf.idl
+@@ -24,3 +24,10 @@
+     uuid(477ec299-1421-4bdd-971f-7ccb933f21ad)
+ ]
+ coclass FileSchemePlugin { }
++
++[
++    helpstring("Http scheme handler"),
++    threading(both),
++    uuid(44cb442b-9da9-49df-b3fd-023777b16e50)
++]
++coclass HttpSchemePlugin { }
+-- 
+2.34.1
+
