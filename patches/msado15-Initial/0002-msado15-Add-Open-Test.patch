@@ -26,16 +26,16 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +    CursorTypeEnum cursortype;
 +
 +    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
 +    hr = CoCreateInstance(&CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void**)&recordset);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
 +    str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
 +    str2 = SysAllocStringLen(NULL, 0);
 +
 +    hr = _Connection_Open(connection, str, str2, str2, 0);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +    SysFreeString(str);
 +    SysFreeString(str2);
 +
@@ -43,35 +43,35 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +    V_BSTR(&var2) = SysAllocString(L"SELECT * FROM testing");
 +
 +    hr = _Connection_put_CursorLocation(connection, adUseClient);
-+    ok(hr == S_OK, "Failed, hr 0x%08x\n", hr);
++    ok(hr == S_OK, "Failed, hr 0x%08lx\n", hr);
 +
 +    V_VT(&var) = VT_DISPATCH;
 +    V_DISPATCH(&var) = (IDispatch*)connection;
 +    _Connection_AddRef(connection);
 +
 +    hr = _Recordset_put_CursorLocation(recordset, adUseClient);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
 +    hr = _Recordset_put_CursorType(recordset, adOpenForwardOnly);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
 +    ok( 0, "Before _Recordset_Open\n");
 +    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +    ok( 0, "After _Recordset_Open\n");
 +
 +    hr = _Recordset_get_CursorType(recordset, &cursortype);
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +    ok( cursortype == adOpenStatic, "got %d\n", cursortype );
 +
 +    hr = _Recordset_put_CursorLocation(recordset, adUseServer);
-+    ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08x\n", hr );
++    ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08lx\n", hr );
 +
 +    VariantInit(&affected);
 +    ok( 0, "**** Before _Connection_Execute\n");
 +    hr = _Connection_Execute(connection, V_BSTR(&var2), &affected, 0, &recordset2);
 +    ok( 0, "**** After _Connection_Execute\n");
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
 +    /*
 +0100:fixme:msdasql:msdasql_rowset_QueryInterface (00172860)->({83693a20-fbea-11cf-a785-00aa00a3f00d} 0064F824)
@@ -86,50 +86,50 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +        CursorLocationEnum location;
 +
 +        hr = _Recordset_get_CursorLocation(recordset2, &location);
-+        ok( hr == S_OK, "got %08x\n", hr );
-+        ok( location == adUseClient, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok( location == adUseClient, "got %08lx\n", hr );
 +
 +        /* Cannot Change Cursor Location once open */
 +        hr = _Recordset_put_CursorLocation(recordset2, adUseServer);
-+        ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08x\n", hr );
++        ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08lx\n", hr );
 +
 +        hr = _Recordset_get_RecordCount(recordset2, &count);
-+        ok( hr == S_OK, "got %08x\n", hr );
-+        ok( count == 2, "Failed %d\n", count);
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok( count == 2, "Failed %ld\n", count);
 +
 +        ok( 0, "**** Before _Recordset_MoveLast\n");
 +        hr = _Recordset_MoveLast(recordset2);
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        ok( 0, "**** After _Recordset_MoveLast\n");
 +
 +        ok( 0, "**** Before _Recordset_MoveFirst\n");
 +        hr = _Recordset_MoveFirst(recordset2);
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        ok( 0, "**** After _Recordset_MoveFirst\n");
 +
 +
 +        /* Not */
 +        ok( 0, "**** Before _Recordset_get_RecordCount\n");
 +        hr = _Recordset_get_RecordCount(recordset2, &count);
-+        ok( hr == S_OK, "got %08x\n", hr );
-+        ok( count == 2, "Failed %d\n", count);
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok( count == 2, "Failed %ld\n", count);
 +        ok( 0, "**** After _Recordset_get_RecordCount\n");
 +
 +        ok( 0, "**** Before _Recordset_get_BOF\n");
 +        hr = _Recordset_get_BOF(recordset2, &bof);
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        ok( bof == VARIANT_FALSE, "Failed\n");
 +        ok( 0, "**** After _Recordset_get_BOF\n");
 +
 +
 +        ok( 0, "**** Before _Recordset_MoveNext\n");
 +        hr = _Recordset_MoveNext(recordset2);
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        ok( 0, "**** After _Recordset_MoveNext\n");
 +
 +        ok( 0, "**** Before _Recordset_get_EOF\n");
 +        hr = _Recordset_get_EOF(recordset2, &eof);
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        ok( eof == VARIANT_FALSE, "Failed\n");
 +        ok( 0, "**** After _Recordset_get_EOF\n");
 +
@@ -146,7 +146,7 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +    SysFreeString(str);
 +
 +     //hr = _Recordset_Close(recordset);
-+     //ok( hr == S_OK, "got %08x\n", hr );
++     //ok( hr == S_OK, "got %08lx\n", hr );
 +
 +    _Connection_Release(connection);
 +}

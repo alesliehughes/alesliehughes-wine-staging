@@ -1,15 +1,11 @@
-From eeda3ac4831491a5457d051ec9e0692409381113 Mon Sep 17 00:00:00 2001
+From 8dfdb8483be7c793814ce2a0115bf486b59442e5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Mar 2021 10:47:16 +1100
-Subject: [PATCH] msado15: Loop data
+Subject: msado15: Loop data
 
----
- dlls/msado15/recordset.c     | 107 ++++++++++++++++++++++++++++++++++-
- dlls/msado15/tests/msado15.c |  25 ++++++++
- 2 files changed, 131 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 40ea96c163b..fa5c763ea3c 100644
+index 0889b3a6236..a06820ec59b 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -1493,6 +1493,7 @@ static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDIN
@@ -63,7 +59,7 @@ index 40ea96c163b..fa5c763ea3c 100644
 +            if (FAILED(hr))
 +            {
 +                //IRowset_Release(rowset2);
-+                ERR("Failed to GetData 0x%08x\n", hr);
++                ERR("Failed to GetData 0x%08lx\n", hr);
 +                break;
 +            }
 +
@@ -129,7 +125,7 @@ index 40ea96c163b..fa5c763ea3c 100644
 +
 +            hr = IRowset_ReleaseRows(rowset2, 1, row, NULL, NULL, NULL);
 +            if (FAILED(hr))
-+                ERR("Failed to ReleaseRows 0x%08x\n", hr);
++                ERR("Failed to ReleaseRows 0x%08lx\n", hr);
 +
 +            hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
 +FIXME("obtained %d\n", obtained);
@@ -147,11 +143,11 @@ index 40ea96c163b..fa5c763ea3c 100644
      IAccessor_Release(accessor);
  
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 5e6ceec473a..2e0b90a6d2c 100644
+index b0818110b91..b4ee60f442c 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1537,6 +1537,31 @@ static void test_connection_open(void)
-     ok( hr == S_OK, "got %08x\n", hr );
+@@ -1540,6 +1540,31 @@ static void test_connection_open(void)
+     ok( hr == S_OK, "got %08lx\n", hr );
      ok( 0, "After _Recordset_Open\n");
  
 +    {
@@ -167,21 +163,18 @@ index 5e6ceec473a..2e0b90a6d2c 100644
 +        V_VT( &index ) = VT_BSTR;
 +        V_BSTR( &index ) = name;
 +        hr = Fields_get_Item( fields, index, &field );
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        SysFreeString( name );
 +
 +        hr = Field_get_Value(field, &val);
-+        ok( hr == S_OK, "got %08x\n", hr );
++        ok( hr == S_OK, "got %08lx\n", hr );
 +        ok( V_VT(&val) == VT_I4, "got %d\n", V_VT(&val) );
-+        ok( V_I4(&val) == 1, "got %d\n", V_I4(&val) );
++        ok( V_I4(&val) == 1, "got %ld\n", V_I4(&val) );
 +
 +        Field_Release(field);
 +        Fields_Release(fields);
 +    }
 +
      hr = _Recordset_get_CursorType(recordset, &cursortype);
-     ok( hr == S_OK, "got %08x\n", hr );
+     ok( hr == S_OK, "got %08lx\n", hr );
      ok( cursortype == adOpenStatic, "got %d\n", cursortype );
--- 
-2.34.1
-

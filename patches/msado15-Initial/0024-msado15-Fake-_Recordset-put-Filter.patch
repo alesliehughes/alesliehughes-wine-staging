@@ -82,18 +82,18 @@ index cebe0eccc9c..67840c7e2fe 100644
  
 +    VariantInit( &filter );
 +    hr = _Recordset_put_Filter( recordset, filter );
-+    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08x\n", hr );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08lx\n", hr );
 +
 +    V_VT(&filter) = VT_BSTR;
 +    V_BSTR(&filter) = SysAllocString( L"field1 = 1" );
 +    hr = _Recordset_put_Filter( recordset, filter );
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +    VariantClear(&filter);
 +
 +    V_VT(&filter) = VT_I4;
 +    V_I4(&filter) = 0;
 +    hr = _Recordset_put_Filter( recordset, filter );
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
@@ -105,19 +105,19 @@ index cebe0eccc9c..67840c7e2fe 100644
 +    V_VT(&filter) = VT_BSTR;
 +    V_BSTR(&filter) = SysAllocString( L"field1 = 1" );
 +    hr = _Recordset_put_Filter( recordset, filter );
-+    ok( hr == MAKE_ADO_HRESULT( adErrItemNotFound ), "got %08x\n", hr );
++    ok( hr == MAKE_ADO_HRESULT( adErrItemNotFound ), "got %08lx\n", hr );
 +    VariantClear(&filter);
 +
 +    V_VT(&filter) = VT_BSTR;
 +    V_BSTR(&filter) = SysAllocString( L"field = 1" );
 +    hr = _Recordset_put_Filter( recordset, filter );
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +    VariantClear(&filter);
 +
 +    V_VT(&filter) = VT_I4;
 +    V_I4(&filter) = 0;
 +    hr = _Recordset_put_Filter( recordset, filter );
-+    ok( hr == S_OK, "got %08x\n", hr );
++    ok( hr == S_OK, "got %08lx\n", hr );
 +
      count = -1;
      hr = Fields_get_Count( fields2, &count );
