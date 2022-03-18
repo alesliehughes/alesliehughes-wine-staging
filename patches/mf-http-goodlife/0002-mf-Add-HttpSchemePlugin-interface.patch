@@ -1,7 +1,7 @@
-From 76cfa73cb9dacdd8ee105a4b5796bac9dafd9829 Mon Sep 17 00:00:00 2001
+From 723a6c52df7d680df79247e32bd00b29e9577981 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 23 Feb 2022 18:27:04 +1100
-Subject: [PATCH 2/3] mf: Add HttpSchemePlugin interface
+Subject: [PATCH 2/4] mf: Add HttpSchemePlugin interface
 
 WIP
 ---
@@ -578,5 +578,5 @@ index 289a521b4f2..9e5c75c118d 100644
 +]
 +coclass HttpSchemePlugin { }
 -- 
-2.34.1
+2.35.1
 

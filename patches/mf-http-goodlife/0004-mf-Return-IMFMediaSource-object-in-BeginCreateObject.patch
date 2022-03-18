@@ -1,0 +1,282 @@
+From 3f46e02bc9ad9ee46436b751c489d645b6b4d732 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Mar 2022 17:16:09 +1100
+Subject: [PATCH 4/4] mf: Return IMFMediaSource object in BeginCreateObject
+
+---
+ dlls/mf/http.c     | 142 +++++++++++++++++++++++++++++++++++++--------
+ dlls/mfplat/main.c |   9 ++-
+ 2 files changed, 125 insertions(+), 26 deletions(-)
+
+diff --git a/dlls/mf/http.c b/dlls/mf/http.c
+index 84b6da3fc70..23f870d05ef 100644
+--- a/dlls/mf/http.c
++++ b/dlls/mf/http.c
+@@ -155,9 +155,9 @@ static HRESULT WINAPI http_scheme_handler_EndCreateObject(IMFSchemeHandler *ifac
+     return hr;
+ }
+ 
+-struct create_object_context
++struct http_media_src_object
+ {
+-    IUnknown IUnknown_iface;
++    IMFMediaSource IMFMediaSource_iface;
+     LONG refcount;
+ 
+     IPropertyStore *props;
+@@ -167,16 +167,18 @@ struct create_object_context
+     DWORD flags;
+ };
+ 
+-static struct create_object_context *impl_from_IUnknown(IUnknown *iface)
++static struct http_media_src_object *impl_from_IMFMediaSource(IMFMediaSource *iface)
+ {
+-    return CONTAINING_RECORD(iface, struct create_object_context, IUnknown_iface);
++    return CONTAINING_RECORD(iface, struct http_media_src_object, IMFMediaSource_iface);
+ }
+ 
+-static HRESULT WINAPI create_object_context_QueryInterface(IUnknown *iface, REFIID riid, void **obj)
++static HRESULT WINAPI http_media_src_QueryInterface(IMFMediaSource *iface, REFIID riid, void **obj)
+ {
+     TRACE("%p, %s, %p.\n", iface, debugstr_guid(riid), obj);
+ 
+-    if (IsEqualIID(riid, &IID_IUnknown))
++    if (IsEqualIID(riid, &IID_IUnknown) ||
++        IsEqualIID(riid, &IID_IMFMediaEventGenerator) ||
++        IsEqualIID(riid, &IID_IMFMediaSource))
+     {
+         *obj = iface;
+         IUnknown_AddRef(iface);
+@@ -188,9 +190,9 @@ static HRESULT WINAPI create_object_context_QueryInterface(IUnknown *iface, REFI
+     return E_NOINTERFACE;
+ }
+ 
+-static ULONG WINAPI create_object_context_AddRef(IUnknown *iface)
++static ULONG WINAPI http_media_src_AddRef(IMFMediaSource *iface)
+ {
+-    struct create_object_context *context = impl_from_IUnknown(iface);
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
+     ULONG refcount = InterlockedIncrement(&context->refcount);
+ 
+     TRACE("%p, refcount %lu.\n", iface, refcount);
+@@ -198,9 +200,9 @@ static ULONG WINAPI create_object_context_AddRef(IUnknown *iface)
+     return refcount;
+ }
+ 
+-static ULONG WINAPI create_object_context_Release(IUnknown *iface)
++static ULONG WINAPI http_media_src_Release(IMFMediaSource *iface)
+ {
+-    struct create_object_context *context = impl_from_IUnknown(iface);
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
+     ULONG refcount = InterlockedDecrement(&context->refcount);
+ 
+     TRACE("%p, refcount %lu.\n", iface, refcount);
+@@ -218,11 +220,104 @@ static ULONG WINAPI create_object_context_Release(IUnknown *iface)
+     return refcount;
+ }
+ 
+-static const IUnknownVtbl create_object_context_vtbl =
++static HRESULT WINAPI http_media_src_GetEvent(IMFMediaSource *iface, DWORD flags, IMFMediaEvent **event)
+ {
+-    create_object_context_QueryInterface,
+-    create_object_context_AddRef,
+-    create_object_context_Release,
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p, 0x%08lx, %p\n", context, flags, event);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_BeginGetEvent(IMFMediaSource *iface, IMFAsyncCallback *callback, IUnknown *state)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p, %p, %p\n", context, callback, state);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_EndGetEvent(IMFMediaSource *iface, IMFAsyncResult *result, IMFMediaEvent **event)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p, %p, %p\n", context, result, event);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_QueueEvent(
++        IMFMediaSource *iface,
++        MediaEventType met,
++        REFGUID guidExtendedType,
++        HRESULT hrStatus,
++        const PROPVARIANT *pvValue)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_GetCharacteristics(
++        IMFMediaSource *iface,
++        DWORD *characteristics)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_CreatePresentationDescriptor(
++        IMFMediaSource *iface,
++        IMFPresentationDescriptor **descriptor)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_Start(
++        IMFMediaSource *iface,
++        IMFPresentationDescriptor *descriptor,
++        const GUID *time_format,
++        const PROPVARIANT *start_position)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_Stop(IMFMediaSource *iface)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_Pause(IMFMediaSource *iface)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI http_media_src_Shutdown(IMFMediaSource *iface)
++{
++    struct http_media_src_object *context = impl_from_IMFMediaSource(iface);
++    FIXME("%p\n", context);
++    return E_NOTIMPL;
++}
++
++static const IMFMediaSourceVtbl http_media_src_vtbl =
++{
++    http_media_src_QueryInterface,
++    http_media_src_AddRef,
++    http_media_src_Release,
++    http_media_src_GetEvent,
++    http_media_src_BeginGetEvent,
++    http_media_src_EndGetEvent,
++    http_media_src_QueueEvent,
++    http_media_src_GetCharacteristics,
++    http_media_src_CreatePresentationDescriptor,
++    http_media_src_Start,
++    http_media_src_Stop,
++    http_media_src_Pause,
++    http_media_src_Shutdown
+ };
+ 
+ static HRESULT WINAPI http_scheme_handler_BeginCreateObject(IMFSchemeHandler *iface, const WCHAR *url, DWORD flags,
+@@ -230,7 +325,7 @@ static HRESULT WINAPI http_scheme_handler_BeginCreateObject(IMFSchemeHandler *if
+ {
+     struct http_scheme_handler *handler = impl_from_IMFSchemeHandler(iface);
+     static const WCHAR *acceptW[] = {L"*/*", NULL};
+-    struct create_object_context *context;
++    struct http_media_src_object *context;
+     IMFAsyncResult *caller, *item;
+     HRESULT hr = S_OK;
+     URL_COMPONENTS url_comp;
+@@ -330,7 +425,7 @@ FIXME("Hostname %s:%d\n", debugstr_w(hostname), url_comp.nPort);
+         return E_OUTOFMEMORY;
+     }
+ 
+-    context->IUnknown_iface.lpVtbl = &create_object_context_vtbl;
++    context->IMFMediaSource_iface.lpVtbl = &http_media_src_vtbl;
+     context->refcount = 1;
+     context->props = props;
+     if (context->props)
+@@ -341,8 +436,8 @@ FIXME("Hostname %s:%d\n", debugstr_w(hostname), url_comp.nPort);
+     context->hconnect = hconnect;
+     context->hsession = hsession;
+ 
+-    hr = MFCreateAsyncResult(&context->IUnknown_iface, &handler->IMFAsyncCallback_iface, (IUnknown *)caller, &item);
+-    IUnknown_Release(&context->IUnknown_iface);
++    hr = MFCreateAsyncResult((IUnknown*)&context->IMFMediaSource_iface, &handler->IMFAsyncCallback_iface, (IUnknown *)caller, &item);
++    IMFMediaSource_Release(&context->IMFMediaSource_iface);
+     if (SUCCEEDED(hr))
+     {
+         if (SUCCEEDED(hr = MFPutWorkItemEx(MFASYNC_CALLBACK_QUEUE_IO, item)))
+@@ -414,22 +509,23 @@ static HRESULT WINAPI http_scheme_handler_callback_GetParameters(IMFAsyncCallbac
+ 
+ static HRESULT WINAPI http_scheme_handler_callback_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
+ {
+-    IUnknown *context_object;
+-    struct create_object_context *context;
++    IMFMediaSource *context_object;
++    struct http_media_src_object *context;
+     HRESULT hr;
+ 
+     FIXME("\n");
+ 
+-    if (FAILED(hr = IMFAsyncResult_GetObject(result, &context_object)))
++    if (FAILED(hr = IMFAsyncResult_GetObject(result, (IUnknown**)&context_object)))
+     {
+         WARN("Expected context set for callee result.\n");
+         return hr;
+     }
+ 
+-    context = impl_from_IUnknown(context_object);
++    context = impl_from_IMFMediaSource(context_object);
+     if (!context)
+         return E_FAIL;
+ 
++    MFInvokeCallback(result);
+     /// ?????
+         /*if (InternetReadFile(hrequest, buffer, content_length, &len))
+     {
+@@ -457,7 +553,7 @@ static HRESULT WINAPI http_scheme_handler_callback_Invoke(IMFAsyncCallback *ifac
+     InternetCloseHandle(hconnect);
+     InternetCloseHandle(hinternet);*/
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static const IMFAsyncCallbackVtbl http_scheme_handler_callback_vtbl =
+diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
+index cee052defeb..f73cd00d7be 100644
+--- a/dlls/mfplat/main.c
++++ b/dlls/mfplat/main.c
+@@ -5925,6 +5925,7 @@ static HRESULT resolver_handler_end_create(struct source_resolver *resolver, enu
+     IRtwqAsyncResult *inner_result = (IRtwqAsyncResult *)IRtwqAsyncResult_GetStateNoAddRef(result);
+     RTWQASYNCRESULT *data = (RTWQASYNCRESULT *)inner_result;
+     struct resolver_queued_result *queued_result;
++    HRESULT hr;
+     union
+     {
+         IUnknown *handler;
+@@ -5932,13 +5933,15 @@ static HRESULT resolver_handler_end_create(struct source_resolver *resolver, enu
+         IMFSchemeHandler *scheme_handler;
+     } handler;
+ 
++    FIXME("resolver %p, origin %d, result %p\n", resolver, origin, result);
++
+     if (!(queued_result = calloc(1, sizeof(*queued_result))))
+         return E_OUTOFMEMORY;
+ 
+     queued_result->origin = origin;
+-
+-    IRtwqAsyncResult_GetObject(inner_result, &handler.handler);
+-
++FIXME("inner_result %p\n", inner_result);
++    hr = IRtwqAsyncResult_GetObject(inner_result, &handler.handler);
++FIXME("%08lx, %p\n", hr, handler.handler);
+     switch (origin)
+     {
+         case OBJECT_FROM_BYTESTREAM:
+-- 
+2.35.1
+

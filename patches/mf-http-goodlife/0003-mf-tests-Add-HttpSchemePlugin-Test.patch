@@ -1,17 +1,17 @@
-From d0914ab5b2c4209092bb15a0158d2fac856c50b9 Mon Sep 17 00:00:00 2001
+From 5db0c2b8fa6ed1e0aeda102126437b4a813aa189 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 2 Mar 2022 20:14:33 +1100
-Subject: [PATCH 3/3] mf/tests: Add HttpSchemePlugin Test
+Date: Fri, 18 Mar 2022 17:15:37 +1100
+Subject: [PATCH 3/4] mf/tests: Add HttpSchemePlugin Test
 
 ---
- dlls/mf/tests/mf.c | 106 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 105 insertions(+), 1 deletion(-)
+ dlls/mf/tests/mf.c | 104 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 
 diff --git a/dlls/mf/tests/mf.c b/dlls/mf/tests/mf.c
-index e61442bb512..1cc7f86bab3 100644
+index e58d8278b82..e7f5e975982 100644
 --- a/dlls/mf/tests/mf.c
 +++ b/dlls/mf/tests/mf.c
-@@ -1122,6 +1122,7 @@ static void test_sequencer_source(void)
+@@ -1126,6 +1126,7 @@ static void test_sequencer_source(void)
  struct test_callback
  {
      IMFAsyncCallback IMFAsyncCallback_iface;
@@ -19,7 +19,7 @@ index e61442bb512..1cc7f86bab3 100644
  };
  
  static HRESULT WINAPI testcallback_QueryInterface(IMFAsyncCallback *iface, REFIID riid, void **obj)
-@@ -6924,6 +6925,108 @@ failed:
+@@ -6993,6 +6994,108 @@ failed:
      CoUninitialize();
  }
  
@@ -37,7 +37,7 @@ index e61442bb512..1cc7f86bab3 100644
 +    IUnknown *state, *obj;
 +    HRESULT hr;
 +
-+    ok(result != NULL, "Unexpected result object.\n");
++    ok(0, "Unexpected result object.\n");
 +
 +    state = IMFAsyncResult_GetStateNoAddRef(result);
 +    if (state && SUCCEEDED(IUnknown_QueryInterface(state, &IID_IMFMediaEventQueue, (void **)&queue)))
@@ -128,21 +128,12 @@ index e61442bb512..1cc7f86bab3 100644
  START_TEST(mf)
  {
      init_functions();
-@@ -6934,7 +7037,7 @@ START_TEST(mf)
-         return;
-     }
- 
--    test_topology();
-+    test_topology();
-     test_topology_tee_node();
-     test_topology_loader();
-     test_topology_loader_evr();
-@@ -6960,4 +7063,5 @@ START_TEST(mf)
+@@ -7029,4 +7132,5 @@ START_TEST(mf)
      test_wma_encoder();
      test_wma_decoder();
      test_h264_decoder();
 +    test_HttpSchemePlugin();
  }
 -- 
-2.34.1
+2.35.1
 
