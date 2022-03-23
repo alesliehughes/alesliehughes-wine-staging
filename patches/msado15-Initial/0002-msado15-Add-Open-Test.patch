@@ -82,7 +82,7 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +    if (recordset2)
 +    {
 +        VARIANT_BOOL eof, bof;
-+        LONG count;
++        ADO_LONGPTR count;
 +        CursorLocationEnum location;
 +
 +        hr = _Recordset_get_CursorLocation(recordset2, &location);

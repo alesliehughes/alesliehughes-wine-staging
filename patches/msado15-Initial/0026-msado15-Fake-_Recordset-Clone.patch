@@ -15,7 +15,7 @@ index deddd936e7c..b6c4cd65f54 100644
  
  static HRESULT WINAPI recordset_Clone( _Recordset *iface, LockTypeEnum lock_type, _Recordset **obj )
  {
-+    struct recordset *recordset = impl_from_Recordset( iface );
++    /*struct recordset *recordset = impl_from_Recordset( iface );*/
      FIXME( "%p, %d, %p\n", iface, lock_type, obj );
 -    return E_NOTIMPL;
 +

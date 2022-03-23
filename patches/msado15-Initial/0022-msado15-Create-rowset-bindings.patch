@@ -47,8 +47,8 @@ index 52d7306f3ff..0889b3a6236 100644
 +        bindings = heap_alloc(sizeof(DBBINDING) * columns);
 +        for (i=0; i < columns; i++)
 +        {
-+            TRACE("Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %lu, dwFlags 0x%08x, "
-+                  "ulColumnSize %lu, wType %d, bPrecision %d, bScale %d\n",
++            TRACE("Column %I64u, pwszName: %s, pTypeInfo %p, iOrdinal %I64u, dwFlags 0x%08lx, "
++                  "ulColumnSize %I64u, wType %d, bPrecision %d, bScale %d\n",
 +                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
 +                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
 +                  colinfo[i].bPrecision, colinfo[i].bScale);

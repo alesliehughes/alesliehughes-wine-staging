@@ -128,7 +128,7 @@ index 0889b3a6236..a06820ec59b 100644
 +                ERR("Failed to ReleaseRows 0x%08lx\n", hr);
 +
 +            hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
-+FIXME("obtained %d\n", obtained);
++FIXME("obtained %I64u\n", obtained);
 +        }
 +
 +        heap_free(data);
