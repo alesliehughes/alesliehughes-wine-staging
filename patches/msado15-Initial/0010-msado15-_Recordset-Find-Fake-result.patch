@@ -1,4 +1,4 @@
-From 3a135b5f24797656ec75b5ef98781ef0bd69e0e5 Mon Sep 17 00:00:00 2001
+From 2052e3e478306ede1a9a6b2c1dafd71348e14f7e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
 Subject: [PATCH] msado15: _Recordset Find - Fake result
@@ -11,10 +11,10 @@ NOTE: This function supports more than what the web site suggests.
  1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 3bbb4bd3300..52d7306f3ff 100644
+index 6d3b3ca352f..098e1e9a0ab 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -1718,9 +1718,15 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
+@@ -1725,9 +1725,15 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
  static HRESULT WINAPI recordset_Find( _Recordset *iface, BSTR criteria, LONG skip_records,
                                        SearchDirectionEnum search_direction, VARIANT start )
  {
@@ -33,5 +33,5 @@ index 3bbb4bd3300..52d7306f3ff 100644
  
  static HRESULT WINAPI recordset_Cancel( _Recordset *iface )
 -- 
-2.34.1
+2.35.1
 
