@@ -1,0 +1,25 @@
+From 760f974711763bfe3e94ca588c7fcb2e1b766506 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 12:40:37 +1000
+Subject: [PATCH 04/17] d3drm: IDirect3DRMMeshBuilder2 SetQuality
+
+---
+ dlls/d3drm/meshbuilder.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
+index 5141b84e9f1..300307be539 100644
+--- a/dlls/d3drm/meshbuilder.c
++++ b/dlls/d3drm/meshbuilder.c
+@@ -677,7 +677,7 @@ static HRESULT WINAPI d3drm_mesh_builder2_SetQuality(IDirect3DRMMeshBuilder2 *if
+ {
+     FIXME("iface %p, quality %#lx stub!\n", iface, quality);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_mesh_builder2_SetPerspective(IDirect3DRMMeshBuilder2 *iface, BOOL enable)
+-- 
+2.35.1
+

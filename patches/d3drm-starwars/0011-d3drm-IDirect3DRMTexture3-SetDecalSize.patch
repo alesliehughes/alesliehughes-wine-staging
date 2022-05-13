@@ -1,0 +1,25 @@
+From 9a83ed5c30806f3eb1af4d7fc9c7e75a8a6c7b27 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 13:40:05 +1000
+Subject: [PATCH 11/17] d3drm: IDirect3DRMTexture3 SetDecalSize
+
+---
+ dlls/d3drm/texture.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/texture.c b/dlls/d3drm/texture.c
+index 2ee9a1b8567..fecec0bcfb9 100644
+--- a/dlls/d3drm/texture.c
++++ b/dlls/d3drm/texture.c
+@@ -1202,7 +1202,7 @@ static HRESULT WINAPI d3drm_texture3_SetDecalSize(IDirect3DRMTexture3 *iface, D3
+ {
+     FIXME("iface %p, width %.8e, height %.8e stub!\n", iface, width, height);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_texture3_SetDecalOrigin(IDirect3DRMTexture3 *iface, LONG x, LONG y)
+-- 
+2.35.1
+

@@ -1,0 +1,34 @@
+From 06f8a230b24c0dec76a5001618840a10f3f154ac Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 12:56:26 +1000
+Subject: [PATCH 05/17] d3drm: IDirect3DRMMesh GetBox stubs
+
+---
+ dlls/d3drm/meshbuilder.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
+index 300307be539..3fa44ed3361 100644
+--- a/dlls/d3drm/meshbuilder.c
++++ b/dlls/d3drm/meshbuilder.c
+@@ -548,7 +548,7 @@ static HRESULT WINAPI d3drm_mesh_builder2_GetBox(IDirect3DRMMeshBuilder2 *iface,
+ {
+     FIXME("iface %p, box %p stub!\n", iface, box);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_mesh_builder2_GenerateNormals(IDirect3DRMMeshBuilder2 *iface)
+@@ -2513,7 +2513,7 @@ static HRESULT WINAPI d3drm_mesh_GetBox(IDirect3DRMMesh *iface, D3DRMBOX *box)
+ {
+     FIXME("iface %p, box %p stub!\n", iface, box);
+ 
+-    return E_NOTIMPL;
++    return D3DRMERR_BOXNOTSET;
+ }
+ 
+ static HRESULT WINAPI d3drm_mesh_AddGroup(IDirect3DRMMesh *iface, unsigned vertex_count,
+-- 
+2.35.1
+

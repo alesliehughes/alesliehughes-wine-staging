@@ -1,0 +1,25 @@
+From 5fd000c3fa0a4ae124a20c78e451d59c1513b171 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 13:08:33 +1000
+Subject: [PATCH 07/17] d3drm: IDirect3DRMTexture3 SetDecalOrigin
+
+---
+ dlls/d3drm/texture.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/texture.c b/dlls/d3drm/texture.c
+index 07e9c4ef066..c5ca124fb68 100644
+--- a/dlls/d3drm/texture.c
++++ b/dlls/d3drm/texture.c
+@@ -1209,7 +1209,7 @@ static HRESULT WINAPI d3drm_texture3_SetDecalOrigin(IDirect3DRMTexture3 *iface,
+ {
+     FIXME("iface %p, x %ld, y %ld stub!\n", iface, x, y);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_texture3_SetDecalScale(IDirect3DRMTexture3 *iface, DWORD scale)
+-- 
+2.35.1
+

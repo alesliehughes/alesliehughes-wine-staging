@@ -1,0 +1,25 @@
+From 8b8c443b86a93c49b8b05f6577b7953305aee783 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 14:56:03 +1000
+Subject: [PATCH 14/17] d3drm: IDirect3DRMFrame2 SetSceneBackgroundImage
+
+---
+ dlls/d3drm/frame.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
+index 1bc37e2f87b..ed47054e890 100644
+--- a/dlls/d3drm/frame.c
++++ b/dlls/d3drm/frame.c
+@@ -2232,7 +2232,7 @@ static HRESULT WINAPI d3drm_frame2_SetSceneBackgroundImage(IDirect3DRMFrame2 *if
+ {
+     FIXME("iface %p, texture %p stub!\n", iface, texture);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_frame1_SetSceneBackgroundImage(IDirect3DRMFrame *iface,
+-- 
+2.35.1
+

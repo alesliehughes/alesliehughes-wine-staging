@@ -1,0 +1,25 @@
+From 213b95a98185e00ab80fc7f8c0b249876bdc3861 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 13:01:03 +1000
+Subject: [PATCH 06/17] d3drm: IDirect3DRMMeshBuilder2 Translate
+
+---
+ dlls/d3drm/meshbuilder.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
+index 3fa44ed3361..ebd1e096cfe 100644
+--- a/dlls/d3drm/meshbuilder.c
++++ b/dlls/d3drm/meshbuilder.c
+@@ -534,7 +534,7 @@ static HRESULT WINAPI d3drm_mesh_builder2_Translate(IDirect3DRMMeshBuilder2 *ifa
+ {
+     FIXME("iface %p, tx %.8e, ty %.8e, tz %.8e stub!\n", iface, tx, ty, tz);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_mesh_builder2_SetColorSource(IDirect3DRMMeshBuilder2 *iface, D3DRMCOLORSOURCE source)
+-- 
+2.35.1
+

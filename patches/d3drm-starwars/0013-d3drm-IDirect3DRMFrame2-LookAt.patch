@@ -1,0 +1,25 @@
+From 71466d17e8eb16a512e4a99118e959b3be31cce7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 14:24:46 +1000
+Subject: [PATCH 13/17] d3drm: IDirect3DRMFrame2 LookAt
+
+---
+ dlls/d3drm/frame.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
+index 00d99c46ed2..1bc37e2f87b 100644
+--- a/dlls/d3drm/frame.c
++++ b/dlls/d3drm/frame.c
+@@ -1791,7 +1791,7 @@ static HRESULT WINAPI d3drm_frame2_LookAt(IDirect3DRMFrame2 *iface, IDirect3DRMF
+ {
+     FIXME("iface %p, target %p, reference %p, constraint %#x stub!\n", iface, target, reference, constraint);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_frame1_LookAt(IDirect3DRMFrame *iface, IDirect3DRMFrame *target,
+-- 
+2.35.1
+

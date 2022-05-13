@@ -1,0 +1,25 @@
+From e22b97778da1ad06aec422ca19e05be0896eadc3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 May 2022 13:14:09 +1000
+Subject: [PATCH 08/17] d3drm: IDirect3DRMTexture3 SetColors
+
+---
+ dlls/d3drm/texture.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/texture.c b/dlls/d3drm/texture.c
+index c5ca124fb68..4a3eb445eb1 100644
+--- a/dlls/d3drm/texture.c
++++ b/dlls/d3drm/texture.c
+@@ -1188,7 +1188,7 @@ static HRESULT WINAPI d3drm_texture3_SetColors(IDirect3DRMTexture3 *iface, DWORD
+ {
+     FIXME("iface %p, max_colors %lu stub!\n", iface, max_colors);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_texture3_SetShades(IDirect3DRMTexture3 *iface, DWORD max_shades)
+-- 
+2.35.1
+
