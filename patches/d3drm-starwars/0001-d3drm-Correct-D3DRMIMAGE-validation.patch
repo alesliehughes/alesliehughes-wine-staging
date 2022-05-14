@@ -41,7 +41,7 @@ index c679100c6b7..07e9c4ef066 100644
 +    }
 +    else
 +    {
-+        if (!image->palette || image->palette_size != (1<<image->depth))
++        if (!image->palette || !image->palette_size)
 +            return FALSE;
      }
  
