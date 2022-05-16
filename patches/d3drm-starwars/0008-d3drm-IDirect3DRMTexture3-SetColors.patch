@@ -1,25 +1,97 @@
-From e22b97778da1ad06aec422ca19e05be0896eadc3 Mon Sep 17 00:00:00 2001
+From f8038e5618648279f565af7c1511ba4cfdf522d2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 13:14:09 +1000
-Subject: [PATCH 08/17] d3drm: IDirect3DRMTexture3 SetColors
+Subject: [PATCH] d3drm: IDirect3DRMTexture3 SetColors
 
 ---
- dlls/d3drm/texture.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ dlls/d3drm/d3drm_private.h |  1 +
+ dlls/d3drm/tests/d3drm.c   | 13 +++++++++++++
+ dlls/d3drm/texture.c       | 14 +++++++++-----
+ 3 files changed, 23 insertions(+), 5 deletions(-)
 
+diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
+index 26accb1e1fb..9cebefb955a 100644
+--- a/dlls/d3drm/d3drm_private.h
++++ b/dlls/d3drm/d3drm_private.h
+@@ -66,6 +66,7 @@ struct d3drm_texture
+     IDirectDrawSurface *surface;
+     LONG decal_x;
+     LONG decal_y;
++    DWORD max_colors;
+ };
+ 
+ struct d3drm_frame
+diff --git a/dlls/d3drm/tests/d3drm.c b/dlls/d3drm/tests/d3drm.c
+index 5db4de201c9..06887f11250 100644
+--- a/dlls/d3drm/tests/d3drm.c
++++ b/dlls/d3drm/tests/d3drm.c
+@@ -2707,6 +2707,7 @@ static void test_Texture(void)
+     IDirect3DRMTexture3 *texture3;
+     IDirectDrawSurface *surface;
+     LONG decalx, decaly;
++    DWORD colors;
+ 
+     D3DRMIMAGE initimg =
+     {
+@@ -2884,6 +2885,18 @@ static void test_Texture(void)
+     hr = IDirect3DRMTexture_SetDecalOrigin(texture1, 0, 0);
+     ok(hr == S_OK, "got %#lx.\n", hr);
+ 
++    colors = IDirect3DRMTexture_GetColors(texture1);
++    ok(colors == 8, "got %ld.\n", colors);
++
++    hr = IDirect3DRMTexture_SetColors(texture1, 256);
++    ok(hr == S_OK, "got %#lx.\n", hr);
++
++    colors = IDirect3DRMTexture_GetColors(texture1);
++    ok(colors == 256, "got %ld.\n", colors);
++
++    hr = IDirect3DRMTexture_SetColors(texture1, 8);
++    ok(hr == S_OK, "got %#lx.\n", hr);
++
+     d3drm_img = IDirect3DRMTexture_GetImage(texture1);
+     ok(!!d3drm_img, "Failed to get image.\n");
+     ok(d3drm_img == &initimg, "Expected image returned == %p, got %p.\n", &initimg, d3drm_img);
 diff --git a/dlls/d3drm/texture.c b/dlls/d3drm/texture.c
-index c5ca124fb68..4a3eb445eb1 100644
+index 458a77ad5e5..0c33443782f 100644
 --- a/dlls/d3drm/texture.c
 +++ b/dlls/d3drm/texture.c
-@@ -1188,7 +1188,7 @@ static HRESULT WINAPI d3drm_texture3_SetColors(IDirect3DRMTexture3 *iface, DWORD
+@@ -1186,9 +1186,12 @@ static HRESULT WINAPI d3drm_texture3_Changed(IDirect3DRMTexture3 *iface,
+ 
+ static HRESULT WINAPI d3drm_texture3_SetColors(IDirect3DRMTexture3 *iface, DWORD max_colors)
  {
-     FIXME("iface %p, max_colors %lu stub!\n", iface, max_colors);
+-    FIXME("iface %p, max_colors %lu stub!\n", iface, max_colors);
++    struct d3drm_texture *texture = impl_from_IDirect3DRMTexture3(iface);
++    TRACE("iface %p, max_colors %lu\n", iface, max_colors);
  
 -    return E_NOTIMPL;
++    texture->max_colors= max_colors;
++
 +    return S_OK;
  }
  
  static HRESULT WINAPI d3drm_texture3_SetShades(IDirect3DRMTexture3 *iface, DWORD max_shades)
+@@ -1275,9 +1278,9 @@ static DWORD WINAPI d3drm_texture3_GetShades(IDirect3DRMTexture3 *iface)
+ 
+ static DWORD WINAPI d3drm_texture3_GetColors(IDirect3DRMTexture3 *iface)
+ {
+-    FIXME("iface %p stub!\n", iface);
+-
+-    return 0;
++    struct d3drm_texture *texture = impl_from_IDirect3DRMTexture3(iface);
++    TRACE("iface %p\n", iface);
++    return texture->max_colors;
+ }
+ 
+ static DWORD WINAPI d3drm_texture3_GetDecalScale(IDirect3DRMTexture3 *iface)
+@@ -1446,6 +1449,7 @@ HRESULT d3drm_texture_create(struct d3drm_texture **texture, IDirect3DRM *d3drm)
+     object->IDirect3DRMTexture2_iface.lpVtbl = &d3drm_texture2_vtbl;
+     object->IDirect3DRMTexture3_iface.lpVtbl = &d3drm_texture3_vtbl;
+     object->d3drm = d3drm;
++    object->max_colors = 8;
+ 
+     d3drm_object_init(&object->obj, classname);
+ 
 -- 
 2.35.1
 
