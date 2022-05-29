@@ -1,4 +1,4 @@
-From f8c2e39b197d1c6be4b7399580df9d715723f1ee Mon Sep 17 00:00:00 2001
+From dcab276dbf8ba0287a623ea04310aafb6000198b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 13:40:05 +1000
 Subject: [PATCH] d3drm: IDirect3DRMTexture3 SetDecalSize
@@ -6,8 +6,8 @@ Subject: [PATCH] d3drm: IDirect3DRMTexture3 SetDecalSize
 ---
  dlls/d3drm/d3drm_private.h |  2 ++
  dlls/d3drm/tests/d3drm.c   | 17 +++++++++++++++++
- dlls/d3drm/texture.c       | 17 +++++++++++++----
- 3 files changed, 32 insertions(+), 4 deletions(-)
+ dlls/d3drm/texture.c       | 19 +++++++++++++++----
+ 3 files changed, 34 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
 index c5df376a72e..2fb6bafe951 100644
@@ -58,7 +58,7 @@ index 5e239fa93d5..0d2dd5b5efa 100644
      ok(transparency == FALSE, "got %ld.\n", shades);
  
 diff --git a/dlls/d3drm/texture.c b/dlls/d3drm/texture.c
-index bf477521f06..7da93d58288 100644
+index bf477521f06..8f5f1bc621b 100644
 --- a/dlls/d3drm/texture.c
 +++ b/dlls/d3drm/texture.c
 @@ -1206,9 +1206,13 @@ static HRESULT WINAPI d3drm_texture3_SetShades(IDirect3DRMTexture3 *iface, DWORD
@@ -94,6 +94,15 @@ index bf477521f06..7da93d58288 100644
  }
  
  static HRESULT WINAPI d3drm_texture3_GetDecalOrigin(IDirect3DRMTexture3 *iface, LONG *x, LONG *y)
+@@ -1459,6 +1468,8 @@ HRESULT d3drm_texture_create(struct d3drm_texture **texture, IDirect3DRM *d3drm)
+     object->max_colors = 8;
+     object->max_shades = 16;
+     object->transparency = FALSE;
++    object->decal_width = 1.0;
++    object->decal_height = 1.0;
+ 
+     d3drm_object_init(&object->obj, classname);
+ 
 -- 
 2.35.1
 
