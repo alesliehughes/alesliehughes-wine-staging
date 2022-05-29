@@ -1,4 +1,4 @@
-From 42e0670a2b8084a4c8ae7dd3e5d61982776dfff2 Mon Sep 17 00:00:00 2001
+From bfc3e711bbe0118eb9fb160fd62db862ba49283d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
 Subject: [PATCH] Great Hack
@@ -8,7 +8,7 @@ Subject: [PATCH] Great Hack
  1 file changed, 162 insertions(+), 49 deletions(-)
 
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index d35e1eb116f..24a82a16c36 100644
+index 722032bc18b..c84d556c009 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
 @@ -39,6 +39,9 @@
@@ -100,7 +100,7 @@ index d35e1eb116f..24a82a16c36 100644
 +
  static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
-     TRACE("(%p, %08x, %08lx, %08lx)\n", hwnd, msg, wp, lp);
+     TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
 @@ -337,13 +406,15 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
@@ -331,5 +331,5 @@ index d35e1eb116f..24a82a16c36 100644
  
  static HRESULT WINAPI dslocator_PromptEdit(IDataSourceLocator *iface, IDispatch **ppADOConnection, VARIANT_BOOL *success)
 -- 
-2.34.1
+2.35.1
 
