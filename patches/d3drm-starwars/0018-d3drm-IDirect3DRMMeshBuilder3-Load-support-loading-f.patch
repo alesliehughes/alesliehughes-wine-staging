@@ -1,0 +1,60 @@
+From 95d636b88aff2e650d2ae3584332a91bb7b3426e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 1 Jun 2022 18:46:13 +1000
+Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder3 Load support loading from
+ resource
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/d3drm/meshbuilder.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
+
+diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
+index 8177d2a2dfd..83472bfae67 100644
+--- a/dlls/d3drm/meshbuilder.c
++++ b/dlls/d3drm/meshbuilder.c
+@@ -1546,7 +1546,7 @@ static HRESULT WINAPI d3drm_mesh_builder3_Load(IDirect3DRMMeshBuilder3 *iface, v
+         void *name, D3DRMLOADOPTIONS loadflags, D3DRMLOADTEXTURE3CALLBACK cb, void *arg)
+ {
+     struct d3drm_mesh_builder *mesh_builder = impl_from_IDirect3DRMMeshBuilder3(iface);
+-    DXFILELOADOPTIONS load_options;
++    DXFILELOADOPTIONS load_options = loadflags & 0x0F;
+     IDirectXFile *dxfile = NULL;
+     IDirectXFileEnumObject *enum_object = NULL;
+     IDirectXFileData *data = NULL;
+@@ -1561,21 +1561,6 @@ static HRESULT WINAPI d3drm_mesh_builder3_Load(IDirect3DRMMeshBuilder3 *iface, v
+ 
+     clean_mesh_builder_data(mesh_builder);
+ 
+-    if (loadflags == D3DRMLOAD_FROMMEMORY)
+-    {
+-        load_options = DXFILELOAD_FROMMEMORY;
+-    }
+-    else if (loadflags == D3DRMLOAD_FROMFILE)
+-    {
+-        load_options = DXFILELOAD_FROMFILE;
+-        TRACE("Loading from file %s\n", debugstr_a(filename));
+-    }
+-    else
+-    {
+-        FIXME("Load options %ld not supported yet\n", loadflags);
+-        return E_NOTIMPL;
+-    }
+-
+     hr = DirectXFileCreate(&dxfile);
+     if (hr != DXFILE_OK)
+         goto end;
+@@ -1586,7 +1571,10 @@ static HRESULT WINAPI d3drm_mesh_builder3_Load(IDirect3DRMMeshBuilder3 *iface, v
+ 
+     hr = IDirectXFile_CreateEnumObject(dxfile, filename, load_options, &enum_object);
+     if (hr != DXFILE_OK)
++    {
++        FIXME("Failed to Enum object for type %#lx\n", loadflags);
+         goto end;
++    }
+ 
+     hr = IDirectXFileEnumObject_GetNextDataObject(enum_object, &data);
+     if (hr != DXFILE_OK)
+-- 
+2.35.1
+
