@@ -1,25 +1,69 @@
-From 8b8c443b86a93c49b8b05f6577b7953305aee783 Mon Sep 17 00:00:00 2001
+From d756a2a47cb06d76064d1557bdb3e82ab7cc7b4b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 14:56:03 +1000
-Subject: [PATCH 14/17] d3drm: IDirect3DRMFrame2 SetSceneBackgroundImage
+Subject: [PATCH] d3drm: IDirect3DRMFrame2 SetSceneBackgroundImage
 
 ---
- dlls/d3drm/frame.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ dlls/d3drm/d3drm_private.h |  1 +
+ dlls/d3drm/frame.c         | 21 ++++++++++++++-------
+ 2 files changed, 15 insertions(+), 7 deletions(-)
 
+diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
+index 2fb6bafe951..96a9c3e7f60 100644
+--- a/dlls/d3drm/d3drm_private.h
++++ b/dlls/d3drm/d3drm_private.h
+@@ -81,6 +81,7 @@ struct d3drm_frame
+     IDirect3DRMFrame3 IDirect3DRMFrame3_iface;
+     IDirect3DRM *d3drm;
+     LONG ref;
++    IDirect3DRMTexture3 *backgroundimage;
+     struct d3drm_frame *parent;
+     SIZE_T nb_children;
+     SIZE_T children_size;
 diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
-index 1bc37e2f87b..ed47054e890 100644
+index 5c93f289156..71209446810 100644
 --- a/dlls/d3drm/frame.c
 +++ b/dlls/d3drm/frame.c
-@@ -2232,7 +2232,7 @@ static HRESULT WINAPI d3drm_frame2_SetSceneBackgroundImage(IDirect3DRMFrame2 *if
+@@ -2231,25 +2231,32 @@ static HRESULT WINAPI d3drm_frame1_SetSceneBackgroundDepth(IDirect3DRMFrame *ifa
+ static HRESULT WINAPI d3drm_frame3_SetSceneBackgroundImage(IDirect3DRMFrame3 *iface,
+         IDirect3DRMTexture3 *texture)
  {
++    struct d3drm_frame *frame = impl_from_IDirect3DRMFrame3(iface);
      FIXME("iface %p, texture %p stub!\n", iface, texture);
  
 -    return E_NOTIMPL;
++    if (frame->backgroundimage)
++        IDirect3DRMTexture3_Release(frame->backgroundimage);
++    frame->backgroundimage = texture;
++    if (frame->backgroundimage)
++        IDirect3DRMTexture3_AddRef(frame->backgroundimage);
++
 +    return S_OK;
  }
  
+ static HRESULT WINAPI d3drm_frame2_SetSceneBackgroundImage(IDirect3DRMFrame2 *iface,
+         IDirect3DRMTexture *texture)
+ {
+-    FIXME("iface %p, texture %p stub!\n", iface, texture);
+-
+-    return E_NOTIMPL;
++    struct d3drm_frame *frame = impl_from_IDirect3DRMFrame2(iface);
++    TRACE("iface %p, texture %p\n", iface, texture);
++    return d3drm_frame3_SetSceneBackgroundImage(&frame->IDirect3DRMFrame3_iface, (IDirect3DRMTexture3*)texture);
+ }
+ 
  static HRESULT WINAPI d3drm_frame1_SetSceneBackgroundImage(IDirect3DRMFrame *iface,
+         IDirect3DRMTexture *texture)
+ {
+-    FIXME("iface %p, texture %p stub!\n", iface, texture);
+-
+-    return E_NOTIMPL;
++    struct d3drm_frame *frame = impl_from_IDirect3DRMFrame(iface);
++    TRACE("iface %p, texture %p\n", iface, texture);
++    return d3drm_frame3_SetSceneBackgroundImage(&frame->IDirect3DRMFrame3_iface, (IDirect3DRMTexture3*)texture);
+ }
+ 
+ static HRESULT WINAPI d3drm_frame3_SetSceneFogEnable(IDirect3DRMFrame3 *iface, BOOL enable)
 -- 
 2.35.1
 
