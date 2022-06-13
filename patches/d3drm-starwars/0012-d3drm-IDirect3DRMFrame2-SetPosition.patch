@@ -1,14 +1,14 @@
-From ab848903e80081d1b056ccebcc31d231ce4ead53 Mon Sep 17 00:00:00 2001
+From ed45fe7c7985f7bbb913681151ef7a5c518c5497 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 14:19:14 +1000
 Subject: [PATCH] d3drm: IDirect3DRMFrame2 SetPosition
 
 ---
- dlls/d3drm/frame.c | 29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+ dlls/d3drm/frame.c | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
-index 5cc3ad585d4..0aae33d3a1f 100644
+index 5cc3ad585d4..f3805c9bb24 100644
 --- a/dlls/d3drm/frame.c
 +++ b/dlls/d3drm/frame.c
 @@ -1452,28 +1452,37 @@ static HRESULT WINAPI d3drm_frame1_GetParent(IDirect3DRMFrame *iface, IDirect3DR
@@ -58,6 +58,15 @@ index 5cc3ad585d4..0aae33d3a1f 100644
  }
  
  
+@@ -2449,7 +2458,7 @@ static HRESULT WINAPI d3drm_frame3_SetPosition(IDirect3DRMFrame3 *iface,
+ {
+     FIXME("iface %p, reference %p, x %.8e, y %.8e, z %.8e stub!\n", iface, reference, x, y, z);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_frame2_SetPosition(IDirect3DRMFrame2 *iface,
 @@ -2457,7 +2466,7 @@ static HRESULT WINAPI d3drm_frame2_SetPosition(IDirect3DRMFrame2 *iface,
  {
      FIXME("iface %p, reference %p, x %.8e, y %.8e, z %.8e stub!\n", iface, reference, x, y, z);

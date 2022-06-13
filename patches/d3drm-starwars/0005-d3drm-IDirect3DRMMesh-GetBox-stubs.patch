@@ -1,17 +1,18 @@
-From 06f8a230b24c0dec76a5001618840a10f3f154ac Mon Sep 17 00:00:00 2001
+From 0ae9ee954ccfe5b4882933e8ad6a463e810efb5a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 12:56:26 +1000
-Subject: [PATCH 05/17] d3drm: IDirect3DRMMesh GetBox stubs
+Subject: [PATCH] d3drm: IDirect3DRMMesh GetBox stubs
 
 ---
  dlls/d3drm/meshbuilder.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ dlls/d3drm/tests/d3drm.c | 8 ++++++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index 300307be539..3fa44ed3361 100644
+index 2b3750d9ece..b7393d448e2 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
-@@ -548,7 +548,7 @@ static HRESULT WINAPI d3drm_mesh_builder2_GetBox(IDirect3DRMMeshBuilder2 *iface,
+@@ -626,7 +626,7 @@ static HRESULT WINAPI d3drm_mesh_builder2_GetBox(IDirect3DRMMeshBuilder2 *iface,
  {
      FIXME("iface %p, box %p stub!\n", iface, box);
  
@@ -20,7 +21,7 @@ index 300307be539..3fa44ed3361 100644
  }
  
  static HRESULT WINAPI d3drm_mesh_builder2_GenerateNormals(IDirect3DRMMeshBuilder2 *iface)
-@@ -2513,7 +2513,7 @@ static HRESULT WINAPI d3drm_mesh_GetBox(IDirect3DRMMesh *iface, D3DRMBOX *box)
+@@ -2601,7 +2601,7 @@ static HRESULT WINAPI d3drm_mesh_GetBox(IDirect3DRMMesh *iface, D3DRMBOX *box)
  {
      FIXME("iface %p, box %p stub!\n", iface, box);
  
@@ -29,6 +30,32 @@ index 300307be539..3fa44ed3361 100644
  }
  
  static HRESULT WINAPI d3drm_mesh_AddGroup(IDirect3DRMMesh *iface, unsigned vertex_count,
+diff --git a/dlls/d3drm/tests/d3drm.c b/dlls/d3drm/tests/d3drm.c
+index 5745fea4b09..178ab3d94eb 100644
+--- a/dlls/d3drm/tests/d3drm.c
++++ b/dlls/d3drm/tests/d3drm.c
+@@ -452,6 +452,7 @@ static void test_MeshBuilder(void)
+     DWORD size;
+     D3DCOLOR color;
+     IUnknown *unk;
++    D3DRMBOX box;
+ 
+     hr = Direct3DRMCreate(&d3drm);
+     ok(hr == D3DRM_OK, "Cannot get IDirect3DRM interface, hr %#lx\n", hr);
+@@ -697,6 +698,13 @@ static void test_MeshBuilder(void)
+         IDirect3DRMMesh_Release(mesh);
+     }
+ 
++    memset(&box, 0, sizeof(box));
++    hr = IDirect3DRMMeshBuilder_GetBox(pMeshBuilder, &box);
++    ok(hr == D3DRM_OK, "got hr %#lx.\n", hr);
++
++    expect_vector(&box.min, 1.0, 2.0f, 3.0f, 1);
++    expect_vector(&box.max, 6.9f, 8.0f, 8.9f, 1);
++
+     hr = IDirect3DRMMeshBuilder_Scale(pMeshBuilder, 2, 3 ,4);
+     ok(hr == D3DRM_OK, "Scale failed returning hr %#lx.\n", hr);
+ 
 -- 
 2.35.1
 
