@@ -1,4 +1,4 @@
-From 7e66da2df650a7c448eb9d1a0b86f2cb1e6b9093 Mon Sep 17 00:00:00 2001
+From 1d4f95db299bfb96a4ae38a3889734edb629be3f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 22 Jun 2022 10:09:17 +1000
 Subject: [PATCH] d3drm: Implement IDirect3DRMViewport Render
@@ -8,8 +8,9 @@ Subject: [PATCH] d3drm: Implement IDirect3DRMViewport Render
  dlls/d3drm/device.c        |  9 ++++
  dlls/d3drm/frame.c         | 10 +++-
  dlls/d3drm/texture.c       | 15 ++++++
- dlls/d3drm/viewport.c      | 94 +++++++++++++++++++++++++++++++++++++-
- 5 files changed, 128 insertions(+), 3 deletions(-)
+ dlls/d3drm/viewport.c      | 99 +++++++++++++++++++++++++++++++++++++-
+ dlls/wined3d/texture.c     |  1 +
+ 6 files changed, 134 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
 index 7cc5fed45c9..4dbdecaba7a 100644
@@ -96,10 +97,10 @@ index 3e4c94fda23..37b72f285dd 100644
  {
      static const char classname[] = "Texture";
 diff --git a/dlls/d3drm/viewport.c b/dlls/d3drm/viewport.c
-index 7261d6458bb..fe3357d3bd4 100644
+index 7261d6458bb..81b2df9fab8 100644
 --- a/dlls/d3drm/viewport.c
 +++ b/dlls/d3drm/viewport.c
-@@ -477,9 +477,101 @@ static HRESULT WINAPI d3drm_viewport2_Render(IDirect3DRMViewport2 *iface, IDirec
+@@ -477,9 +477,106 @@ static HRESULT WINAPI d3drm_viewport2_Render(IDirect3DRMViewport2 *iface, IDirec
      return D3DRM_OK;
  }
  
@@ -115,15 +116,18 @@ index 7261d6458bb..fe3357d3bd4 100644
 +    memset(&desc, 0, sizeof(desc));
 +    desc.dwSize = sizeof(desc);
 +    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
-+    desc.ddsCaps.dwCaps = DDSCAPS_TEXTURE; /*DDSCAPS_OFFSCREENPLAIN ? */;
++    desc.ddsCaps.dwCaps = DDSCAPS_SYSTEMMEMORY | DDSCAPS_TEXTURE;
 +    desc.dwWidth = texture->image->width;
 +    desc.dwHeight = texture->image->height;
 +
 +    desc.ddpfPixelFormat.dwSize = sizeof(desc.ddpfPixelFormat);
-+    desc.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
-+    desc.ddpfPixelFormat.u1.dwZBufferBitDepth = 16;
-+    desc.ddpfPixelFormat.u3.dwZBitMask = 0x0000FFFF;
-+    desc.u2.dwZBufferBitDepth = 16;
++    desc.ddpfPixelFormat.dwFlags = DDPF_RGB;
++
++    desc.ddpfPixelFormat.u1.dwRGBBitCount = 16;
++    desc.ddpfPixelFormat.u2.dwRBitMask = 0x00007c00;
++    desc.ddpfPixelFormat.u3.dwGBitMask = 0x000003e0;
++    desc.ddpfPixelFormat.u4.dwBBitMask = 0x0000001f;
++
 +
 +    hr = IDirectDraw_CreateSurface(ddraw, &desc, &surface, NULL);
 +FIXME("IDirectDraw_CreateSurface %08lx\n", hr);
@@ -149,8 +153,10 @@ index 7261d6458bb..fe3357d3bd4 100644
 +
 +    memset(&BltFx, 0, sizeof(BltFx));
 +    BltFx.dwSize = sizeof(BltFx);
-+    BltFx.DUMMYUNIONNAME5.dwFillColor = 0xaa00FF00;
++    BltFx.DUMMYUNIONNAME5.dwFillColor = 0x000FF000;
 +
++
++    //hr = IDirectDrawSurface_Blt(surface, NULL, NULL, NULL, DDBLT_DEPTHFILL, &BltFx);
 +    hr = IDirectDrawSurface_Blt(surface, NULL, NULL, NULL, DDBLT_COLORFILL, &BltFx);
 +    FIXME("IDirectDrawSurface_Blt %08lx\n", hr);
 +
@@ -189,8 +195,8 @@ index 7261d6458bb..fe3357d3bd4 100644
 +                if (!texture->surface)
 +                    hr = create_surface_from_image(viewport->device->ddraw, texture, &texture->surface);
 +
-+                //hr = IDirectDrawSurface_Blt(ds, NULL, texture->surface, NULL, 0, NULL);
-+                hr = IDirectDrawSurface_BltFast(ds, 0, 0, texture->surface, NULL, 0);
++                hr = IDirectDrawSurface_Blt(ds, NULL, texture->surface, NULL, DDBLT_WAIT, NULL);
++                //hr = IDirectDrawSurface_BltFast(ds, 0, 0, texture->surface, &rect, 0);
 +                FIXME("IDirectDrawSurface_BltFast %08lx\n", hr);
 +
 +                IDirect3DRMTexture_Release(drmtexture);
@@ -202,6 +208,18 @@ index 7261d6458bb..fe3357d3bd4 100644
  
      return D3DRM_OK;
  }
+diff --git a/dlls/wined3d/texture.c b/dlls/wined3d/texture.c
+index 4cf98ecbf14..42031718a23 100644
+--- a/dlls/wined3d/texture.c
++++ b/dlls/wined3d/texture.c
+@@ -4183,6 +4183,7 @@ HRESULT CDECL wined3d_device_context_blt(struct wined3d_device_context *context,
+     if (!src_texture->resource.format->depth_size != !dst_texture->resource.format->depth_size
+             || !src_texture->resource.format->stencil_size != !dst_texture->resource.format->stencil_size)
+     {
++FIXME("%d, %d\n", src_texture->resource.format->depth_size, dst_texture->resource.format->depth_size);
+         WARN("Rejecting depth/stencil blit between incompatible formats.\n");
+         return WINED3DERR_INVALIDCALL;
+     }
 -- 
 2.35.1
 
