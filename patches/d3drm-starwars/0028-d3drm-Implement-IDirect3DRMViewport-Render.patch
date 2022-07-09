@@ -1,16 +1,29 @@
-From e6cde7ae8045c6350587bec5739fc6488498d88a Mon Sep 17 00:00:00 2001
+From e7ab3fc90ed420227ab2e94f413cf7f426aefd59 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 22 Jun 2022 10:09:17 +1000
 Subject: [PATCH] d3drm: Implement IDirect3DRMViewport Render
 
 ---
+ dlls/d3drm/Makefile.in     |  2 +-
  dlls/d3drm/d3drm_private.h |  3 ++
- dlls/d3drm/device.c        |  9 ++++
+ dlls/d3drm/device.c        |  9 +++++
  dlls/d3drm/frame.c         | 10 ++++-
  dlls/d3drm/texture.c       | 15 +++++++
- dlls/d3drm/viewport.c      | 89 +++++++++++++++++++++++++++++++++++++-
- 5 files changed, 123 insertions(+), 3 deletions(-)
+ dlls/d3drm/viewport.c      | 82 +++++++++++++++++++++++++++++++++++++-
+ 6 files changed, 117 insertions(+), 4 deletions(-)
 
+diff --git a/dlls/d3drm/Makefile.in b/dlls/d3drm/Makefile.in
+index 8daaa426c8f..d243ced546d 100644
+--- a/dlls/d3drm/Makefile.in
++++ b/dlls/d3drm/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = d3drm.dll
+ IMPORTLIB = d3drm
+-IMPORTS   = d3dxof ddraw
++IMPORTS   = d3dxof ddraw gdi32
+ 
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ 
 diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
 index 7cc5fed45c9..4dbdecaba7a 100644
 --- a/dlls/d3drm/d3drm_private.h
@@ -96,19 +109,20 @@ index 3e4c94fda23..37b72f285dd 100644
  {
      static const char classname[] = "Texture";
 diff --git a/dlls/d3drm/viewport.c b/dlls/d3drm/viewport.c
-index 7261d6458bb..bb665c3bc68 100644
+index 7261d6458bb..3c985cc146b 100644
 --- a/dlls/d3drm/viewport.c
 +++ b/dlls/d3drm/viewport.c
-@@ -477,9 +477,96 @@ static HRESULT WINAPI d3drm_viewport2_Render(IDirect3DRMViewport2 *iface, IDirec
+@@ -477,9 +477,89 @@ static HRESULT WINAPI d3drm_viewport2_Render(IDirect3DRMViewport2 *iface, IDirec
      return D3DRM_OK;
  }
  
-+static HRESULT create_surface_from_image(IDirectDraw *ddraw, struct d3drm_texture *texture, IDirectDrawSurface **out)
++static HRESULT create_surface_from_image(IDirectDraw *ddraw, D3DRMIMAGE *image, IDirectDrawSurface **out)
 +{
 +    IDirectDrawSurface *surface;
 +    DDSURFACEDESC desc;
 +    HRESULT hr;
-+    //HDC hdc;
++    HBITMAP bitmap;
++    HDC hdc, hdcImage;
 +
 +    DDBLTFX BltFx;
 +
@@ -116,8 +130,8 @@ index 7261d6458bb..bb665c3bc68 100644
 +    desc.dwSize = sizeof(desc);
 +    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
 +    desc.ddsCaps.dwCaps = DDSCAPS_SYSTEMMEMORY | DDSCAPS_TEXTURE;
-+    desc.dwWidth = texture->image->width;
-+    desc.dwHeight = texture->image->height;
++    desc.dwWidth = image->width;
++    desc.dwHeight = image->height;
 +    desc.u1.lPitch = 3;
 +
 +    desc.ddpfPixelFormat.dwSize = sizeof(desc.ddpfPixelFormat);
@@ -128,43 +142,31 @@ index 7261d6458bb..bb665c3bc68 100644
 +    desc.ddpfPixelFormat.u3.dwGBitMask = 0x000003e0;
 +    desc.ddpfPixelFormat.u4.dwBBitMask = 0x0000001f;
 +
-+
 +    hr = IDirectDraw_CreateSurface(ddraw, &desc, &surface, NULL);
-+FIXME("IDirectDraw_CreateSurface %08lx\n", hr);
 +    if (FAILED(hr))
 +        return hr;
 +
-+/*    IDirectDrawSurface_GetDC(surface, &hdc);
++    bitmap = CreateBitmap(image->width, image->height, 1, 1, image->buffer1);
++    if(!bitmap)
 +    {
-+        HDC hdcImage;
-+
-+        hdcImage = CreateCompatibleDC(NULL);
-+        SetDCPenColor(hdcImage, 0xff00ff);
-+        SetDCBrushColor(hdcImage, 0xff00ff);
-+        if(!Ellipse(hdcImage, 0, 0, 200, 200))
-+            FIXME("Ellipse failed\n");
-+
-+        if(!BitBlt(hdc, 0, 0, desc.dwWidth, desc.dwHeight, hdcImage, 0, 0, SRCCOPY))
-+            FIXME("BitBlt failed\n");
-+
-+        DeleteDC(hdcImage);
++        ERR("Failed to create Bitmap\n");
++        IDirectDrawSurface_Release(surface);
++        return E_FAIL;
 +    }
-+    IDirectDrawSurface_ReleaseDC(surface, hdc);*/
 +
-+    memset(&BltFx, 0, sizeof(BltFx));
-+    BltFx.dwSize = sizeof(BltFx);
-+    BltFx.DUMMYUNIONNAME5.dwFillColor = 0x000FF000;
++    hdcImage = CreateCompatibleDC(NULL);
++    SelectObject(hdcImage, bitmap);
 +
-+
-+    //hr = IDirectDrawSurface_Blt(surface, NULL, NULL, NULL, DDBLT_DEPTHFILL, &BltFx);
-+    hr = IDirectDrawSurface_Blt(surface, NULL, NULL, NULL, DDBLT_COLORFILL, &BltFx);
-+    FIXME("IDirectDrawSurface_Blt %08lx\n", hr);
++    IDirectDrawSurface_GetDC(surface, &hdc);
++    BitBlt(hdc, 0, 0, image->width, image->height, hdcImage, 0, 0, SRCCOPY);
++    IDirectDrawSurface_ReleaseDC(surface, hdc);
++    DeleteDC(hdcImage);
++    DeleteObject(hdcImage);
 +
 +    *out = surface;
 +
 +    return hr;
 +}
-+
 +
  static HRESULT WINAPI d3drm_viewport1_Render(IDirect3DRMViewport *iface, IDirect3DRMFrame *frame)
  {
@@ -183,16 +185,20 @@ index 7261d6458bb..bb665c3bc68 100644
 +        if (hr == S_OK)
 +        {
 +            struct d3drm_texture *texture = unsafe_impl_from_IDirect3DRMTexture(drmtexture);
++            if (!texture)
++            {
++                FIXME("Unsupported IDirect3DRMTexture interface\n");
++                return D3DRM_OK;
++            }
 +
 +            if (!texture->surface)
-+                hr = create_surface_from_image(viewport->device->ddraw, texture, &texture->surface);
++                hr = create_surface_from_image(viewport->device->ddraw, texture->image, &texture->surface);
 +
 +            hr = IDirectDrawSurface_Blt(viewport->device->render_target, NULL, texture->surface, NULL, DDBLT_WAIT, NULL);
 +            FIXME("IDirectDrawSurface_BltFast %08lx\n", hr);
 +
 +            IDirect3DRMTexture_Release(drmtexture);
 +        }
-+
 +    }
  
      return D3DRM_OK;
