@@ -1,16 +1,17 @@
-From e7ab3fc90ed420227ab2e94f413cf7f426aefd59 Mon Sep 17 00:00:00 2001
+From 3818954cb61523b6856d5da4ad377a418c53a73d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 22 Jun 2022 10:09:17 +1000
 Subject: [PATCH] d3drm: Implement IDirect3DRMViewport Render
 
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
- dlls/d3drm/Makefile.in     |  2 +-
- dlls/d3drm/d3drm_private.h |  3 ++
- dlls/d3drm/device.c        |  9 +++++
- dlls/d3drm/frame.c         | 10 ++++-
- dlls/d3drm/texture.c       | 15 +++++++
- dlls/d3drm/viewport.c      | 82 +++++++++++++++++++++++++++++++++++++-
- 6 files changed, 117 insertions(+), 4 deletions(-)
+ dlls/d3drm/Makefile.in     |   2 +-
+ dlls/d3drm/d3drm_private.h |   4 ++
+ dlls/d3drm/device.c        |   9 +++
+ dlls/d3drm/frame.c         |   9 +++
+ dlls/d3drm/texture.c       |   9 +++
+ dlls/d3drm/viewport.c      | 110 +++++++++++++++++++++++++++++++++++--
+ 6 files changed, 138 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/d3drm/Makefile.in b/dlls/d3drm/Makefile.in
 index 8daaa426c8f..d243ced546d 100644
@@ -25,11 +26,14 @@ index 8daaa426c8f..d243ced546d 100644
  EXTRADLLFLAGS = -Wb,--prefer-native
  
 diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
-index 7cc5fed45c9..4dbdecaba7a 100644
+index 7cc5fed45c9..5b74535189d 100644
 --- a/dlls/d3drm/d3drm_private.h
 +++ b/dlls/d3drm/d3drm_private.h
-@@ -292,8 +292,11 @@ void d3drm_object_cleanup(IDirect3DRMObject *iface, struct d3drm_object *object)
+@@ -290,10 +290,14 @@ HRESULT d3drm_object_set_name(struct d3drm_object *object, const char *name) DEC
+ void d3drm_object_cleanup(IDirect3DRMObject *iface, struct d3drm_object *object) DECLSPEC_HIDDEN;
+ 
  struct d3drm_frame *unsafe_impl_from_IDirect3DRMFrame(IDirect3DRMFrame *iface) DECLSPEC_HIDDEN;
++struct d3drm_frame *unsafe_impl_from_IDirect3DRMFrame2(IDirect3DRMFrame2 *iface) DECLSPEC_HIDDEN;
  struct d3drm_frame *unsafe_impl_from_IDirect3DRMFrame3(IDirect3DRMFrame3 *iface) DECLSPEC_HIDDEN;
  
 +struct d3drm_device *unsafe_impl_from_IDirect3DRMDevice(IDirect3DRMDevice *iface) DECLSPEC_HIDDEN;
@@ -61,59 +65,51 @@ index 2fc83b4159c..15b788d9f24 100644
  {
      if (!iface)
 diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
-index cf5fe1b7414..9075f47553c 100644
+index cf5fe1b7414..1c6f0520a80 100644
 --- a/dlls/d3drm/frame.c
 +++ b/dlls/d3drm/frame.c
-@@ -3154,9 +3154,15 @@ struct d3drm_frame *unsafe_impl_from_IDirect3DRMFrame(IDirect3DRMFrame *iface)
- {
-     if (!iface)
-         return NULL;
--    assert(iface->lpVtbl == &d3drm_frame1_vtbl);
- 
--    return impl_from_IDirect3DRMFrame(iface);
-+    if (iface->lpVtbl == &d3drm_frame1_vtbl)
-+        return impl_from_IDirect3DRMFrame(iface);
-+    else if (iface->lpVtbl == (void*)&d3drm_frame2_vtbl)
-+        return impl_from_IDirect3DRMFrame2((IDirect3DRMFrame2*)iface);
-+
-+    ERR("invalid IDirect3DRMFrame pointer: %p\n", iface);
-+
-+    return NULL;
+@@ -3159,6 +3159,15 @@ struct d3drm_frame *unsafe_impl_from_IDirect3DRMFrame(IDirect3DRMFrame *iface)
+     return impl_from_IDirect3DRMFrame(iface);
  }
  
++struct d3drm_frame *unsafe_impl_from_IDirect3DRMFrame2(IDirect3DRMFrame2 *iface)
++{
++    if (!iface)
++        return NULL;
++    assert(iface->lpVtbl == &d3drm_frame2_vtbl);
++
++    return impl_from_IDirect3DRMFrame2(iface);
++}
++
  HRESULT d3drm_frame_create(struct d3drm_frame **frame, IUnknown *parent_frame, IDirect3DRM *d3drm)
+ {
+     static const char classname[] = "Frame";
 diff --git a/dlls/d3drm/texture.c b/dlls/d3drm/texture.c
-index 3e4c94fda23..37b72f285dd 100644
+index 3e4c94fda23..2eb249acc74 100644
 --- a/dlls/d3drm/texture.c
 +++ b/dlls/d3drm/texture.c
-@@ -1454,6 +1454,21 @@ static const struct IDirect3DRMTexture3Vtbl d3drm_texture3_vtbl =
+@@ -1454,6 +1454,15 @@ static const struct IDirect3DRMTexture3Vtbl d3drm_texture3_vtbl =
      d3drm_texture3_SetValidationCallback,
  };
  
 +struct d3drm_texture *unsafe_impl_from_IDirect3DRMTexture(IDirect3DRMTexture *iface)
 +{
-+    {
 +    if (!iface)
 +        return NULL;
++    assert(iface->lpVtbl == &d3drm_texture1_vtbl);
 +
-+    if (iface->lpVtbl == &d3drm_texture1_vtbl)
-+        return impl_from_IDirect3DRMTexture(iface);
-+
-+    ERR("invalid IDirect3DRMTexture pointer: %p\n", iface);
-+
-+    return NULL;
-+}
++    return impl_from_IDirect3DRMTexture(iface);;
 +}
 +
  HRESULT d3drm_texture_create(struct d3drm_texture **texture, IDirect3DRM *d3drm)
  {
      static const char classname[] = "Texture";
 diff --git a/dlls/d3drm/viewport.c b/dlls/d3drm/viewport.c
-index 7261d6458bb..3c985cc146b 100644
+index 7261d6458bb..1ead6019bf3 100644
 --- a/dlls/d3drm/viewport.c
 +++ b/dlls/d3drm/viewport.c
-@@ -477,9 +477,89 @@ static HRESULT WINAPI d3drm_viewport2_Render(IDirect3DRMViewport2 *iface, IDirec
-     return D3DRM_OK;
+@@ -470,18 +470,120 @@ static HRESULT WINAPI d3drm_viewport1_Clear(IDirect3DRMViewport *iface)
+     return d3drm_viewport2_Clear(&viewport->IDirect3DRMViewport2_iface, D3DRMCLEAR_ALL);
  }
  
 +static HRESULT create_surface_from_image(IDirectDraw *ddraw, D3DRMIMAGE *image, IDirectDrawSurface **out)
@@ -124,12 +120,10 @@ index 7261d6458bb..3c985cc146b 100644
 +    HBITMAP bitmap;
 +    HDC hdc, hdcImage;
 +
-+    DDBLTFX BltFx;
-+
 +    memset(&desc, 0, sizeof(desc));
 +    desc.dwSize = sizeof(desc);
 +    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
-+    desc.ddsCaps.dwCaps = DDSCAPS_SYSTEMMEMORY | DDSCAPS_TEXTURE;
++    desc.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
 +    desc.dwWidth = image->width;
 +    desc.dwHeight = image->height;
 +    desc.u1.lPitch = 3;
@@ -168,14 +162,9 @@ index 7261d6458bb..3c985cc146b 100644
 +    return hr;
 +}
 +
- static HRESULT WINAPI d3drm_viewport1_Render(IDirect3DRMViewport *iface, IDirect3DRMFrame *frame)
- {
--    FIXME("iface %p, frame %p stub!\n", iface, frame);
-+    struct d3drm_viewport *viewport = impl_from_IDirect3DRMViewport(iface);
-+    struct d3drm_frame *drmframe = unsafe_impl_from_IDirect3DRMFrame(frame);
-+    HRESULT hr;
-+
-+    TRACE("iface %p, frame %p\n", iface, frame);
++static HRESULT viewport_render(struct d3drm_viewport *viewport, struct d3drm_frame *drmframe)
++{
++    HRESULT hr = S_OK;
 +
 +    if (drmframe->backgroundimage)
 +    {
@@ -195,14 +184,55 @@ index 7261d6458bb..3c985cc146b 100644
 +                hr = create_surface_from_image(viewport->device->ddraw, texture->image, &texture->surface);
 +
 +            hr = IDirectDrawSurface_Blt(viewport->device->render_target, NULL, texture->surface, NULL, DDBLT_WAIT, NULL);
-+            FIXME("IDirectDrawSurface_BltFast %08lx\n", hr);
 +
 +            IDirect3DRMTexture_Release(drmtexture);
 +        }
 +    }
++
++    return hr;
++}
++
+ static HRESULT WINAPI d3drm_viewport2_Render(IDirect3DRMViewport2 *iface, IDirect3DRMFrame3 *frame)
+ {
+-    FIXME("iface %p, frame %p stub!\n", iface, frame);
++    struct d3drm_viewport *viewport = impl_from_IDirect3DRMViewport2(iface);
++    struct d3drm_frame *drmframe = unsafe_impl_from_IDirect3DRMFrame3(frame);
++    HRESULT hr;
  
-     return D3DRM_OK;
+-    return D3DRM_OK;
++    TRACE("iface %p, frame %p\n", iface, frame);
++
++    hr = viewport_render(viewport, drmframe);
++
++    return hr;
  }
+ 
+ static HRESULT WINAPI d3drm_viewport1_Render(IDirect3DRMViewport *iface, IDirect3DRMFrame *frame)
+ {
+-    FIXME("iface %p, frame %p stub!\n", iface, frame);
++    IDirect3DRMFrame2 *frame2;
++    struct d3drm_viewport *viewport = impl_from_IDirect3DRMViewport(iface);
++    struct d3drm_frame *drmframe;
++    HRESULT hr;
+ 
+-    return D3DRM_OK;
++    TRACE("iface %p, frame %p\n", iface, frame);
++
++    hr = IDirect3DRMFrame_QueryInterface(frame, &IID_IDirect3DRMFrame2, (void**)&frame2);
++    if(hr == S_OK)
++    {
++        drmframe = unsafe_impl_from_IDirect3DRMFrame2(frame2);
++        IDirect3DRMFrame2_Release(frame2);
++    }
++    else
++        drmframe = unsafe_impl_from_IDirect3DRMFrame(frame);
++
++    hr = viewport_render(viewport, drmframe);
++
++    return hr;
+ }
+ 
+ static HRESULT WINAPI d3drm_viewport2_SetFront(IDirect3DRMViewport2 *iface, D3DVALUE front)
 -- 
 2.35.1
 
