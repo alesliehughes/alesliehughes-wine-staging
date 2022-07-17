@@ -1,17 +1,22 @@
-From 71d91f443a0b2928665b804d43ad0553dc7e64ba Mon Sep 17 00:00:00 2001
+From 75574b0bfd632480da3f3e98ce9cf100cf9d2eb7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 15:21:26 +1000
-Subject: [PATCH 17/17] d3drm: IDirect3DRMFrame2 Move
+Subject: d3drm: IDirect3DRMFrame2 Move
 
----
- dlls/d3drm/frame.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
-index 931250803cb..b06e2794d7f 100644
+index 4a299016012..d375d7f8a52 100644
 --- a/dlls/d3drm/frame.c
 +++ b/dlls/d3drm/frame.c
-@@ -1813,7 +1813,7 @@ static HRESULT WINAPI d3drm_frame2_Move(IDirect3DRMFrame2 *iface, D3DVALUE delta
+@@ -1815,14 +1815,14 @@ static HRESULT WINAPI d3drm_frame3_Move(IDirect3DRMFrame3 *iface, D3DVALUE delta
+ {
+     FIXME("iface %p, delta %.8e stub!\n", iface, delta);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_frame2_Move(IDirect3DRMFrame2 *iface, D3DVALUE delta)
  {
      FIXME("iface %p, delta %.8e stub!\n", iface, delta);
  
@@ -20,6 +25,12 @@ index 931250803cb..b06e2794d7f 100644
  }
  
  static HRESULT WINAPI d3drm_frame1_Move(IDirect3DRMFrame *iface, D3DVALUE delta)
--- 
-2.35.1
-
+@@ -2483,7 +2483,7 @@ static HRESULT WINAPI d3drm_frame3_SetRotation(IDirect3DRMFrame3 *iface,
+     FIXME("iface %p, reference %p, x %.8e, y %.8e, z %.8e, theta %.8e stub!\n",
+             iface, reference, x, y, z, theta);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI d3drm_frame2_SetRotation(IDirect3DRMFrame2 *iface,
