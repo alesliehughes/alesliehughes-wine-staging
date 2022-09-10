@@ -1,0 +1,144 @@
+From cded6dcd492ef2baf15a75342ec2a480cb120413 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 17 Aug 2022 18:28:08 +1000
+Subject: [PATCH] d3dxof: Return only data for requested section.
+
+This isn't completely correct.  This needs to allocated continuus memory
+for each section.
+
+The issue is that if a user maps the data and then modifies the memory after what is returned.
+It possible corrupts the memory next to it.
+
+In the bug below, the string pointer address is increased by one which causes the returned string
+to be incorrect.
+
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=49722
+---
+ dlls/d3dxof/d3dxof.c         | 26 ++++++++++++++++++++++++--
+ dlls/d3dxof/d3dxof_private.h |  3 +++
+ dlls/d3dxof/tests/d3dxof.c   | 14 +++++++++++++-
+ 3 files changed, 40 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/d3dxof/d3dxof.c b/dlls/d3dxof/d3dxof.c
+index 41614d117fe..9fbda3d2748 100644
+--- a/dlls/d3dxof/d3dxof.c
++++ b/dlls/d3dxof/d3dxof.c
+@@ -559,6 +559,8 @@ static ULONG WINAPI IDirectXFileDataImpl_Release(IDirectXFileData *iface)
+     {
+         if (!data->level && !data->from_ref)
+         {
++            if (data->buffer)
++                free(data->buffer);
+             HeapFree(GetProcessHeap(), 0, data->pstrings);
+             if (data->pobj)
+             {
+@@ -618,6 +620,7 @@ static HRESULT WINAPI IDirectXFileDataImpl_GetId(IDirectXFileData* iface, LPGUID
+ static HRESULT WINAPI IDirectXFileDataImpl_GetData(IDirectXFileData* iface, LPCSTR szMember, DWORD* pcbSize, void** ppvData)
+ {
+   IDirectXFileDataImpl *This = impl_from_IDirectXFileData(iface);
++  void *data;
+ 
+   TRACE("(%p/%p)->(%s,%p,%p)\n", This, iface, debugstr_a(szMember), pcbSize, ppvData);
+ 
+@@ -636,14 +639,33 @@ static HRESULT WINAPI IDirectXFileDataImpl_GetData(IDirectXFileData* iface, LPCS
+       return DXFILEERR_BADDATAREFERENCE;
+     }
+     *pcbSize = This->pobj->members[i].size;
+-    *ppvData = This->pobj->root->pdata + This->pobj->members[i].start;
++    data = This->pobj->root->pdata + This->pobj->members[i].start;
+   }
+   else
+   {
+     *pcbSize = This->pobj->size;
+-    *ppvData = This->pobj->root->pdata + This->pobj->pos_data;
++    data = This->pobj->root->pdata + This->pobj->pos_data;
+   }
+ 
++  if(This->buf_size < *pcbSize)
++  {
++    void *buf;
++
++    if(!This->buffer)
++      buf = malloc(*pcbSize);
++    else
++      buf = realloc(This->buffer, *pcbSize);
++
++    if(!buf)
++        return E_OUTOFMEMORY;
++
++    This->buffer = buf;
++    This->buf_size = *pcbSize;
++  }
++
++  memcpy(This->buffer, data, *pcbSize);
++  *ppvData = This->buffer;
++
+   return DXFILE_OK;
+ }
+ 
+diff --git a/dlls/d3dxof/d3dxof_private.h b/dlls/d3dxof/d3dxof_private.h
+index ff29261b608..cca538d98d1 100644
+--- a/dlls/d3dxof/d3dxof_private.h
++++ b/dlls/d3dxof/d3dxof_private.h
+@@ -104,6 +104,9 @@ typedef struct {
+     BOOL from_ref;
+     ULONG level;
+     LPBYTE pstrings;
++
++    void *buffer;
++    DWORD buf_size;
+ } IDirectXFileDataImpl;
+ 
+ typedef struct {
+diff --git a/dlls/d3dxof/tests/d3dxof.c b/dlls/d3dxof/tests/d3dxof.c
+index 820afd87426..8cefaa36826 100644
+--- a/dlls/d3dxof/tests/d3dxof.c
++++ b/dlls/d3dxof/tests/d3dxof.c
+@@ -474,7 +474,7 @@ static void test_CreateEnumObject(void)
+     LPDIRECTXFILEENUMOBJECT lpdxfeo;
+     LPDIRECTXFILEDATA lpdxfd;
+     DXFILELOADMEMORY dxflm;
+-    BYTE* pdata;
++    BYTE* pdata, *pdatabase;
+     DWORD size;
+ 
+     if (!pDirectXFileCreate)
+@@ -504,6 +504,7 @@ static void test_CreateEnumObject(void)
+ 
+     ok(size == 8, "Unexpected data size %lu.\n", size);
+     ok((*((WORD*)pdata) == 1) && (*((WORD*)(pdata+2)) == 2) && (*((DWORD*)(pdata+4)) == 3), "Retrieved data is wrong\n");
++    pdatabase = pdata;
+ 
+     /* Get only "major" member (szMember == "major") */
+     hr = IDirectXFileData_GetData(lpdxfd, "major", &size, (void**)&pdata);
+@@ -512,16 +513,27 @@ static void test_CreateEnumObject(void)
+     ok(size == 2, "Unexpected data size %lu.\n", size);
+     ok(*((WORD*)pdata) == 1, "Retrieved data is wrong (%u instead of 1)\n", *((WORD*)pdata));
+ 
++    /* First memory is same as GetData when NULL is passed in */
++    ok(pdatabase == pdata, "Wrong pointer.\n");
++
+     /* Get only "minor" member (szMember == "minor") */
+     hr = IDirectXFileData_GetData(lpdxfd, "minor", &size, (void**)&pdata);
+     ok(hr == DXFILE_OK, "Unexpected hr %#lx.\n", hr);
+ 
+     ok(size == 2, "Unexpected data size %lu.\n", size);
+     ok(*((WORD*)pdata) == 2, "Retrieved data is wrong (%u instead of 2)\n", *((WORD*)pdata));
++    ok(pdatabase + sizeof(WORD) == pdata, "Wrong pointer.\n");
++
++    /* Writing to data has an effect */
++    *((WORD*)pdata) = 4;
++    hr = IDirectXFileData_GetData(lpdxfd, "minor", &size, (void**)&pdata);
++    ok(hr == DXFILE_OK, "Unexpected hr %#lx.\n", hr);
++    ok(*((WORD*)pdata) == 4, "Retrieved data is wrong (%u instead of 4)\n", *((WORD*)pdata));
+ 
+     /* Get only "flags" member (szMember == "flags") */
+     hr = IDirectXFileData_GetData(lpdxfd, "flags", &size, (void**)&pdata);
+     ok(hr == DXFILE_OK, "Unexpected hr %#lx.\n", hr);
++    ok(pdatabase + (sizeof(WORD) * 2) == pdata, "Wrong pointer.\n");
+ 
+     ok(size == 4, "Unexpected data size %lu.\n", size);
+     ok(*((WORD*)pdata) == 3, "Retrieved data is wrong (%u instead of 3)\n", *((WORD*)pdata));
+-- 
+2.35.1
+
