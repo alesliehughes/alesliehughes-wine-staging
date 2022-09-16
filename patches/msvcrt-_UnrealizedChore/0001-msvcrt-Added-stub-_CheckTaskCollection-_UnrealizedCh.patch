@@ -1,0 +1,124 @@
+From b3f510b469708361651011716b336294ca5563aa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 16 Sep 2022 13:04:13 +1000
+Subject: [PATCH] msvcrt: Added stub
+ ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@
+
+Crazy Machines 3.
+
+---
+ dlls/concrt140/concrt140.spec       |  6 +++---
+ dlls/msvcr100/msvcr100.spec         |  4 ++--
+ dlls/msvcr110/msvcr110.spec         |  6 +++---
+ dlls/msvcr120/msvcr120.spec         |  6 +++---
+ dlls/msvcr120_app/msvcr120_app.spec |  6 +++---
+ dlls/msvcrt/concurrency.c           | 10 ++++++++++
+ 6 files changed, 24 insertions(+), 14 deletions(-)
+
+diff --git a/dlls/concrt140/concrt140.spec b/dlls/concrt140/concrt140.spec
+index 64da684f415..8e9822775dd 100644
+--- a/dlls/concrt140/concrt140.spec
++++ b/dlls/concrt140/concrt140.spec
+@@ -440,9 +440,9 @@
+ @ stub -arch=arm ?_Cancel@_TaskCollection@details@Concurrency@@QAAXXZ
+ @ stub -arch=i386 ?_Cancel@_TaskCollection@details@Concurrency@@QAEXXZ
+ @ stub -arch=win64 ?_Cancel@_TaskCollection@details@Concurrency@@QEAAXXZ
+-@ stub -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ
+-@ stub -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ
+-@ stub -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ
++@ cdecl -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ thiscall -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ cdecl -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
+ @ stub -arch=arm ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAAXXZ
+ @ stub -arch=i386 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAEXXZ
+ @ stub -arch=win64 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AEAAXXZ
+diff --git a/dlls/msvcr100/msvcr100.spec b/dlls/msvcr100/msvcr100.spec
+index c0bbbc5b86d..f5b11512bf1 100644
+--- a/dlls/msvcr100/msvcr100.spec
++++ b/dlls/msvcr100/msvcr100.spec
+@@ -313,8 +313,8 @@
+ @ cdecl -arch=win64 ?_Cancel@_StructuredTaskCollection@details@Concurrency@@QEAAXXZ(ptr) _StructuredTaskCollection__Cancel
+ @ stub -arch=win32 ?_Cancel@_TaskCollection@details@Concurrency@@QAEXXZ
+ @ stub -arch=win64 ?_Cancel@_TaskCollection@details@Concurrency@@QEAAXXZ
+-@ stub -arch=win32 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ
+-@ stub -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ
++@ thiscall -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ cdecl -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
+ @ stub -arch=win32 ?_ConcRT_Assert@details@Concurrency@@YAXPBD0H@Z
+ @ stub -arch=win64 ?_ConcRT_Assert@details@Concurrency@@YAXPEBD0H@Z
+ @ stub -arch=win32 ?_ConcRT_CoreAssert@details@Concurrency@@YAXPBD0H@Z
+diff --git a/dlls/msvcr110/msvcr110.spec b/dlls/msvcr110/msvcr110.spec
+index a272ae98a1c..6e22db56b0a 100644
+--- a/dlls/msvcr110/msvcr110.spec
++++ b/dlls/msvcr110/msvcr110.spec
+@@ -493,9 +493,9 @@
+ @ stub -arch=arm ?_Cancel@_TaskCollection@details@Concurrency@@QAAXXZ
+ @ stub -arch=i386 ?_Cancel@_TaskCollection@details@Concurrency@@QAEXXZ
+ @ stub -arch=win64 ?_Cancel@_TaskCollection@details@Concurrency@@QEAAXXZ
+-@ stub -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ
+-@ stub -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ
+-@ stub -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ
++@ cdecl -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ thiscall -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ cdecl -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
+ @ stub -arch=arm ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAAXXZ
+ @ stub -arch=i386 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAEXXZ
+ @ stub -arch=win64 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AEAAXXZ
+diff --git a/dlls/msvcr120/msvcr120.spec b/dlls/msvcr120/msvcr120.spec
+index d16316e7e05..54309007438 100644
+--- a/dlls/msvcr120/msvcr120.spec
++++ b/dlls/msvcr120/msvcr120.spec
+@@ -490,9 +490,9 @@
+ @ stub -arch=arm ?_Cancel@_TaskCollection@details@Concurrency@@QAAXXZ
+ @ stub -arch=i386 ?_Cancel@_TaskCollection@details@Concurrency@@QAEXXZ
+ @ stub -arch=win64 ?_Cancel@_TaskCollection@details@Concurrency@@QEAAXXZ
+-@ stub -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ
+-@ stub -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ
+-@ stub -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ
++@ cdecl -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ thiscall -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ(ptr) _UnrealizedChore__CheckTaskCollection
++@ cdecl -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ(ptr) _UnrealizedChore__CheckTaskCollection
+ @ stub -arch=arm ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAAXXZ
+ @ stub -arch=i386 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAEXXZ
+ @ stub -arch=win64 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AEAAXXZ
+diff --git a/dlls/msvcr120_app/msvcr120_app.spec b/dlls/msvcr120_app/msvcr120_app.spec
+index aa5d8ccf968..eac6c1b6c8b 100644
+--- a/dlls/msvcr120_app/msvcr120_app.spec
++++ b/dlls/msvcr120_app/msvcr120_app.spec
+@@ -487,9 +487,9 @@
+ @ stub -arch=arm ?_Cancel@_TaskCollection@details@Concurrency@@QAAXXZ
+ @ stub -arch=i386 ?_Cancel@_TaskCollection@details@Concurrency@@QAEXXZ
+ @ stub -arch=win64 ?_Cancel@_TaskCollection@details@Concurrency@@QEAAXXZ
+-@ stub -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ
+-@ stub -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ
+-@ stub -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ
++@ cdecl -arch=arm ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ(ptr) msvcr120.?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ
++@ thiscall -arch=i386 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ(ptr) msvcr120.?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ
++@ cdecl -arch=win64 ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ(ptr) msvcr120.?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ
+ @ stub -arch=arm ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAAXXZ
+ @ stub -arch=i386 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AAEXXZ
+ @ stub -arch=win64 ?_CleanupToken@_StructuredTaskCollection@details@Concurrency@@AEAAXXZ
+diff --git a/dlls/msvcrt/concurrency.c b/dlls/msvcrt/concurrency.c
+index a1c5c635602..3b7603880a3 100644
+--- a/dlls/msvcrt/concurrency.c
++++ b/dlls/msvcrt/concurrency.c
+@@ -1935,6 +1935,16 @@ static void __cdecl chore_wrapper(_UnrealizedChore *chore)
+     __FINALLY_CTX(chore_wrapper_finally, chore)
+ }
+ 
++/* ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAAXXZ */
++/* ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IAEXXZ */
++/* ?_CheckTaskCollection@_UnrealizedChore@details@Concurrency@@IEAAXXZ */
++DEFINE_THISCALL_WRAPPER(_UnrealizedChore__CheckTaskCollection, 4)
++void __thiscall _UnrealizedChore__CheckTaskCollection(
++        _UnrealizedChore *this)
++{
++    FIXME("(%p): stub!\n", this);
++}
++
+ static void __cdecl _StructuredTaskCollection_scheduler_cb(void *data)
+ {
+     ThreadScheduler *scheduler = (ThreadScheduler*)get_current_scheduler();
+-- 
+2.35.1
+
