@@ -1,0 +1,139 @@
+From 1236b7520a47f94101544b958ad06541bc6f2624 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Sep 2022 18:09:15 +1000
+Subject: [PATCH] mfc: Imeplement CWinApp::SetAppID
+
+---
+ dlls/mfc/afxstate.c       | 18 +++++++++++++++++-
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 5 files changed, 25 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 9c74b60a109..ced546a1cfd 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -46,7 +46,11 @@ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
+     FIXME("%p\n", runtime);
+ }
+ 
+-/* CWinAppEx */
++/*
++ * CWinApp
++ * CWinAppEx
++ *
++ */
+ struct c_winappex
+ {
+     BOOL smartupdate;
+@@ -60,4 +64,16 @@ DEFINE_THISCALL_WRAPPER(cwinappex_ctor, 8)
+ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
+ {
+     FIXME("%p, %d\n", winapp, smart_update);
++}
++
++DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDA, 8)
++void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
++{
++    FIXME("%p, %s\n", winapp, debugstr_a(appid));
++}
++
++DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
++void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
++{
++    FIXME("%p, %s\n", winapp, debugstr_w(appid));
+ }
+\ No newline at end of file
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 060b78b67d1..6d724651385 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -24833,7 +24833,7 @@
+ 12688 stub -arch=i386 -noname ?RFX_Text@@YGXPAVCFieldExchange@@PBDPADHHF@Z
+ 12688 stub -arch=win64 -noname ?SetAppID@CAppDestinations@@QEAAXPEBD@Z
+ 12689 stub -arch=i386 -noname ?RFX_Text_Bulk@@YGXPAVCFieldExchange@@PBDPAPA_WPAPAJH@Z
+-12689 stub -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEBD@Z
++12689 cdecl -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetAppIDA
+ 12690 stub -arch=i386 -noname ?RFX_Text_Bulk@@YGXPAVCFieldExchange@@PBDPAPADPAPAJH@Z
+ 12690 stub -arch=win64 -noname ?SetApplicationButton@CMFCRibbonBar@@QEAAXPEAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 12691 stub -arch=i386 -noname ?RGBtoHSL@CDrawingManager@@SGXKPAN00@Z
+@@ -25471,7 +25471,7 @@
+ 13007 stub -arch=win64 -noname ?SetIconsList@CMFCPropertySheet@@QEAAHIHK@Z
+ 13008 stub -arch=i386 -noname ?SetAppID@CAppDestinations@@QAEXPBD@Z
+ 13008 stub -arch=win64 -noname ?SetIconsList@CMFCPropertySheet@@QEAAXPEAU_IMAGELIST@@@Z
+-13009 stub -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPBD@Z
++13009 thiscall -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetAppIDA
+ 13009 stub -arch=win64 -noname ?SetIconsList@CMFCTasksPane@@QEAAHIHK@Z
+ 13010 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 13010 stub -arch=win64 -noname ?SetIconsList@CMFCTasksPane@@QEAAXPEAU_IMAGELIST@@@Z
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index efa61b47686..be5b47b470c 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -24941,7 +24941,7 @@
+ 12742 stub -arch=i386 -noname ?RFX_Single@@YGXPAVCFieldExchange@@PB_WAAM@Z
+ 12742 stub -arch=win64 -noname ?SetAppID@CAppDestinations@@QEAAXPEB_W@Z
+ 12743 stub -arch=i386 -noname ?RFX_Single_Bulk@@YGXPAVCFieldExchange@@PB_WPAPAMPAPAJ@Z
+-12743 stub -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEB_W@Z
++12743 cdecl -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetAppIDW
+ 12744 stub -arch=i386 -noname ?RFX_Text@@YGXPAVCFieldExchange@@PB_WAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@HHF@Z
+ 12744 stub -arch=win64 -noname ?SetApplicationButton@CMFCRibbonBar@@QEAAXPEAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 12745 stub -arch=i386 -noname ?RFX_Text@@YGXPAVCFieldExchange@@PB_WAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@HHF@Z
+@@ -25589,7 +25589,7 @@
+ 13066 stub -arch=win64 -noname ?SetHot@CMFCToolBar@@QEAAHPEAVCMFCToolBarButton@@@Z
+ 13067 stub -arch=i386 -noname ?SetAppID@CAppDestinations@@QAEXPB_W@Z
+ 13067 stub -arch=win64 -noname ?SetHotEdit@CMFCToolBarComboBoxButton@@IEAAXH@Z
+-13068 stub -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPB_W@Z
++13068 thiscall -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetAppIDW
+ 13068 stub -arch=win64 -noname ?SetHotEdit@CMFCToolBarEditBoxButton@@IEAAXH@Z
+ 13069 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 13069 stub -arch=win64 -noname ?SetHotRibbonButton@CMFCToolTipCtrl@@QEAAXPEAVCMFCRibbonButton@@@Z
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 9c16a61a954..7769375f6c2 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -25217,7 +25217,7 @@
+ 12868 stub -arch=i386 -noname ?Run@COleClientItem@@QAEXXZ
+ 12868 stub -arch=win64 -noname ?SetAppID@CAppDestinations@@QEAAXPEBD@Z
+ 12869 stub -arch=i386 -noname ?Run@CWinApp@@UAEHXZ
+-12869 stub -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEBD@Z
++12869 cdecl -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetAppIDA
+ 12870 stub -arch=i386 -noname ?Run@CWinThread@@UAEHXZ
+ 12870 stub -arch=win64 -noname ?SetApplicationButton@CMFCRibbonBar@@QEAAXPEAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 12871 stub -arch=i386 -noname ?RunAutomated@CWinApp@@QAEHXZ
+@@ -25856,7 +25856,7 @@
+ 13187 stub -arch=win64 -noname ?SetIconsList@CMFCPropertySheet@@QEAAXPEAU_IMAGELIST@@@Z
+ 13188 stub -arch=i386 -noname ?SetAppID@CAppDestinations@@QAEXPBD@Z
+ 13188 stub -arch=win64 -noname ?SetIconsList@CMFCTasksPane@@QEAAHIHK@Z
+-13189 stub -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPBD@Z
++13189 thiscall -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetAppIDA
+ 13189 stub -arch=win64 -noname ?SetIconsList@CMFCTasksPane@@QEAAXPEAU_IMAGELIST@@@Z
+ 13190 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 13190 stub -arch=win64 -noname ?SetIconSpacing@CListCtrl@@QEAA?AVCSize@@HH@Z
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index e1ec35b9103..3a1a4a4f401 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -25325,7 +25325,7 @@
+ 12922 stub -arch=i386 -noname ?Right@?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QBE?AV12@H@Z
+ 12922 stub -arch=win64 -noname ?SetAppID@CAppDestinations@@QEAAXPEB_W@Z
+ 12923 stub -arch=i386 -noname ?Rollback@CDaoWorkspace@@QAEXXZ
+-12923 stub -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEB_W@Z
++12923 cdecl -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetAppIDW
+ 12924 stub -arch=i386 -noname ?Rollback@CDatabase@@QAEHXZ
+ 12924 stub -arch=win64 -noname ?SetApplicationButton@CMFCRibbonBar@@QEAAXPEAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 12925 stub -arch=i386 -noname ?RowFromPane@CDockSite@@IBEPAVCDockingPanesRow@@PAVCBasePane@@@Z
+@@ -25974,7 +25974,7 @@
+ 13246 stub -arch=win64 -noname ?SetHotEdit@CMFCToolBarComboBoxButton@@IEAAXH@Z
+ 13247 stub -arch=i386 -noname ?SetAppID@CAppDestinations@@QAEXPB_W@Z
+ 13247 stub -arch=win64 -noname ?SetHotEdit@CMFCToolBarEditBoxButton@@IEAAXH@Z
+-13248 stub -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPB_W@Z
++13248 thiscall -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetAppIDW
+ 13248 stub -arch=win64 -noname ?SetHotRibbonButton@CMFCToolTipCtrl@@QEAAXPEAVCMFCRibbonButton@@@Z
+ 13249 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
+ 13249 stub -arch=win64 -noname ?SetHotTextColor@CMFCToolBar@@SAXK@Z
+-- 
+2.35.1
+
