@@ -1,4 +1,4 @@
-From ec635dcd7fcb2264f8c0b35b4ba03aa61e3558a5 Mon Sep 17 00:00:00 2001
+From a6404d5a245bfe8afe7c800221a5281998fba0d8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 15:32:22 +1000
 Subject: [PATCH] mfc: CWinAppEx Constructor
@@ -46,7 +46,7 @@ index 43f0754fe5e..9c74b60a109 100644
  }
 \ No newline at end of file
 diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
-index 1d2bf2ba5c7..060b78b67d1 100644
+index 82436e903fb..48f86b542a4 100644
 --- a/dlls/mfc110/mfc110.spec
 +++ b/dlls/mfc110/mfc110.spec
 @@ -1439,7 +1439,7 @@
@@ -68,7 +68,7 @@ index 1d2bf2ba5c7..060b78b67d1 100644
  989 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
  989 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
 diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
-index ece2a54ee19..efa61b47686 100644
+index a8395892f12..3a7ced6f6d8 100644
 --- a/dlls/mfc110u/mfc110u.spec
 +++ b/dlls/mfc110u/mfc110u.spec
 @@ -1443,7 +1443,7 @@
@@ -90,7 +90,7 @@ index ece2a54ee19..efa61b47686 100644
  991 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
  991 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
 diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
-index fb0c46b7c1b..9c16a61a954 100644
+index 7f6891b7119..4ca9f50481c 100644
 --- a/dlls/mfc140/mfc140.spec
 +++ b/dlls/mfc140/mfc140.spec
 @@ -1451,7 +1451,7 @@
@@ -112,7 +112,7 @@ index fb0c46b7c1b..9c16a61a954 100644
  995 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
  995 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
 diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
-index 7c576e968a1..e1ec35b9103 100644
+index 2e368cdf28a..5d5d40b0252 100644
 --- a/dlls/mfc140u/mfc140u.spec
 +++ b/dlls/mfc140u/mfc140u.spec
 @@ -1455,7 +1455,7 @@

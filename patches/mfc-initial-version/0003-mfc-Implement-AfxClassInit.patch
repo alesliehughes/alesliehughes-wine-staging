@@ -1,4 +1,4 @@
-From 8eb86bdeb27d5038cc80f8f970630a839415a866 Mon Sep 17 00:00:00 2001
+From ce38ac90aeae5141335fb1458f2d8378a4398da0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 14:41:03 +1000
 Subject: [PATCH] mfc: Implement AfxClassInit
@@ -42,7 +42,7 @@ index aa86e734a93..43f0754fe5e 100644
 +}
 \ No newline at end of file
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index b57eba09433..b11dda60b72 100644
+index 9ba94084576..14baf4fc4b8 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -3157,7 +3157,7 @@
@@ -64,7 +64,7 @@ index b57eba09433..b11dda60b72 100644
  1862 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
  1862 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index a0661859ec5..b87ea3c7bf0 100644
+index 57fddafef2d..0e2cf7abfae 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -3169,7 +3169,7 @@
@@ -86,7 +86,7 @@ index a0661859ec5..b87ea3c7bf0 100644
  1868 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
  1868 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
 diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
-index 686820b064b..1d2bf2ba5c7 100644
+index 41b26860d79..82436e903fb 100644
 --- a/dlls/mfc110/mfc110.spec
 +++ b/dlls/mfc110/mfc110.spec
 @@ -3685,7 +3685,7 @@
@@ -108,7 +108,7 @@ index 686820b064b..1d2bf2ba5c7 100644
  2123 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
  2123 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
 diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
-index fcf1590b0f9..ece2a54ee19 100644
+index 30699b7b6cf..a8395892f12 100644
 --- a/dlls/mfc110u/mfc110u.spec
 +++ b/dlls/mfc110u/mfc110u.spec
 @@ -3697,7 +3697,7 @@
@@ -130,7 +130,7 @@ index fcf1590b0f9..ece2a54ee19 100644
  2129 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
  2129 stub -arch=win64 -noname ?AfxEndThread@@YAXIH@Z
 diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
-index fbeb2935e70..fb0c46b7c1b 100644
+index 25f3501f447..7f6891b7119 100644
 --- a/dlls/mfc140/mfc140.spec
 +++ b/dlls/mfc140/mfc140.spec
 @@ -3783,7 +3783,7 @@
@@ -152,7 +152,7 @@ index fbeb2935e70..fb0c46b7c1b 100644
  2173 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
  2173 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
 diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
-index dc0376da6a0..7c576e968a1 100644
+index f72a72fca98..2e368cdf28a 100644
 --- a/dlls/mfc140u/mfc140u.spec
 +++ b/dlls/mfc140u/mfc140u.spec
 @@ -3795,7 +3795,7 @@
@@ -174,7 +174,7 @@ index dc0376da6a0..7c576e968a1 100644
  2179 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
  2179 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
 diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
-index 068458283aa..e16750fba79 100644
+index 2d72c0dba7b..b8232e3cca7 100644
 --- a/dlls/mfc42/mfc42.spec
 +++ b/dlls/mfc42/mfc42.spec
 @@ -1826,7 +1826,7 @@
@@ -187,7 +187,7 @@ index 068458283aa..e16750fba79 100644
  1169 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
  1169 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@UtagSIZE@@@Z
 diff --git a/dlls/mfc42u/mfc42u.spec b/dlls/mfc42u/mfc42u.spec
-index c4256092046..c571cd275cf 100644
+index 1f78b5382f3..399455ff12c 100644
 --- a/dlls/mfc42u/mfc42u.spec
 +++ b/dlls/mfc42u/mfc42u.spec
 @@ -2164,7 +2164,7 @@
@@ -235,7 +235,7 @@ index 2d1e7436450..2869d56329f 100644
  1029 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
  1030 stub -arch=i386 -noname ?AfxConnectionAdvise@@YGHPAUIUnknown@@ABU_GUID@@0HPAK@Z
 diff --git a/dlls/mfc80/mfc80.spec b/dlls/mfc80/mfc80.spec
-index baaba8f0672..ea5e4f6b390 100644
+index c536eea9d21..624ae49ea89 100644
 --- a/dlls/mfc80/mfc80.spec
 +++ b/dlls/mfc80/mfc80.spec
 @@ -1548,7 +1548,7 @@
@@ -257,7 +257,7 @@ index baaba8f0672..ea5e4f6b390 100644
  1047 stub -arch=win64 -noname ?AfxComparePath@@YAHPEBD0@Z
  1048 stub -arch=i386 -noname ?AfxDlgProc@@YGHPAUHWND__@@IIJ@Z
 diff --git a/dlls/mfc80u/mfc80u.spec b/dlls/mfc80u/mfc80u.spec
-index f60c2a0ad67..e0be8ebb45f 100644
+index 6ca414d072b..74ed3cfbf8f 100644
 --- a/dlls/mfc80u/mfc80u.spec
 +++ b/dlls/mfc80u/mfc80u.spec
 @@ -1540,7 +1540,7 @@
@@ -279,7 +279,7 @@ index f60c2a0ad67..e0be8ebb45f 100644
  1043 stub -arch=win64 -noname ?AfxComparePath@@YAHPEB_W0@Z
  1044 stub -arch=i386 -noname ?AfxDllGetClassObject@@YGJABU_GUID@@0PAPAX@Z
 diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
-index 22744f6093e..e6b36d35a1f 100644
+index be21ff0bc53..0851dacf64d 100644
 --- a/dlls/mfc90/mfc90.spec
 +++ b/dlls/mfc90/mfc90.spec
 @@ -1579,7 +1579,7 @@
@@ -301,7 +301,7 @@ index 22744f6093e..e6b36d35a1f 100644
  1070 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
  1070 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
 diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
-index 5dc51de2621..7cb5be662ad 100644
+index 8f89f513b3d..b5b2e6ed8a9 100644
 --- a/dlls/mfc90u/mfc90u.spec
 +++ b/dlls/mfc90u/mfc90u.spec
 @@ -1581,7 +1581,7 @@

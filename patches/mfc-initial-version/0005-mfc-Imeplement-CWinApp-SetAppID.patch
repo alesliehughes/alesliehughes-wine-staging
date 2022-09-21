@@ -1,4 +1,4 @@
-From 1236b7520a47f94101544b958ad06541bc6f2624 Mon Sep 17 00:00:00 2001
+From f272161dbc744003ddda57435a06e79979e6c1eb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 18:09:15 +1000
 Subject: [PATCH] mfc: Imeplement CWinApp::SetAppID
@@ -47,7 +47,7 @@ index 9c74b60a109..ced546a1cfd 100644
  }
 \ No newline at end of file
 diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
-index 060b78b67d1..6d724651385 100644
+index 48f86b542a4..8aa751b7bb1 100644
 --- a/dlls/mfc110/mfc110.spec
 +++ b/dlls/mfc110/mfc110.spec
 @@ -24833,7 +24833,7 @@
@@ -69,7 +69,7 @@ index 060b78b67d1..6d724651385 100644
  13010 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
  13010 stub -arch=win64 -noname ?SetIconsList@CMFCTasksPane@@QEAAXPEAU_IMAGELIST@@@Z
 diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
-index efa61b47686..be5b47b470c 100644
+index 3a7ced6f6d8..412f4483a87 100644
 --- a/dlls/mfc110u/mfc110u.spec
 +++ b/dlls/mfc110u/mfc110u.spec
 @@ -24941,7 +24941,7 @@
@@ -91,7 +91,7 @@ index efa61b47686..be5b47b470c 100644
  13069 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
  13069 stub -arch=win64 -noname ?SetHotRibbonButton@CMFCToolTipCtrl@@QEAAXPEAVCMFCRibbonButton@@@Z
 diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
-index 9c16a61a954..7769375f6c2 100644
+index 4ca9f50481c..65a59d19a5e 100644
 --- a/dlls/mfc140/mfc140.spec
 +++ b/dlls/mfc140/mfc140.spec
 @@ -25217,7 +25217,7 @@
@@ -113,7 +113,7 @@ index 9c16a61a954..7769375f6c2 100644
  13190 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
  13190 stub -arch=win64 -noname ?SetIconSpacing@CListCtrl@@QEAA?AVCSize@@HH@Z
 diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
-index e1ec35b9103..3a1a4a4f401 100644
+index 5d5d40b0252..5d38119baaa 100644
 --- a/dlls/mfc140u/mfc140u.spec
 +++ b/dlls/mfc140u/mfc140u.spec
 @@ -25325,7 +25325,7 @@

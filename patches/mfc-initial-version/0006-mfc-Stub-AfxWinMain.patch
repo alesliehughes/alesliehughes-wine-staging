@@ -1,4 +1,4 @@
-From ee69b8f676a2e44e5905e8e48738598840066ab8 Mon Sep 17 00:00:00 2001
+From 9266e97293de81c66a55d2dec887252397a63859 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Sep 2022 18:02:18 +1000
 Subject: [PATCH] mfc: Stub AfxWinMain
@@ -46,7 +46,7 @@ index ced546a1cfd..9649c853170 100644
   * CWinApp
   * CWinAppEx
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index b11dda60b72..8ec16bb75da 100644
+index 14baf4fc4b8..267ec7acade 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -3569,7 +3569,7 @@
@@ -68,7 +68,7 @@ index b11dda60b72..8ec16bb75da 100644
  2089 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2089 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index b87ea3c7bf0..bee96b42069 100644
+index 0e2cf7abfae..b1bcc3b4815 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -3571,7 +3571,7 @@
@@ -90,7 +90,7 @@ index b87ea3c7bf0..bee96b42069 100644
  2090 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2090 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
-index 6d724651385..2ffbd30606a 100644
+index 8aa751b7bb1..3c683329819 100644
 --- a/dlls/mfc110/mfc110.spec
 +++ b/dlls/mfc110/mfc110.spec
 @@ -4115,7 +4115,7 @@
@@ -112,7 +112,7 @@ index 6d724651385..2ffbd30606a 100644
  2354 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2354 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
-index be5b47b470c..4f5105375c7 100644
+index 412f4483a87..e8db463f085 100644
 --- a/dlls/mfc110u/mfc110u.spec
 +++ b/dlls/mfc110u/mfc110u.spec
 @@ -4119,7 +4119,7 @@
@@ -134,7 +134,7 @@ index be5b47b470c..4f5105375c7 100644
  2356 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2356 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
-index 7769375f6c2..13ef0d36330 100644
+index 65a59d19a5e..7b9086e8176 100644
 --- a/dlls/mfc140/mfc140.spec
 +++ b/dlls/mfc140/mfc140.spec
 @@ -4221,7 +4221,7 @@
@@ -156,7 +156,7 @@ index 7769375f6c2..13ef0d36330 100644
  2408 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2408 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
-index 3a1a4a4f401..8c504d19a0b 100644
+index 5d38119baaa..842d75b25d2 100644
 --- a/dlls/mfc140u/mfc140u.spec
 +++ b/dlls/mfc140u/mfc140u.spec
 @@ -4225,7 +4225,7 @@
@@ -178,7 +178,7 @@ index 3a1a4a4f401..8c504d19a0b 100644
  2410 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2410 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
-index e16750fba79..0da98b4f6b6 100644
+index b8232e3cca7..abbba308f4e 100644
 --- a/dlls/mfc42/mfc42.spec
 +++ b/dlls/mfc42/mfc42.spec
 @@ -2349,7 +2349,7 @@
@@ -200,7 +200,7 @@ index e16750fba79..0da98b4f6b6 100644
  1596 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  1597 stub -arch=i386 -noname ?AllocLongBinary@@YAXAAVCLongBinary@@K@Z
 diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
-index e6b36d35a1f..5e2497290ec 100644
+index 0851dacf64d..49cbacfcc62 100644
 --- a/dlls/mfc90/mfc90.spec
 +++ b/dlls/mfc90/mfc90.spec
 @@ -1961,7 +1961,7 @@
@@ -222,7 +222,7 @@ index e6b36d35a1f..5e2497290ec 100644
  1277 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  1277 stub -arch=win64 -noname ?Append@?$CSimpleStringT@D$00@ATL@@QEAAXAEBV12@@Z
 diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
-index 7cb5be662ad..f940e924874 100644
+index b5b2e6ed8a9..cdd5d291d1d 100644
 --- a/dlls/mfc90u/mfc90u.spec
 +++ b/dlls/mfc90u/mfc90u.spec
 @@ -1953,7 +1953,7 @@
