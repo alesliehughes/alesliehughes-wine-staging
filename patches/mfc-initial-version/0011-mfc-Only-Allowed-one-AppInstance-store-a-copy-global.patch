@@ -1,0 +1,33 @@
+From dd989f7877525c10c120225e3a0a6e72b86fc1b6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 26 Sep 2022 12:59:47 +1000
+Subject: [PATCH] mfc: Only Allowed one AppInstance, store a copy globally
+
+---
+ dlls/mfc/afxstate.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index ffac7f14582..ca02e93ffc8 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -135,6 +135,7 @@ struct c_winappex
+ #endif
+ };
+ 
++static struct c_winappex *single_app;
+ /*
+  * ??0CWinAppEx@@QAE@H@Z
+  * ??0CWinAppEx@@QEAA@H@Z
+@@ -143,6 +144,8 @@ DEFINE_THISCALL_WRAPPER(cwinappex_ctor, 8)
+ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
+ {
+     FIXME("%p, %d\n", winapp, smart_update);
++
++    single_app = winapp;
+ }
+ 
+ 
+-- 
+2.37.2
+

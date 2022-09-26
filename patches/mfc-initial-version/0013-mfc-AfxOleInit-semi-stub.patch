@@ -1,0 +1,246 @@
+From 050ccd8eb79b0bb78cc2d924eed21ebbc6980bc7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 26 Sep 2022 20:40:38 +1000
+Subject: [PATCH] mfc: AfxOleInit semi-stub
+
+---
+ dlls/mfc/afxstate.c       | 16 ++++++++++++++++
+ dlls/mfc100/Makefile.in   |  1 +
+ dlls/mfc100u/Makefile.in  |  1 +
+ dlls/mfc110/Makefile.in   |  1 +
+ dlls/mfc110u/Makefile.in  |  1 +
+ dlls/mfc140/Makefile.in   |  1 +
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/Makefile.in  |  1 +
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ dlls/mfc42/Makefile.in    |  1 +
+ dlls/mfc42u/Makefile.in   |  1 +
+ dlls/mfc71/Makefile.in    |  1 +
+ dlls/mfc71u/Makefile.in   |  1 +
+ dlls/mfc80/Makefile.in    |  1 +
+ dlls/mfc80u/Makefile.in   |  1 +
+ dlls/mfc90/Makefile.in    |  1 +
+ dlls/mfc90u/Makefile.in   |  1 +
+ 17 files changed, 34 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 411083d17c4..564d546455b 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -20,6 +20,7 @@
+ #include "wine/asm.h"
+ 
+ #include "winbase.h"
++#include "ole2.h"
+ 
+ typedef void (*vtable_ptr)(void);
+ 
+@@ -137,6 +138,21 @@ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
+     FIXME("%p\n", runtime);
+ }
+ 
++BOOL WINAPI AfxOleInit(void)
++{
++    HRESULT hr;
++
++    FIXME("Semi-stub\n");
++
++    hr = OleInitialize(NULL);
++    if(FAILED(hr) && hr != RPC_E_CHANGED_MODE)
++        return FALSE;
++
++    /* TODO - IMessageFilter */
++
++    return TRUE;
++}
++
+ typedef enum _AFX_HELP_TYPE
+ {
+     afxWinHelp = 0,
+diff --git a/dlls/mfc100/Makefile.in b/dlls/mfc100/Makefile.in
+index e3e75048414..0e6ee2d66cb 100644
+--- a/dlls/mfc100/Makefile.in
++++ b/dlls/mfc100/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc100.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0e00
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc100u/Makefile.in b/dlls/mfc100u/Makefile.in
+index f24423b142b..2798dc3791f 100644
+--- a/dlls/mfc100u/Makefile.in
++++ b/dlls/mfc100u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc100u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0e00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc110/Makefile.in b/dlls/mfc110/Makefile.in
+index 89dfa2a7199..81ae4606afe 100644
+--- a/dlls/mfc110/Makefile.in
++++ b/dlls/mfc110/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc110.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0b00
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc110u/Makefile.in b/dlls/mfc110u/Makefile.in
+index bd9ef63bd1e..0f382dfad1e 100644
+--- a/dlls/mfc110u/Makefile.in
++++ b/dlls/mfc110u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc110u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0b00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc140/Makefile.in b/dlls/mfc140/Makefile.in
+index 9218f263801..5f8f8e83a8f 100644
+--- a/dlls/mfc140/Makefile.in
++++ b/dlls/mfc140/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc140.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0e00
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index acb41959f3d..646a7889e3e 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -4019,7 +4019,7 @@
+ 2266 stub -arch=i386 -noname ?AfxInitRichEdit@@YGHXZ
+ 2266 stub -arch=win64 -noname ?AfxOleGetUserCtrl@@YAHXZ
+ 2267 stub -arch=i386 -noname ?AfxInitRichEdit2@@YGHXZ
+-2267 stub -arch=win64 -noname ?AfxOleInit@@YAHXZ
++2267 cdecl -arch=win64 -noname ?AfxOleInit@@YAHXZ() AfxOleInit
+ 2268 stub -arch=i386 -noname ?AfxInitThread@@YGXXZ
+ 2268 stub -arch=win64 -noname ?AfxOleInprocRegisterHelper@@YAHPEAUHKEY__@@0H@Z
+ 2269 stub -arch=i386 -noname ?AfxInternalIsIdleMessage@@YAHPAUtagMSG@@@Z
+@@ -4086,7 +4086,7 @@
+ 2299 stub -arch=win64 -noname ?AfxPropPageCallback@@YAIPEAUHWND__@@IPEAU_PROPSHEETPAGEA@@@Z
+ 2300 stub -arch=i386 -noname ?AfxOleGetUserCtrl@@YGHXZ
+ 2300 stub -arch=win64 -noname ?AfxPropSheetCallback@@YAHPEAUHWND__@@I_J@Z
+-2301 stub -arch=i386 -noname ?AfxOleInit@@YGHXZ
++2301 stdcall -arch=i386 -noname ?AfxOleInit@@YGHXZ() AfxOleInit
+ 2301 stub -arch=win64 -noname ?AfxPumpMessage@@YAHXZ
+ 2302 stub -arch=i386 -noname ?AfxOleInprocRegisterHelper@@YGHPAUHKEY__@@0H@Z
+ 2302 stub -arch=win64 -noname ?AfxReadStringLength@@YA_KAEAVCArchive@@AEAH@Z
+diff --git a/dlls/mfc140u/Makefile.in b/dlls/mfc140u/Makefile.in
+index fc3c2ca31b0..7a14795adb0 100644
+--- a/dlls/mfc140u/Makefile.in
++++ b/dlls/mfc140u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc140u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0e00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 8820c62c95f..01cbf248f2e 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -4031,7 +4031,7 @@
+ 2272 stub -arch=i386 -noname ?AfxInitRichEdit2@@YGHXZ
+ 2272 stub -arch=win64 -noname ?AfxOleGetUserCtrl@@YAHXZ
+ 2273 stub -arch=i386 -noname ?AfxInitRichEdit5@@YGHXZ
+-2273 stub -arch=win64 -noname ?AfxOleInit@@YAHXZ
++2273 cdecl -arch=win64 -noname ?AfxOleInit@@YAHXZ() AfxOleInit
+ 2274 stub -arch=i386 -noname ?AfxInitThread@@YGXXZ
+ 2274 stub -arch=win64 -noname ?AfxOleInprocRegisterHelper@@YAHPEAUHKEY__@@0H@Z
+ 2275 stub -arch=i386 -noname ?AfxInternalIsIdleMessage@@YAHPAUtagMSG@@@Z
+@@ -4098,7 +4098,7 @@
+ 2305 stub -arch=win64 -noname ?AfxPropPageCallback@@YAIPEAUHWND__@@IPEAU_PROPSHEETPAGEW@@@Z
+ 2306 stub -arch=i386 -noname ?AfxOleGetUserCtrl@@YGHXZ
+ 2306 stub -arch=win64 -noname ?AfxPropSheetCallback@@YAHPEAUHWND__@@I_J@Z
+-2307 stub -arch=i386 -noname ?AfxOleInit@@YGHXZ
++2307 stdcall -arch=i386 -noname ?AfxOleInit@@YGHXZ() AfxOleInit
+ 2307 stub -arch=win64 -noname ?AfxPumpMessage@@YAHXZ
+ 2308 stub -arch=i386 -noname ?AfxOleInprocRegisterHelper@@YGHPAUHKEY__@@0H@Z
+ 2308 stub -arch=win64 -noname ?AfxReadStringLength@@YA_KAEAVCArchive@@AEAH@Z
+diff --git a/dlls/mfc42/Makefile.in b/dlls/mfc42/Makefile.in
+index 02d9269de6a..a84ebed6c0c 100644
+--- a/dlls/mfc42/Makefile.in
++++ b/dlls/mfc42/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc42.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0600
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc42u/Makefile.in b/dlls/mfc42u/Makefile.in
+index bf451d534c0..3d2a51ab3dd 100644
+--- a/dlls/mfc42u/Makefile.in
++++ b/dlls/mfc42u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc42u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0600 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc71/Makefile.in b/dlls/mfc71/Makefile.in
+index 7d18122506b..9ce74c619e0 100644
+--- a/dlls/mfc71/Makefile.in
++++ b/dlls/mfc71/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc71.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0701
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc71u/Makefile.in b/dlls/mfc71u/Makefile.in
+index c99bdbfd41f..d118fc0a544 100644
+--- a/dlls/mfc71u/Makefile.in
++++ b/dlls/mfc71u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc71u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0701
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc80/Makefile.in b/dlls/mfc80/Makefile.in
+index fa69eee51a8..3f43ad06b2e 100644
+--- a/dlls/mfc80/Makefile.in
++++ b/dlls/mfc80/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc80.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0800
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc80u/Makefile.in b/dlls/mfc80u/Makefile.in
+index 4659b80d223..41344e3a9c9 100644
+--- a/dlls/mfc80u/Makefile.in
++++ b/dlls/mfc80u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc80u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0800 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc90/Makefile.in b/dlls/mfc90/Makefile.in
+index af09761eccd..8599ffbea91 100644
+--- a/dlls/mfc90/Makefile.in
++++ b/dlls/mfc90/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc90.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0900
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+diff --git a/dlls/mfc90u/Makefile.in b/dlls/mfc90u/Makefile.in
+index b0a41ec6824..ebe07ac23a1 100644
+--- a/dlls/mfc90u/Makefile.in
++++ b/dlls/mfc90u/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE = mfc90u.dll
++IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0900 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+-- 
+2.37.2
+

@@ -1,10 +1,10 @@
-From 59f5d9c4084a3f0478a12e0a3c2c7f8f6a5292b2 Mon Sep 17 00:00:00 2001
+From a03caa84f54992f33026485103a52ce8a01ac589 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Sep 2022 14:01:41 +1000
-Subject: [PATCH 10/10] mfc: Use TCHAR parameter for AfxWinMain
+Subject: [PATCH] mfc: Use TCHAR parameter for AfxWinMain
 
 ---
- dlls/mfc/afxstate.c       | 16 +++++++++++++---
+ dlls/mfc/afxstate.c       | 40 +++++++++++++++++++++------------------
  dlls/mfc100/mfc100.spec   |  4 ++--
  dlls/mfc100u/mfc100u.spec |  4 ++--
  dlls/mfc110/mfc110.spec   |  4 ++--
@@ -14,10 +14,10 @@ Subject: [PATCH 10/10] mfc: Use TCHAR parameter for AfxWinMain
  dlls/mfc42/mfc42.spec     |  4 ++--
  dlls/mfc90/mfc90.spec     |  4 ++--
  dlls/mfc90u/mfc90u.spec   |  4 ++--
- 10 files changed, 31 insertions(+), 21 deletions(-)
+ 10 files changed, 40 insertions(+), 36 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index dc0917313d8..3d507e89c82 100644
+index 7e0b2901d5e..ffac7f14582 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -31,6 +31,15 @@
@@ -36,30 +36,57 @@ index dc0917313d8..3d507e89c82 100644
  struct afx_module_state
  {
      void *data;
-@@ -58,8 +67,9 @@ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
-  * ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
-  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
-  */
--int WINAPI AfxWinMainW(HINSTANCE inst, HINSTANCE prev, WCHAR *cmdline, int show)
-+int WINAPI AfxWinMain(HINSTANCE inst, HINSTANCE prev, TCHAR *cmdline, int show)
- {
-+    FIXME("cmdline %s\n", debugstr_tchar(cmdline));
-     return 0;
+@@ -54,24 +63,6 @@ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
+     FIXME("%p\n", runtime);
  }
  
-@@ -67,10 +77,10 @@ int WINAPI AfxWinMainW(HINSTANCE inst, HINSTANCE prev, WCHAR *cmdline, int show)
-  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-  */
--int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
-+/*int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
- {
-     return 0;
+-/*
+- * ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
+- * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
+- */
+-int WINAPI AfxWinMainW(HINSTANCE inst, HINSTANCE prev, WCHAR *cmdline, int show)
+-{
+-    return 0;
 -}
-+}*/
- 
+-
+-/*
+- * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
+- * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
+- */
+-int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
+-{
+-    return 0;
+-}
+-
  typedef enum _AFX_HELP_TYPE
  {
+     afxWinHelp = 0,
+@@ -154,6 +145,7 @@ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
+     FIXME("%p, %d\n", winapp, smart_update);
+ }
+ 
++
+ /*
+  * ??1CWinAppEx@@UAE@XZ
+  * ??1CWinAppEx@@UEAA@XZ
+@@ -174,4 +166,16 @@ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
+ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
+ {
+     FIXME("%p, %s\n", winapp, debugstr_w(appid));
++}
++
++/*
++ * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
++ * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
++ * ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
++ * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
++ */
++int WINAPI AfxWinMain(HINSTANCE inst, HINSTANCE prev, TCHAR *cmdline, int show)
++{
++    FIXME("cmdline %s\n", debugstr_tchar(cmdline));
++    return 0;
+ }
+\ No newline at end of file
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
 index bb19e20d0f9..69f52bfef64 100644
 --- a/dlls/mfc100/mfc100.spec

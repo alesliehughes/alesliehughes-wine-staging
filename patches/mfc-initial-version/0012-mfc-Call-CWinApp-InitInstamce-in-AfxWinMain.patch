@@ -1,0 +1,289 @@
+From 825f0bbff66849ef22157a45e7c00a1d8b365cc8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 26 Sep 2022 17:31:18 +1000
+Subject: [PATCH] mfc: Call CWinApp::InitInstamce in AfxWinMain
+
+---
+ dlls/mfc/afxstate.c       | 185 +++++++++++++++++++++++++++++++++++++-
+ dlls/mfc140/mfc140.spec   |   4 +-
+ dlls/mfc140u/mfc140u.spec |   4 +-
+ 3 files changed, 188 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index ca02e93ffc8..411083d17c4 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -21,6 +21,80 @@
+ 
+ #include "winbase.h"
+ 
++typedef void (*vtable_ptr)(void);
++
++#ifdef __ASM_USE_THISCALL_WRAPPER
++
++#define CALL_VTBL_FUNC(this, off, ret, type, args) ((ret (WINAPI*)type)&vtbl_wrapper_##off)args
++
++extern void *vtbl_wrapper_0;
++extern void *vtbl_wrapper_4;
++extern void *vtbl_wrapper_8;
++extern void *vtbl_wrapper_12;
++extern void *vtbl_wrapper_16;
++extern void *vtbl_wrapper_20;
++extern void *vtbl_wrapper_24;
++extern void *vtbl_wrapper_28;
++extern void *vtbl_wrapper_32;
++extern void *vtbl_wrapper_36;
++extern void *vtbl_wrapper_40;
++extern void *vtbl_wrapper_44;
++extern void *vtbl_wrapper_48;
++extern void *vtbl_wrapper_88;
++
++#define DEFINE_VTBL_WRAPPER(off)            \
++    __ASM_GLOBAL_FUNC(vtbl_wrapper_ ## off, \
++        "popl %eax\n\t"                     \
++        "popl %ecx\n\t"                     \
++        "pushl %eax\n\t"                    \
++        "movl 0(%ecx), %eax\n\t"            \
++        "jmp *" #off "(%eax)\n\t")
++
++DEFINE_VTBL_WRAPPER(0);
++DEFINE_VTBL_WRAPPER(4);
++DEFINE_VTBL_WRAPPER(8);
++DEFINE_VTBL_WRAPPER(12);
++DEFINE_VTBL_WRAPPER(16);
++DEFINE_VTBL_WRAPPER(20);
++DEFINE_VTBL_WRAPPER(24);
++DEFINE_VTBL_WRAPPER(28);
++DEFINE_VTBL_WRAPPER(32);
++DEFINE_VTBL_WRAPPER(36);
++DEFINE_VTBL_WRAPPER(40);
++DEFINE_VTBL_WRAPPER(44);
++DEFINE_VTBL_WRAPPER(48);
++DEFINE_VTBL_WRAPPER(88);
++
++#else
++
++#define CALL_VTBL_FUNC(this, off, ret, type, args) ((ret (__thiscall***)type)this)[0][off/4]args
++
++#endif
++
++#ifdef _WIN64
++
++#define VTABLE_ADD_FUNC(name) "\t.quad " THISCALL_NAME(name) "\n"
++
++#define __ASM_VTABLE(name,funcs) \
++    __asm__(".data\n" \
++            "\t.balign 8\n" \
++            "\t.globl " __ASM_NAME(#name "_vtable") "\n" \
++            __ASM_NAME(#name "_vtable") ":\n" \
++            funcs "\n\t.text")
++
++#else
++
++#define VTABLE_ADD_FUNC(name) "\t.long " THISCALL_NAME(name) "\n"
++
++#define __ASM_VTABLE(name,funcs) \
++    __asm__(".data\n" \
++            "\t.balign 4\n" \
++            "\t.globl " __ASM_NAME(#name "_vtable") "\n" \
++            __ASM_NAME(#name "_vtable") ":\n" \
++            funcs "\n\t.text")
++
++#endif /* _WIN64 */
++
+ /*
+  *  We really need TCHAR to effectively support MFC.
+  *  Each version of the library has an ASCII and unicode version of the library.  Duplicating the
+@@ -77,7 +151,7 @@ typedef enum _AFX_HELP_TYPE
+ struct c_winappex
+ {
+     /* CObject */
+-    void **vtbl;
++    const vtable_ptr *vtable;
+ 
+     /* CCmdTarget */
+     void *cmdtarget[8];
+@@ -135,6 +209,8 @@ struct c_winappex
+ #endif
+ };
+ 
++extern const vtable_ptr CWinAppEx_vtable;
++
+ static struct c_winappex *single_app;
+ /*
+  * ??0CWinAppEx@@QAE@H@Z
+@@ -146,6 +222,8 @@ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
+     FIXME("%p, %d\n", winapp, smart_update);
+ 
+     single_app = winapp;
++
++    winapp->vtable = &CWinAppEx_vtable;
+ }
+ 
+ 
+@@ -171,6 +249,109 @@ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
+     FIXME("%p, %s\n", winapp, debugstr_w(appid));
+ }
+ 
++#define call_CWinAppEx_InitInstance(this) CALL_VTBL_FUNC(this, 88, int, (struct c_winappex*), (this))
++
++DEFINE_THISCALL_WRAPPER(cwinappex_InitInstance, 4)
++int __thiscall cwinappex_InitInstance(struct c_winappex *winapp)
++{
++    FIXME("%p\n", winapp);
++
++    return 0;
++}
++
++DEFINE_THISCALL_WRAPPER(cwinappex_dtor, 4)
++void __thiscall cwinappex_unk(struct c_winappex *winapp)
++{
++    FIXME("%p\n", winapp);
++}
++
++__ASM_BLOCK_BEGIN(CWinAppEx_vtables)
++    __ASM_VTABLE(CWinAppEx,
++            VTABLE_ADD_FUNC(cwinappex_unk)  // 0 GetRuntimeClass
++            VTABLE_ADD_FUNC(cwinappex_dtor) // 1 Destructor
++            VTABLE_ADD_FUNC(cwinappex_unk) //  2 Serialize
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnCmdMsg
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnFinalRelease
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnIsInvokeAllowed
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetDispatxchIID
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetTypeInfoCount
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetTypeLibCache
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetTypeLib
++            VTABLE_ADD_FUNC(cwinappex_unk) // 10 GetMessageMap
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetCommandMap
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetDispatchMap
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetConnectionMap
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetEventSinkMap
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnCreateAggregates
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnInterfaceHook
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetExtraConnectionPoints
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetConnectionHooks
++            VTABLE_ADD_FUNC(cwinappex_InitInstance) // InitInstance - 19
++            VTABLE_ADD_FUNC(cwinappex_unk) // Run
++            VTABLE_ADD_FUNC(cwinappex_unk) // PreTranslateMessage
++            VTABLE_ADD_FUNC(cwinappex_unk) // PumpMessage
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnIdle
++            VTABLE_ADD_FUNC(cwinappex_unk) // IsIdleMessage
++            VTABLE_ADD_FUNC(cwinappex_unk) // ExitInstance
++            VTABLE_ADD_FUNC(cwinappex_unk) // ProcessWndProcException
++            VTABLE_ADD_FUNC(cwinappex_unk) // ProcessMessageFilter
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetMainWnd
++            VTABLE_ADD_FUNC(cwinappex_unk) // Delete
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetProfileIntW
++            VTABLE_ADD_FUNC(cwinappex_unk) // WriteProfileInt
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetProfileStringW
++            VTABLE_ADD_FUNC(cwinappex_unk) // WriteProfileStringW
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetProfileBinary
++            VTABLE_ADD_FUNC(cwinappex_unk) // WriteProfileBinary
++            VTABLE_ADD_FUNC(cwinappex_unk) // InitLibld
++            VTABLE_ADD_FUNC(cwinappex_unk) // Register
++            VTABLE_ADD_FUNC(cwinappex_unk) // Unregister
++            VTABLE_ADD_FUNC(cwinappex_unk) // OpenDocumentFile   // 42
++            VTABLE_ADD_FUNC(cwinappex_unk) // OpenDocumentFile   // 43
++            VTABLE_ADD_FUNC(cwinappex_unk) // AddToRecentFileList // 44
++            VTABLE_ADD_FUNC(cwinappex_unk) // InitApplication
++            VTABLE_ADD_FUNC(cwinappex_unk) // SaveAllModified
++            VTABLE_ADD_FUNC(cwinappex_unk) // DoMessageBox
++            VTABLE_ADD_FUNC(cwinappex_unk) // DoWaitCursor
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnDDECommand
++            VTABLE_ADD_FUNC(cwinappex_unk) // WinHelp
++            VTABLE_ADD_FUNC(cwinappex_unk) // HTMLHelpW
++            VTABLE_ADD_FUNC(cwinappex_unk) // WinHelpInternal
++            VTABLE_ADD_FUNC(cwinappex_unk) // RegisterWithRestartManager
++            VTABLE_ADD_FUNC(cwinappex_unk) // RegisterWithRestartManager (2nd) // 54
++            VTABLE_ADD_FUNC(cwinappex_unk) // ApplicationRecoveryCallback
++            VTABLE_ADD_FUNC(cwinappex_unk) // SupportResetartManager
++            VTABLE_ADD_FUNC(cwinappex_unk) // SupportApplicationRecovery
++            VTABLE_ADD_FUNC(cwinappex_unk) // SupportAutosaveRestart
++            VTABLE_ADD_FUNC(cwinappex_unk) // SupportAutosaveAtInterval
++            VTABLE_ADD_FUNC(cwinappex_unk) // ReopenPreviousFilesAtRestart // 60
++            VTABLE_ADD_FUNC(cwinappex_unk) // RestorePreviousFilesAtRestart
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetApplicationRestartFlags
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetApplicationRecoveryParameter
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetApplicationRecoveryPingInterval
++            VTABLE_ADD_FUNC(cwinappex_unk) // GetDataRecoveryHandler
++            VTABLE_ADD_FUNC(cwinappex_unk) // IsTaskinteractionEnabled
++            VTABLE_ADD_FUNC(cwinappex_unk) // RestartInstance
++            VTABLE_ADD_FUNC(cwinappex_unk) // LoadAppLangResourceDLL
++            VTABLE_ADD_FUNC(cwinappex_unk) // LoadSysPolicies
++            VTABLE_ADD_FUNC(cwinappex_unk) // LoadState
++            VTABLE_ADD_FUNC(cwinappex_unk) // CleanState
++            VTABLE_ADD_FUNC(cwinappex_unk) // SaveState
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnViewDoubleClick
++            VTABLE_ADD_FUNC(cwinappex_unk) // ShowPopupMenu
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnAppContextHelp
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnWorkspaceIdle
++            VTABLE_ADD_FUNC(cwinappex_unk) // OnClosingMainFrame
++            VTABLE_ADD_FUNC(cwinappex_unk) // PreLoadState
++            VTABLE_ADD_FUNC(cwinappex_unk) // LoadCustomState
++            VTABLE_ADD_FUNC(cwinappex_unk) // PreSaveState
++            VTABLE_ADD_FUNC(cwinappex_unk) // SaveCustomState
++            VTABLE_ADD_FUNC(cwinappex_unk) // LoadWindowPlacement
++            VTABLE_ADD_FUNC(cwinappex_unk) // StoreWindowPlacement
++            VTABLE_ADD_FUNC(cwinappex_unk) // ReloadWindowPlacement
++        );
++__ASM_BLOCK_END
++
+ /*
+  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
+  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
+@@ -180,5 +361,7 @@ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
+ int WINAPI AfxWinMain(HINSTANCE inst, HINSTANCE prev, TCHAR *cmdline, int show)
+ {
+     FIXME("cmdline %s\n", debugstr_tchar(cmdline));
++
++    call_CWinAppEx_InitInstance(single_app);
+     return 0;
+ }
+\ No newline at end of file
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 7cab2a28877..acb41959f3d 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -14851,7 +14851,7 @@
+ 7684 stub -arch=i386 -noname ?GetTypeInfoCount@XAmbientProps@COleControlSite@@UAGJPAI@Z
+ 7684 stub -arch=win64 -noname ?InitInstance@COleControlModule@@UEAAHXZ
+ 7685 stub -arch=i386 -noname ?GetTypeInfoCount@XEventSink@COleControlSite@@UAGJPAI@Z
+-7685 stub -arch=win64 -noname ?InitInstance@CWinApp@@UEAAHXZ
++7685 cdecl -arch=win64 -noname ?InitInstance@CWinApp@@UEAAHXZ(ptr) cwinappex_InitInstance
+ 7686 stub -arch=i386 -noname ?GetTypeInfoOfGuid@CCmdTarget@@QAEJKABU_GUID@@PAPAUITypeInfo@@@Z
+ 7686 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 7687 stub -arch=i386 -noname ?GetTypeLib@CCmdTarget@@UAEJKPAPAUITypeLib@@@Z
+@@ -15402,7 +15402,7 @@
+ 7959 stub -arch=win64 -noname ?IsRollUp@CPaneFrameWnd@@UEBAHXZ
+ 7960 stub -arch=i386 -noname ?InitInstance@COleControlModule@@UAEHXZ
+ 7960 stub -arch=win64 -noname ?IsRootPaneContainerVisible@CPaneContainerManager@@UEBAHXZ
+-7961 stub -arch=i386 -noname ?InitInstance@CWinApp@@UAEHXZ
++7961 thiscall -arch=i386 -noname ?InitInstance@CWinApp@@UAEHXZ(ptr) cwinappex_InitInstance
+ 7961 stub -arch=win64 -noname ?IsRunning@XOleItemContainer@COleLinkingDoc@@UEAAJPEA_W@Z
+ 7962 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7962 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCPopupMenu@@MEAAHXZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index d363840b5ee..8820c62c95f 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -14913,7 +14913,7 @@
+ 7715 stub -arch=i386 -noname ?GetTypeInfoCount@CDHtmlEventSink@@UAGJPAI@Z
+ 7715 stub -arch=win64 -noname ?InitInstance@COleControlModule@@UEAAHXZ
+ 7716 stub -arch=i386 -noname ?GetTypeInfoCount@COleDispatchImpl@@UAGJPAI@Z
+-7716 stub -arch=win64 -noname ?InitInstance@CWinApp@@UEAAHXZ
++7716 cdecl -arch=win64 -noname ?InitInstance@CWinApp@@UEAAHXZ(ptr) cwinappex_InitInstance
+ 7717 stub -arch=i386 -noname ?GetTypeInfoCount@XAccessible@CMFCBaseAccessibleObject@@UAGJPAI@Z
+ 7717 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 7718 stub -arch=i386 -noname ?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z
+@@ -15474,7 +15474,7 @@
+ 7995 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCPopupMenu@@MEAAHXZ
+ 7996 stub -arch=i386 -noname ?InitInstance@COleControlModule@@UAEHXZ
+ 7996 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+-7997 stub -arch=i386 -noname ?InitInstance@CWinApp@@UAEHXZ
++7997 thiscall -arch=i386 -noname ?InitInstance@CWinApp@@UAEHXZ(ptr) cwinappex_InitInstance
+ 7997 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCPopupMenu@@MEAAHXZ
+ 7998 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7998 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+-- 
+2.37.2
+

@@ -1,0 +1,341 @@
+From 75db84e08108720e71f9fb45336ff513b3f3b0ac Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 27 Sep 2022 08:16:35 +1000
+Subject: [PATCH] mfc: CWinApp Constructor
+
+---
+ dlls/mfc/afxstate.c       | 14 ++++++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ dlls/mfc42/mfc42.spec     |  4 ++--
+ dlls/mfc42u/mfc42u.spec   |  4 ++--
+ dlls/mfc71/mfc71.spec     |  2 +-
+ dlls/mfc71u/mfc71u.spec   |  2 +-
+ dlls/mfc80/mfc80.spec     |  4 ++--
+ dlls/mfc80u/mfc80u.spec   |  4 ++--
+ dlls/mfc90/mfc90.spec     |  4 ++--
+ dlls/mfc90u/mfc90u.spec   |  4 ++--
+ 15 files changed, 40 insertions(+), 26 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 564d546455b..1beae3e4b4d 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -253,6 +253,20 @@ void __thiscall cwinappex_dtor(struct c_winappex *winapp)
+     FIXME("%p\n", winapp);
+ }
+ 
++/*
++ * ??0CWinApp@@QAE@PBD@Z
++ * ??0CWinApp@@QEAA@PEBD@Z
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_ctor, 8)
++void __thiscall cwinapp_ctor(struct c_winappex *winapp, const TCHAR *name)
++{
++    FIXME("%p, %s\n", winapp, debugstr_tchar(name));
++
++    single_app = winapp;
++
++    winapp->vtable = &CWinAppEx_vtable;
++}
++
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDA, 8)
+ void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
+ {
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 69f52bfef64..40cc2f2b24f 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -1235,7 +1235,7 @@
+ 875 stub -arch=i386 -noname ??0CTestCmdUI@@QAE@XZ
+ 875 stub -arch=win64 -noname ??0CVSListBoxEditCtrl@@QEAA@XZ
+ 876 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+-876 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
++876 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z(ptr ptr) cwinapp_ctor
+ 877 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+ 877 stub -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z
+ 878 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+@@ -1258,7 +1258,7 @@
+ 886 stub -arch=win64 -noname ??1?$CSimpleStringT@_W$00@ATL@@QEAA@XZ
+ 887 stub -arch=i386 -noname ??0CVSListBoxEditCtrl@@QAE@XZ
+ 887 stub -arch=win64 -noname ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ
+-888 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++888 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinapp_ctor
+ 888 stub -arch=win64 -noname ??1?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAA@XZ
+ 889 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
+ 889 stub -arch=win64 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 0a17bed63a6..8e3ccd413b7 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -1239,7 +1239,7 @@
+ 877 stub -arch=i386 -noname ??0CTestCmdUI@@QAE@XZ
+ 877 stub -arch=win64 -noname ??0CVSListBoxEditCtrl@@QEAA@XZ
+ 878 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+-878 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
++878 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z(ptr ptr) cwinapp_ctor
+ 879 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+ 879 stub -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z
+ 880 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+@@ -1262,7 +1262,7 @@
+ 888 stub -arch=win64 -noname ??1?$CSimpleStringT@_W$00@ATL@@QEAA@XZ
+ 889 stub -arch=i386 -noname ??0CVSListBoxEditCtrl@@QAE@XZ
+ 889 stub -arch=win64 -noname ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ
+-890 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
++890 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z(ptr ptr) cwinapp_ctor
+ 890 stub -arch=win64 -noname ??1?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAA@XZ
+ 891 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
+ 891 stub -arch=win64 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index dcb41e4130c..99c64c61684 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -1437,7 +1437,7 @@
+ 974 stub -arch=i386 -noname ??0CTestCmdUI@@QAE@XZ
+ 974 stub -arch=win64 -noname ??0CVSListBoxEditCtrl@@QEAA@XZ
+ 975 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+-975 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
++975 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z(ptr ptr) cwinapp_ctor
+ 976 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+ 976 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 977 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+@@ -1460,7 +1460,7 @@
+ 985 stub -arch=win64 -noname ??0PAGE_INFO@CPreviewView@@QEAA@XZ
+ 986 stub -arch=i386 -noname ??0CVSListBoxEditCtrl@@QAE@XZ
+ 986 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+-987 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++987 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinapp_ctor
+ 987 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+ 988 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 988 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index b357a653892..97d9edb9fc5 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -1441,7 +1441,7 @@
+ 976 stub -arch=i386 -noname ??0CTestCmdUI@@QAE@XZ
+ 976 stub -arch=win64 -noname ??0CVSListBoxEditCtrl@@QEAA@XZ
+ 977 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+-977 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
++977 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z(ptr ptr) cwinapp_ctor
+ 978 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+ 978 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 979 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+@@ -1464,7 +1464,7 @@
+ 987 stub -arch=win64 -noname ??0PAGE_INFO@CPreviewView@@QEAA@XZ
+ 988 stub -arch=i386 -noname ??0CVSListBoxEditCtrl@@QAE@XZ
+ 988 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+-989 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
++989 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z(ptr ptr) cwinapp_ctor
+ 989 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+ 990 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 990 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 646a7889e3e..ced17c8550a 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -1449,7 +1449,7 @@
+ 980 stub -arch=i386 -noname ??0CTestCmdUI@@QAE@XZ
+ 980 stub -arch=win64 -noname ??0CVSListBoxEditCtrl@@QEAA@XZ
+ 981 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+-981 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
++981 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z(ptr ptr) cwinapp_ctor
+ 982 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+ 982 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 983 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+@@ -1472,7 +1472,7 @@
+ 991 stub -arch=win64 -noname ??0PAGE_INFO@CPreviewView@@QEAA@XZ
+ 992 stub -arch=i386 -noname ??0CVSListBoxEditCtrl@@QAE@XZ
+ 992 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+-993 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++993 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinapp_ctor
+ 993 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+ 994 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 994 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 01cbf248f2e..e57abdc137a 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -1453,7 +1453,7 @@
+ 982 stub -arch=i386 -noname ??0CTestCmdUI@@QAE@XZ
+ 982 stub -arch=win64 -noname ??0CVSListBoxEditCtrl@@QEAA@XZ
+ 983 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+-983 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
++983 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z(ptr ptr) cwinapp_ctor
+ 984 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+ 984 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 985 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+@@ -1476,7 +1476,7 @@
+ 993 stub -arch=win64 -noname ??0PAGE_INFO@CPreviewView@@QEAA@XZ
+ 994 stub -arch=i386 -noname ??0CVSListBoxEditCtrl@@QAE@XZ
+ 994 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+-995 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
++995 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z(ptr ptr) cwinapp_ctor
+ 995 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+ 996 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 996 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
+index 3d4d80248bd..b0254daa67e 100644
+--- a/dlls/mfc42/mfc42.spec
++++ b/dlls/mfc42/mfc42.spec
+@@ -612,7 +612,7 @@
+ 559 stub -arch=win64 -noname ??0CPropertySheet@@QEAA@IPEAVCWnd@@I@Z
+ 560 stub -arch=i386 -noname ??0CView@@IAE@XZ
+ 560 stub -arch=win64 -noname ??0CPropertySheet@@QEAA@PEBDPEAVCWnd@@I@Z
+-561 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++561 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinapp_ctor
+ 561 stub -arch=win64 -noname ??0CPropertySheet@@QEAA@XZ
+ 562 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 562 stub -arch=win64 -noname ??0CPropertySheetEx@@QEAA@IPEAVCWnd@@IPEAUHBITMAP__@@PEAUHPALETTE__@@1@Z
+@@ -809,7 +809,7 @@
+ 658 stub -arch=i386 -noname ??1CEnumArray@@UAE@XZ
+ 658 stub -arch=win64 -noname ??0CWaitCursor@@QEAA@XZ
+ 659 stub -arch=i386 -noname ??1CEnumConnPoints@@UAE@XZ
+-659 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
++659 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z(ptr ptr) cwinapp_ctor
+ 660 stub -arch=i386 -noname ??1CEnumFormatEtc@@UAE@XZ
+ 660 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 661 stub -arch=i386 -noname ??1CEnumOleVerb@@UAE@XZ
+diff --git a/dlls/mfc42u/mfc42u.spec b/dlls/mfc42u/mfc42u.spec
+index 399455ff12c..e1394bd07a1 100644
+--- a/dlls/mfc42u/mfc42u.spec
++++ b/dlls/mfc42u/mfc42u.spec
+@@ -612,7 +612,7 @@
+ 559 stub -arch=win64 -noname ??0CPropertySheet@@QEAA@IPEAVCWnd@@I@Z
+ 560 stub -arch=i386 -noname ??0CView@@IAE@XZ
+ 560 stub -arch=win64 -noname ??0CPropertySheet@@QEAA@PEBGPEAVCWnd@@I@Z
+-561 stub -arch=i386 -noname ??0CWinApp@@QAE@PBG@Z
++561 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBG@Z(ptr ptr) cwinapp_ctor
+ 561 stub -arch=win64 -noname ??0CPropertySheet@@QEAA@XZ
+ 562 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 562 stub -arch=win64 -noname ??0CPropertySheetEx@@QEAA@IPEAVCWnd@@IPEAUHBITMAP__@@PEAUHPALETTE__@@1@Z
+@@ -809,7 +809,7 @@
+ 658 stub -arch=i386 -noname ??1CEnumArray@@UAE@XZ
+ 658 stub -arch=win64 -noname ??0CWaitCursor@@QEAA@XZ
+ 659 stub -arch=i386 -noname ??1CEnumConnPoints@@UAE@XZ
+-659 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBG@Z
++659 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBG@Z(ptr ptr) cwinapp_ctor
+ 660 stub -arch=i386 -noname ??1CEnumFormatEtc@@UAE@XZ
+ 660 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 661 stub -arch=i386 -noname ??1CEnumOleVerb@@UAE@XZ
+diff --git a/dlls/mfc71/mfc71.spec b/dlls/mfc71/mfc71.spec
+index 657f5a7a6ea..c7e5f9fe9d8 100644
+--- a/dlls/mfc71/mfc71.spec
++++ b/dlls/mfc71/mfc71.spec
+@@ -308,7 +308,7 @@
+ 563 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+ 564 stub -arch=i386 -noname ??0CUIntArray@@QAE@XZ
+ 565 stub -arch=i386 -noname ??0CView@@IAE@XZ
+-566 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++566 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinappex_ctor
+ 567 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 568 stub -arch=i386 -noname ??0CWindowlessDC@@QAE@PAUHDC__@@AAVCPoint@@@Z
+ 569 stub -arch=i386 -noname ??0CWinThread@@QAE@P6AIPAX@Z0@Z
+diff --git a/dlls/mfc71u/mfc71u.spec b/dlls/mfc71u/mfc71u.spec
+index 2869d56329f..d562b4018cb 100644
+--- a/dlls/mfc71u/mfc71u.spec
++++ b/dlls/mfc71u/mfc71u.spec
+@@ -308,7 +308,7 @@
+ 563 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+ 564 stub -arch=i386 -noname ??0CUIntArray@@QAE@XZ
+ 565 stub -arch=i386 -noname ??0CView@@IAE@XZ
+-566 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
++566 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z(ptr ptr) cwinapp_ctor
+ 567 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 568 stub -arch=i386 -noname ??0CWindowlessDC@@QAE@PAUHDC__@@AAVCPoint@@@Z
+ 569 stub -arch=i386 -noname ??0CWinThread@@QAE@P6AIPAX@Z0@Z
+diff --git a/dlls/mfc80/mfc80.spec b/dlls/mfc80/mfc80.spec
+index 624ae49ea89..d9cfceed745 100644
+--- a/dlls/mfc80/mfc80.spec
++++ b/dlls/mfc80/mfc80.spec
+@@ -618,7 +618,7 @@
+ 564 stub -arch=win64 -noname ??0CStatusBar@@QEAA@XZ
+ 565 stub -arch=i386 -noname ??0CView@@IAE@XZ
+ 565 stub -arch=win64 -noname ??0CStdioFile@@QEAA@PEAU_iobuf@@@Z
+-566 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++566 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinapp_ctor
+ 566 stub -arch=win64 -noname ??0CStdioFile@@QEAA@PEBDI@Z
+ 567 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 567 stub -arch=win64 -noname ??0CStdioFile@@QEAA@XZ
+@@ -641,7 +641,7 @@
+ 576 stub -arch=i386 -noname ??1?$CSimpleStringT@D$00@ATL@@QAE@XZ
+ 576 stub -arch=win64 -noname ??0CView@@IEAA@XZ
+ 577 stub -arch=i386 -noname ??1?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAE@XZ
+-577 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
++577 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z(ptr ptr) cwinapp_ctor
+ 578 stub -arch=i386 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QAE@XZ
+ 578 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 579 stub -arch=i386 -noname ??1_AFX_THREAD_STATE@@UAE@XZ
+diff --git a/dlls/mfc80u/mfc80u.spec b/dlls/mfc80u/mfc80u.spec
+index 74ed3cfbf8f..762d96b8da6 100644
+--- a/dlls/mfc80u/mfc80u.spec
++++ b/dlls/mfc80u/mfc80u.spec
+@@ -618,7 +618,7 @@
+ 564 stub -arch=win64 -noname ??0CStatusBar@@QEAA@XZ
+ 565 stub -arch=i386 -noname ??0CView@@IAE@XZ
+ 565 stub -arch=win64 -noname ??0CStdioFile@@QEAA@PEAU_iobuf@@@Z
+-566 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
++566 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z(ptr ptr) cwinapp_ctor
+ 566 stub -arch=win64 -noname ??0CStdioFile@@QEAA@PEB_WI@Z
+ 567 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 567 stub -arch=win64 -noname ??0CStdioFile@@QEAA@XZ
+@@ -641,7 +641,7 @@
+ 576 stub -arch=i386 -noname ??1?$CSimpleStringT@D$00@ATL@@QAE@XZ
+ 576 stub -arch=win64 -noname ??0CView@@IEAA@XZ
+ 577 stub -arch=i386 -noname ??1?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAE@XZ
+-577 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
++577 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z(ptr ptr) cwinapp_ctor
+ 578 stub -arch=i386 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QAE@XZ
+ 578 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 579 stub -arch=i386 -noname ??1_AFX_THREAD_STATE@@UAE@XZ
+diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
+index e0b0815db46..a4e5663c864 100644
+--- a/dlls/mfc90/mfc90.spec
++++ b/dlls/mfc90/mfc90.spec
+@@ -641,7 +641,7 @@
+ 576 stub -arch=i386 -noname ??0CStatusBar@@QAE@XZ
+ 576 stub -arch=win64 -noname ??0CView@@IEAA@XZ
+ 577 stub -arch=i386 -noname ??0CStdioFile@@QAE@PAU_iobuf@@@Z
+-577 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
++577 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z(ptr ptr) cwinapp_ctor
+ 578 stub -arch=i386 -noname ??0CStdioFile@@QAE@PBDI@Z
+ 578 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 579 stub -arch=i386 -noname ??0CStdioFile@@QAE@XZ
+@@ -664,7 +664,7 @@
+ 587 stub -arch=win64 -noname ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ
+ 588 stub -arch=i386 -noname ??0CView@@IAE@XZ
+ 588 stub -arch=win64 -noname ??1?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAA@XZ
+-589 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
++589 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z(ptr ptr) cwinapp_ctor
+ 589 stub -arch=win64 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ
+ 590 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 590 stub -arch=win64 -noname ??1_AFX_THREAD_STATE@@UEAA@XZ
+diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
+index f41c8a3ab82..b1fbb16d8cd 100644
+--- a/dlls/mfc90u/mfc90u.spec
++++ b/dlls/mfc90u/mfc90u.spec
+@@ -641,7 +641,7 @@
+ 576 stub -arch=i386 -noname ??0CStatusBar@@QAE@XZ
+ 576 stub -arch=win64 -noname ??0CView@@IEAA@XZ
+ 577 stub -arch=i386 -noname ??0CStdioFile@@QAE@PAU_iobuf@@@Z
+-577 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
++577 cdecl -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z(ptr ptr) cwinapp_ctor
+ 578 stub -arch=i386 -noname ??0CStdioFile@@QAE@PB_WI@Z
+ 578 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 579 stub -arch=i386 -noname ??0CStdioFile@@QAE@XZ
+@@ -664,7 +664,7 @@
+ 587 stub -arch=win64 -noname ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ
+ 588 stub -arch=i386 -noname ??0CView@@IAE@XZ
+ 588 stub -arch=win64 -noname ??1?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAA@XZ
+-589 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
++589 thiscall -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z(ptr ptr) cwinapp_ctor
+ 589 stub -arch=win64 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ
+ 590 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 590 stub -arch=win64 -noname ??1_AFX_THREAD_STATE@@UEAA@XZ
+-- 
+2.37.2
+

@@ -1,15 +1,8 @@
-From c3620b2240dd4924c23e54f4b41ba8415175401d Mon Sep 17 00:00:00 2001
+From b1ac49808c9ec4179411e4199e18f57f886e8c0e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 18:09:15 +1000
-Subject: [PATCH 06/10] mfc: Imeplement CWinApp::SetAppID
+Subject: mfc: Imeplement CWinApp::SetAppID
 
----
- dlls/mfc/afxstate.c       | 18 +++++++++++++++++-
- dlls/mfc110/mfc110.spec   |  4 ++--
- dlls/mfc110u/mfc110u.spec |  4 ++--
- dlls/mfc140/mfc140.spec   |  4 ++--
- dlls/mfc140u/mfc140u.spec |  4 ++--
- 5 files changed, 25 insertions(+), 9 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
 index 9c74b60a109..ced546a1cfd 100644
@@ -46,6 +39,50 @@ index 9c74b60a109..ced546a1cfd 100644
 +    FIXME("%p, %s\n", winapp, debugstr_w(appid));
  }
 \ No newline at end of file
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 14baf4fc4b8..a791c500850 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -26221,7 +26221,7 @@
+ 13494 stub -arch=i386 -noname ?GetSmartDockingTheme@CMFCVisualManagerVS2008@@UAE?AW4AFX_SMARTDOCK_THEME@@XZ
+ 13494 stub -arch=win64 -noname ?SetAppID@CAppDestinations@@QEAAXPEBD@Z
+ 13495 stub -arch=i386 -noname ?GetTabFrameColors@CMFCVisualManagerVS2008@@UAEXPBVCMFCBaseTabCtrl@@AAK11111AAPAVCBrush@@2@Z
+-13495 stub -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEBD@Z
++13495 cdecl -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEBD@Z(ptr wstr) cwinapp_SetAppIDA
+ 13496 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManagerVS2008@@SGPAUCRuntimeClass@@XZ
+ 13496 stub -arch=win64 -noname ?SetBackgroundColor@XPreviewHandlerVisuals@CDocument@@UEAAJK@Z
+ 13497 stub -arch=i386 -noname ?HighlightButton@CMFCAutoHideButton@@UAEXH@Z
+@@ -26816,7 +26816,7 @@
+ 13865 stub -arch=i386 -noname ?RemoveDestination@CAppDestinations@@QAEHPAUIUnknown@@@Z
+ 13867 stub -arch=i386 -noname ?ReSubclassControl@CMFCControlContainer@@QAEHPAUHWND__@@GAAVCWnd@@@Z
+ 13868 stub -arch=i386 -noname ?SetAppID@CAppDestinations@@QAEXPBD@Z
+-13869 stub -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPBD@Z
++13869 thiscall -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetAppIDA
+ 13870 stub -arch=i386 -noname ?SetBackgroundColor@XPreviewHandlerVisuals@CDocument@@UAGJK@Z
+ 13871 stub -arch=i386 -noname ?SetBoolValue@CMFCFilterChunkValueImpl@@UAEJABU_tagpropertykey@@FW4tagCHUNKSTATE@@KKKW4tagCHUNK_BREAKTYPE@@@Z
+ 13872 stub -arch=i386 -noname ?SetBoolValue@CMFCFilterChunkValueImpl@@UAEJABU_tagpropertykey@@HW4tagCHUNKSTATE@@KKKW4tagCHUNK_BREAKTYPE@@@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 0e2cf7abfae..3ae9d9d7899 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -26383,7 +26383,7 @@
+ 13576 stub -arch=i386 -noname ?Draw@CSmartDockingGroupGuide@@MAEXAAVCDC@@H@Z
+ 13576 stub -arch=win64 -noname ?SetAppID@CAppDestinations@@QEAAXPEB_W@Z
+ 13577 stub -arch=i386 -noname ?DrawCentralGroupGuides@CSmartDockingGroupGuidesManager@@IAEXAAVCDC@@AAVCBrush@@1VCRect@@@Z
+-13577 stub -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEB_W@Z
++13577 cdecl -arch=win64 -noname ?SetAppID@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetAppIDW
+ 13578 stub -arch=i386 -noname ?DrawRotated@CDrawingManager@@QAEXVCRect@@AAVCDC@@H@Z
+ 13578 stub -arch=win64 -noname ?SetBackgroundColor@XPreviewHandlerVisuals@CDocument@@UEAAJK@Z
+ 13579 stub -arch=i386 -noname ?GetRuntimeClass@CMFCVisualManagerVS2008@@UBEPAUCRuntimeClass@@XZ
+@@ -26983,7 +26983,7 @@
+ 13952 stub -arch=i386 -noname ?RemoveDestination@CAppDestinations@@QAEHPAUIUnknown@@@Z
+ 13954 stub -arch=i386 -noname ?ReSubclassControl@CMFCControlContainer@@QAEHPAUHWND__@@GAAVCWnd@@@Z
+ 13955 stub -arch=i386 -noname ?SetAppID@CAppDestinations@@QAEXPB_W@Z
+-13956 stub -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPB_W@Z
++13956 thiscall -arch=i386 -noname ?SetAppID@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetAppIDW
+ 13957 stub -arch=i386 -noname ?SetBackgroundColor@XPreviewHandlerVisuals@CDocument@@UAGJK@Z
+ 13958 stub -arch=i386 -noname ?SetBoolValue@CMFCFilterChunkValueImpl@@UAEJABU_tagpropertykey@@FW4tagCHUNKSTATE@@KKKW4tagCHUNK_BREAKTYPE@@@Z
+ 13959 stub -arch=i386 -noname ?SetBoolValue@CMFCFilterChunkValueImpl@@UAEJABU_tagpropertykey@@HW4tagCHUNKSTATE@@KKKW4tagCHUNK_BREAKTYPE@@@Z
 diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
 index 48f86b542a4..8aa751b7bb1 100644
 --- a/dlls/mfc110/mfc110.spec
@@ -134,6 +171,3 @@ index 5d5d40b0252..5d38119baaa 100644
  13248 stub -arch=win64 -noname ?SetHotRibbonButton@CMFCToolTipCtrl@@QEAAXPEAVCMFCRibbonButton@@@Z
  13249 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
  13249 stub -arch=win64 -noname ?SetHotTextColor@CMFCToolBar@@SAXK@Z
--- 
-2.35.1
-

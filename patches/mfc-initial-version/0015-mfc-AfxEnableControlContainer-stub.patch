@@ -1,0 +1,332 @@
+From 655a9764db0e44155c982aecdaa10d6d0df46604 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 27 Sep 2022 11:12:37 +1000
+Subject: [PATCH] mfc: AfxEnableControlContainer stub
+
+---
+ dlls/mfc/afxstate.c       | 14 ++++++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  2 +-
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ dlls/mfc42/mfc42.spec     |  4 ++--
+ dlls/mfc42u/mfc42u.spec   |  4 ++--
+ dlls/mfc71/mfc71.spec     |  2 +-
+ dlls/mfc71u/mfc71u.spec   |  2 +-
+ dlls/mfc80/mfc80.spec     |  4 ++--
+ dlls/mfc80u/mfc80u.spec   |  4 ++--
+ dlls/mfc90/mfc90.spec     |  4 ++--
+ dlls/mfc90u/mfc90u.spec   |  4 ++--
+ 15 files changed, 39 insertions(+), 25 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 1beae3e4b4d..ff7fd00887b 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -153,6 +153,20 @@ BOOL WINAPI AfxOleInit(void)
+     return TRUE;
+ }
+ 
++/*
++ * ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++ * ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++ *
++ * This Functions has a default value (NULL) for its parameter .  So many
++ *  examples around have it called without one.
++ */
++void CDECL AfxEnableControlContainer(void *manager /* COccManager * */)
++{
++    TRACE("\n");
++    if(manager)
++        FIXME("Unsupported parameter poccManager\n");
++}
++
+ typedef enum _AFX_HELP_TYPE
+ {
+     afxWinHelp = 0,
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 40cc2f2b24f..c0687499c29 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -3206,7 +3206,7 @@
+ 1862 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
+ 1862 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+ 1863 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+-1863 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1863 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1864 stub -arch=i386 -noname ?AfxConnectionAdvise@@YGHPAUIUnknown@@ABU_GUID@@0HPAK@Z
+ 1864 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 1865 stub -arch=i386 -noname ?AfxConnectionUnadvise@@YGHPAUIUnknown@@ABU_GUID@@0HK@Z
+@@ -3258,7 +3258,7 @@
+ 1888 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEBDPEADI@Z
+ 1889 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 1889 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+-1890 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1890 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1890 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+ 1891 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1891 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEBDAEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 8e3ccd413b7..b9442ac0ee1 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -3216,7 +3216,7 @@
+ 1867 stdcall -arch=i386 -noname ?AfxClassInit@@YGXPAUCRuntimeClass@@@Z(ptr) AfxClassInit
+ 1867 stub -arch=win64 -noname ?AfxEditviewTerm@@YAXXZ
+ 1868 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
+-1868 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1868 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1869 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+ 1869 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 1870 stub -arch=i386 -noname ?AfxConnectionAdvise@@YGHPAUIUnknown@@ABU_GUID@@0HPAK@Z
+@@ -3268,7 +3268,7 @@
+ 1893 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEB_WPEA_WI@Z
+ 1894 stub -arch=i386 -noname ?AfxEditviewTerm@@YAXXZ
+ 1894 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+-1895 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1895 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1895 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+ 1896 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1896 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEB_WAEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 99c64c61684..87e53c4ee7a 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -3731,7 +3731,7 @@
+ 2121 stub -arch=i386 -noname ?AfxCheckError@@YGXJ@Z
+ 2121 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+ 2122 stdcall -arch=i386 -noname ?AfxClassInit@@YGXPAUCRuntimeClass@@@Z(ptr) AfxClassInit
+-2122 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++2122 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2123 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
+ 2123 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 2124 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+@@ -3784,7 +3784,7 @@
+ 2147 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEBDPEADI@Z
+ 2148 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 2148 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+-2149 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++2149 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2149 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+ 2150 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 2150 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEBDAEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 97d9edb9fc5..f22dc09f144 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -3741,7 +3741,7 @@
+ 2126 stub -arch=i386 -noname ?AfxCancelModes@@YGXPAUHWND__@@@Z
+ 2126 stub -arch=win64 -noname ?AfxEditviewTerm@@YAXXZ
+ 2127 stub -arch=i386 -noname ?AfxCheckError@@YGXJ@Z
+-2127 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++2127 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2128 stdcall -arch=i386 -noname ?AfxClassInit@@YGXPAUCRuntimeClass@@@Z(ptr) AfxClassInit
+ 2128 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 2129 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
+@@ -3794,7 +3794,7 @@
+ 2152 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEB_WPEA_WI@Z
+ 2153 stub -arch=i386 -noname ?AfxEditviewTerm@@YAXXZ
+ 2153 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+-2154 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++2154 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2154 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+ 2155 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 2155 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEB_WAEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index ced17c8550a..f8d0de2d74a 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -3831,7 +3831,7 @@
+ 2172 stdcall -arch=i386 -noname ?AfxClassInit@@YGXPAUCRuntimeClass@@@Z(ptr) AfxClassInit
+ 2172 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+ 2173 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
+-2173 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++2173 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2174 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+ 2174 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 2175 stub -arch=i386 -noname ?AfxConnectionAdvise@@YGHPAUIUnknown@@ABU_GUID@@0HPAK@Z
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index e57abdc137a..3b739a96607 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -3841,7 +3841,7 @@
+ 2177 stub -arch=i386 -noname ?AfxCheckError@@YGXJ@Z
+ 2177 stub -arch=win64 -noname ?AfxEditviewTerm@@YAXXZ
+ 2178 stdcall -arch=i386 -noname ?AfxClassInit@@YGXPAUCRuntimeClass@@@Z(ptr) AfxClassInit
+-2178 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++2178 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2179 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
+ 2179 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 2180 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+@@ -3894,7 +3894,7 @@
+ 2203 stub -arch=win64 -noname ?AfxGetFileName@@YAIPEB_WPEA_WI@Z
+ 2204 stub -arch=i386 -noname ?AfxEditviewTerm@@YAXXZ
+ 2204 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEB_WPEA_WI@Z
+-2205 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++2205 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 2205 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+ 2206 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 2206 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
+index b0254daa67e..bdb82e36c63 100644
+--- a/dlls/mfc42/mfc42.spec
++++ b/dlls/mfc42/mfc42.spec
+@@ -1758,7 +1758,7 @@
+ 1132 stub -arch=win64 -noname ??5@YAAEAVCArchive@@AEAV0@AEAPEAVCByteArray@@@Z
+ 1133 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 1133 stub -arch=win64 -noname ??5@YAAEAVCArchive@@AEAV0@AEAPEAVCDocItem@@@Z
+-1134 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1134 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1134 stub -arch=win64 -noname ??5@YAAEAVCArchive@@AEAV0@AEAPEAVCDockState@@@Z
+ 1135 stub -arch=i386 -noname ?AfxEnableWin31Compatibility@@YGXXZ
+ 1135 stub -arch=win64 -noname ??5@YAAEAVCArchive@@AEAV0@AEAPEAVCDWordArray@@@Z
+@@ -2197,7 +2197,7 @@
+ 1433 stub -arch=win64 -noname ?AfxDllCanUnloadNow@@YAJXZ
+ 1434 stub -arch=win64 -noname ?AfxDllGetClassObject@@YAJAEBU_GUID@@0PEAPEAX@Z
+ 1435 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+-1436 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1436 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1437 stub -arch=win64 -noname ?AfxEnableWin31Compatibility@@YAXXZ
+ 1438 stub -arch=win64 -noname ?AfxEnableWin40Compatibility@@YAXXZ
+ 1439 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+diff --git a/dlls/mfc42u/mfc42u.spec b/dlls/mfc42u/mfc42u.spec
+index e1394bd07a1..12ed6f87374 100644
+--- a/dlls/mfc42u/mfc42u.spec
++++ b/dlls/mfc42u/mfc42u.spec
+@@ -1752,7 +1752,7 @@
+ 1129 stub -arch=win64 -noname ??4IConnectionPointContainer@@QEAAAEAU0@AEBU0@@Z
+ 1130 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 1130 stub -arch=win64 -noname ??4IDispatch@@QEAAAEAU0@AEBU0@@Z
+-1131 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1131 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1131 stub -arch=win64 -noname ??4IUnknown@@QEAAAEAU0@AEBU0@@Z
+ 1132 stub -arch=i386 -noname ?AfxEnableWin31Compatibility@@YGXXZ
+ 1132 stub -arch=win64 -noname ??5@YAAEAVCArchive@@AEAV0@AEAPEAVCByteArray@@@Z
+@@ -2184,7 +2184,7 @@
+ 1427 stub -arch=win64 -noname ?AfxDllGetClassObject@@YAJAEBU_GUID@@0PEAPEAX@Z
+ 1428 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+ 1429 stub -arch=win64 -noname ?AfxEditviewTerm@@YAXXZ
+-1430 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1430 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1431 stub -arch=win64 -noname ?AfxEnableWin31Compatibility@@YAXXZ
+ 1432 stub -arch=win64 -noname ?AfxEnableWin40Compatibility@@YAXXZ
+ 1433 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+diff --git a/dlls/mfc71/mfc71.spec b/dlls/mfc71/mfc71.spec
+index c7e5f9fe9d8..d069cea0dae 100644
+--- a/dlls/mfc71/mfc71.spec
++++ b/dlls/mfc71/mfc71.spec
+@@ -796,7 +796,7 @@
+ 1051 stub -arch=i386 -noname ?AfxDrawDitheredBitmap@@YGXPAVCDC@@HHABVCBitmap@@KK@Z
+ 1052 stub -arch=i386 -noname ?AfxDrawGrayBitmap@@YGXPAVCDC@@HHABVCBitmap@@K@Z
+ 1053 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+-1054 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1054 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1055 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1056 stub -arch=i386 -noname ?AfxEndThread@@YGXIH@Z
+ 1057 stub -arch=i386 -noname ?AfxEnumMetaFileProc@@YGHPAUHDC__@@PAUtagHANDLETABLE@@PAUtagMETARECORD@@HJ@Z
+diff --git a/dlls/mfc71u/mfc71u.spec b/dlls/mfc71u/mfc71u.spec
+index d562b4018cb..c8dc1449cae 100644
+--- a/dlls/mfc71u/mfc71u.spec
++++ b/dlls/mfc71u/mfc71u.spec
+@@ -791,7 +791,7 @@
+ 1046 stub -arch=i386 -noname ?AfxDrawGrayBitmap@@YGXPAVCDC@@HHABVCBitmap@@K@Z
+ 1047 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 1048 stub -arch=i386 -noname ?AfxEditviewTerm@@YAXXZ
+-1049 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1049 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1050 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1051 stub -arch=i386 -noname ?AfxEndThread@@YGXIH@Z
+ 1052 stub -arch=i386 -noname ?AfxEnumMetaFileProc@@YGHPAUHDC__@@PAUtagHANDLETABLE@@PAUtagMETARECORD@@HJ@Z
+diff --git a/dlls/mfc80/mfc80.spec b/dlls/mfc80/mfc80.spec
+index d9cfceed745..90516e434e1 100644
+--- a/dlls/mfc80/mfc80.spec
++++ b/dlls/mfc80/mfc80.spec
+@@ -1594,7 +1594,7 @@
+ 1052 stub -arch=win64 -noname ?AfxCoreInitModule@@YAXXZ
+ 1053 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 1053 stub -arch=win64 -noname ?AfxCreateDC@@YAPEAUHDC__@@PEAX0@Z
+-1054 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1054 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1054 stub -arch=win64 -noname ?AfxCriticalInit@@YAHXZ
+ 1055 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1055 stub -arch=win64 -noname ?AfxCriticalNewHandler@@YAH_K@Z
+@@ -1625,7 +1625,7 @@
+ 1068 stub -arch=i386 -noname ?AfxFormatStrings@@YGXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBDPBQBDH@Z
+ 1068 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+ 1069 stub -arch=i386 -noname ?AfxFreeLibrary@@YGHPAUHINSTANCE__@@@Z
+-1069 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1069 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1070 stub -arch=i386 -noname ?AfxFullPath@@YGHPADPBD@Z
+ 1070 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 1071 stub -arch=i386 -noname ?AfxGetAfxWndProc@@YGP6GJPAUHWND__@@IIJ@ZXZ
+diff --git a/dlls/mfc80u/mfc80u.spec b/dlls/mfc80u/mfc80u.spec
+index 762d96b8da6..821ff8e084c 100644
+--- a/dlls/mfc80u/mfc80u.spec
++++ b/dlls/mfc80u/mfc80u.spec
+@@ -1584,7 +1584,7 @@
+ 1047 stub -arch=win64 -noname ?AfxCopyValueByRef@@YAXPEAX0PEA_JH@Z
+ 1048 stub -arch=i386 -noname ?AfxEditviewTerm@@YAXXZ
+ 1048 stub -arch=win64 -noname ?AfxCoreInitModule@@YAXXZ
+-1049 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1049 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1049 stub -arch=win64 -noname ?AfxCreateDC@@YAPEAUHDC__@@PEAX0@Z
+ 1050 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1050 stub -arch=win64 -noname ?AfxCriticalInit@@YAHXZ
+@@ -1615,7 +1615,7 @@
+ 1063 stub -arch=i386 -noname ?AfxFormatStrings@@YGXAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@PB_WPBQB_WH@Z
+ 1063 stub -arch=win64 -noname ?AfxEditviewTerm@@YAXXZ
+ 1064 stub -arch=i386 -noname ?AfxFreeLibrary@@YGHPAUHINSTANCE__@@@Z
+-1064 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1064 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1065 stub -arch=i386 -noname ?AfxFullPath@@YGHPA_WPB_W@Z
+ 1065 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 1066 stub -arch=i386 -noname ?AfxGetAfxWndProc@@YGP6GJPAUHWND__@@IIJ@ZXZ
+diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
+index a4e5663c864..c2a288f443a 100644
+--- a/dlls/mfc90/mfc90.spec
++++ b/dlls/mfc90/mfc90.spec
+@@ -1629,7 +1629,7 @@
+ 1070 stub -arch=i386 -noname ?AfxComparePath@@YGHPBD0@Z
+ 1070 stub -arch=win64 -noname ?AfxDynamicDownCast@@YAPEAVCObject@@PEAUCRuntimeClass@@PEAV1@@Z
+ 1071 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+-1071 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1071 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1072 stub -arch=i386 -noname ?AfxConnectionAdvise@@YGHPAUIUnknown@@ABU_GUID@@0HPAK@Z
+ 1072 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 1073 stub -arch=i386 -noname ?AfxConnectionUnadvise@@YGHPAUIUnknown@@ABU_GUID@@0HK@Z
+@@ -1682,7 +1682,7 @@
+ 1096 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEBDPEADI@Z
+ 1097 stub -arch=i386 -noname ?AfxDynamicDownCast@@YAPAVCObject@@PAUCRuntimeClass@@PAV1@@Z
+ 1097 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+-1098 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1098 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1098 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+ 1099 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1099 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEBDAEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
+index b1fbb16d8cd..4409ba9fb90 100644
+--- a/dlls/mfc90u/mfc90u.spec
++++ b/dlls/mfc90u/mfc90u.spec
+@@ -1629,7 +1629,7 @@
+ 1070 stdcall -arch=i386 -noname ?AfxClassInit@@YGXPAUCRuntimeClass@@@Z(ptr) AfxClassInit
+ 1070 stub -arch=win64 -noname ?AfxEditviewTerm@@YAXXZ
+ 1071 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
+-1071 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
++1071 cdecl -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1072 stub -arch=i386 -noname ?AfxCompareValueByRef@@YGHPAX0H@Z
+ 1072 stub -arch=win64 -noname ?AfxEndDeferRegisterClass@@YAHJ@Z
+ 1073 stub -arch=i386 -noname ?AfxConnectionAdvise@@YGHPAUIUnknown@@ABU_GUID@@0HPAK@Z
+@@ -1682,7 +1682,7 @@
+ 1096 stub -arch=win64 -noname ?AfxGetFileTitle@@YAIPEB_WPEA_WI@Z
+ 1097 stub -arch=i386 -noname ?AfxEditviewTerm@@YAXXZ
+ 1097 stub -arch=win64 -noname ?AfxGetGrayBitmap@@YAXAEBVCBitmap@@PEAV1@K@Z
+-1098 stub -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z
++1098 cdecl -arch=i386 -noname ?AfxEnableControlContainer@@YAXPAVCOccManager@@@Z(ptr) AfxEnableControlContainer
+ 1098 stub -arch=win64 -noname ?AfxGetHENV@@YAPEAXXZ
+ 1099 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
+ 1099 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEB_WAEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+-- 
+2.37.2
+

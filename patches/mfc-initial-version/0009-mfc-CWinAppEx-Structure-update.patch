@@ -1,14 +1,11 @@
-From b85d23ff9f8041127a90ccbfc40da33271ac80f9 Mon Sep 17 00:00:00 2001
+From 1ef58b4e431d2ae1553fae262ecaec456d67a484 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Sep 2022 07:47:10 +1000
-Subject: [PATCH 09/10] mfc: CWinAppEx Structure update
+Subject: mfc: CWinAppEx Structure update
 
----
- dlls/mfc/afxstate.c | 73 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 72 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index b5673c23ea8..dc0917313d8 100644
+index b5673c23ea8..7e0b2901d5e 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -21,6 +21,14 @@
@@ -39,13 +36,13 @@ index b5673c23ea8..dc0917313d8 100644
  /*
   * CWinApp
   * CWinAppEx
-@@ -71,7 +85,64 @@ int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
+@@ -71,7 +85,63 @@ int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
   */
  struct c_winappex
  {
 -    BOOL smartupdate;
 +    /* CObject */
-+    /* - No Variables */
++    void **vtbl;
 +
 +    /* CCmdTarget */
 +    void *cmdtarget[8];
@@ -101,10 +98,6 @@ index b5673c23ea8..dc0917313d8 100644
 +#else
 +    char unk4[14];
 +#endif
-+    void *vtbl;
  };
  
  /*
--- 
-2.35.1
-
