@@ -1,0 +1,171 @@
+From 92c204a86ef77574ca8f9b34ddaf770c578ce1dd Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 20 Sep 2022 18:26:42 +1000
+Subject: [PATCH] mfc: Implement CWinAppEx::~CWinAppEx
+
+---
+ dlls/mfc/afxstate.c       | 10 ++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 22 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 9649c853170..b5673c23ea8 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -84,6 +84,16 @@ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
+     FIXME("%p, %d\n", winapp, smart_update);
+ }
+ 
++/*
++ * ??1CWinAppEx@@UAE@XZ
++ * ??1CWinAppEx@@UEAA@XZ
++ */
++DEFINE_THISCALL_WRAPPER(cwinappex_dtor, 4)
++void __thiscall cwinappex_dtor(struct c_winappex *winapp)
++{
++    FIXME("%p\n", winapp);
++}
++
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDA, 8)
+ void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
+ {
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 267ec7acade..bb19e20d0f9 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -2017,7 +2017,7 @@
+ 1266 stub -arch=i386 -noname ??1CStdioFile@@UAE@XZ
+ 1266 stub -arch=win64 -noname ??1CWinApp@@UEAA@XZ
+ 1267 stub -arch=i386 -noname ??1CStringArray@@UAE@XZ
+-1267 stub -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ
++1267 cdecl -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ(ptr) cwinappex_dtor
+ 1268 stub -arch=i386 -noname ??1CStringList@@UAE@XZ
+ 1268 stub -arch=win64 -noname ??1CWindowDC@@UEAA@XZ
+ 1269 stub -arch=i386 -noname ??1CSyncObject@@UAE@XZ
+@@ -2060,7 +2060,7 @@
+ 1287 stub -arch=win64 -noname ??4?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAAEAV01@PEBD@Z
+ 1288 stub -arch=i386 -noname ??1CWinApp@@UAE@XZ
+ 1288 stub -arch=win64 -noname ??4?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAAEAV01@PEBE@Z
+-1289 stub -arch=i386 -noname ??1CWinAppEx@@UAE@XZ
++1289 thiscall -arch=i386 -noname ??1CWinAppEx@@UAE@XZ(ptr) cwinappex_dtor
+ 1289 stub -arch=win64 -noname ??4?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAAAEAV01@_W@Z
+ 1290 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
+ 1290 stub -arch=win64 -noname ??4?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAAAEAV01@AEBUtagVARIANT@@@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index b1bcc3b4815..1101028b0dd 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -2025,7 +2025,7 @@
+ 1270 stub -arch=i386 -noname ??1CStringArray@@UAE@XZ
+ 1270 stub -arch=win64 -noname ??1CWinApp@@UEAA@XZ
+ 1271 stub -arch=i386 -noname ??1CStringList@@UAE@XZ
+-1271 stub -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ
++1271 cdecl -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ(ptr) cwinappex_dtor
+ 1272 stub -arch=i386 -noname ??1CSyncObject@@UAE@XZ
+ 1272 stub -arch=win64 -noname ??1CWindowDC@@UEAA@XZ
+ 1273 stub -arch=i386 -noname ??1CTabbedPane@@UAE@XZ
+@@ -2068,7 +2068,7 @@
+ 1291 stub -arch=win64 -noname ??4?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAAEAV01@PEBD@Z
+ 1292 stub -arch=i386 -noname ??1CWinApp@@UAE@XZ
+ 1292 stub -arch=win64 -noname ??4?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAAEAV01@PEBE@Z
+-1293 stub -arch=i386 -noname ??1CWinAppEx@@UAE@XZ
++1293 thiscall -arch=i386 -noname ??1CWinAppEx@@UAE@XZ(ptr) cwinappex_dtor
+ 1293 stub -arch=win64 -noname ??4?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAAAEAV01@_W@Z
+ 1294 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
+ 1294 stub -arch=win64 -noname ??4?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAAAEAV01@AEBUtagVARIANT@@@Z
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 3c683329819..1dc3b37458c 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -2363,7 +2363,7 @@
+ 1437 stub -arch=i386 -noname ??1CStdioFile@@UAE@XZ
+ 1437 stub -arch=win64 -noname ??1CWinApp@@UEAA@XZ
+ 1438 stub -arch=i386 -noname ??1CStringArray@@UAE@XZ
+-1438 stub -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ
++1438 cdecl -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ(ptr) cwinappex_dtor
+ 1439 stub -arch=i386 -noname ??1CStringList@@UAE@XZ
+ 1439 stub -arch=win64 -noname ??1CWindowDC@@UEAA@XZ
+ 1440 stub -arch=i386 -noname ??1CSyncObject@@UAE@XZ
+@@ -2406,7 +2406,7 @@
+ 1458 stub -arch=win64 -noname ??1XElementEdit@CMFCRibbonInfo@@UEAA@XZ
+ 1459 stub -arch=i386 -noname ??1CWinApp@@UAE@XZ
+ 1459 stub -arch=win64 -noname ??1XElementFontComboBox@CMFCRibbonInfo@@UEAA@XZ
+-1460 stub -arch=i386 -noname ??1CWinAppEx@@UAE@XZ
++1460 thiscall -arch=i386 -noname ??1CWinAppEx@@UAE@XZ(ptr) cwinappex_dtor
+ 1460 stub -arch=win64 -noname ??1XElementGroup@CMFCRibbonInfo@@UEAA@XZ
+ 1461 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
+ 1461 stub -arch=win64 -noname ??1XElementLabel@CMFCRibbonInfo@@UEAA@XZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index e8db463f085..d80eaa7e82c 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -2371,7 +2371,7 @@
+ 1441 stub -arch=i386 -noname ??1CStringArray@@UAE@XZ
+ 1441 stub -arch=win64 -noname ??1CWinApp@@UEAA@XZ
+ 1442 stub -arch=i386 -noname ??1CStringList@@UAE@XZ
+-1442 stub -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ
++1442 cdecl -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ(ptr) cwinappex_dtor
+ 1443 stub -arch=i386 -noname ??1CSyncObject@@UAE@XZ
+ 1443 stub -arch=win64 -noname ??1CWindowDC@@UEAA@XZ
+ 1444 stub -arch=i386 -noname ??1CTabbedPane@@UAE@XZ
+@@ -2414,7 +2414,7 @@
+ 1462 stub -arch=win64 -noname ??1XElementEdit@CMFCRibbonInfo@@UEAA@XZ
+ 1463 stub -arch=i386 -noname ??1CWinApp@@UAE@XZ
+ 1463 stub -arch=win64 -noname ??1XElementFontComboBox@CMFCRibbonInfo@@UEAA@XZ
+-1464 stub -arch=i386 -noname ??1CWinAppEx@@UAE@XZ
++1464 thiscall -arch=i386 -noname ??1CWinAppEx@@UAE@XZ(ptr) cwinappex_dtor
+ 1464 stub -arch=win64 -noname ??1XElementGroup@CMFCRibbonInfo@@UEAA@XZ
+ 1465 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
+ 1465 stub -arch=win64 -noname ??1XElementLabel@CMFCRibbonInfo@@UEAA@XZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 7b9086e8176..b14454112d7 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -2379,7 +2379,7 @@
+ 1446 stub -arch=i386 -noname ??1CStdioFile@@UAE@XZ
+ 1446 stub -arch=win64 -noname ??1CWinApp@@UEAA@XZ
+ 1447 stub -arch=i386 -noname ??1CStringArray@@UAE@XZ
+-1447 stub -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ
++1447 cdecl -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ(ptr) cwinappex_dtor
+ 1448 stub -arch=i386 -noname ??1CStringList@@UAE@XZ
+ 1448 stub -arch=win64 -noname ??1CWindowDC@@UEAA@XZ
+ 1449 stub -arch=i386 -noname ??1CSyncObject@@UAE@XZ
+@@ -2422,7 +2422,7 @@
+ 1467 stub -arch=win64 -noname ??1XElementEdit@CMFCRibbonInfo@@UEAA@XZ
+ 1468 stub -arch=i386 -noname ??1CWinApp@@UAE@XZ
+ 1468 stub -arch=win64 -noname ??1XElementFontComboBox@CMFCRibbonInfo@@UEAA@XZ
+-1469 stub -arch=i386 -noname ??1CWinAppEx@@UAE@XZ
++1469 thiscall -arch=i386 -noname ??1CWinAppEx@@UAE@XZ(ptr) cwinappex_dtor
+ 1469 stub -arch=win64 -noname ??1XElementGroup@CMFCRibbonInfo@@UEAA@XZ
+ 1470 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
+ 1470 stub -arch=win64 -noname ??1XElementLabel@CMFCRibbonInfo@@UEAA@XZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 842d75b25d2..ff280dddd04 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -2387,7 +2387,7 @@
+ 1450 stub -arch=i386 -noname ??1CStringArray@@UAE@XZ
+ 1450 stub -arch=win64 -noname ??1CWinApp@@UEAA@XZ
+ 1451 stub -arch=i386 -noname ??1CStringList@@UAE@XZ
+-1451 stub -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ
++1451 cdecl -arch=win64 -noname ??1CWinAppEx@@UEAA@XZ(ptr) cwinappex_dtor
+ 1452 stub -arch=i386 -noname ??1CSyncObject@@UAE@XZ
+ 1452 stub -arch=win64 -noname ??1CWindowDC@@UEAA@XZ
+ 1453 stub -arch=i386 -noname ??1CTabbedPane@@UAE@XZ
+@@ -2430,7 +2430,7 @@
+ 1471 stub -arch=win64 -noname ??1XElementEdit@CMFCRibbonInfo@@UEAA@XZ
+ 1472 stub -arch=i386 -noname ??1CWinApp@@UAE@XZ
+ 1472 stub -arch=win64 -noname ??1XElementFontComboBox@CMFCRibbonInfo@@UEAA@XZ
+-1473 stub -arch=i386 -noname ??1CWinAppEx@@UAE@XZ
++1473 thiscall -arch=i386 -noname ??1CWinAppEx@@UAE@XZ(ptr) cwinappex_dtor
+ 1473 stub -arch=win64 -noname ??1XElementGroup@CMFCRibbonInfo@@UEAA@XZ
+ 1474 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
+ 1474 stub -arch=win64 -noname ??1XElementLabel@CMFCRibbonInfo@@UEAA@XZ
+-- 
+2.35.1
+

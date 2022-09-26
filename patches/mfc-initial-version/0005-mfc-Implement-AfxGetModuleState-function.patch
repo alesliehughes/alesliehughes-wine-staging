@@ -1,0 +1,554 @@
+From 332315d951bc4a97337593fc350e2c2ebce8eb93 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Sep 2022 13:46:51 +1000
+Subject: [PATCH] mfc: Implement AfxGetModuleState function.
+
+---
+ dlls/mfc/Makefile.in      |  3 +++
+ dlls/mfc/afxstate.c       | 35 +++++++++++++++++++++++++++++++++++
+ dlls/mfc100/Makefile.in   |  3 +++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/Makefile.in  |  3 +++
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/Makefile.in   |  3 +++
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/Makefile.in  |  3 +++
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/Makefile.in   |  3 +++
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/Makefile.in  |  3 +++
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ dlls/mfc42/Makefile.in    |  3 +++
+ dlls/mfc42/mfc42.spec     |  4 ++--
+ dlls/mfc42u/Makefile.in   |  3 +++
+ dlls/mfc42u/mfc42u.spec   |  4 ++--
+ dlls/mfc71/Makefile.in    |  3 +++
+ dlls/mfc71/mfc71.spec     |  4 ++--
+ dlls/mfc71u/Makefile.in   |  3 +++
+ dlls/mfc71u/mfc71u.spec   |  4 ++--
+ dlls/mfc80/Makefile.in    |  3 +++
+ dlls/mfc80/mfc80.spec     |  4 ++--
+ dlls/mfc80u/Makefile.in   |  3 +++
+ dlls/mfc80u/mfc80u.spec   |  4 ++--
+ dlls/mfc90/Makefile.in    |  3 +++
+ dlls/mfc90/mfc90.spec     |  4 ++--
+ dlls/mfc90u/Makefile.in   |  3 +++
+ dlls/mfc90u/mfc90u.spec   |  4 ++--
+ 30 files changed, 108 insertions(+), 28 deletions(-)
+ create mode 100644 dlls/mfc/afxstate.c
+
+diff --git a/dlls/mfc/Makefile.in b/dlls/mfc/Makefile.in
+index ff9cc43fb59..cd1e490cb26 100644
+--- a/dlls/mfc/Makefile.in
++++ b/dlls/mfc/Makefile.in
+@@ -1 +1,4 @@
+ STATICLIB = mfc.a
++
++C_SRCS = \
++	afxstate.c
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+new file mode 100644
+index 00000000000..aa86e734a93
+--- /dev/null
++++ b/dlls/mfc/afxstate.c
+@@ -0,0 +1,35 @@
++/*
++ * Copyright 202 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include "wine/debug.h"
++
++#include "winbase.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(mfc);
++
++struct afx_module_state
++{
++    void *data;
++};
++
++static struct afx_module_state global_module_state;
++
++struct afx_module_state * WINAPI AfxGetModuleState(void)
++{
++    return &global_module_state;
++}
+diff --git a/dlls/mfc100/Makefile.in b/dlls/mfc100/Makefile.in
+index 9d5556928d6..e3e75048414 100644
+--- a/dlls/mfc100/Makefile.in
++++ b/dlls/mfc100/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc100.dll
+ EXTRADEFS = -D_MFC_VER=0x0e00
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 03b07142cd5..9ba94084576 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -3269,7 +3269,7 @@
+ 1894 stub -arch=i386 -noname ?AfxExtractSubString@@YGHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBDHD@Z
+ 1894 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1895 stub -arch=i386 -noname ?AfxFailMaxChars@@YGXPAVCDataExchange@@H@Z
+-1895 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1895 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1896 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+ 1896 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1897 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+@@ -3336,7 +3336,7 @@
+ 1927 stub -arch=win64 -noname ?AfxIsIdleMessage@@YAHPEAUtagMSG@@@Z
+ 1928 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1928 stub -arch=win64 -noname ?AfxIsMFCToolBar@@YAHPEAVCWnd@@@Z
+-1929 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1929 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1929 stub -arch=win64 -noname ?AfxIsModuleDll@@YAHXZ
+ 1930 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1930 stub -arch=win64 -noname ?AfxIsValidAddress@@YAHPEBX_KH@Z
+diff --git a/dlls/mfc100u/Makefile.in b/dlls/mfc100u/Makefile.in
+index db047106a92..f24423b142b 100644
+--- a/dlls/mfc100u/Makefile.in
++++ b/dlls/mfc100u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc100u.dll
+ EXTRADEFS = -D_MFC_VER=0x0e00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 4e0a8743c5f..57fddafef2d 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -3279,7 +3279,7 @@
+ 1899 stub -arch=i386 -noname ?AfxExtractSubString@@YGHAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@PB_WH_W@Z
+ 1899 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1900 stub -arch=i386 -noname ?AfxFailMaxChars@@YGXPAVCDataExchange@@H@Z
+-1900 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1900 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1901 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+ 1901 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1902 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+@@ -3346,7 +3346,7 @@
+ 1932 stub -arch=win64 -noname ?AfxIsIdleMessage@@YAHPEAUtagMSG@@@Z
+ 1933 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1933 stub -arch=win64 -noname ?AfxIsMFCToolBar@@YAHPEAVCWnd@@@Z
+-1934 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1934 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1934 stub -arch=win64 -noname ?AfxIsModuleDll@@YAHXZ
+ 1935 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1935 stub -arch=win64 -noname ?AfxIsValidAddress@@YAHPEBX_KH@Z
+diff --git a/dlls/mfc110/Makefile.in b/dlls/mfc110/Makefile.in
+index d04b24ec1b3..89dfa2a7199 100644
+--- a/dlls/mfc110/Makefile.in
++++ b/dlls/mfc110/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc110.dll
+ EXTRADEFS = -D_MFC_VER=0x0b00
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 4731cd24b3a..41b26860d79 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -3797,7 +3797,7 @@
+ 2154 stub -arch=i386 -noname ?AfxFailMaxChars@@YGXPAVCDataExchange@@H@Z
+ 2154 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 2155 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+-2155 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++2155 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2156 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+ 2156 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 2157 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCRecordset@@@Z
+@@ -3864,7 +3864,7 @@
+ 2187 stub -arch=win64 -noname ?AfxInternetStatusCallback@@YAXPEAX_KK0K@Z
+ 2188 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 2188 stub -arch=win64 -noname ?AfxIsDescendant@@YAHPEAUHWND__@@0@Z
+-2189 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++2189 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2189 stub -arch=win64 -noname ?AfxIsExtendedFrameClass@@YAHPEAVCWnd@@@Z
+ 2190 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 2190 stub -arch=win64 -noname ?AfxIsIdleMessage@@YAHPEAUtagMSG@@@Z
+diff --git a/dlls/mfc110u/Makefile.in b/dlls/mfc110u/Makefile.in
+index 795252eb9f0..bd9ef63bd1e 100644
+--- a/dlls/mfc110u/Makefile.in
++++ b/dlls/mfc110u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc110u.dll
+ EXTRADEFS = -D_MFC_VER=0x0b00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index a6adad0bcee..30699b7b6cf 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -3807,7 +3807,7 @@
+ 2159 stub -arch=i386 -noname ?AfxFailMaxChars@@YGXPAVCDataExchange@@H@Z
+ 2159 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 2160 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+-2160 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++2160 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ () AfxGetModuleState
+ 2161 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+ 2161 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 2162 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCRecordset@@@Z
+@@ -3874,7 +3874,7 @@
+ 2192 stub -arch=win64 -noname ?AfxInternalPumpMessage@@YAHXZ
+ 2193 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 2193 stub -arch=win64 -noname ?AfxInternetStatusCallback@@YAXPEAX_KK0K@Z
+-2194 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++2194 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2194 stub -arch=win64 -noname ?AfxIsDescendant@@YAHPEAUHWND__@@0@Z
+ 2195 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 2195 stub -arch=win64 -noname ?AfxIsExtendedFrameClass@@YAHPEAVCWnd@@@Z
+diff --git a/dlls/mfc140/Makefile.in b/dlls/mfc140/Makefile.in
+index 7f0e1dd92e4..9218f263801 100644
+--- a/dlls/mfc140/Makefile.in
++++ b/dlls/mfc140/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc140.dll
+ EXTRADEFS = -D_MFC_VER=0x0e00
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index d88cf39d8db..25f3501f447 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -3899,7 +3899,7 @@
+ 2206 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+ 2206 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 2207 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+-2207 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++2207 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2208 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCRecordset@@@Z
+ 2208 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 2209 stub -arch=i386 -noname ?AfxFindMessageEntry@@YGPBUAFX_MSGMAP_ENTRY@@PBU1@III@Z
+@@ -3966,7 +3966,7 @@
+ 2239 stub -arch=win64 -noname ?AfxInternetStatusCallback@@YAXPEAX_KK0K@Z
+ 2240 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 2240 stub -arch=win64 -noname ?AfxIsDescendant@@YAHPEAUHWND__@@0@Z
+-2241 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++2241 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2241 stub -arch=win64 -noname ?AfxIsExtendedFrameClass@@YAHPEAVCWnd@@@Z
+ 2242 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 2242 stub -arch=win64 -noname ?AfxIsIdleMessage@@YAHPEAUtagMSG@@@Z
+diff --git a/dlls/mfc140u/Makefile.in b/dlls/mfc140u/Makefile.in
+index a447c1e1e56..fc3c2ca31b0 100644
+--- a/dlls/mfc140u/Makefile.in
++++ b/dlls/mfc140u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc140u.dll
+ EXTRADEFS = -D_MFC_VER=0x0e00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 6e2cac18702..f72a72fca98 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -3909,7 +3909,7 @@
+ 2211 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+ 2211 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 2212 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+-2212 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++2212 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2213 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCRecordset@@@Z
+ 2213 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 2214 stub -arch=i386 -noname ?AfxFindMessageEntry@@YGPBUAFX_MSGMAP_ENTRY@@PBU1@III@Z
+@@ -3976,7 +3976,7 @@
+ 2244 stub -arch=win64 -noname ?AfxInternalPumpMessage@@YAHXZ
+ 2245 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 2245 stub -arch=win64 -noname ?AfxInternetStatusCallback@@YAXPEAX_KK0K@Z
+-2246 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++2246 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2246 stub -arch=win64 -noname ?AfxIsDescendant@@YAHPEAUHWND__@@0@Z
+ 2247 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 2247 stub -arch=win64 -noname ?AfxIsExtendedFrameClass@@YAHPEAVCWnd@@@Z
+diff --git a/dlls/mfc42/Makefile.in b/dlls/mfc42/Makefile.in
+index f1bb0a42e98..02d9269de6a 100644
+--- a/dlls/mfc42/Makefile.in
++++ b/dlls/mfc42/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc42.dll
+ EXTRADEFS = -D_MFC_VER=0x0600
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
+index 91064deea79..2d72c0dba7b 100644
+--- a/dlls/mfc42/mfc42.spec
++++ b/dlls/mfc42/mfc42.spec
+@@ -1826,7 +1826,7 @@
+ 1166 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@AEBVCString@@@Z
+ 1167 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAVCString@@@Z
+ 1167 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@PEBVCObject@@@Z
+-1168 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1168 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ () AfxGetModuleState
+ 1168 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@UtagPOINT@@@Z
+ 1169 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1169 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@UtagSIZE@@@Z
+@@ -2230,7 +2230,7 @@
+ 1466 stub -arch=win64 -noname ?AfxGetInternetHandleType@@YAKPEAX@Z
+ 1467 stub -arch=win64 -noname ?AfxGetMainWnd@@YAPEAVCWnd@@XZ
+ 1468 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAVCString@@@Z
+-1469 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1469 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1470 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1471 stub -arch=win64 -noname ?AfxGetNewHandler@@YAP6AH_K@ZXZ
+ 1472 stub -arch=win64 -noname ?AfxGetParentOwner@@YAPEAUHWND__@@PEAU1@@Z
+diff --git a/dlls/mfc42u/Makefile.in b/dlls/mfc42u/Makefile.in
+index 4914e9d50da..bf451d534c0 100644
+--- a/dlls/mfc42u/Makefile.in
++++ b/dlls/mfc42u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc42u.dll
+ EXTRADEFS = -D_MFC_VER=0x0600 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc42u/mfc42u.spec b/dlls/mfc42u/mfc42u.spec
+index bcd5fc4abdc..1f78b5382f3 100644
+--- a/dlls/mfc42u/mfc42u.spec
++++ b/dlls/mfc42u/mfc42u.spec
+@@ -1820,7 +1820,7 @@
+ 1163 stub -arch=win64 -noname ??5CArchive@@QEAAAEAV0@AEAM@Z
+ 1164 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAVCString@@@Z
+ 1164 stub -arch=win64 -noname ??5CArchive@@QEAAAEAV0@AEAN@Z
+-1165 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1165 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1165 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@AEBUtagRECT@@@Z
+ 1166 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1166 stub -arch=win64 -noname ??6@YAAEAVCArchive@@AEAV0@AEBVCString@@@Z
+@@ -2217,7 +2217,7 @@
+ 1460 stub -arch=win64 -noname ?AfxGetInternetHandleType@@YAKPEAX@Z
+ 1461 stub -arch=win64 -noname ?AfxGetMainWnd@@YAPEAVCWnd@@XZ
+ 1462 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAVCString@@@Z
+-1463 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1463 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1464 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1465 stub -arch=win64 -noname ?AfxGetNewHandler@@YAP6AH_K@ZXZ
+ 1466 stub -arch=win64 -noname ?AfxGetParentOwner@@YAPEAUHWND__@@PEAU1@@Z
+diff --git a/dlls/mfc71/Makefile.in b/dlls/mfc71/Makefile.in
+index 135193d1209..7d18122506b 100644
+--- a/dlls/mfc71/Makefile.in
++++ b/dlls/mfc71/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc71.dll
+ EXTRADEFS = -D_MFC_VER=0x0701
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc71/mfc71.spec b/dlls/mfc71/mfc71.spec
+index 5b7ad22b031..c892dfe89d7 100644
+--- a/dlls/mfc71/mfc71.spec
++++ b/dlls/mfc71/mfc71.spec
+@@ -826,8 +826,8 @@
+ 1081 stub -arch=i386 -noname ?AfxGetInProcServer@@YGHPBDAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1082 stub -arch=i386 -noname ?AfxGetInternetHandleType@@YGKPAX@Z
+ 1083 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+-1084 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
+-1085 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
++1084 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
++1085 stdcall -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ() AfxGetModuleState
+ 1086 stub -arch=i386 -noname ?AfxGetNewHandler@@YGP6AHI@ZXZ
+ 1087 stub -arch=i386 -noname ?AfxGetParentOwner@@YGPAUHWND__@@PAU1@@Z
+ 1088 stub -arch=i386 -noname ?AfxGetPropSheetFont@@YGHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAGH@Z
+diff --git a/dlls/mfc71u/Makefile.in b/dlls/mfc71u/Makefile.in
+index 359d1a4a3bc..c99bdbfd41f 100644
+--- a/dlls/mfc71u/Makefile.in
++++ b/dlls/mfc71u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc71u.dll
+ EXTRADEFS = -D_MFC_VER=0x0701
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc71u/mfc71u.spec b/dlls/mfc71u/mfc71u.spec
+index c08ad69efc7..2d1e7436450 100644
+--- a/dlls/mfc71u/mfc71u.spec
++++ b/dlls/mfc71u/mfc71u.spec
+@@ -821,8 +821,8 @@
+ 1076 stub -arch=i386 -noname ?AfxGetInProcServer@@YGHPB_WAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1077 stub -arch=i386 -noname ?AfxGetInternetHandleType@@YGKPAX@Z
+ 1078 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+-1079 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
+-1080 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
++1079 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
++1080 stdcall -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ() AfxGetModuleState
+ 1081 stub -arch=i386 -noname ?AfxGetNewHandler@@YGP6AHI@ZXZ
+ 1082 stub -arch=i386 -noname ?AfxGetParentOwner@@YGPAUHWND__@@PAU1@@Z
+ 1083 stub -arch=i386 -noname ?AfxGetPropSheetFont@@YGHAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@AAGH@Z
+diff --git a/dlls/mfc80/Makefile.in b/dlls/mfc80/Makefile.in
+index cb5f1a829ea..fa69eee51a8 100644
+--- a/dlls/mfc80/Makefile.in
++++ b/dlls/mfc80/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc80.dll
+ EXTRADEFS = -D_MFC_VER=0x0800
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc80/mfc80.spec b/dlls/mfc80/mfc80.spec
+index 53423c40548..c536eea9d21 100644
+--- a/dlls/mfc80/mfc80.spec
++++ b/dlls/mfc80/mfc80.spec
+@@ -1654,7 +1654,7 @@
+ 1082 stub -arch=win64 -noname ?AfxFormatStrings@@YAXAEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@IPEBQEBDH@Z
+ 1083 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1083 stub -arch=win64 -noname ?AfxFormatStrings@@YAXAEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PEBDPEBQEBDH@Z
+-1084 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1084 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1084 stub -arch=win64 -noname ?AfxFreeLibrary@@YAHPEAUHINSTANCE__@@@Z
+ 1085 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1085 stub -arch=win64 -noname ?AfxFullPath@@YAHPEADPEBD@Z
+@@ -1687,7 +1687,7 @@
+ 1099 stub -arch=i386 -noname ?AfxInitLocalData@@YGXPAUHINSTANCE__@@@Z
+ 1099 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1100 stub -arch=i386 -noname ?AfxInitRichEdit@@YGHXZ
+-1100 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1100 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1101 stub -arch=i386 -noname ?AfxInitRichEdit2@@YGHXZ
+ 1101 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1102 stub -arch=i386 -noname ?AfxInitThread@@YGXXZ
+diff --git a/dlls/mfc80u/Makefile.in b/dlls/mfc80u/Makefile.in
+index 4f0a872e72a..4659b80d223 100644
+--- a/dlls/mfc80u/Makefile.in
++++ b/dlls/mfc80u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc80u.dll
+ EXTRADEFS = -D_MFC_VER=0x0800 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc80u/mfc80u.spec b/dlls/mfc80u/mfc80u.spec
+index a743c1f31a4..6ca414d072b 100644
+--- a/dlls/mfc80u/mfc80u.spec
++++ b/dlls/mfc80u/mfc80u.spec
+@@ -1644,7 +1644,7 @@
+ 1077 stub -arch=win64 -noname ?AfxFormatStrings@@YAXAEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@IPEBQEB_WH@Z
+ 1078 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1078 stub -arch=win64 -noname ?AfxFormatStrings@@YAXAEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@PEB_WPEBQEB_WH@Z
+-1079 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1079 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1079 stub -arch=win64 -noname ?AfxFreeLibrary@@YAHPEAUHINSTANCE__@@@Z
+ 1080 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1080 stub -arch=win64 -noname ?AfxFullPath@@YAHPEA_WPEB_W@Z
+@@ -1677,7 +1677,7 @@
+ 1094 stub -arch=i386 -noname ?AfxInitLocalData@@YGXPAUHINSTANCE__@@@Z
+ 1094 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1095 stub -arch=i386 -noname ?AfxInitRichEdit@@YGHXZ
+-1095 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1095 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1096 stub -arch=i386 -noname ?AfxInitRichEdit2@@YGHXZ
+ 1096 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1097 stub -arch=i386 -noname ?AfxInitThread@@YGXXZ
+diff --git a/dlls/mfc90/Makefile.in b/dlls/mfc90/Makefile.in
+index 5edf7e344ff..af09761eccd 100644
+--- a/dlls/mfc90/Makefile.in
++++ b/dlls/mfc90/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc90.dll
+ EXTRADEFS = -D_MFC_VER=0x0900
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
+index 8cdc6eef020..be21ff0bc53 100644
+--- a/dlls/mfc90/mfc90.spec
++++ b/dlls/mfc90/mfc90.spec
+@@ -1693,7 +1693,7 @@
+ 1102 stub -arch=i386 -noname ?AfxExtractSubString@@YGHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBDHD@Z
+ 1102 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1103 stub -arch=i386 -noname ?AfxFailMaxChars@@YGXPAVCDataExchange@@H@Z
+-1103 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1103 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1104 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+ 1104 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1105 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+@@ -1760,7 +1760,7 @@
+ 1135 stub -arch=win64 -noname ?AfxIsValidString@@YAHPEB_WH@Z
+ 1136 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 1136 stub -arch=win64 -noname ?AfxIsValidString@@YAHPEBDH@Z
+-1137 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1137 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1137 stub -arch=win64 -noname ?AfxLoadField@@YAXAEAVCRecordset@@IPEAXPEA_J@Z
+ 1138 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1138 stub -arch=win64 -noname ?AfxLoadLangResourceDLL@@YAPEAUHINSTANCE__@@PEBD@Z
+diff --git a/dlls/mfc90u/Makefile.in b/dlls/mfc90u/Makefile.in
+index 0af7a2b60ce..b0a41ec6824 100644
+--- a/dlls/mfc90u/Makefile.in
++++ b/dlls/mfc90u/Makefile.in
+@@ -2,3 +2,6 @@ MODULE = mfc90u.dll
+ EXTRADEFS = -D_MFC_VER=0x0900 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+\ No newline at end of file
+diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
+index 6821e15f92c..8f89f513b3d 100644
+--- a/dlls/mfc90u/mfc90u.spec
++++ b/dlls/mfc90u/mfc90u.spec
+@@ -1693,7 +1693,7 @@
+ 1102 stub -arch=i386 -noname ?AfxExtractSubString@@YGHAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@PB_WH_W@Z
+ 1102 stub -arch=win64 -noname ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1103 stub -arch=i386 -noname ?AfxFailMaxChars@@YGXPAVCDataExchange@@H@Z
+-1103 stub -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ
++1103 cdecl -arch=win64 -noname ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1104 stub -arch=i386 -noname ?AfxFailRadio@@YGXPAVCDataExchange@@@Z
+ 1104 stub -arch=win64 -noname ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ
+ 1105 stub -arch=i386 -noname ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z
+@@ -1760,7 +1760,7 @@
+ 1135 stub -arch=win64 -noname ?AfxIsValidString@@YAHPEB_WH@Z
+ 1136 stub -arch=i386 -noname ?AfxGetModuleShortFileName@@YGXPAUHINSTANCE__@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 1136 stub -arch=win64 -noname ?AfxIsValidString@@YAHPEBDH@Z
+-1137 stub -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ
++1137 stdcall -arch=i386 -noname ?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 1137 stub -arch=win64 -noname ?AfxLoadField@@YAXAEAVCRecordset@@IPEAXPEA_J@Z
+ 1138 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
+ 1138 stub -arch=win64 -noname ?AfxLoadLangResourceDLL@@YAPEAUHINSTANCE__@@PEB_W@Z
+-- 
+2.35.1
+

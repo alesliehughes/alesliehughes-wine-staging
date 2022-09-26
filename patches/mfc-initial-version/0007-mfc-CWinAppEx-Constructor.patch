@@ -1,0 +1,138 @@
+From 866413aa3b6bbb67460d4de11d580967c2f8b11b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Sep 2022 15:32:22 +1000
+Subject: [PATCH] mfc: CWinAppEx Constructor
+
+---
+ dlls/mfc/afxstate.c       | 17 +++++++++++++++++
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 5 files changed, 25 insertions(+), 8 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 43f0754fe5e..9c74b60a109 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include "wine/debug.h"
++#include "wine/asm.h"
+ 
+ #include "winbase.h"
+ 
+@@ -43,4 +44,20 @@ struct c_runtime_class
+ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
+ {
+     FIXME("%p\n", runtime);
++}
++
++/* CWinAppEx */
++struct c_winappex
++{
++    BOOL smartupdate;
++};
++
++/*
++ * ??0CWinAppEx@@QAE@H@Z
++ * ??0CWinAppEx@@QEAA@H@Z
++ */
++DEFINE_THISCALL_WRAPPER(cwinappex_ctor, 8)
++void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
++{
++    FIXME("%p, %d\n", winapp, smart_update);
+ }
+\ No newline at end of file
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 82436e903fb..48f86b542a4 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -1439,7 +1439,7 @@
+ 975 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+ 975 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
+ 976 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+-976 stub -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z
++976 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 977 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+ 977 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 978 stub -arch=i386 -noname ??0CTooltipManager@@QAE@XZ
+@@ -1462,7 +1462,7 @@
+ 986 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+ 987 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
+ 987 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+-988 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
++988 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 988 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+ 989 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 989 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index a8395892f12..3a7ced6f6d8 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -1443,7 +1443,7 @@
+ 977 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+ 977 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
+ 978 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+-978 stub -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z
++978 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 979 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+ 979 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 980 stub -arch=i386 -noname ??0CTooltipManager@@QAE@XZ
+@@ -1466,7 +1466,7 @@
+ 988 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+ 989 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
+ 989 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+-990 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
++990 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 990 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+ 991 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 991 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 7f6891b7119..4ca9f50481c 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -1451,7 +1451,7 @@
+ 981 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+ 981 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEBD@Z
+ 982 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+-982 stub -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z
++982 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 983 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+ 983 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 984 stub -arch=i386 -noname ??0CTooltipManager@@QAE@XZ
+@@ -1474,7 +1474,7 @@
+ 992 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+ 993 stub -arch=i386 -noname ??0CWinApp@@QAE@PBD@Z
+ 993 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+-994 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
++994 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 994 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+ 995 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 995 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 2e368cdf28a..5d5d40b0252 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -1455,7 +1455,7 @@
+ 983 stub -arch=i386 -noname ??0CThreadSlotData@@QAE@XZ
+ 983 stub -arch=win64 -noname ??0CWinApp@@QEAA@PEB_W@Z
+ 984 stub -arch=i386 -noname ??0CToolBar@@QAE@XZ
+-984 stub -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z
++984 cdecl -arch=win64 -noname ??0CWinAppEx@@QEAA@H@Z(ptr long) cwinappex_ctor
+ 985 stub -arch=i386 -noname ??0CToolTipCtrl@@QAE@XZ
+ 985 stub -arch=win64 -noname ??0CWindowDC@@QEAA@PEAVCWnd@@@Z
+ 986 stub -arch=i386 -noname ??0CTooltipManager@@QAE@XZ
+@@ -1478,7 +1478,7 @@
+ 994 stub -arch=win64 -noname ??0XBase@CMFCRibbonInfo@@IEAA@W4XElementType@1@@Z
+ 995 stub -arch=i386 -noname ??0CWinApp@@QAE@PB_W@Z
+ 995 stub -arch=win64 -noname ??0XCategory@CMFCRibbonInfo@@QEAA@XZ
+-996 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
++996 thiscall -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z(ptr long) cwinappex_ctor
+ 996 stub -arch=win64 -noname ??0XCategoryMain@CMFCRibbonInfo@@QEAA@XZ
+ 997 stub -arch=i386 -noname ??0CWindowDC@@QAE@PAVCWnd@@@Z
+ 997 stub -arch=win64 -noname ??0XContext@CMFCRibbonInfo@@QEAA@XZ
+-- 
+2.35.1
+
