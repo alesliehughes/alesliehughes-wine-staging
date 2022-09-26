@@ -1,10 +1,10 @@
-From efe5f057fe3e145ffeb9f9dbca2c195a4199e006 Mon Sep 17 00:00:00 2001
+From 59f5d9c4084a3f0478a12e0a3c2c7f8f6a5292b2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 20 Sep 2022 18:02:18 +1000
-Subject: [PATCH] mfc: Stub AfxWinMain
+Date: Sat, 24 Sep 2022 14:01:41 +1000
+Subject: [PATCH 10/10] mfc: Use TCHAR parameter for AfxWinMain
 
 ---
- dlls/mfc/afxstate.c       | 18 ++++++++++++++++++
+ dlls/mfc/afxstate.c       | 16 +++++++++++++---
  dlls/mfc100/mfc100.spec   |  4 ++--
  dlls/mfc100u/mfc100u.spec |  4 ++--
  dlls/mfc110/mfc110.spec   |  4 ++--
@@ -14,47 +14,62 @@ Subject: [PATCH] mfc: Stub AfxWinMain
  dlls/mfc42/mfc42.spec     |  4 ++--
  dlls/mfc90/mfc90.spec     |  4 ++--
  dlls/mfc90u/mfc90u.spec   |  4 ++--
- 10 files changed, 36 insertions(+), 18 deletions(-)
+ 10 files changed, 31 insertions(+), 21 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index ced546a1cfd..9649c853170 100644
+index dc0917313d8..3d507e89c82 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
-@@ -46,6 +46,24 @@ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
-     FIXME("%p\n", runtime);
+@@ -31,6 +31,15 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(mfc);
+ 
++const char *debugstr_tchar(const TCHAR *str)
++{
++#ifdef _UNICODE
++    return debugstr_w(str);
++#else
++    return debugstr_a(str);
++#endif
++}
++
+ struct afx_module_state
+ {
+     void *data;
+@@ -58,8 +67,9 @@ void WINAPI AfxClassInit(struct c_runtime_class *runtime)
+  * ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
+  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
+  */
+-int WINAPI AfxWinMainW(HINSTANCE inst, HINSTANCE prev, WCHAR *cmdline, int show)
++int WINAPI AfxWinMain(HINSTANCE inst, HINSTANCE prev, TCHAR *cmdline, int show)
+ {
++    FIXME("cmdline %s\n", debugstr_tchar(cmdline));
+     return 0;
  }
  
-+/*
-+ * ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
-+ * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
-+ */
-+int WINAPI AfxWinMainW(HINSTANCE inst, HINSTANCE prev, WCHAR *cmdline, int show)
-+{
-+    return 0;
-+}
-+
-+/*
-+ * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+ * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+ */
-+int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
-+{
-+    return 0;
-+}
-+
- /*
-  * CWinApp
-  * CWinAppEx
+@@ -67,10 +77,10 @@ int WINAPI AfxWinMainW(HINSTANCE inst, HINSTANCE prev, WCHAR *cmdline, int show)
+  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
+  * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
+  */
+-int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
++/*int WINAPI AfxWinMainA(HINSTANCE inst, HINSTANCE prev, char *cmdline, int show)
+ {
+     return 0;
+-}
++}*/
+ 
+ typedef enum _AFX_HELP_TYPE
+ {
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index 14baf4fc4b8..267ec7acade 100644
+index bb19e20d0f9..69f52bfef64 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -3569,7 +3569,7 @@
  2048 stub -arch=i386 -noname ?AfxTaskStringA2W@@YGPA_WPBD@Z
  2048 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEADH@Z
  2049 stub -arch=i386 -noname ?AfxTaskStringW2A@@YGPADPB_W@Z
--2049 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z
-+2049 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
+-2049 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
++2049 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMain
  2050 stub -arch=i386 -noname ?AfxTermExtensionModule@@YGXAAUAFX_EXTENSION_MODULE@@H@Z
  2050 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  2051 stub -arch=i386 -noname ?AfxTermLocalData@@YGXPAUHINSTANCE__@@H@Z
@@ -62,21 +77,21 @@ index 14baf4fc4b8..267ec7acade 100644
  2086 stub -arch=win64 -noname ?AmbientShowHatching@COleControl@@QEAAHXZ
  2087 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PADH@Z
  2087 stub -arch=win64 -noname ?AmbientTextAlign@COleControl@@QEAAFXZ
--2088 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+2088 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
+-2088 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
++2088 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMain
  2088 stub -arch=win64 -noname ?AmbientUIDead@COleControl@@QEAAHXZ
  2089 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2089 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index 0e2cf7abfae..b1bcc3b4815 100644
+index 1101028b0dd..0a17bed63a6 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -3571,7 +3571,7 @@
  2049 stub -arch=i386 -noname ?AfxSocketTerm@@YGXXZ
  2049 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
  2050 stub -arch=i386 -noname ?AFXSoundThreadProc@@YAXPAX@Z
--2050 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
-+2050 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-2050 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
++2050 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMain
  2051 stub -arch=i386 -noname ?AfxStoreField@@YGXAAVCRecordset@@IPAX@Z
  2051 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  2052 stub -arch=i386 -noname ?AfxStringFromCLSID@@YG?AV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@ABU_GUID@@@Z
@@ -84,21 +99,21 @@ index 0e2cf7abfae..b1bcc3b4815 100644
  2087 stub -arch=win64 -noname ?AmbientShowHatching@COleControl@@QEAAHXZ
  2088 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PA_WH@Z
  2088 stub -arch=win64 -noname ?AmbientTextAlign@COleControl@@QEAAFXZ
--2089 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
-+2089 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-2089 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
++2089 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMain
  2089 stub -arch=win64 -noname ?AmbientUIDead@COleControl@@QEAAHXZ
  2090 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2090 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
-index 8aa751b7bb1..3c683329819 100644
+index 1dc3b37458c..dcb41e4130c 100644
 --- a/dlls/mfc110/mfc110.spec
 +++ b/dlls/mfc110/mfc110.spec
 @@ -4115,7 +4115,7 @@
  2313 stub -arch=i386 -noname ?AfxStringFromCLSID@@YG?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@ABU_GUID@@@Z
  2313 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEADH@Z
  2314 stub -arch=i386 -noname ?AfxTaskStringA2W@@YGPA_WPBD@Z
--2314 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z
-+2314 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
+-2314 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
++2314 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMain
  2315 stub -arch=i386 -noname ?AfxTaskStringW2A@@YGPADPB_W@Z
  2315 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  2316 stub -arch=i386 -noname ?AfxTermExtensionModule@@YGXAAUAFX_EXTENSION_MODULE@@H@Z
@@ -106,21 +121,21 @@ index 8aa751b7bb1..3c683329819 100644
  2351 stub -arch=win64 -noname ?AmbientShowHatching@COleControl@@QEAAHXZ
  2352 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PADH@Z
  2352 stub -arch=win64 -noname ?AmbientTextAlign@COleControl@@QEAAFXZ
--2353 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+2353 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
+-2353 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
++2353 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMain
  2353 stub -arch=win64 -noname ?AmbientUIDead@COleControl@@QEAAHXZ
  2354 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2354 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
-index 412f4483a87..e8db463f085 100644
+index d80eaa7e82c..b357a653892 100644
 --- a/dlls/mfc110u/mfc110u.spec
 +++ b/dlls/mfc110u/mfc110u.spec
 @@ -4119,7 +4119,7 @@
  2315 stub -arch=i386 -noname ?afxShellManager@@3PAVCShellManager@@A
  2315 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
  2316 stub -arch=i386 -noname ?AfxSocketTerm@@YGXXZ
--2316 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
-+2316 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-2316 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
++2316 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMain
  2317 stub -arch=i386 -noname ?AFXSoundThreadProc@@YAXPAX@Z
  2317 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  2318 stub -arch=i386 -noname ?AfxStoreField@@YGXAAVCRecordset@@IPAX@Z
@@ -128,21 +143,21 @@ index 412f4483a87..e8db463f085 100644
  2353 stub -arch=win64 -noname ?AmbientShowHatching@COleControl@@QEAAHXZ
  2354 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PA_WH@Z
  2354 stub -arch=win64 -noname ?AmbientTextAlign@COleControl@@QEAAFXZ
--2355 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
-+2355 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-2355 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
++2355 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMain
  2355 stub -arch=win64 -noname ?AmbientUIDead@COleControl@@QEAAHXZ
  2356 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2356 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
-index 65a59d19a5e..7b9086e8176 100644
+index b14454112d7..7cab2a28877 100644
 --- a/dlls/mfc140/mfc140.spec
 +++ b/dlls/mfc140/mfc140.spec
 @@ -4221,7 +4221,7 @@
  2367 stub -arch=i386 -noname ?AfxStringFromCLSID@@YG?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@ABU_GUID@@@Z
  2367 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEADH@Z
  2368 stub -arch=i386 -noname ?AfxTaskStringA2W@@YGPA_WPBD@Z
--2368 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z
-+2368 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
+-2368 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
++2368 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMain
  2369 stub -arch=i386 -noname ?AfxTaskStringW2A@@YGPADPB_W@Z
  2369 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  2370 stub -arch=i386 -noname ?AfxTermExtensionModule@@YGXAAUAFX_EXTENSION_MODULE@@H@Z
@@ -150,21 +165,21 @@ index 65a59d19a5e..7b9086e8176 100644
  2405 stub -arch=win64 -noname ?AmbientShowHatching@COleControl@@QEAAHXZ
  2406 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PADH@Z
  2406 stub -arch=win64 -noname ?AmbientTextAlign@COleControl@@QEAAFXZ
--2407 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+2407 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
+-2407 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
++2407 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMain
  2407 stub -arch=win64 -noname ?AmbientUIDead@COleControl@@QEAAHXZ
  2408 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2408 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
-index 5d38119baaa..842d75b25d2 100644
+index ff280dddd04..d363840b5ee 100644
 --- a/dlls/mfc140u/mfc140u.spec
 +++ b/dlls/mfc140u/mfc140u.spec
 @@ -4225,7 +4225,7 @@
  2369 stub -arch=i386 -noname ?afxShellManager@@3PAVCShellManager@@A
  2369 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
  2370 stub -arch=i386 -noname ?AfxSocketTerm@@YGXXZ
--2370 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
-+2370 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-2370 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
++2370 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMain
  2371 stub -arch=i386 -noname ?AFXSoundThreadProc@@YAXPAX@Z
  2371 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  2372 stub -arch=i386 -noname ?AfxStoreField@@YGXAAVCRecordset@@IPAX@Z
@@ -172,21 +187,21 @@ index 5d38119baaa..842d75b25d2 100644
  2407 stub -arch=win64 -noname ?AmbientShowHatching@COleControl@@QEAAHXZ
  2408 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PA_WH@Z
  2408 stub -arch=win64 -noname ?AmbientTextAlign@COleControl@@QEAAFXZ
--2409 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
-+2409 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-2409 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
++2409 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMain
  2409 stub -arch=win64 -noname ?AmbientUIDead@COleControl@@QEAAHXZ
  2410 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2410 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
-index b8232e3cca7..abbba308f4e 100644
+index abbba308f4e..3d4d80248bd 100644
 --- a/dlls/mfc42/mfc42.spec
 +++ b/dlls/mfc42/mfc42.spec
 @@ -2349,7 +2349,7 @@
  1574 stub -arch=win64 -noname ?AfxThrowNotSupportedException@@YAXXZ
  1575 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PADH@Z
  1575 stub -arch=win64 -noname ?AfxThrowOleDispatchException@@YAXGII@Z
--1576 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+1576 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
+-1576 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
++1576 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMain
  1576 stub -arch=win64 -noname ?AfxThrowOleDispatchException@@YAXGPEBDI@Z
  1577 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  1577 stub -arch=win64 -noname ?AfxThrowOleException@@YAXJ@Z
@@ -194,21 +209,21 @@ index b8232e3cca7..abbba308f4e 100644
  1594 stub -arch=i386 -noname ?AllocElements@CControlBar@@QAEHHH@Z
  1594 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEADH@Z
  1595 stub -arch=i386 -noname ?AllocElements@CStatusBar@@QAEHHH@Z
--1595 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z
-+1595 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
+-1595 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
++1595 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMain
  1596 stub -arch=i386 -noname ?AllocHstmt@CRecordset@@IAEHXZ
  1596 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  1597 stub -arch=i386 -noname ?AllocLongBinary@@YAXAAVCLongBinary@@K@Z
 diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
-index 0851dacf64d..49cbacfcc62 100644
+index 49cbacfcc62..e0b0815db46 100644
 --- a/dlls/mfc90/mfc90.spec
 +++ b/dlls/mfc90/mfc90.spec
 @@ -1961,7 +1961,7 @@
  1236 stub -arch=i386 -noname ?AfxSocketTerm@@YGXXZ
  1236 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEADH@Z
  1237 stub -arch=i386 -noname ?AfxStoreField@@YGXAAVCRecordset@@IPAX@Z
--1237 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z
-+1237 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
+-1237 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMainA
++1237 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEADH@Z(ptr ptr str long) AfxWinMain
  1238 stub -arch=i386 -noname ?AfxStringFromCLSID@@YG?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@ABU_GUID@@@Z
  1238 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  1239 stub -arch=i386 -noname ?AfxTaskStringA2W@@YGPA_WPBD@Z
@@ -216,21 +231,21 @@ index 0851dacf64d..49cbacfcc62 100644
  1274 stub -arch=win64 -noname ?Append@?$CSimpleStringT@_W$00@ATL@@QEAAXAEBV12@@Z
  1275 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PADH@Z
  1275 stub -arch=win64 -noname ?Append@?$CSimpleStringT@_W$00@ATL@@QEAAXPEB_W@Z
--1276 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-+1276 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
+-1276 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMainA
++1276 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z(ptr ptr str long) AfxWinMain
  1276 stub -arch=win64 -noname ?Append@?$CSimpleStringT@_W$00@ATL@@QEAAXPEB_WH@Z
  1277 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  1277 stub -arch=win64 -noname ?Append@?$CSimpleStringT@D$00@ATL@@QEAAXAEBV12@@Z
 diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
-index b5b2e6ed8a9..cdd5d291d1d 100644
+index cdd5d291d1d..f41c8a3ab82 100644
 --- a/dlls/mfc90u/mfc90u.spec
 +++ b/dlls/mfc90u/mfc90u.spec
 @@ -1953,7 +1953,7 @@
  1232 stub -arch=i386 -noname ?AfxSetIndexInfo@@YAXPAU_DAOIndex@@AAUCDaoIndexInfo@@@Z
  1232 stub -arch=win64 -noname ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
  1233 stub -arch=i386 -noname ?AfxSetModuleState@@YGPAVAFX_MODULE_STATE@@PAV1@@Z
--1233 stub -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z
-+1233 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-1233 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMainW
++1233 cdecl -arch=win64 -noname ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr wstr long) AfxWinMain
  1234 stub -arch=i386 -noname ?AfxSetNewHandler@@YGP6AHI@ZP6AHI@Z@Z
  1234 stub -arch=win64 -noname ?AfxWinTerm@@YAXXZ
  1235 stub -arch=i386 -noname ?AfxSetWindowText@@YGXPAUHWND__@@PB_W@Z
@@ -238,8 +253,8 @@ index b5b2e6ed8a9..cdd5d291d1d 100644
  1270 stub -arch=win64 -noname ?Append@?$CSimpleStringT@_W$00@ATL@@QEAAXAEBV12@@Z
  1271 stub -arch=i386 -noname ?AfxWinInit@@YGHPAUHINSTANCE__@@0PA_WH@Z
  1271 stub -arch=win64 -noname ?Append@?$CSimpleStringT@_W$00@ATL@@QEAAXPEB_W@Z
--1272 stub -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z
-+1272 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
+-1272 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMainW
++1272 stdcall -arch=i386 -noname ?AfxWinMain@@YGHPAUHINSTANCE__@@0PA_WH@Z(ptr ptr wstr long) AfxWinMain
  1272 stub -arch=win64 -noname ?Append@?$CSimpleStringT@_W$00@ATL@@QEAAXPEB_WH@Z
  1273 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  1273 stub -arch=win64 -noname ?Append@?$CSimpleStringT@D$00@ATL@@QEAAXAEBV12@@Z

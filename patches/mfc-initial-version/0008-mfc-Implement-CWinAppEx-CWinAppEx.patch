@@ -1,7 +1,7 @@
-From 92c204a86ef77574ca8f9b34ddaf770c578ce1dd Mon Sep 17 00:00:00 2001
+From 88e3b2e6c1fa3396185dd4200ae69af954e20208 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Sep 2022 18:26:42 +1000
-Subject: [PATCH] mfc: Implement CWinAppEx::~CWinAppEx
+Subject: [PATCH 08/10] mfc: Implement CWinAppEx::~CWinAppEx
 
 ---
  dlls/mfc/afxstate.c       | 10 ++++++++++

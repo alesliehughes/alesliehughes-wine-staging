@@ -1,18 +1,18 @@
-From e8f8527cb0abb0a3926e1ac2e9c958b70324dfdd Mon Sep 17 00:00:00 2001
+From 51434b14ebfd0eab00df983c0ac41eda5a3432b7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Sep 2022 10:17:26 +1000
-Subject: [PATCH] Configure build
+Subject: [PATCH 02/10] Configure build
 
 ---
- configure    | 34 ++++++++++++++++++++++++++++++++++
- configure.ac | 17 +++++++++++++++++
- 2 files changed, 51 insertions(+)
+ configure    | 30 ++++++++++++++++++++++++++++++
+ configure.ac | 15 +++++++++++++++
+ 2 files changed, 45 insertions(+)
 
 diff --git a/configure b/configure
-index 3088184aade..c8a1de56a8c 100755
+index 3088184aade..52e19cbe1cb 100755
 --- a/configure
 +++ b/configure
-@@ -1166,6 +1166,23 @@ enable_mciseq
+@@ -1166,6 +1166,21 @@ enable_mciseq
  enable_mciwave
  enable_mf
  enable_mf3216
@@ -25,8 +25,6 @@ index 3088184aade..c8a1de56a8c 100755
 +enable_mfc140u
 +enable_mfc42
 +enable_mfc42u
-+enable_mfc70
-+enable_mfc70u
 +enable_mfc71
 +enable_mfc71u
 +enable_mfc80
@@ -36,7 +34,7 @@ index 3088184aade..c8a1de56a8c 100755
  enable_mferror
  enable_mfmediaengine
  enable_mfplat
-@@ -21630,6 +21647,23 @@ wine_fn_config_makefile dlls/mciwave enable_mciwave
+@@ -21630,6 +21645,21 @@ wine_fn_config_makefile dlls/mciwave enable_mciwave
  wine_fn_config_makefile dlls/mf enable_mf
  wine_fn_config_makefile dlls/mf/tests enable_tests
  wine_fn_config_makefile dlls/mf3216 enable_mf3216
@@ -49,8 +47,6 @@ index 3088184aade..c8a1de56a8c 100755
 +wine_fn_config_makefile dlls/mfc140u enable_mfc140u
 +wine_fn_config_makefile dlls/mfc42 enable_mfc42
 +wine_fn_config_makefile dlls/mfc42u enable_mfc42u
-+wine_fn_config_makefile dlls/mfc70 enable_mfc70
-+wine_fn_config_makefile dlls/mfc70u enable_mfc70u
 +wine_fn_config_makefile dlls/mfc71 enable_mfc71
 +wine_fn_config_makefile dlls/mfc71u enable_mfc71u
 +wine_fn_config_makefile dlls/mfc80 enable_mfc80
@@ -61,10 +57,10 @@ index 3088184aade..c8a1de56a8c 100755
  wine_fn_config_makefile dlls/mfmediaengine enable_mfmediaengine
  wine_fn_config_makefile dlls/mfmediaengine/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index 1e733962b75..a7f75e40591 100644
+index 1e733962b75..ead4073e61d 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2734,6 +2734,23 @@ WINE_CONFIG_MAKEFILE(dlls/mciwave)
+@@ -2734,6 +2734,21 @@ WINE_CONFIG_MAKEFILE(dlls/mciwave)
  WINE_CONFIG_MAKEFILE(dlls/mf)
  WINE_CONFIG_MAKEFILE(dlls/mf/tests)
  WINE_CONFIG_MAKEFILE(dlls/mf3216)
@@ -77,8 +73,6 @@ index 1e733962b75..a7f75e40591 100644
 +WINE_CONFIG_MAKEFILE(dlls/mfc140u)
 +WINE_CONFIG_MAKEFILE(dlls/mfc42)
 +WINE_CONFIG_MAKEFILE(dlls/mfc42u)
-+WINE_CONFIG_MAKEFILE(dlls/mfc70)
-+WINE_CONFIG_MAKEFILE(dlls/mfc70u)
 +WINE_CONFIG_MAKEFILE(dlls/mfc71)
 +WINE_CONFIG_MAKEFILE(dlls/mfc71u)
 +WINE_CONFIG_MAKEFILE(dlls/mfc80)

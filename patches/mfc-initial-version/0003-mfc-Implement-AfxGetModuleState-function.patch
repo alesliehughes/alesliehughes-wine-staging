@@ -1,7 +1,7 @@
-From 332315d951bc4a97337593fc350e2c2ebce8eb93 Mon Sep 17 00:00:00 2001
+From b87184a5d42bbd2ba7daca1934e3abdee765402b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 13:46:51 +1000
-Subject: [PATCH] mfc: Implement AfxGetModuleState function.
+Subject: [PATCH 03/10] mfc: Implement AfxGetModuleState function.
 
 ---
  dlls/mfc/Makefile.in      |  3 +++

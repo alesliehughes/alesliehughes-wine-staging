@@ -1,7 +1,7 @@
-From 6a7613dac2627019dc44ce60d7b97cfa9da4ec1e Mon Sep 17 00:00:00 2001
+From b163cb8c9c4be8922f2312fc8052a389809627de Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 14:41:03 +1000
-Subject: [PATCH] mfc: Implement AfxClassInit
+Subject: [PATCH 04/10] mfc: Implement AfxClassInit
 
 ---
  dlls/mfc/afxstate.c       | 11 +++++++++++

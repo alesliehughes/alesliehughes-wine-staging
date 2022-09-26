@@ -1,7 +1,7 @@
-From 866413aa3b6bbb67460d4de11d580967c2f8b11b Mon Sep 17 00:00:00 2001
+From 290ba18051355646d11d74bbdf7bd7b6e3a9edd4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 15:32:22 +1000
-Subject: [PATCH] mfc: CWinAppEx Constructor
+Subject: [PATCH 05/10] mfc: CWinAppEx Constructor
 
 ---
  dlls/mfc/afxstate.c       | 17 +++++++++++++++++

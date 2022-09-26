@@ -1,7 +1,7 @@
-From 35a583e09732eb9280cbd608e53c5d9fc569bf77 Mon Sep 17 00:00:00 2001
+From b85d23ff9f8041127a90ccbfc40da33271ac80f9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Sep 2022 07:47:10 +1000
-Subject: [PATCH] mfc: CWinAppEx Structure update
+Subject: [PATCH 09/10] mfc: CWinAppEx Structure update
 
 ---
  dlls/mfc/afxstate.c | 73 ++++++++++++++++++++++++++++++++++++++++++++-
