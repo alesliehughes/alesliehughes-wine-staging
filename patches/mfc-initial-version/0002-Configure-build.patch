@@ -1,7 +1,7 @@
-From 51434b14ebfd0eab00df983c0ac41eda5a3432b7 Mon Sep 17 00:00:00 2001
+From 4b2541f8f61e5e245e54b92033913f2ba207257b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Sep 2022 10:17:26 +1000
-Subject: [PATCH 02/10] Configure build
+Subject: [PATCH] Configure build
 
 ---
  configure    | 30 ++++++++++++++++++++++++++++++
@@ -9,10 +9,10 @@ Subject: [PATCH 02/10] Configure build
  2 files changed, 45 insertions(+)
 
 diff --git a/configure b/configure
-index 3088184aade..52e19cbe1cb 100755
+index cc72847a77f..00c474bad1e 100755
 --- a/configure
 +++ b/configure
-@@ -1166,6 +1166,21 @@ enable_mciseq
+@@ -1169,6 +1169,21 @@ enable_mciseq
  enable_mciwave
  enable_mf
  enable_mf3216
@@ -34,7 +34,7 @@ index 3088184aade..52e19cbe1cb 100755
  enable_mferror
  enable_mfmediaengine
  enable_mfplat
-@@ -21630,6 +21645,21 @@ wine_fn_config_makefile dlls/mciwave enable_mciwave
+@@ -21810,6 +21825,21 @@ wine_fn_config_makefile dlls/mciwave enable_mciwave
  wine_fn_config_makefile dlls/mf enable_mf
  wine_fn_config_makefile dlls/mf/tests enable_tests
  wine_fn_config_makefile dlls/mf3216 enable_mf3216
@@ -57,10 +57,10 @@ index 3088184aade..52e19cbe1cb 100755
  wine_fn_config_makefile dlls/mfmediaengine enable_mfmediaengine
  wine_fn_config_makefile dlls/mfmediaengine/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index 1e733962b75..ead4073e61d 100644
+index 6a042631195..28fdc07b501 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2734,6 +2734,21 @@ WINE_CONFIG_MAKEFILE(dlls/mciwave)
+@@ -2769,6 +2769,21 @@ WINE_CONFIG_MAKEFILE(dlls/mciwave)
  WINE_CONFIG_MAKEFILE(dlls/mf)
  WINE_CONFIG_MAKEFILE(dlls/mf/tests)
  WINE_CONFIG_MAKEFILE(dlls/mf3216)
@@ -83,5 +83,5 @@ index 1e733962b75..ead4073e61d 100644
  WINE_CONFIG_MAKEFILE(dlls/mfmediaengine)
  WINE_CONFIG_MAKEFILE(dlls/mfmediaengine/tests)
 -- 
-2.35.1
+2.37.2
 

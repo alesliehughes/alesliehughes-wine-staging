@@ -1,0 +1,173 @@
+From ed0da1d2a667f24daf2fff9804df0a2db3b37096 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 28 Sep 2022 20:52:41 +1000
+Subject: [PATCH] mfc: CWinApp::EnableTaskbarInteraction stub
+
+---
+ dlls/mfc/afxstate.c       | 12 ++++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 24 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index cee45e4acc0..fd47e1cc55c 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -287,6 +287,18 @@ void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
+     FIXME("%p, %s\n", winapp, debugstr_a(appid));
+ }
+ 
++#if _MFC_VER >= 0x0a00
++/*
++ * ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++ * ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_EnableTaskbarInteraction, 8)
++int __thiscall cwinapp_EnableTaskbarInteraction(struct c_winappex *winapp, BOOL enable)
++{
++    return 0;
++}
++#endif
++
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
+ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
+ {
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 7c3451a0d2d..bc45d7cf1c0 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -25981,7 +25981,7 @@
+ 13335 stub -arch=i386 -noname ?WriteNameDictToStream@CPropertySection@@QAEHPAUIStream@@@Z
+ 13335 stub -arch=win64 -noname ?EnableOpenDropDown@CFileDialog@@QEAAJK@Z
+ 13336 stub -arch=i386 -noname ?WriteObject@CArchive@@QAEXPBVCObject@@@Z
+-13336 stub -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++13336 cdecl -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 13337 stub -arch=i386 -noname ?WriteObject@CWinAppEx@@QAEHPBDAAVCObject@@@Z
+ 13337 stub -arch=win64 -noname ?EnableTooltipInfoShortcut@CMFCRibbonBaseElement@@QEAAXH@Z
+ 13338 stub -arch=win64 -noname ?EnableUpdateTooltipInfo@CMFCRibbonBaseElement@@QEAAXH@Z
+@@ -26628,7 +26628,7 @@
+ 13708 stub -arch=win64 -noname ?OnDraw@CMFCPropertyGridCtrl@@MEAAXPEAVCDC@@@Z
+ 13709 stub -arch=i386 -noname ?EnableOpenDropDown@CFileDialog@@QAEJK@Z
+ 13709 stub -arch=win64 -noname ?OnPrintClient@CBasePane@@IEAA_J_K_J@Z
+-13710 stub -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++13710 thiscall -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 13710 stub -arch=win64 -noname ?OnPrintClient@CMFCPropertyGridCtrl@@IEAA_J_K_J@Z
+ 13711 stub -arch=i386 -noname ?EnableTooltipInfoShortcut@CMFCRibbonBaseElement@@QAEXH@Z
+ 13711 stub -arch=win64 -noname ?RemovePanel@CMFCRibbonCategory@@QEAAHHH@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index cfde83d8553..e9645ae626a 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -26143,7 +26143,7 @@
+ 13417 stub -arch=i386 -noname ?WriteItem@COleClientItem@@UAEXAAVCArchive@@@Z
+ 13417 stub -arch=win64 -noname ?EnableOpenDropDown@CFileDialog@@QEAAJK@Z
+ 13418 stub -arch=i386 -noname ?WriteItemCompound@COleClientItem@@QAEXAAVCArchive@@@Z
+-13418 stub -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++13418 cdecl -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 13419 stub -arch=i386 -noname ?WriteItemFlat@COleClientItem@@QAEXAAVCArchive@@@Z
+ 13419 stub -arch=win64 -noname ?EnableTooltipInfoShortcut@CMFCRibbonBaseElement@@QEAAXH@Z
+ 13420 stub -arch=i386 -noname ?WriteList@CRecentFileList@@UAEXXZ
+@@ -26800,7 +26800,7 @@
+ 13795 stub -arch=win64 -noname ?GetRegisteredWithTaskBarMDIChildCount@CMDIFrameWndEx@@QEAAHXZ
+ 13796 stub -arch=i386 -noname ?EnableOpenDropDown@CFileDialog@@QAEJK@Z
+ 13796 stub -arch=win64 -noname ?GetRibbonEditBackgroundColor@CMFCVisualManagerWindows7@@UEAAKPEAVCMFCRibbonRichEditCtrl@@HHH@Z
+-13797 stub -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++13797 thiscall -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 13797 stub -arch=win64 -noname ?GetRibbonPopupBorderSize@CMFCVisualManagerWindows7@@UEBAHPEBVCMFCRibbonPanelMenu@@@Z
+ 13798 stub -arch=i386 -noname ?EnableTooltipInfoShortcut@CMFCRibbonBaseElement@@QAEXH@Z
+ 13798 stub -arch=win64 -noname ?OnDrawComboDropButton@CMFCVisualManagerWindows7@@UEAAXPEAVCDC@@VCRect@@HHHPEAVCMFCToolBarComboBoxButton@@@Z
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 87e53c4ee7a..72a028cf186 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -7981,7 +7981,7 @@
+ 4246 stub -arch=i386 -noname ?dwStyleDefault@CEditView@@2KB
+ 4246 stub -arch=win64 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QEAAXH@Z
+ 4247 stub -arch=i386 -noname ?Edit@CDaoRecordset@@UAEXXZ
+-4247 stub -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++4247 cdecl -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4248 stub -arch=i386 -noname ?Edit@CRecordset@@UAEXXZ
+ 4248 stub -arch=win64 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QEAAXH@Z
+ 4249 stub -arch=i386 -noname ?EditItem@CMFCPropertyGridCtrl@@UAEHPAVCMFCPropertyGridProperty@@PAUtagPOINT@@@Z
+@@ -8264,7 +8264,7 @@
+ 4387 stub -arch=win64 -noname ?ExportToMenuButton@CMFCToolBarDateTimeCtrl@@UEBAHAEAVCMFCToolBarMenuButton@@@Z
+ 4388 stub -arch=i386 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QAEXH@Z
+ 4388 stub -arch=win64 -noname ?ExtendMenuButton@CMFCVisualManagerOfficeXP@@MEAAXPEAVCMFCToolBarMenuButton@@AEAVCRect@@@Z
+-4389 stub -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++4389 thiscall -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4389 stub -arch=win64 -noname ?ExternalAddRef@CCmdTarget@@QEAAKXZ
+ 4390 stub -arch=i386 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QAEXH@Z
+ 4390 stub -arch=win64 -noname ?ExternalDisconnect@CCmdTarget@@QEAAXXZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index f22dc09f144..6e004f4100d 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -7999,7 +7999,7 @@
+ 4255 stub -arch=i386 -noname ?dwStyleDefault@CEditView@@2KB
+ 4255 stub -arch=win64 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QEAAXH@Z
+ 4256 stub -arch=i386 -noname ?Edit@CDaoRecordset@@UAEXXZ
+-4256 stub -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++4256 cdecl -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4257 stub -arch=i386 -noname ?Edit@CRecordset@@UAEXXZ
+ 4257 stub -arch=win64 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QEAAXH@Z
+ 4258 stub -arch=i386 -noname ?EditItem@CMFCPropertyGridCtrl@@UAEHPAVCMFCPropertyGridProperty@@PAUtagPOINT@@@Z
+@@ -8282,7 +8282,7 @@
+ 4396 stub -arch=win64 -noname ?ExportToMenuButton@CMFCToolBarDateTimeCtrl@@UEBAHAEAVCMFCToolBarMenuButton@@@Z
+ 4397 stub -arch=i386 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QAEXH@Z
+ 4397 stub -arch=win64 -noname ?ExtendMenuButton@CMFCVisualManagerOfficeXP@@MEAAXPEAVCMFCToolBarMenuButton@@AEAVCRect@@@Z
+-4398 stub -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++4398 thiscall -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4398 stub -arch=win64 -noname ?ExternalAddRef@CCmdTarget@@QEAAKXZ
+ 4399 stub -arch=i386 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QAEXH@Z
+ 4399 stub -arch=win64 -noname ?ExternalDisconnect@CCmdTarget@@QEAAXXZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index f8d0de2d74a..475427c8a71 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -8099,7 +8099,7 @@
+ 4307 stub -arch=i386 -noname ?Edit@CRecordset@@UAEXXZ
+ 4307 stub -arch=win64 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QEAAXH@Z
+ 4308 stub -arch=i386 -noname ?EditItem@CMFCPropertyGridCtrl@@UAEHPAVCMFCPropertyGridProperty@@PAUtagPOINT@@@Z
+-4308 stub -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++4308 cdecl -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4309 stub -arch=i386 -noname ?EditItem@CVSListBox@@UAEHH@Z
+ 4309 stub -arch=win64 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QEAAXH@Z
+ 4310 stub -arch=i386 -noname ?EditProperty@XPropertyPage@COlePropertyPage@@UAGJJ@Z
+@@ -8380,7 +8380,7 @@
+ 4448 stub -arch=win64 -noname ?ExportToMenuButton@CMFCToolBarDateTimeCtrl@@UEBAHAEAVCMFCToolBarMenuButton@@@Z
+ 4449 stub -arch=i386 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QAEXH@Z
+ 4449 stub -arch=win64 -noname ?ExtendMenuButton@CMFCVisualManagerOfficeXP@@MEAAXPEAVCMFCToolBarMenuButton@@AEAVCRect@@@Z
+-4450 stub -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++4450 thiscall -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4450 stub -arch=win64 -noname ?ExternalAddRef@CCmdTarget@@QEAAKXZ
+ 4451 stub -arch=i386 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QAEXH@Z
+ 4451 stub -arch=win64 -noname ?ExternalDisconnect@CCmdTarget@@QEAAXXZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 3b739a96607..bd91e9e3f16 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -8117,7 +8117,7 @@
+ 4316 stub -arch=i386 -noname ?Edit@CRecordset@@UAEXXZ
+ 4316 stub -arch=win64 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QEAAXH@Z
+ 4317 stub -arch=i386 -noname ?EditItem@CMFCPropertyGridCtrl@@UAEHPAVCMFCPropertyGridProperty@@PAUtagPOINT@@@Z
+-4317 stub -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z
++4317 cdecl -arch=win64 -noname ?EnableTaskbarInteraction@CWinApp@@QEAAHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4318 stub -arch=i386 -noname ?EditItem@CVSListBox@@UAEHH@Z
+ 4318 stub -arch=win64 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QEAAXH@Z
+ 4319 stub -arch=i386 -noname ?EditProperty@XPropertyPage@COlePropertyPage@@UAGJJ@Z
+@@ -8398,7 +8398,7 @@
+ 4457 stub -arch=win64 -noname ?ExportToMenuButton@CMFCToolBarDateTimeCtrl@@UEBAHAEAVCMFCToolBarMenuButton@@@Z
+ 4458 stub -arch=i386 -noname ?EnableTabDocumentsMenu@CMFCTabCtrl@@QAEXH@Z
+ 4458 stub -arch=win64 -noname ?ExtendMenuButton@CMFCVisualManagerOfficeXP@@MEAAXPEAVCMFCToolBarMenuButton@@AEAVCRect@@@Z
+-4459 stub -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
++4459 thiscall -arch=i386 -noname ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z(ptr long) cwinapp_EnableTaskbarInteraction
+ 4459 stub -arch=win64 -noname ?ExternalAddRef@CCmdTarget@@QEAAKXZ
+ 4460 stub -arch=i386 -noname ?EnableTaskbarThumbnailClipRect@CMDIChildWndEx@@QAEXH@Z
+ 4460 stub -arch=win64 -noname ?ExternalDisconnect@CCmdTarget@@QEAAXXZ
+-- 
+2.37.2
+

@@ -1,8 +1,11 @@
-From 1ef58b4e431d2ae1553fae262ecaec456d67a484 Mon Sep 17 00:00:00 2001
+From df2c62a548695846f5a7d83b5f7213bf25d8930f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Sep 2022 07:47:10 +1000
-Subject: mfc: CWinAppEx Structure update
+Subject: [PATCH] mfc: CWinAppEx Structure update
 
+---
+ dlls/mfc/afxstate.c | 72 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 71 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
 index b5673c23ea8..7e0b2901d5e 100644
@@ -101,3 +104,6 @@ index b5673c23ea8..7e0b2901d5e 100644
  };
  
  /*
+-- 
+2.37.2
+

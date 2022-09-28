@@ -1,0 +1,172 @@
+From 379211387f9eaa2ef26339e1fd4d6bad7b18d88e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 29 Sep 2022 19:52:52 +1000
+Subject: [PATCH] mfc: CWinAppEx::InitTooltipManager stub
+
+---
+ dlls/mfc/afxstate.c       | 11 +++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 23 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 2836b477b02..9725dc0f0c7 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -349,6 +349,17 @@ BOOL __thiscall cwinapp_InitKeyboardManager(struct c_winappex *winapp)
+     return TRUE;
+ }
+ 
++/*
++ * ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++ * ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_InitTooltipManager, 4)
++BOOL __thiscall cwinapp_InitTooltipManager(struct c_winappex *winapp)
++{
++    FIXME("%p\n", winapp);
++    return TRUE;
++}
++
+ #endif
+ 
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index ac75a050fb0..e1416e65203 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -13201,7 +13201,7 @@
+ 6887 stub -arch=i386 -noname ?GetTypeInfo@XEventSink@COleControlSite@@UAGJIKPAPAUITypeInfo@@@Z
+ 6887 stub -arch=win64 -noname ?InitStyle@CMFCButton@@IEAAXK@Z
+ 6888 stub -arch=i386 -noname ?GetTypeInfoCount@CCmdTarget@@UAEIXZ
+-6888 stub -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ
++6888 cdecl -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitTooltipManager
+ 6889 stub -arch=i386 -noname ?GetTypeInfoCount@CDHtmlControlSink@@UAGJPAI@Z
+ 6889 stub -arch=win64 -noname ?InitTree@CMFCShellTreeCtrl@@IEAAXXZ
+ 6890 stub -arch=i386 -noname ?GetTypeInfoCount@CDHtmlElementEventSink@@UAGJPAI@Z
+@@ -13760,7 +13760,7 @@
+ 7166 stub -arch=win64 -noname ?IsUpToDate@XOleObject@COleServerDoc@@UEAAJXZ
+ 7167 stub -arch=i386 -noname ?InitTableDefsCollection@CDaoDatabase@@IAEXXZ
+ 7167 stub -arch=win64 -noname ?IsUpToDate@XOleObject@COleServerItem@@UEAAJXZ
+-7168 stub -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ
++7168 thiscall -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitTooltipManager
+ 7168 stub -arch=win64 -noname ?IsUserDefined@CMFCToolBar@@QEBAHXZ
+ 7169 stub -arch=i386 -noname ?InitTree@CMFCShellTreeCtrl@@IAEXXZ
+ 7169 stub -arch=win64 -noname ?IsUserDefinedToolbar@CFrameImpl@@IEBAHPEBVCMFCToolBar@@@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index cf820add932..4191ad30bb4 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -13261,7 +13261,7 @@
+ 6917 stub -arch=i386 -noname ?GetTypeInfo@CDHtmlEventSink@@UAGJIKPAPAUITypeInfo@@@Z
+ 6917 stub -arch=win64 -noname ?InitStyle@CMFCButton@@IEAAXK@Z
+ 6918 stub -arch=i386 -noname ?GetTypeInfo@COleDispatchImpl@@UAGJIKPAPAUITypeInfo@@@Z
+-6918 stub -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ
++6918 cdecl -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitTooltipManager
+ 6919 stub -arch=i386 -noname ?GetTypeInfo@XAccessible@CWnd@@UAGJIKPAPAUITypeInfo@@@Z
+ 6919 stub -arch=win64 -noname ?InitTree@CMFCShellTreeCtrl@@IEAAXXZ
+ 6920 stub -arch=i386 -noname ?GetTypeInfo@XAmbientProps@COleControlSite@@UAGJIKPAPAUITypeInfo@@@Z
+@@ -13830,7 +13830,7 @@
+ 7201 stub -arch=win64 -noname ?IsUserDefined@CMFCToolBar@@QEBAHXZ
+ 7202 stub -arch=i386 -noname ?InitTableDefsCollection@CDaoDatabase@@IAEXXZ
+ 7202 stub -arch=win64 -noname ?IsUserDefinedToolbar@CFrameImpl@@IEBAHPEBVCMFCToolBar@@@Z
+-7203 stub -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ
++7203 thiscall -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitTooltipManager
+ 7203 stub -arch=win64 -noname ?IsValueChanged@CMFCPropertyGridProperty@@MEBAHXZ
+ 7204 stub -arch=i386 -noname ?InitTree@CMFCShellTreeCtrl@@IAEXXZ
+ 7204 stub -arch=win64 -noname ?IsVisible@CBasePane@@UEBAHXZ
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 8da0d837bab..3a17a31e1ef 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -14594,7 +14594,7 @@
+ 7554 stub -arch=i386 -noname ?GetUserType@XOleObject@CDocObjectServer@@UAGJKPAPA_W@Z
+ 7554 stub -arch=win64 -noname ?InitStyle@CMFCButton@@IEAAXK@Z
+ 7555 stub -arch=i386 -noname ?GetUserType@XOleObject@COleControl@@UAGJKPAPA_W@Z
+-7555 stub -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ
++7555 cdecl -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitTooltipManager
+ 7556 stub -arch=i386 -noname ?GetUserType@XOleObject@COleServerDoc@@UAGJKPAPA_W@Z
+ 7556 stub -arch=win64 -noname ?InitTree@CMFCShellTreeCtrl@@IEAAXXZ
+ 7557 stub -arch=i386 -noname ?GetUserType@XOleObject@COleServerItem@@UAGJKPAPA_W@Z
+@@ -15151,7 +15151,7 @@
+ 7833 stub -arch=win64 -noname ?IsTabVisible@CMFCBaseTabCtrl@@UEBAHH@Z
+ 7834 stub -arch=i386 -noname ?InitTableDefsCollection@CDaoDatabase@@IAEXXZ
+ 7834 stub -arch=win64 -noname ?IsTaskbarInteractionEnabled@CWinApp@@UEAAHXZ
+-7835 stub -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ
++7835 thiscall -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitTooltipManager
+ 7835 stub -arch=win64 -noname ?IsTaskbarTabsSupportEnabled@CMDIChildWndEx@@QEAAHXZ
+ 7836 stub -arch=i386 -noname ?InitTree@CMFCShellTreeCtrl@@IAEXXZ
+ 7836 stub -arch=win64 -noname ?IsToolbarRoundShape@CMFCVisualManagerOffice2003@@UEAAHPEAVCMFCToolBar@@@Z
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 5f98d57c9b8..7c9c1e57d7c 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -14656,7 +14656,7 @@
+ 7585 stub -arch=i386 -noname ?GetUserToolBarByIndex@CFrameImpl@@IBEPAVCMFCToolBar@@H@Z
+ 7585 stub -arch=win64 -noname ?InitStyle@CMFCButton@@IEAAXK@Z
+ 7586 stub -arch=i386 -noname ?GetUserToolsManager@CWinAppEx@@QAEPAVCUserToolsManager@@XZ
+-7586 stub -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ
++7586 cdecl -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitTooltipManager
+ 7587 stub -arch=i386 -noname ?GetUserType@COleClientItem@@QAEXW4tagUSERCLASSTYPE@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 7587 stub -arch=win64 -noname ?InitTree@CMFCShellTreeCtrl@@IEAAXXZ
+ 7588 stub -arch=i386 -noname ?GetUserType@COleControl@@IAEXPA_W@Z
+@@ -15223,7 +15223,7 @@
+ 7869 stub -arch=win64 -noname ?IsTaskbarTabsSupportEnabled@CMDIChildWndEx@@QEAAHXZ
+ 7870 stub -arch=i386 -noname ?InitTableDefsCollection@CDaoDatabase@@IAEXXZ
+ 7870 stub -arch=win64 -noname ?IsToolbarRoundShape@CMFCVisualManagerOffice2003@@UEAAHPEAVCMFCToolBar@@@Z
+-7871 stub -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ
++7871 thiscall -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitTooltipManager
+ 7871 stub -arch=win64 -noname ?IsTopParentActive@CWnd@@QEBAHXZ
+ 7872 stub -arch=i386 -noname ?InitTree@CMFCShellTreeCtrl@@IAEXXZ
+ 7872 stub -arch=win64 -noname ?IsTouchWindow@CWnd@@QEBAHXZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index cfb578d0987..4056b13b78d 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -14897,7 +14897,7 @@
+ 7707 stub -arch=i386 -noname ?GetUserType@XOleObject@COleServerItem@@UAGJKPAPA_W@Z
+ 7707 stub -arch=win64 -noname ?InitStyle@CMFCButton@@IEAAXK@Z
+ 7708 stub -arch=i386 -noname ?GetValidationRule@CDaoRecordset@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ
+-7708 stub -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ
++7708 cdecl -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitTooltipManager
+ 7709 stub -arch=i386 -noname ?GetValidationRule@CDaoTableDef@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ
+ 7709 stub -arch=win64 -noname ?InitTree@CMFCShellTreeCtrl@@IEAAXXZ
+ 7710 stub -arch=i386 -noname ?GetValidationText@CDaoRecordset@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ
+@@ -15456,7 +15456,7 @@
+ 7986 stub -arch=win64 -noname ?IsTabIconOnly@CMFCBaseTabCtrl@@UEBAHH@Z
+ 7987 stub -arch=i386 -noname ?InitTableDefsCollection@CDaoDatabase@@IAEXXZ
+ 7987 stub -arch=win64 -noname ?IsTabLocationBottom@CTabbedPane@@UEBAHXZ
+-7988 stub -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ
++7988 thiscall -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitTooltipManager
+ 7988 stub -arch=win64 -noname ?IsTabVisible@CMFCBaseTabCtrl@@UEBAHH@Z
+ 7989 stub -arch=i386 -noname ?InitTree@CMFCShellTreeCtrl@@IAEXXZ
+ 7989 stub -arch=win64 -noname ?IsTaskbarInteractionEnabled@CWinApp@@UEAAHXZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index c4793dcd1f1..00c0736a2a2 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -14959,7 +14959,7 @@
+ 7738 stub -arch=i386 -noname ?GetUserType@COleControl@@IAEXPA_W@Z
+ 7738 stub -arch=win64 -noname ?InitStyle@CMFCButton@@IEAAXK@Z
+ 7739 stub -arch=i386 -noname ?GetUserType@XOleObject@CDocObjectServer@@UAGJKPAPA_W@Z
+-7739 stub -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ
++7739 cdecl -arch=win64 -noname ?InitTooltipManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitTooltipManager
+ 7740 stub -arch=i386 -noname ?GetUserType@XOleObject@COleControl@@UAGJKPAPA_W@Z
+ 7740 stub -arch=win64 -noname ?InitTree@CMFCShellTreeCtrl@@IEAAXXZ
+ 7741 stub -arch=i386 -noname ?GetUserType@XOleObject@COleServerDoc@@UAGJKPAPA_W@Z
+@@ -15528,7 +15528,7 @@
+ 8022 stub -arch=win64 -noname ?IsTabVisible@CMFCBaseTabCtrl@@UEBAHH@Z
+ 8023 stub -arch=i386 -noname ?InitTableDefsCollection@CDaoDatabase@@IAEXXZ
+ 8023 stub -arch=win64 -noname ?IsTaskbarInteractionEnabled@CWinApp@@UEAAHXZ
+-8024 stub -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ
++8024 thiscall -arch=i386 -noname ?InitTooltipManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitTooltipManager
+ 8024 stub -arch=win64 -noname ?IsTaskbarTabsSupportEnabled@CMDIChildWndEx@@QEAAHXZ
+ 8025 stub -arch=i386 -noname ?InitTree@CMFCShellTreeCtrl@@IAEXXZ
+ 8025 stub -arch=win64 -noname ?IsToolbarRoundShape@CMFCVisualManagerOffice2003@@UEAAHPEAVCMFCToolBar@@@Z
+-- 
+2.37.2
+

@@ -1,4 +1,4 @@
-From 050ccd8eb79b0bb78cc2d924eed21ebbc6980bc7 Mon Sep 17 00:00:00 2001
+From 53e9a75eba7c5e7c1d955dd73d5f4b90d715199b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Sep 2022 20:40:38 +1000
 Subject: [PATCH] mfc: AfxOleInit semi-stub
@@ -24,7 +24,7 @@ Subject: [PATCH] mfc: AfxOleInit semi-stub
  17 files changed, 34 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index 411083d17c4..564d546455b 100644
+index 411083d17c4..b1bc458ae58 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -20,6 +20,7 @@
@@ -58,23 +58,23 @@ index 411083d17c4..564d546455b 100644
  {
      afxWinHelp = 0,
 diff --git a/dlls/mfc100/Makefile.in b/dlls/mfc100/Makefile.in
-index e3e75048414..0e6ee2d66cb 100644
+index 0f47d152d9d..6ca3f2d66fc 100644
 --- a/dlls/mfc100/Makefile.in
 +++ b/dlls/mfc100/Makefile.in
 @@ -1,4 +1,5 @@
  MODULE = mfc100.dll
 +IMPORTS   = ole32
- EXTRADEFS = -D_MFC_VER=0x0e00
+ EXTRADEFS = -D_MFC_VER=0x0a00
  EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
 diff --git a/dlls/mfc100u/Makefile.in b/dlls/mfc100u/Makefile.in
-index f24423b142b..2798dc3791f 100644
+index 424043257a9..7d134219941 100644
 --- a/dlls/mfc100u/Makefile.in
 +++ b/dlls/mfc100u/Makefile.in
 @@ -1,4 +1,5 @@
  MODULE = mfc100u.dll
 +IMPORTS   = ole32
- EXTRADEFS = -D_MFC_VER=0x0e00 -D_UNICODE
+ EXTRADEFS = -D_MFC_VER=0x0a00 -D_UNICODE
  EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
 diff --git a/dlls/mfc110/Makefile.in b/dlls/mfc110/Makefile.in

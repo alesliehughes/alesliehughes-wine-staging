@@ -1,8 +1,17 @@
-From b1ac49808c9ec4179411e4199e18f57f886e8c0e Mon Sep 17 00:00:00 2001
+From 025a1f2542b5f19e04aaff9cbe83af01bbb75a38 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 18:09:15 +1000
-Subject: mfc: Imeplement CWinApp::SetAppID
+Subject: [PATCH] mfc: Imeplement CWinApp::SetAppID
 
+---
+ dlls/mfc/afxstate.c       | 18 +++++++++++++++++-
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 29 insertions(+), 13 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
 index 9c74b60a109..ced546a1cfd 100644
@@ -171,3 +180,6 @@ index 5d5d40b0252..5d38119baaa 100644
  13248 stub -arch=win64 -noname ?SetHotRibbonButton@CMFCToolTipCtrl@@QEAAXPEAVCMFCRibbonButton@@@Z
  13249 stub -arch=i386 -noname ?SetApplicationButton@CMFCRibbonBar@@QAEXPAVCMFCRibbonApplicationButton@@VCSize@@@Z
  13249 stub -arch=win64 -noname ?SetHotTextColor@CMFCToolBar@@SAXK@Z
+-- 
+2.37.2
+

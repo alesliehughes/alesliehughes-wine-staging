@@ -1,7 +1,7 @@
-From b163cb8c9c4be8922f2312fc8052a389809627de Mon Sep 17 00:00:00 2001
+From 16018ad296c92506792d46a4c9440f4f3940fe88 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 14:41:03 +1000
-Subject: [PATCH 04/10] mfc: Implement AfxClassInit
+Subject: [PATCH] mfc: Implement AfxClassInit
 
 ---
  dlls/mfc/afxstate.c       | 11 +++++++++++
@@ -323,5 +323,5 @@ index 8f89f513b3d..b5b2e6ed8a9 100644
  1071 stub -arch=i386 -noname ?AfxComparePath@@YGHPB_W0@Z
  1071 stub -arch=win64 -noname ?AfxEnableControlContainer@@YAXPEAVCOccManager@@@Z
 -- 
-2.35.1
+2.37.2
 

@@ -1,0 +1,409 @@
+From b985fdd210744482f9cd1d6bcfb7fdd77b5bb854 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 28 Sep 2022 21:28:48 +1000
+Subject: [PATCH] mfc: CWinApp::SetRegistryKey string/int stubs
+
+---
+ dlls/mfc/afxstate.c       | 20 ++++++++++++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  8 ++++----
+ dlls/mfc110/mfc110.spec   |  8 ++++----
+ dlls/mfc110u/mfc110u.spec |  8 ++++----
+ dlls/mfc140/mfc140.spec   |  8 ++++----
+ dlls/mfc140u/mfc140u.spec |  8 ++++----
+ dlls/mfc42/mfc42.spec     |  8 ++++----
+ dlls/mfc42u/mfc42u.spec   |  8 ++++----
+ dlls/mfc71/mfc71.spec     |  4 ++--
+ dlls/mfc71u/mfc71u.spec   |  4 ++--
+ dlls/mfc80/mfc80.spec     |  8 ++++----
+ dlls/mfc80u/mfc80u.spec   |  8 ++++----
+ dlls/mfc90/mfc90.spec     |  8 ++++----
+ dlls/mfc90u/mfc90u.spec   |  8 ++++----
+ 15 files changed, 70 insertions(+), 50 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index fd47e1cc55c..c51f6c45e23 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -287,6 +287,26 @@ void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
+     FIXME("%p, %s\n", winapp, debugstr_a(appid));
+ }
+ 
++/*
++ * ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z
++ * ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_SetRegistryKeyStr, 8)
++void __thiscall cwinapp_SetRegistryKeyStr(struct c_winappex *winapp, TCHAR *key)
++{
++    FIXME("%p, %s\n", winapp, debugstr_tchar(key));
++}
++
++/*
++ * ?SetRegistryKey@CWinApp@@IAEXI@Z
++ * ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_SetRegistryKeyUINT, 8)
++void __thiscall cwinapp_SetRegistryKeyUINT(struct c_winappex *winapp, UINT key)
++{
++    FIXME("%p, %u\n", winapp, key);
++}
++
+ #if _MFC_VER >= 0x0a00
+ /*
+  * ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index bc45d7cf1c0..bf318eb0944 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -24727,9 +24727,9 @@
+ 12669 stub -arch=win64 -noname ?StretchPane@CMFCToolBar@@UEAA?AVCSize@@HH@Z
+ 12670 stub -arch=i386 -noname ?SetRegistryBase@CWinAppEx@@QAEPBDPBD@Z
+ 12670 stub -arch=win64 -noname ?StretchPaneContainer@CPaneContainer@@UEAAHHHHHAEAPEAX@Z
+-12671 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++12671 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 12671 stub -arch=win64 -noname ?StretchPaneDeferWndPos@CPane@@UEAAHHAEAPEAX@Z
+-12672 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++12672 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 12672 stub -arch=win64 -noname ?StretchPaneRect@CDockingPanesRow@@IEAAHPEAVCPane@@H@Z
+ 12673 stub -arch=i386 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QAEXPAVCMFCShellListCtrl@@@Z
+ 12673 stub -arch=win64 -noname ?StretchToWholeRow@CMFCRibbonBaseElement@@UEAAHPEAVCDC@@H@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index e9645ae626a..4e2df84bbf3 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -24162,9 +24162,9 @@
+ 12385 stub -arch=i386 -noname ?SetElementText@CDHtmlDialog@@QAEXPB_WPA_W@Z
+ 12385 stub -arch=win64 -noname ?SetRegistryBase@CWinAppEx@@QEAAPEB_WPEB_W@Z
+ 12386 stub -arch=i386 -noname ?SetEnabled@COleControl@@QAEXH@Z
+-12386 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++12386 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 12387 stub -arch=i386 -noname ?SetExpansionArea@CTaskDialog@@QAEXABV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@00@Z
+-12387 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z
++12387 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 12388 stub -arch=i386 -noname ?SetExtent@COleClientItem@@QAEXABVCSize@@W4tagDVASPECT@@@Z
+ 12388 stub -arch=win64 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QEAAXPEAVCMFCShellListCtrl@@@Z
+ 12389 stub -arch=i386 -noname ?SetExtent@COleControlSite@@IAEHXZ
+@@ -24888,9 +24888,9 @@
+ 12750 stub -arch=win64 -noname ?StretchPaneContainer@CPaneContainer@@UEAAHHHHHAEAPEAX@Z
+ 12751 stub -arch=i386 -noname ?SetRegistryBase@CWinAppEx@@QAEPB_WPB_W@Z
+ 12751 stub -arch=win64 -noname ?StretchPaneDeferWndPos@CPane@@UEAAHHAEAPEAX@Z
+-12752 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++12752 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 12752 stub -arch=win64 -noname ?StretchPaneRect@CDockingPanesRow@@IEAAHPEAVCPane@@H@Z
+-12753 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++12753 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 12753 stub -arch=win64 -noname ?StretchToWholeRow@CMFCRibbonBaseElement@@UEAAHPEAVCDC@@H@Z
+ 12754 stub -arch=i386 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QAEXPAVCMFCShellListCtrl@@@Z
+ 12754 stub -arch=win64 -noname ?StringFromCy@CGlobalUtils@@QEAAHAEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@AEATtagCY@@@Z
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index 72a028cf186..d810b12ef61 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -26031,9 +26031,9 @@
+ 13288 stub -arch=i386 -noname ?SetFileTimeValue@CMFCFilterChunkValueImpl@@UAEJABU_tagpropertykey@@U_FILETIME@@W4tagCHUNKSTATE@@KKKW4tagCHUNK_BREAKTYPE@@@Z
+ 13288 stub -arch=win64 -noname ?SetRegistryBase@CWinAppEx@@QEAAPEBDPEBD@Z
+ 13289 stub -arch=i386 -noname ?SetFillMode@CD2DGeometrySink@@QAEXW4D2D1_FILL_MODE@@@Z
+-13289 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++13289 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13290 stub -arch=i386 -noname ?SetFirstDayOfWeek@CMonthCalCtrl@@QAEHHPAH@Z
+-13290 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z
++13290 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 13291 stub -arch=i386 -noname ?SetFlags@CMFCPropertyGridProperty@@IAEXXZ
+ 13291 stub -arch=win64 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QEAAXPEAVCMFCShellListCtrl@@@Z
+ 13292 stub -arch=i386 -noname ?SetFlags@CMFCShellTreeCtrl@@QAEXKH@Z
+@@ -26752,9 +26752,9 @@
+ 13648 stub -arch=win64 -noname ?StartVisualGroup@CFileDialog@@QEAAJKAEBV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 13649 stub -arch=i386 -noname ?SetRegistryBase@CWinAppEx@@QAEPBDPBD@Z
+ 13649 stub -arch=win64 -noname ?StartWindowMove@CMFCDesktopAlertWnd@@IEAAXXZ
+-13650 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++13650 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13650 stub -arch=win64 -noname ?Stat@CArchiveStream@@UEAAJPEAUtagSTATSTG@@K@Z
+-13651 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++13651 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 13651 stub -arch=win64 -noname ?Stop@CSmartDockingManager@@QEAAXXZ
+ 13652 stub -arch=i386 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QAEXPAVCMFCShellListCtrl@@@Z
+ 13652 stub -arch=win64 -noname ?StopAnimation@CMFCRibbonStatusBarPane@@QEAAXXZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 6e004f4100d..40bad89d8d1 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -26183,9 +26183,9 @@
+ 13364 stub -arch=i386 -noname ?SetFocus@COleControlSite@@UAEPAVCWnd@@XZ
+ 13364 stub -arch=win64 -noname ?SetRegistryBase@CWinAppEx@@QEAAPEB_WPEB_W@Z
+ 13365 stub -arch=i386 -noname ?SetFocus@CWnd@@QAEPAV1@XZ
+-13365 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++13365 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13366 stub -arch=i386 -noname ?SetFocus@XOleIPSite@COleControlSite@@UAGJH@Z
+-13366 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z
++13366 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 13367 stub -arch=i386 -noname ?SetFocus@XPreviewHandler@CDocument@@UAGJXZ
+ 13367 stub -arch=win64 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QEAAXPEAVCMFCShellListCtrl@@@Z
+ 13368 stub -arch=i386 -noname ?SetFocused@CMFCRibbonPanel@@QAEXPAVCMFCRibbonBaseElement@@@Z
+@@ -26914,9 +26914,9 @@
+ 13729 stub -arch=win64 -noname ?StartWindowMove@CMFCDesktopAlertWnd@@IEAAXXZ
+ 13730 stub -arch=i386 -noname ?SetRegistryBase@CWinAppEx@@QAEPB_WPB_W@Z
+ 13730 stub -arch=win64 -noname ?Stat@CArchiveStream@@UEAAJPEAUtagSTATSTG@@K@Z
+-13731 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++13731 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13731 stub -arch=win64 -noname ?Stop@CSmartDockingManager@@QEAAXXZ
+-13732 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++13732 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 13732 stub -arch=win64 -noname ?StopAnimation@CMFCRibbonStatusBarPane@@QEAAXXZ
+ 13733 stub -arch=i386 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QAEXPAVCMFCShellListCtrl@@@Z
+ 13733 stub -arch=win64 -noname ?StopCaptionButtonsTracking@CDockablePane@@MEAAXXZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 475427c8a71..a1421622e77 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -26414,9 +26414,9 @@
+ 13467 stub -arch=i386 -noname ?SetFileTimeValue@CMFCFilterChunkValueImpl@@UAEJABU_tagpropertykey@@U_FILETIME@@W4tagCHUNKSTATE@@KKKW4tagCHUNK_BREAKTYPE@@@Z
+ 13467 stub -arch=win64 -noname ?SetRegistryBase@CWinAppEx@@QEAAPEBDPEBD@Z
+ 13468 stub -arch=i386 -noname ?SetFillMode@CD2DGeometrySink@@QAEXW4D2D1_FILL_MODE@@@Z
+-13468 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++13468 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13469 stub -arch=i386 -noname ?SetFirstDayOfWeek@CMonthCalCtrl@@QAEHHPAH@Z
+-13469 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z
++13469 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 13470 stub -arch=i386 -noname ?SetFlags@CMFCPropertyGridProperty@@IAEXXZ
+ 13470 stub -arch=win64 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QEAAXPEAVCMFCShellListCtrl@@@Z
+ 13471 stub -arch=i386 -noname ?SetFlags@CMFCShellTreeCtrl@@QAEXKH@Z
+@@ -27134,9 +27134,9 @@
+ 13827 stub -arch=win64 -noname ?StartVisualGroup@CFileDialog@@QEAAJKAEBV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
+ 13828 stub -arch=i386 -noname ?SetRegistryBase@CWinAppEx@@QAEPBDPBD@Z
+ 13828 stub -arch=win64 -noname ?StartWindowMove@CMFCDesktopAlertWnd@@IEAAXXZ
+-13829 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++13829 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13829 stub -arch=win64 -noname ?Stat@CArchiveStream@@UEAAJPEAUtagSTATSTG@@K@Z
+-13830 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++13830 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 13830 stub -arch=win64 -noname ?Stop@CSmartDockingManager@@QEAAXXZ
+ 13831 stub -arch=i386 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QAEXPAVCMFCShellListCtrl@@@Z
+ 13831 stub -arch=win64 -noname ?StopAnimation@CMFCRibbonStatusBarPane@@QEAAXXZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index bd91e9e3f16..4eab6260b2e 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -26566,9 +26566,9 @@
+ 13543 stub -arch=i386 -noname ?SetFocus@COleControlSite@@UAEPAVCWnd@@XZ
+ 13543 stub -arch=win64 -noname ?SetRegistryBase@CWinAppEx@@QEAAPEB_WPEB_W@Z
+ 13544 stub -arch=i386 -noname ?SetFocus@CWnd@@QAEPAV1@XZ
+-13544 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++13544 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13545 stub -arch=i386 -noname ?SetFocus@XOleIPSite@COleControlSite@@UAGJH@Z
+-13545 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z
++13545 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 13546 stub -arch=i386 -noname ?SetFocus@XPreviewHandler@CDocument@@UAGJXZ
+ 13546 stub -arch=win64 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QEAAXPEAVCMFCShellListCtrl@@@Z
+ 13547 stub -arch=i386 -noname ?SetFocused@CMFCRibbonPanel@@QAEXPAVCMFCRibbonBaseElement@@@Z
+@@ -27296,9 +27296,9 @@
+ 13908 stub -arch=win64 -noname ?StartWindowMove@CMFCDesktopAlertWnd@@IEAAXXZ
+ 13909 stub -arch=i386 -noname ?SetRegistryBase@CWinAppEx@@QAEPB_WPB_W@Z
+ 13909 stub -arch=win64 -noname ?Stat@CArchiveStream@@UEAAJPEAUtagSTATSTG@@K@Z
+-13910 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++13910 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 13910 stub -arch=win64 -noname ?Stop@CSmartDockingManager@@QEAAXXZ
+-13911 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++13911 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 13911 stub -arch=win64 -noname ?StopAnimation@CMFCRibbonStatusBarPane@@QEAAXXZ
+ 13912 stub -arch=i386 -noname ?SetRelatedList@CMFCShellTreeCtrl@@QAEXPAVCMFCShellListCtrl@@@Z
+ 13912 stub -arch=win64 -noname ?StopCaptionButtonsTracking@CDockablePane@@MEAAXXZ
+diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
+index bdb82e36c63..515fb0c3459 100644
+--- a/dlls/mfc42/mfc42.spec
++++ b/dlls/mfc42/mfc42.spec
+@@ -11429,9 +11429,9 @@
+ 6114 stub -arch=win64 -noname ?ScrollToDevicePosition@CScrollView@@IEAAXUtagPOINT@@@Z
+ 6115 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+ 6115 stub -arch=win64 -noname ?ScrollToPosition@CScrollView@@QEAAXUtagPOINT@@@Z
+-6116 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++6116 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6116 stub -arch=win64 -noname ?ScrollWindow@COleControl@@QEAAXHHPEBUtagRECT@@0@Z
+-6117 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++6117 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 6117 stub -arch=win64 -noname ?ScrollWindow@CWnd@@QEAAXHHPEBUtagRECT@@0@Z
+ 6118 stub -arch=i386 -noname ?SetReturnsRecords@CDaoQueryDef@@QAEXH@Z
+ 6118 stub -arch=win64 -noname ?ScrollWindowEx@CWnd@@QEAAHHHPEBUtagRECT@@0PEAVCRgn@@PEAU2@I@Z
+@@ -12230,9 +12230,9 @@
+ 6516 stub -arch=i386 -noname ??1CMDIChildWnd@@UAE@XZ
+ 6516 stub -arch=win64 -noname ?SetRectRgn@CRgn@@QEAAXPEBUtagRECT@@@Z
+ 6517 stub -arch=i386 -noname ??1CMDIFrameWnd@@UAE@XZ
+-6517 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++6517 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6518 stub -arch=i386 -noname ??1CMemoryException@@UAE@XZ
+-6518 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z
++6518 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 6519 stub -arch=i386 -noname ??1CMiniDockFrameWnd@@UAE@XZ
+ 6519 stub -arch=win64 -noname ?SetROP2@CDC@@QEAAHH@Z
+ 6520 stub -arch=i386 -noname ??1CMonthCalCtrl@@UAE@XZ
+diff --git a/dlls/mfc42u/mfc42u.spec b/dlls/mfc42u/mfc42u.spec
+index 12ed6f87374..6bf0bcb79a7 100644
+--- a/dlls/mfc42u/mfc42u.spec
++++ b/dlls/mfc42u/mfc42u.spec
+@@ -11421,9 +11421,9 @@
+ 6110 stub -arch=win64 -noname ?ScrollWindow@CWnd@@QEAAXHHPEBUtagRECT@@0@Z
+ 6111 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+ 6111 stub -arch=win64 -noname ?ScrollWindowEx@CWnd@@QEAAHHHPEBUtagRECT@@0PEAVCRgn@@PEAU2@I@Z
+-6112 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++6112 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6112 stub -arch=win64 -noname ?SearchDown@CFindReplaceDialog@@QEBAHXZ
+-6113 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBG@Z
++6113 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBG@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 6113 stub -arch=win64 -noname ?Seek@CArchiveStream@@UEAAJT_LARGE_INTEGER@@KPEAT_ULARGE_INTEGER@@@Z
+ 6114 stub -arch=i386 -noname ?SetReturnsRecords@CDaoQueryDef@@QAEXH@Z
+ 6114 stub -arch=win64 -noname ?Seek@CFile@@UEAAJJI@Z
+@@ -12213,9 +12213,9 @@
+ 6508 stub -arch=i386 -noname ??1CFontPropPageFactory@CFontPropPage@@UAE@XZ
+ 6508 stub -arch=win64 -noname ?SetRectRgn@CRgn@@QEAAXPEBUtagRECT@@@Z
+ 6509 stub -arch=i386 -noname ??1CHandleMap@@QAE@XZ
+-6509 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++6509 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6510 stub -arch=i386 -noname ??1CHtmlView@@UAE@XZ
+-6510 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBG@Z
++6510 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBG@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 6511 stub -arch=i386 -noname ??1CIPAddressCtrl@@UAE@XZ
+ 6511 stub -arch=win64 -noname ?SetROP2@CDC@@QEAAHH@Z
+ 6512 stub -arch=i386 -noname ??1CMDIChildWnd@@UAE@XZ
+diff --git a/dlls/mfc71/mfc71.spec b/dlls/mfc71/mfc71.spec
+index d069cea0dae..d455ffd2942 100644
+--- a/dlls/mfc71/mfc71.spec
++++ b/dlls/mfc71/mfc71.spec
+@@ -5715,8 +5715,8 @@
+ 5971 stub -arch=i386 -noname ?SetRect@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@@Z
+ 5972 stub -arch=i386 -noname ?SetRectComplex@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@000@Z
+ 5973 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+-5974 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
+-5975 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++5974 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
++5975 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 5976 stub -arch=i386 -noname ?SetROP2@CDC@@QAEHH@Z
+ 5977 stub -arch=i386 -noname ?SetRowInfo@CSplitterWnd@@QAEXHHH@Z
+ 5978 stub -arch=i386 -noname ?SetRowsetCurrencyStatus@CRecordset@@UAEXFGJK@Z
+diff --git a/dlls/mfc71u/mfc71u.spec b/dlls/mfc71u/mfc71u.spec
+index c8dc1449cae..0591dc7296b 100644
+--- a/dlls/mfc71u/mfc71u.spec
++++ b/dlls/mfc71u/mfc71u.spec
+@@ -5711,8 +5711,8 @@
+ 5967 stub -arch=i386 -noname ?SetRect@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@@Z
+ 5968 stub -arch=i386 -noname ?SetRectComplex@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@000@Z
+ 5969 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+-5970 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
+-5971 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++5970 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
++5971 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 5972 stub -arch=i386 -noname ?SetROP2@CDC@@QAEHH@Z
+ 5973 stub -arch=i386 -noname ?SetRowInfo@CSplitterWnd@@QAEXHHH@Z
+ 5974 stub -arch=i386 -noname ?SetRowsetCurrencyStatus@CRecordset@@UAEXFGJK@Z
+diff --git a/dlls/mfc80/mfc80.spec b/dlls/mfc80/mfc80.spec
+index 90516e434e1..29553328fba 100644
+--- a/dlls/mfc80/mfc80.spec
++++ b/dlls/mfc80/mfc80.spec
+@@ -11433,9 +11433,9 @@
+ 5972 stub -arch=win64 -noname ?SetPaneStyle@CStatusBar@@QEAAXHI@Z
+ 5973 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+ 5973 stub -arch=win64 -noname ?SetPaneText@CStatusBar@@QEAAHHPEBDH@Z
+-5974 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++5974 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 5974 stub -arch=win64 -noname ?SetParaFormat@CRichEditCtrl@@QEAAHAEAU_paraformat@@@Z
+-5975 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++5975 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 5975 stub -arch=win64 -noname ?SetParaFormat@CRichEditCtrl@@QEAAHAEAUPARAFORMAT2@@@Z
+ 5976 stub -arch=i386 -noname ?SetROP2@CDC@@QAEHH@Z
+ 5976 stub -arch=win64 -noname ?SetParaFormat@CRichEditView@@QEAAHAEAUPARAFORMAT2@@@Z
+@@ -11522,9 +11522,9 @@
+ 6017 stub -arch=i386 -noname ?SetStretchBltMode@CDC@@QAEHH@Z
+ 6017 stub -arch=win64 -noname ?SetRectInContainer@COleControl@@QEAAHPEBUtagRECT@@@Z
+ 6018 stub -arch=i386 -noname ?SetString@?$CSimpleStringT@_W$00@ATL@@QAEXPB_W@Z
+-6018 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++6018 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6019 stub -arch=i386 -noname ?SetString@?$CSimpleStringT@_W$00@ATL@@QAEXPB_WH@Z
+-6019 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z
++6019 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 6020 stub -arch=i386 -noname ?SetString@?$CSimpleStringT@D$00@ATL@@QAEXPBD@Z
+ 6020 stub -arch=win64 -noname ?SetROP2@CDC@@QEAAHH@Z
+ 6021 stub -arch=i386 -noname ?SetString@?$CSimpleStringT@D$00@ATL@@QAEXPBDH@Z
+diff --git a/dlls/mfc80u/mfc80u.spec b/dlls/mfc80u/mfc80u.spec
+index 821ff8e084c..988903929f8 100644
+--- a/dlls/mfc80u/mfc80u.spec
++++ b/dlls/mfc80u/mfc80u.spec
+@@ -11425,9 +11425,9 @@
+ 5968 stub -arch=win64 -noname ?SetParaFormat@CRichEditView@@QEAAHAEAUPARAFORMAT2@@@Z
+ 5969 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+ 5969 stub -arch=win64 -noname ?SetParamNull@CRecordset@@QEAAXHH@Z
+-5970 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
++5970 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 5970 stub -arch=win64 -noname ?SetPathName@CDocument@@UEAAXPEB_WH@Z
+-5971 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++5971 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 5971 stub -arch=win64 -noname ?SetPathName@COleDocument@@UEAAXPEB_WH@Z
+ 5972 stub -arch=i386 -noname ?SetROP2@CDC@@QAEHH@Z
+ 5972 stub -arch=win64 -noname ?SetPathName@CRichEditDoc@@UEAAXPEB_WH@Z
+@@ -11506,9 +11506,9 @@
+ 6009 stub -arch=i386 -noname ?SetStatus@CFile@@SGXPB_WABUCFileStatus@@@Z
+ 6009 stub -arch=win64 -noname ?SetRectInContainer@COleControl@@QEAAHPEBUtagRECT@@@Z
+ 6010 stub -arch=i386 -noname ?SetStatusText@CControlBar@@UAEHH@Z
+-6010 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++6010 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6011 stub -arch=i386 -noname ?SetStatusText@XOleInPlaceFrame@COleFrameHook@@UAGJPB_W@Z
+-6011 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z
++6011 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 6012 stub -arch=i386 -noname ?SetStatusText@XOleIPFrame@COleControlContainer@@UAGJPB_W@Z
+ 6012 stub -arch=win64 -noname ?SetROP2@CDC@@QEAAHH@Z
+ 6013 stub -arch=i386 -noname ?SetStretchBltMode@CDC@@QAEHH@Z
+diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
+index c2a288f443a..71b0ca20aab 100644
+--- a/dlls/mfc90/mfc90.spec
++++ b/dlls/mfc90/mfc90.spec
+@@ -11687,9 +11687,9 @@
+ 6099 stub -arch=i386 -noname ?SendRequestEx@CHttpFile@@QAEHKKK@Z
+ 6099 stub -arch=win64 -noname ?SetRectInContainer@COleControl@@QEAAHPEBUtagRECT@@@Z
+ 6100 stub -arch=i386 -noname ?SendRequestEx@CHttpFile@@QAEHPAU_INTERNET_BUFFERSA@@0KK@Z
+-6100 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++6100 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6101 stub -arch=i386 -noname ?SendTo@CAsyncSocket@@QAEHPBXHIPBDH@Z
+-6101 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z
++6101 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 6102 stub -arch=i386 -noname ?SendToHelper@CAsyncSocket@@MAEHPBXHPBUsockaddr@@HH@Z
+ 6102 stub -arch=win64 -noname ?SetROP2@CDC@@QEAAHH@Z
+ 6103 stub -arch=i386 -noname ?SendToHelper@CSocket@@MAEHPBXHPBUsockaddr@@HH@Z
+@@ -12395,8 +12395,8 @@
+ 6458 stub -arch=i386 -noname ?SetRect@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@@Z
+ 6459 stub -arch=i386 -noname ?SetRectComplex@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@000@Z
+ 6460 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+-6461 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
+-6462 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z
++6461 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
++6462 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPBD@Z(ptr str) cwinapp_SetRegistryKeyStr
+ 6463 stub -arch=i386 -noname ?SetReturnsRecords@CDaoQueryDef@@QAEXH@Z
+ 6464 stub -arch=i386 -noname ?SetROP2@CDC@@QAEHH@Z
+ 6465 stub -arch=i386 -noname ?SetRowInfo@CSplitterWnd@@QAEXHHH@Z
+diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
+index 4409ba9fb90..e35e645d914 100644
+--- a/dlls/mfc90u/mfc90u.spec
++++ b/dlls/mfc90u/mfc90u.spec
+@@ -11717,9 +11717,9 @@
+ 6114 stub -arch=i386 -noname ?SendRequest@CHttpFile@@QAEHAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@PAXK@Z
+ 6114 stub -arch=win64 -noname ?SetRectInContainer@COleControl@@QEAAHPEBUtagRECT@@@Z
+ 6115 stub -arch=i386 -noname ?SendRequest@CHttpFile@@QAEHPB_WKPAXK@Z
+-6115 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z
++6115 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
+ 6116 stub -arch=i386 -noname ?SendRequestEx@CHttpFile@@QAEHKKK@Z
+-6116 stub -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z
++6116 cdecl -arch=win64 -noname ?SetRegistryKey@CWinApp@@IEAAXPEB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 6117 stub -arch=i386 -noname ?SendRequestEx@CHttpFile@@QAEHPAU_INTERNET_BUFFERSW@@0KK@Z
+ 6117 stub -arch=win64 -noname ?SetROP2@CDC@@QEAAHH@Z
+ 6118 stub -arch=i386 -noname ?SendTo@CAsyncSocket@@QAEHPBXHIPB_WH@Z
+@@ -12430,8 +12430,8 @@
+ 6478 stub -arch=i386 -noname ?SetRect@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@@Z
+ 6479 stub -arch=i386 -noname ?SetRectComplex@XOleDocumentView@CDocObjectServer@@UAGJPAUtagRECT@@000@Z
+ 6480 stub -arch=i386 -noname ?SetRectInContainer@COleControl@@QAEHPBUtagRECT@@@Z
+-6481 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z
+-6482 stub -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z
++6481 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXI@Z(ptr long) cwinapp_SetRegistryKeyUINT
++6482 thiscall -arch=i386 -noname ?SetRegistryKey@CWinApp@@IAEXPB_W@Z(ptr wstr) cwinapp_SetRegistryKeyStr
+ 6483 stub -arch=i386 -noname ?SetReturnsRecords@CDaoQueryDef@@QAEXH@Z
+ 6484 stub -arch=i386 -noname ?SetROP2@CDC@@QAEHH@Z
+ 6485 stub -arch=i386 -noname ?SetRowInfo@CSplitterWnd@@QAEXHHH@Z
+-- 
+2.37.2
+

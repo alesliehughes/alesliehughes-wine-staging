@@ -1,7 +1,7 @@
-From b87184a5d42bbd2ba7daca1934e3abdee765402b Mon Sep 17 00:00:00 2001
+From ade703613c4c357ae4258cbb1bf5d00481b48a8a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 13:46:51 +1000
-Subject: [PATCH 03/10] mfc: Implement AfxGetModuleState function.
+Subject: [PATCH] mfc: Implement AfxGetModuleState function.
 
 ---
  dlls/mfc/Makefile.in      |  3 +++
@@ -88,11 +88,11 @@ index 00000000000..aa86e734a93
 +    return &global_module_state;
 +}
 diff --git a/dlls/mfc100/Makefile.in b/dlls/mfc100/Makefile.in
-index 9d5556928d6..e3e75048414 100644
+index 3ef11c878af..0f47d152d9d 100644
 --- a/dlls/mfc100/Makefile.in
 +++ b/dlls/mfc100/Makefile.in
 @@ -2,3 +2,6 @@ MODULE = mfc100.dll
- EXTRADEFS = -D_MFC_VER=0x0e00
+ EXTRADEFS = -D_MFC_VER=0x0a00
  EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
 +
@@ -122,11 +122,11 @@ index 03b07142cd5..9ba94084576 100644
  1930 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
  1930 stub -arch=win64 -noname ?AfxIsValidAddress@@YAHPEBX_KH@Z
 diff --git a/dlls/mfc100u/Makefile.in b/dlls/mfc100u/Makefile.in
-index db047106a92..f24423b142b 100644
+index e1452216feb..424043257a9 100644
 --- a/dlls/mfc100u/Makefile.in
 +++ b/dlls/mfc100u/Makefile.in
 @@ -2,3 +2,6 @@ MODULE = mfc100u.dll
- EXTRADEFS = -D_MFC_VER=0x0e00 -D_UNICODE
+ EXTRADEFS = -D_MFC_VER=0x0a00 -D_UNICODE
  EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
 +
@@ -550,5 +550,5 @@ index 6821e15f92c..8f89f513b3d 100644
  1138 stub -arch=i386 -noname ?AfxGetModuleThreadState@@YGPAVAFX_MODULE_THREAD_STATE@@XZ
  1138 stub -arch=win64 -noname ?AfxLoadLangResourceDLL@@YAPEAUHINSTANCE__@@PEB_W@Z
 -- 
-2.35.1
+2.37.2
 

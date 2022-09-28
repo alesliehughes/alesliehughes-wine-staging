@@ -1,0 +1,172 @@
+From 1a7d59879f28c3c0da1d43f99103e478ac032824 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 29 Sep 2022 17:06:08 +1000
+Subject: [PATCH] mfc: CWinAppEx::InitContextMenuManager stub
+
+---
+ dlls/mfc/afxstate.c       | 11 +++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 23 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 33065e78a8c..2025b3784cf 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -327,6 +327,17 @@ int __thiscall cwinapp_EnableTaskbarInteraction(struct c_winappex *winapp, BOOL
+ {
+     return 0;
+ }
++
++/*
++ * ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++ * ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_EnableTaskbarInteraction, 4)
++BOOL __thiscall cwinapp_InitContextMenuManager(struct c_winappex *winapp)
++{
++    return TRUE;
++}
++
+ #endif
+ 
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 19d6ade1416..658b4c65835 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -13082,7 +13082,7 @@
+ 6827 stub -arch=i386 -noname ?GetThisMessageMap@CToolBarCtrl@@KGPBUAFX_MSGMAP@@XZ
+ 6827 stub -arch=win64 -noname ?InitColors@CMFCListCtrl@@IEAAXXZ
+ 6828 stub -arch=i386 -noname ?GetThisMessageMap@CToolTipCtrl@@KGPBUAFX_MSGMAP@@XZ
+-6828 stub -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++6828 cdecl -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitContextMenuManager
+ 6829 stub -arch=i386 -noname ?GetThisMessageMap@CTreeCtrl@@KGPBUAFX_MSGMAP@@XZ
+ 6829 stub -arch=win64 -noname ?InitControlContainer@CWnd@@IEAAHH@Z
+ 6830 stub -arch=i386 -noname ?GetThisMessageMap@CTreeView@@KGPBUAFX_MSGMAP@@XZ
+@@ -13616,7 +13616,7 @@
+ 7094 stub -arch=win64 -noname ?IsModified@CHtmlEditDoc@@UEAAHXZ
+ 7095 stub -arch=i386 -noname ?InitColors@CMFCListCtrl@@IAEXXZ
+ 7095 stub -arch=win64 -noname ?IsModified@COleClientItem@@QEBAHXZ
+-7096 stub -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++7096 thiscall -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitContextMenuManager
+ 7096 stub -arch=win64 -noname ?IsModified@COleControl@@QEAAHXZ
+ 7097 stub -arch=i386 -noname ?InitControlContainer@CWnd@@IAEHH@Z
+ 7097 stub -arch=win64 -noname ?IsModified@COlePropertyPage@@QEAAHXZ
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 8f7a89b4cd2..f186d213cad 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -13142,7 +13142,7 @@
+ 6857 stub -arch=i386 -noname ?GetThisMessageMap@CTabbedPane@@KGPBUAFX_MSGMAP@@XZ
+ 6857 stub -arch=win64 -noname ?InitColors@CMFCListCtrl@@IEAAXXZ
+ 6858 stub -arch=i386 -noname ?GetThisMessageMap@CTabCtrl@@KGPBUAFX_MSGMAP@@XZ
+-6858 stub -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++6858 cdecl -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitContextMenuManager
+ 6859 stub -arch=i386 -noname ?GetThisMessageMap@CTabView@@KGPBUAFX_MSGMAP@@XZ
+ 6859 stub -arch=win64 -noname ?InitControlContainer@CWnd@@IEAAHH@Z
+ 6860 stub -arch=i386 -noname ?GetThisMessageMap@CToolBar@@KGPBUAFX_MSGMAP@@XZ
+@@ -13686,7 +13686,7 @@
+ 7129 stub -arch=win64 -noname ?IsModified@CRichEditDoc@@UEAAHXZ
+ 7130 stub -arch=i386 -noname ?InitColors@CMFCListCtrl@@IAEXXZ
+ 7130 stub -arch=win64 -noname ?IsMultipleSort@CMFCListCtrl@@QEBAHXZ
+-7131 stub -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++7131 thiscall -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitContextMenuManager
+ 7131 stub -arch=win64 -noname ?IsOneRowWithSibling@CMFCToolBar@@QEAAHXZ
+ 7132 stub -arch=i386 -noname ?InitControlContainer@CWnd@@IAEHH@Z
+ 7132 stub -arch=win64 -noname ?IsOnFirstRecord@CRecordView@@QEAAHXZ
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index cb24861e475..c27ecdbed4d 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -14465,7 +14465,7 @@
+ 7489 stub -arch=i386 -noname ?GetToolInfo@CToolTipCtrl@@QBEHAAVCToolInfo@@PAVCWnd@@I@Z
+ 7489 stub -arch=win64 -noname ?InitColors@CMFCListCtrl@@IEAAXXZ
+ 7490 stub -arch=i386 -noname ?GetToolTipInfo@CMFCVisualManager@@UAEHAAVCMFCToolTipInfo@@I@Z
+-7490 stub -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++7490 cdecl -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitContextMenuManager
+ 7491 stub -arch=i386 -noname ?GetToolTipInfo@CMFCVisualManagerOffice2003@@UAEHAAVCMFCToolTipInfo@@I@Z
+ 7491 stub -arch=win64 -noname ?InitControlContainer@CWnd@@IEAAHH@Z
+ 7492 stub -arch=i386 -noname ?GetToolTipInfo@CMFCVisualManagerOffice2007@@UAEHAAVCMFCToolTipInfo@@I@Z
+@@ -14998,7 +14998,7 @@
+ 7756 stub -arch=win64 -noname ?IsMatchingMnemonic@COccManager@@SAHPEAUCOleControlSiteOrWnd@@PEAUtagMSG@@@Z
+ 7757 stub -arch=i386 -noname ?InitColors@CMFCListCtrl@@IAEXXZ
+ 7757 stub -arch=win64 -noname ?IsMatchingMnemonic@COccManager@@SAHPEAVCWnd@@PEAUtagMSG@@@Z
+-7758 stub -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++7758 thiscall -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitContextMenuManager
+ 7758 stub -arch=win64 -noname ?IsMatchingMnemonic@COleControlSite@@QEAAHPEAUtagMSG@@@Z
+ 7759 stub -arch=i386 -noname ?InitControlContainer@CWnd@@IAEHH@Z
+ 7759 stub -arch=win64 -noname ?IsMDIChildActive@CMDITabProxyWnd@@IEAAHXZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 67c1a557146..13d83c0ff3b 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -14527,7 +14527,7 @@
+ 7520 stub -arch=i386 -noname ?GetToolbarButtonTextColor@CMFCVisualManagerOfficeXP@@MAEKPAVCMFCToolBarButton@@W4AFX_BUTTON_STATE@CMFCVisualManager@@@Z
+ 7520 stub -arch=win64 -noname ?InitColors@CMFCListCtrl@@IEAAXXZ
+ 7521 stub -arch=i386 -noname ?GetToolbarButtonTextColor@CMFCVisualManagerWindows@@UAEKPAVCMFCToolBarButton@@W4AFX_BUTTON_STATE@CMFCVisualManager@@@Z
+-7521 stub -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++7521 cdecl -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitContextMenuManager
+ 7522 stub -arch=i386 -noname ?GetToolbarDisabledTextColor@CMFCVisualManager@@UAEKXZ
+ 7522 stub -arch=win64 -noname ?InitControlContainer@CWnd@@IEAAHH@Z
+ 7523 stub -arch=i386 -noname ?GetToolbarHighlightColor@CMFCVisualManager@@UAEKXZ
+@@ -15070,7 +15070,7 @@
+ 7792 stub -arch=win64 -noname ?IsMDITabbed@CBasePane@@UEBAHXZ
+ 7793 stub -arch=i386 -noname ?InitColors@CMFCListCtrl@@IAEXXZ
+ 7793 stub -arch=win64 -noname ?IsMDITabGroup@CMFCTabCtrl@@UEBAHXZ
+-7794 stub -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++7794 thiscall -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitContextMenuManager
+ 7794 stub -arch=win64 -noname ?IsMemberOfMDITabGroup@CMDIClientAreaWnd@@QEAAHPEAVCWnd@@@Z
+ 7795 stub -arch=i386 -noname ?InitControlContainer@CWnd@@IAEHH@Z
+ 7795 stub -arch=win64 -noname ?IsMenuMode@CMFCRibbonBaseElement@@QEBAHXZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 978161f9f88..f2e9a0d50f7 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -14765,7 +14765,7 @@
+ 7641 stub -arch=i386 -noname ?GetTooltipManager@CWinAppEx@@QAEPAVCTooltipManager@@XZ
+ 7641 stub -arch=win64 -noname ?InitColors@CMFCListCtrl@@IEAAXXZ
+ 7642 stub -arch=i386 -noname ?GetToolTipText@CMFCRibbonBaseElement@@UBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ
+-7642 stub -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++7642 cdecl -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitContextMenuManager
+ 7643 stub -arch=i386 -noname ?GetToolTipText@CMFCRibbonButton@@UBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ
+ 7643 stub -arch=win64 -noname ?InitControlContainer@CWnd@@IEAAHH@Z
+ 7644 stub -arch=i386 -noname ?GetToolTipText@CMFCRibbonGalleryIcon@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ
+@@ -15300,7 +15300,7 @@
+ 7908 stub -arch=win64 -noname ?IsManaged@CControlCreationInfo@@QEBAHXZ
+ 7909 stub -arch=i386 -noname ?InitColors@CMFCListCtrl@@IAEXXZ
+ 7909 stub -arch=win64 -noname ?IsMaskedChar@CMFCMaskedEdit@@MEBAHDD@Z
+-7910 stub -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++7910 thiscall -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitContextMenuManager
+ 7910 stub -arch=win64 -noname ?IsMatchingMnemonic@COccManager@@SAHPEAUCOleControlSiteOrWnd@@PEAUtagMSG@@@Z
+ 7911 stub -arch=i386 -noname ?InitControlContainer@CWnd@@IAEHH@Z
+ 7911 stub -arch=win64 -noname ?IsMatchingMnemonic@COccManager@@SAHPEAVCWnd@@PEAUtagMSG@@@Z
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index f18df6206fd..8cad692c5da 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -14827,7 +14827,7 @@
+ 7672 stub -arch=i386 -noname ?GetToolInfo@CToolTipCtrl@@QBEHAAVCToolInfo@@PAVCWnd@@I@Z
+ 7672 stub -arch=win64 -noname ?InitColors@CMFCListCtrl@@IEAAXXZ
+ 7673 stub -arch=i386 -noname ?GetToolTipInfo@CMFCVisualManager@@UAEHAAVCMFCToolTipInfo@@I@Z
+-7673 stub -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ
++7673 cdecl -arch=win64 -noname ?InitContextMenuManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitContextMenuManager
+ 7674 stub -arch=i386 -noname ?GetToolTipInfo@CMFCVisualManagerOffice2003@@UAEHAAVCMFCToolTipInfo@@I@Z
+ 7674 stub -arch=win64 -noname ?InitControlContainer@CWnd@@IEAAHH@Z
+ 7675 stub -arch=i386 -noname ?GetToolTipInfo@CMFCVisualManagerOffice2007@@UAEHAAVCMFCToolTipInfo@@I@Z
+@@ -15372,7 +15372,7 @@
+ 7944 stub -arch=win64 -noname ?IsMatchingMnemonic@COleControlSite@@QEAAHPEAUtagMSG@@@Z
+ 7945 stub -arch=i386 -noname ?InitColors@CMFCListCtrl@@IAEXXZ
+ 7945 stub -arch=win64 -noname ?IsMDIChildActive@CMDITabProxyWnd@@IEAAHXZ
+-7946 stub -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ
++7946 thiscall -arch=i386 -noname ?InitContextMenuManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitContextMenuManager
+ 7946 stub -arch=win64 -noname ?IsMDITabbed@CBasePane@@UEBAHXZ
+ 7947 stub -arch=i386 -noname ?InitControlContainer@CWnd@@IAEHH@Z
+ 7947 stub -arch=win64 -noname ?IsMDITabGroup@CMFCTabCtrl@@UEBAHXZ
+-- 
+2.37.2
+

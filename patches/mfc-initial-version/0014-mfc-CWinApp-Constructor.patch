@@ -1,4 +1,4 @@
-From 75db84e08108720e71f9fb45336ff513b3f3b0ac Mon Sep 17 00:00:00 2001
+From 8e71a32f21702ae0fa6a9c86c08a7c86b6ce8f66 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 27 Sep 2022 08:16:35 +1000
 Subject: [PATCH] mfc: CWinApp Constructor
@@ -22,7 +22,7 @@ Subject: [PATCH] mfc: CWinApp Constructor
  15 files changed, 40 insertions(+), 26 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index 564d546455b..1beae3e4b4d 100644
+index b1bc458ae58..da501ab3e58 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -253,6 +253,20 @@ void __thiscall cwinappex_dtor(struct c_winappex *winapp)
@@ -47,7 +47,7 @@ index 564d546455b..1beae3e4b4d 100644
  void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
  {
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index 69f52bfef64..40cc2f2b24f 100644
+index af53769aeb5..71c64589b22 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -1235,7 +1235,7 @@
@@ -69,7 +69,7 @@ index 69f52bfef64..40cc2f2b24f 100644
  889 stub -arch=i386 -noname ??0CWinAppEx@@QAE@H@Z
  889 stub -arch=win64 -noname ??1?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index 0a17bed63a6..8e3ccd413b7 100644
+index 11f8123bae2..3a325637538 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -1239,7 +1239,7 @@

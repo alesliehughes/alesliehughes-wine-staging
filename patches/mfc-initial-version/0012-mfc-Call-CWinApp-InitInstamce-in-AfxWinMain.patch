@@ -1,4 +1,4 @@
-From 825f0bbff66849ef22157a45e7c00a1d8b365cc8 Mon Sep 17 00:00:00 2001
+From f397b3ca8f46fb29a714dd1a7f8dc9d9fd55464d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Sep 2022 17:31:18 +1000
 Subject: [PATCH] mfc: Call CWinApp::InitInstamce in AfxWinMain

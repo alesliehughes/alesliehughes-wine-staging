@@ -1,0 +1,337 @@
+From 13da77b9d3904d5f374f958f29bd5c5e6045099f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 29 Sep 2022 16:44:51 +1000
+Subject: [PATCH] mfc: CWinApp::LoadStdProfileSettings stub
+
+---
+ dlls/mfc/afxstate.c       | 10 ++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ dlls/mfc42/mfc42.spec     |  4 ++--
+ dlls/mfc42u/mfc42u.spec   |  4 ++--
+ dlls/mfc71/mfc71.spec     |  2 +-
+ dlls/mfc71u/mfc71u.spec   |  2 +-
+ dlls/mfc80/mfc80.spec     |  4 ++--
+ dlls/mfc80u/mfc80u.spec   |  4 ++--
+ dlls/mfc90/mfc90.spec     |  4 ++--
+ dlls/mfc90u/mfc90u.spec   |  4 ++--
+ 15 files changed, 36 insertions(+), 26 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index c51f6c45e23..33065e78a8c 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -307,6 +307,16 @@ void __thiscall cwinapp_SetRegistryKeyUINT(struct c_winappex *winapp, UINT key)
+     FIXME("%p, %u\n", winapp, key);
+ }
+ 
++/*
++ * ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++ * ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_SetRegistryKeyUINT, 8)
++void __thiscall cwinapp_LoadStdProfileSettings(struct c_winappex *winapp, UINT maxnt)
++{
++    FIXME("%p, %u\n", winapp, maxnt);
++}
++
+ #if _MFC_VER >= 0x0a00
+ /*
+  * ?EnableTaskbarInteraction@CWinApp@@QAEHH@Z
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index bf318eb0944..19d6ade1416 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -13981,7 +13981,7 @@
+ 7277 stub -arch=i386 -noname ?IsAutoRepeatMode@CMFCRibbonSlider@@MBEHAAH@Z
+ 7277 stub -arch=win64 -noname ?LoadState@CWinAppEx@@UEAAHPEBDPEAVCFrameImpl@@@Z
+ 7278 stub -arch=i386 -noname ?IsBlank@CDocItem@@UBEHXZ
+-7278 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++7278 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 7279 stub -arch=i386 -noname ?IsBlank@COleServerItem@@MBEHXZ
+ 7279 stub -arch=win64 -noname ?LoadStr@CMFCToolBarImages@@QEAAHPEBDPEAUHINSTANCE__@@H@Z
+ 7280 stub -arch=i386 -noname ?IsBOF@CDaoRecordset@@QBEHXZ
+@@ -14576,7 +14576,7 @@
+ 7574 stub -arch=win64 -noname ?Mid@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEBA?AV12@HH@Z
+ 7575 stub -arch=i386 -noname ?LoadState@CWinAppEx@@UAEHPBDPAVCFrameImpl@@@Z
+ 7575 stub -arch=win64 -noname ?Mid@?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEBA?AV12@H@Z
+-7576 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++7576 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 7576 stub -arch=win64 -noname ?Mid@?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEBA?AV12@HH@Z
+ 7577 stub -arch=i386 -noname ?LoadStr@CMFCToolBarImages@@QAEHPBDPAUHINSTANCE__@@H@Z
+ 7577 stub -arch=win64 -noname ?Mirror@CMFCControlRenderer@@UEAAXXZ
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 4e2df84bbf3..8f7a89b4cd2 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -14051,7 +14051,7 @@
+ 7312 stub -arch=i386 -noname ?IsAutoRepeatMode@CMFCRibbonSlider@@MBEHAAH@Z
+ 7312 stub -arch=win64 -noname ?LoadState@CWinAppEx@@UEAAHPEB_WPEAVCFrameImpl@@@Z
+ 7313 stub -arch=i386 -noname ?IsBlank@CDocItem@@UBEHXZ
+-7313 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++7313 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 7314 stub -arch=i386 -noname ?IsBlank@COleServerItem@@MBEHXZ
+ 7314 stub -arch=win64 -noname ?LoadStr@CMFCToolBarImages@@QEAAHPEB_WPEAUHINSTANCE__@@H@Z
+ 7315 stub -arch=i386 -noname ?IsBOF@CDaoRecordset@@QBEHXZ
+@@ -14656,7 +14656,7 @@
+ 7614 stub -arch=win64 -noname ?MirrorAttributes@CPreviewDC@@IEAAXXZ
+ 7615 stub -arch=i386 -noname ?LoadState@CWinAppEx@@UAEHPB_WPAVCFrameImpl@@@Z
+ 7615 stub -arch=win64 -noname ?MirrorBitmap@CMFCToolBarImages@@SAHAEAPEAUHBITMAP__@@H@Z
+-7616 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++7616 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 7616 stub -arch=win64 -noname ?MirrorBitmapVert@CMFCToolBarImages@@SAHAEAPEAUHBITMAP__@@H@Z
+ 7617 stub -arch=i386 -noname ?LoadStr@CMFCToolBarImages@@QAEHPB_WPAUHINSTANCE__@@H@Z
+ 7617 stub -arch=win64 -noname ?MirrorFont@CPreviewDC@@IEAAXXZ
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index d810b12ef61..cb24861e475 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -15416,7 +15416,7 @@
+ 7966 stub -arch=i386 -noname ?IsDefaultButton@COleControlSite@@QAEHXZ
+ 7966 stub -arch=win64 -noname ?LoadState@CWinAppEx@@UEAAHPEBDPEAVCFrameImpl@@@Z
+ 7967 stub -arch=i386 -noname ?IsDefaultWinXPPopupButton@CMFCVisualManagerWindows@@UBEHPAVCMFCDesktopAlertWndButton@@@Z
+-7967 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++7967 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 7968 stub -arch=i386 -noname ?IsDeleted@CDaoRecordset@@QBEHXZ
+ 7968 stub -arch=win64 -noname ?LoadStr@CMFCToolBarImages@@QEAAHPEBDPEAUHINSTANCE__@@H@Z
+ 7969 stub -arch=i386 -noname ?IsDerivedFrom@CRuntimeClass@@QBEHPBU1@@Z
+@@ -16001,7 +16001,7 @@
+ 8263 stub -arch=win64 -noname ?MemberIDFromName@CCmdTarget@@KAJPEBUAFX_DISPMAP@@PEBD@Z
+ 8264 stub -arch=i386 -noname ?LoadState@CWinAppEx@@UAEHPBDPAVCFrameImpl@@@Z
+ 8264 stub -arch=win64 -noname ?Memcpy@CMemFile@@MEAAPEAEPEAEPEBE_K@Z
+-8265 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++8265 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8265 stub -arch=win64 -noname ?MessageBoxA@COlePropertyPage@@QEAAHPEBD0I@Z
+ 8266 stub -arch=i386 -noname ?LoadStr@CMFCToolBarImages@@QAEHPBDPAUHINSTANCE__@@H@Z
+ 8266 stub -arch=win64 -noname ?MessageBoxA@CWnd@@QEAAHPEBD0I@Z
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 40bad89d8d1..67c1a557146 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -15488,7 +15488,7 @@
+ 8002 stub -arch=i386 -noname ?IsDataAvailable@COleDataObject@@QAEHGPAUtagFORMATETC@@@Z
+ 8002 stub -arch=win64 -noname ?LoadState@CWinAppEx@@UEAAHPEB_WPEAVCFrameImpl@@@Z
+ 8003 stub -arch=i386 -noname ?IsDefaultButton@COleControlSite@@QAEHXZ
+-8003 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++8003 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8004 stub -arch=i386 -noname ?IsDefaultWinXPPopupButton@CMFCVisualManagerWindows@@UBEHPAVCMFCDesktopAlertWndButton@@@Z
+ 8004 stub -arch=win64 -noname ?LoadStr@CMFCToolBarImages@@QEAAHPEB_WPEAUHINSTANCE__@@H@Z
+ 8005 stub -arch=i386 -noname ?IsDeleted@CDaoRecordset@@QBEHXZ
+@@ -16083,7 +16083,7 @@
+ 8304 stub -arch=win64 -noname ?Mid@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEBA?AV12@H@Z
+ 8305 stub -arch=i386 -noname ?LoadState@CWinAppEx@@UAEHPB_WPAVCFrameImpl@@@Z
+ 8305 stub -arch=win64 -noname ?Mid@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEBA?AV12@HH@Z
+-8306 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++8306 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8306 stub -arch=win64 -noname ?Mid@?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEBA?AV12@H@Z
+ 8307 stub -arch=i386 -noname ?LoadStr@CMFCToolBarImages@@QAEHPB_WPAUHINSTANCE__@@H@Z
+ 8307 stub -arch=win64 -noname ?Mid@?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEBA?AV12@HH@Z
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index a1421622e77..978161f9f88 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -15727,7 +15727,7 @@
+ 8122 stub -arch=i386 -noname ?IsDefaultWinXPPopupButton@CMFCVisualManagerWindows@@UBEHPAVCMFCDesktopAlertWndButton@@@Z
+ 8122 stub -arch=win64 -noname ?LoadState@CWinAppEx@@UEAAHPEBDPEAVCFrameImpl@@@Z
+ 8123 stub -arch=i386 -noname ?IsDeleted@CDaoRecordset@@QBEHXZ
+-8123 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++8123 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8124 stub -arch=i386 -noname ?IsDerivedFrom@CRuntimeClass@@QBEHPBU1@@Z
+ 8124 stub -arch=win64 -noname ?LoadStr@CMFCToolBarImages@@QEAAHPEBDPEAUHINSTANCE__@@H@Z
+ 8125 stub -arch=i386 -noname ?IsDialogMessageA@COccManager@@UAEHPAVCWnd@@PAUtagMSG@@@Z
+@@ -16321,7 +16321,7 @@
+ 8419 stub -arch=win64 -noname ?Mirror@CMFCControlRenderer@@UEAAXXZ
+ 8420 stub -arch=i386 -noname ?LoadState@CWinAppEx@@UAEHPBDPAVCFrameImpl@@@Z
+ 8420 stub -arch=win64 -noname ?Mirror@CMFCToolBarImages@@QEAAHXZ
+-8421 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++8421 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8421 stub -arch=win64 -noname ?MirrorAttributes@CPreviewDC@@IEAAXXZ
+ 8422 stub -arch=i386 -noname ?LoadStr@CMFCToolBarImages@@QAEHPBDPAUHINSTANCE__@@H@Z
+ 8422 stub -arch=win64 -noname ?MirrorBitmap@CMFCToolBarImages@@SAHAEAPEAUHBITMAP__@@H@Z
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 4eab6260b2e..f18df6206fd 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -15799,7 +15799,7 @@
+ 8158 stub -arch=i386 -noname ?IsDefaultButton@COleControlSite@@QAEHXZ
+ 8158 stub -arch=win64 -noname ?LoadState@CWinAppEx@@UEAAHPEB_WPEAVCFrameImpl@@@Z
+ 8159 stub -arch=i386 -noname ?IsDefaultWinXPPopupButton@CMFCVisualManagerWindows@@UBEHPAVCMFCDesktopAlertWndButton@@@Z
+-8159 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++8159 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8160 stub -arch=i386 -noname ?IsDeleted@CDaoRecordset@@QBEHXZ
+ 8160 stub -arch=win64 -noname ?LoadStr@CMFCToolBarImages@@QEAAHPEB_WPEAUHINSTANCE__@@H@Z
+ 8161 stub -arch=i386 -noname ?IsDerivedFrom@CRuntimeClass@@QBEHPBU1@@Z
+@@ -16403,7 +16403,7 @@
+ 8460 stub -arch=win64 -noname ?MirrorFont@CPreviewDC@@IEAAXXZ
+ 8461 stub -arch=i386 -noname ?LoadState@CWinAppEx@@UAEHPB_WPAVCFrameImpl@@@Z
+ 8461 stub -arch=win64 -noname ?MirrorMappingMode@CPreviewDC@@IEAAXH@Z
+-8462 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++8462 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 8462 stub -arch=win64 -noname ?MirrorRect@CDrawingManager@@QEAAXVCRect@@H@Z
+ 8463 stub -arch=i386 -noname ?LoadStr@CMFCToolBarImages@@QAEHPB_WPAUHINSTANCE__@@H@Z
+ 8463 stub -arch=win64 -noname ?MirrorVert@CMFCToolBarImages@@QEAAHXZ
+diff --git a/dlls/mfc42/mfc42.spec b/dlls/mfc42/mfc42.spec
+index 515fb0c3459..96f840ea47d 100644
+--- a/dlls/mfc42/mfc42.spec
++++ b/dlls/mfc42/mfc42.spec
+@@ -7515,7 +7515,7 @@
+ 4157 stub -arch=win64 -noname ?HandleInitDialog@CDialog@@IEAA_J_K_J@Z
+ 4158 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+ 4158 stub -arch=win64 -noname ?HandleInitDialog@CDialogBar@@IEAA_J_K_J@Z
+-4159 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4159 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4159 stub -arch=win64 -noname ?HandleInitDialog@CFormView@@IEAA_J_K_J@Z
+ 4160 stub -arch=i386 -noname ?LoadStringA@CString@@QAEHI@Z
+ 4160 stub -arch=win64 -noname ?HandleInitDialog@CPropertySheet@@IEAA_J_K_J@Z
+@@ -8162,7 +8162,7 @@
+ 4481 stub -arch=i386 -noname ?OnDataAvailable@CAsyncMonikerFile@@MAEXKK@Z
+ 4481 stub -arch=win64 -noname ?LoadState@COleControl@@IEAAJPEAUIStream@@@Z
+ 4482 stub -arch=i386 -noname ?OnDataAvailable@CCachedDataPathProperty@@UAEXKK@Z
+-4482 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++4482 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4483 stub -arch=i386 -noname ?OnDataChange@COleClientItem@@MAEXPAUtagFORMATETC@@PAUtagSTGMEDIUM@@@Z
+ 4483 stub -arch=win64 -noname ?LoadStringA@CString@@QEAAHI@Z
+ 4484 stub -arch=i386 -noname ?OnDataChange@XAdviseSink@COleClientItem@@UAGXPAUtagFORMATETC@@PAUtagSTGMEDIUM@@@Z
+diff --git a/dlls/mfc42u/mfc42u.spec b/dlls/mfc42u/mfc42u.spec
+index 6bf0bcb79a7..cf65d4126ac 100644
+--- a/dlls/mfc42u/mfc42u.spec
++++ b/dlls/mfc42u/mfc42u.spec
+@@ -7505,7 +7505,7 @@
+ 4152 stub -arch=win64 -noname ?HandsOffStorage@XPersistStorage@COleControl@@UEAAJXZ
+ 4153 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+ 4153 stub -arch=win64 -noname ?HandsOffStorage@XPersistStorage@COleServerDoc@@UEAAJXZ
+-4154 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4154 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4154 stub -arch=win64 -noname ?HasBlankItems@COleDocument@@QEBAHXZ
+ 4155 stub -arch=i386 -noname ?LoadStringW@CString@@QAEHI@Z
+ 4155 stub -arch=win64 -noname ?HasFont@@YAHPEBUDLGTEMPLATE@@@Z
+@@ -8142,7 +8142,7 @@
+ 4471 stub -arch=i386 -noname ?OnCtlColor@COlePropertyPage@@IAEPAUHBRUSH__@@PAVCDC@@PAVCWnd@@I@Z
+ 4471 stub -arch=win64 -noname ?LoadState@COleControl@@IEAAJPEAUIStream@@@Z
+ 4472 stub -arch=i386 -noname ?OnCtlColor@CPropertyPage@@IAEPAUHBRUSH__@@PAVCDC@@PAVCWnd@@I@Z
+-4472 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++4472 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4473 stub -arch=i386 -noname ?OnCtlColor@CPropertySheet@@IAEPAUHBRUSH__@@PAVCDC@@PAVCWnd@@I@Z
+ 4473 stub -arch=win64 -noname ?LoadStringW@CString@@QEAAHI@Z
+ 4474 stub -arch=i386 -noname ?OnCtlColor@CWnd@@IAEPAUHBRUSH__@@PAVCDC@@PAV1@I@Z
+diff --git a/dlls/mfc71/mfc71.spec b/dlls/mfc71/mfc71.spec
+index d455ffd2942..47297cf96b7 100644
+--- a/dlls/mfc71/mfc71.spec
++++ b/dlls/mfc71/mfc71.spec
+@@ -3772,7 +3772,7 @@
+ 4028 stub -arch=i386 -noname ?LoadState@CControlBarInfo@@QAEHPBDHPAVCDockState@@@Z
+ 4029 stub -arch=i386 -noname ?LoadState@CDockState@@QAEXPBD@Z
+ 4030 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+-4031 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4031 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4032 stub -arch=i386 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHI@Z
+ 4033 stub -arch=i386 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHPAUHINSTANCE__@@I@Z
+ 4034 stub -arch=i386 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHPAUHINSTANCE__@@IG@Z
+diff --git a/dlls/mfc71u/mfc71u.spec b/dlls/mfc71u/mfc71u.spec
+index 0591dc7296b..20ce31ebe39 100644
+--- a/dlls/mfc71u/mfc71u.spec
++++ b/dlls/mfc71u/mfc71u.spec
+@@ -3766,7 +3766,7 @@
+ 4022 stub -arch=i386 -noname ?LoadState@CControlBarInfo@@QAEHPB_WHPAVCDockState@@@Z
+ 4023 stub -arch=i386 -noname ?LoadState@CDockState@@QAEXPB_W@Z
+ 4024 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+-4025 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4025 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4026 stub -arch=i386 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHI@Z
+ 4027 stub -arch=i386 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHPAUHINSTANCE__@@I@Z
+ 4028 stub -arch=i386 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHPAUHINSTANCE__@@IG@Z
+diff --git a/dlls/mfc80/mfc80.spec b/dlls/mfc80/mfc80.spec
+index 29553328fba..3b1e7bcdc37 100644
+--- a/dlls/mfc80/mfc80.spec
++++ b/dlls/mfc80/mfc80.spec
+@@ -7547,7 +7547,7 @@
+ 4029 stub -arch=win64 -noname ?ItemFromPoint@CListBox@@QEBAIVCPoint@@AEAH@Z
+ 4030 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+ 4030 stub -arch=win64 -noname ?ItemHasChildren@CTreeCtrl@@QEBAHPEAU_TREEITEM@@@Z
+-4031 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4031 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4031 stub -arch=win64 -noname ?KeyDown@COleControl@@IEAAXPEAG@Z
+ 4032 stub -arch=i386 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHI@Z
+ 4032 stub -arch=win64 -noname ?KeyUp@COleControl@@IEAAXPEAG@Z
+@@ -7626,7 +7626,7 @@
+ 4069 stub -arch=i386 -noname ?Lookup@CMapWordToPtr@@QBEHGAAPAX@Z
+ 4069 stub -arch=win64 -noname ?LoadState@COleControl@@IEAAJPEAUIStream@@@Z
+ 4070 stub -arch=i386 -noname ?Lookup@COleDataSource@@IBEPAUAFX_DATACACHE_ENTRY@@PAUtagFORMATETC@@W4tagDATADIR@@@Z
+-4070 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++4070 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4071 stub -arch=i386 -noname ?Lookup@CTypeLibCache@@QAEHKPAPAUITypeLib@@@Z
+ 4071 stub -arch=win64 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAHI@Z
+ 4072 stub -arch=i386 -noname ?LookupHandle@CAsyncSocket@@SGPAV1@IH@Z
+diff --git a/dlls/mfc80u/mfc80u.spec b/dlls/mfc80u/mfc80u.spec
+index 988903929f8..cc72d0f913b 100644
+--- a/dlls/mfc80u/mfc80u.spec
++++ b/dlls/mfc80u/mfc80u.spec
+@@ -7535,7 +7535,7 @@
+ 4023 stub -arch=win64 -noname ?KillSocket@CAsyncSocket@@SAX_KPEAV1@@Z
+ 4024 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+ 4024 stub -arch=win64 -noname ?Layout@CToolBar@@IEAAXXZ
+-4025 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4025 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4025 stub -arch=win64 -noname ?Left@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEBA?AV12@H@Z
+ 4026 stub -arch=i386 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHI@Z
+ 4026 stub -arch=win64 -noname ?Left@?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEBA?AV12@H@Z
+@@ -7606,7 +7606,7 @@
+ 4059 stub -arch=i386 -noname ?Lookup@CMapStringToOb@@QBEHPB_WAAPAVCObject@@@Z
+ 4059 stub -arch=win64 -noname ?LoadState@COleControl@@IEAAJPEAUIStream@@@Z
+ 4060 stub -arch=i386 -noname ?Lookup@CMapStringToPtr@@QBEHPB_WAAPAX@Z
+-4060 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++4060 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4061 stub -arch=i386 -noname ?Lookup@CMapStringToString@@QBEHPB_WAAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 4061 stub -arch=win64 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAHI@Z
+ 4062 stub -arch=i386 -noname ?Lookup@CMapWordToOb@@QBEHGAAPAVCObject@@@Z
+diff --git a/dlls/mfc90/mfc90.spec b/dlls/mfc90/mfc90.spec
+index 71b0ca20aab..ac3846d1172 100644
+--- a/dlls/mfc90/mfc90.spec
++++ b/dlls/mfc90/mfc90.spec
+@@ -7745,7 +7745,7 @@
+ 4128 stub -arch=i386 -noname ?HandleInComingCall@XMessageFilter@COleMessageFilter@@UAGKKPAUHTASK__@@KPAUtagINTERFACEINFO@@@Z
+ 4128 stub -arch=win64 -noname ?LoadState@COleControl@@IEAAJPEAUIStream@@@Z
+ 4129 stub -arch=i386 -noname ?HandleInitDialog@CDialog@@IAEJIJ@Z
+-4129 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++4129 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4130 stub -arch=i386 -noname ?HandleInitDialog@CDialogBar@@IAEJIJ@Z
+ 4130 stub -arch=win64 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAHI@Z
+ 4131 stub -arch=i386 -noname ?HandleInitDialog@CFormView@@IAEJIJ@Z
+@@ -8340,7 +8340,7 @@
+ 4425 stub -arch=win64 -noname ?OnDataAvailable@CCachedDataPathProperty@@UEAAXKK@Z
+ 4426 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+ 4426 stub -arch=win64 -noname ?OnDataChange@COleClientItem@@MEAAXPEAUtagFORMATETC@@PEAUtagSTGMEDIUM@@@Z
+-4427 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4427 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4427 stub -arch=win64 -noname ?OnDataChange@XAdviseSink@COleClientItem@@UEAAXPEAUtagFORMATETC@@PEAUtagSTGMEDIUM@@@Z
+ 4428 stub -arch=i386 -noname ?LoadStringA@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHI@Z
+ 4428 stub -arch=win64 -noname ?OnDDECommand@CDocManager@@UEAAHPEAD@Z
+diff --git a/dlls/mfc90u/mfc90u.spec b/dlls/mfc90u/mfc90u.spec
+index e35e645d914..0ec8eecbd0a 100644
+--- a/dlls/mfc90u/mfc90u.spec
++++ b/dlls/mfc90u/mfc90u.spec
+@@ -7763,7 +7763,7 @@
+ 4137 stub -arch=i386 -noname ?GiveFeedback@XDropSource@COleDropSource@@UAGJK@Z
+ 4137 stub -arch=win64 -noname ?LoadState@COleControl@@IEAAJPEAUIStream@@@Z
+ 4138 stub -arch=i386 -noname ?GrayCtlColor@CWnd@@SGHPAUHDC__@@PAUHWND__@@IPAUHBRUSH__@@K@Z
+-4138 stub -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
++4138 cdecl -arch=win64 -noname ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4139 stub -arch=i386 -noname ?GrayStringW@CPreviewDC@@UAEHPAVCBrush@@P6GHPAUHDC__@@JH@ZJHHHHH@Z
+ 4139 stub -arch=win64 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAAHI@Z
+ 4140 stub -arch=i386 -noname ?GrowFile@CMemFile@@MAEXK@Z
+@@ -8368,7 +8368,7 @@
+ 4439 stub -arch=win64 -noname ?OnDDEExecute@CFrameWnd@@IEAA_J_K_J@Z
+ 4440 stub -arch=i386 -noname ?LoadState@COleControl@@IAEJPAUIStream@@@Z
+ 4440 stub -arch=win64 -noname ?OnDDEInitiate@CFrameWnd@@IEAA_J_K_J@Z
+-4441 stub -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
++4441 thiscall -arch=i386 -noname ?LoadStdProfileSettings@CWinApp@@IAEXI@Z(ptr long) cwinapp_LoadStdProfileSettings
+ 4441 stub -arch=win64 -noname ?OnDDETerminate@CFrameWnd@@IEAA_J_K_J@Z
+ 4442 stub -arch=i386 -noname ?LoadStringW@?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAEHI@Z
+ 4442 stub -arch=win64 -noname ?OnDDXError@CDHtmlDialog@@IEAAXPEB_WIH@Z
+-- 
+2.37.2
+

@@ -1,4 +1,4 @@
-From 655a9764db0e44155c982aecdaa10d6d0df46604 Mon Sep 17 00:00:00 2001
+From ef8849d93c1d720b7705606f764bd3a1ee44c669 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 27 Sep 2022 11:12:37 +1000
 Subject: [PATCH] mfc: AfxEnableControlContainer stub
@@ -22,7 +22,7 @@ Subject: [PATCH] mfc: AfxEnableControlContainer stub
  15 files changed, 39 insertions(+), 25 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index 1beae3e4b4d..ff7fd00887b 100644
+index da501ab3e58..cee45e4acc0 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -153,6 +153,20 @@ BOOL WINAPI AfxOleInit(void)
@@ -47,7 +47,7 @@ index 1beae3e4b4d..ff7fd00887b 100644
  {
      afxWinHelp = 0,
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index 40cc2f2b24f..c0687499c29 100644
+index 71c64589b22..7c3451a0d2d 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -3206,7 +3206,7 @@
@@ -69,7 +69,7 @@ index 40cc2f2b24f..c0687499c29 100644
  1891 stub -arch=i386 -noname ?AfxEndDeferRegisterClass@@YGHJ@Z
  1891 stub -arch=win64 -noname ?AfxGetInProcServer@@YAHPEBDAEAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index 8e3ccd413b7..b9442ac0ee1 100644
+index 3a325637538..cfde83d8553 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -3216,7 +3216,7 @@

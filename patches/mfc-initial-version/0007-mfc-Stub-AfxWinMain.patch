@@ -1,7 +1,7 @@
-From 77fc94e3b4496e073040b6864b4ba46062f7ad9b Mon Sep 17 00:00:00 2001
+From 1c17703c55b93388a7a00a5c8ad100f577d3b84a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Sep 2022 18:02:18 +1000
-Subject: [PATCH 07/10] mfc: Stub AfxWinMain
+Subject: [PATCH] mfc: Stub AfxWinMain
 
 ---
  dlls/mfc/afxstate.c       | 18 ++++++++++++++++++
@@ -46,7 +46,7 @@ index ced546a1cfd..9649c853170 100644
   * CWinApp
   * CWinAppEx
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index 14baf4fc4b8..267ec7acade 100644
+index a791c500850..bcb9dad5601 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -3569,7 +3569,7 @@
@@ -68,7 +68,7 @@ index 14baf4fc4b8..267ec7acade 100644
  2089 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2089 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index 0e2cf7abfae..b1bcc3b4815 100644
+index 3ae9d9d7899..e4949e7036a 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -3571,7 +3571,7 @@
@@ -244,5 +244,5 @@ index b5b2e6ed8a9..cdd5d291d1d 100644
  1273 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  1273 stub -arch=win64 -noname ?Append@?$CSimpleStringT@D$00@ATL@@QEAAXAEBV12@@Z
 -- 
-2.35.1
+2.37.2
 

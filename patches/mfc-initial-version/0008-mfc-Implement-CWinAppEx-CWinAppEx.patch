@@ -1,7 +1,7 @@
-From 88e3b2e6c1fa3396185dd4200ae69af954e20208 Mon Sep 17 00:00:00 2001
+From 8fe8d6c5a801d7b94dad7e2b2229c3e0c8d01d76 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Sep 2022 18:26:42 +1000
-Subject: [PATCH 08/10] mfc: Implement CWinAppEx::~CWinAppEx
+Subject: [PATCH] mfc: Implement CWinAppEx::~CWinAppEx
 
 ---
  dlls/mfc/afxstate.c       | 10 ++++++++++
@@ -35,7 +35,7 @@ index 9649c853170..b5673c23ea8 100644
  void __thiscall cwinapp_SetAppIDA(struct c_winappex *winapp, char *appid)
  {
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index 267ec7acade..bb19e20d0f9 100644
+index bcb9dad5601..bb7f127df1c 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -2017,7 +2017,7 @@
@@ -57,7 +57,7 @@ index 267ec7acade..bb19e20d0f9 100644
  1290 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
  1290 stub -arch=win64 -noname ??4?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAAAEAV01@AEBUtagVARIANT@@@Z
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index b1bcc3b4815..1101028b0dd 100644
+index e4949e7036a..a039d7ba4b6 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -2025,7 +2025,7 @@
@@ -167,5 +167,5 @@ index 842d75b25d2..ff280dddd04 100644
  1474 stub -arch=i386 -noname ??1CWindowDC@@UAE@XZ
  1474 stub -arch=win64 -noname ??1XElementLabel@CMFCRibbonInfo@@UEAA@XZ
 -- 
-2.35.1
+2.37.2
 

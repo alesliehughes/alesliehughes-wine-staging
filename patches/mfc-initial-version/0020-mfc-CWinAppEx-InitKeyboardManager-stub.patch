@@ -1,0 +1,172 @@
+From 0e28c525f78c68c3c3a8632890689f0a4bf56414 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 29 Sep 2022 17:38:46 +1000
+Subject: [PATCH] mfc: CWinAppEx::InitKeyboardManager stub
+
+---
+ dlls/mfc/afxstate.c       | 11 +++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 23 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 2025b3784cf..2836b477b02 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -338,6 +338,17 @@ BOOL __thiscall cwinapp_InitContextMenuManager(struct c_winappex *winapp)
+     return TRUE;
+ }
+ 
++/*
++ * ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++ * ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++ */
++DEFINE_THISCALL_WRAPPER(cwinapp_InitKeyboardManager, 4)
++BOOL __thiscall cwinapp_InitKeyboardManager(struct c_winappex *winapp)
++{
++    FIXME("%p\n", winapp);
++    return TRUE;
++}
++
+ #endif
+ 
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index 658b4c65835..ac75a050fb0 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -13159,7 +13159,7 @@
+ 6866 stub -arch=i386 -noname ?GetTopLevelOwner@CWnd@@QBEPAV1@XZ
+ 6866 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 6867 stub -arch=i386 -noname ?GetTopLevelParent@CWnd@@QBEPAV1@XZ
+-6867 stub -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++6867 cdecl -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitKeyboardManager
+ 6868 stub -arch=i386 -noname ?GetTopLevelRibbonBar@CMFCRibbonBaseElement@@QBEPAVCMFCRibbonBar@@XZ
+ 6868 stub -arch=win64 -noname ?InitLibId@CWinApp@@UEAAXXZ
+ 6869 stub -arch=i386 -noname ?GetTopLevelRibbonBar@CMFCRibbonPanelMenuBar@@QBEPAVCMFCRibbonBar@@XZ
+@@ -13710,7 +13710,7 @@
+ 7141 stub -arch=win64 -noname ?IsSelected@CView@@UEBAHPEBVCObject@@@Z
+ 7142 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7142 stub -arch=win64 -noname ?IsSelectQueryUpdatable@CRecordset@@QEAAHPEBD@Z
+-7143 stub -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++7143 thiscall -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitKeyboardManager
+ 7143 stub -arch=win64 -noname ?IsSerializable@CObject@@QEBAHXZ
+ 7144 stub -arch=i386 -noname ?InitLibId@CWinApp@@UAEXXZ
+ 7144 stub -arch=win64 -noname ?IsSignificantMessage@COleMessageFilter@@UEAAHPEAUtagMSG@@@Z
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index f186d213cad..cf820add932 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -13219,7 +13219,7 @@
+ 6895 stub -arch=win64 -noname ?InitInstance@CWinApp@@UEAAHXZ
+ 6896 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 6897 stub -arch=i386 -noname ?GetTop@CHtmlView@@QBEJXZ
+-6897 stub -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++6897 cdecl -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitKeyboardManager
+ 6898 stub -arch=i386 -noname ?GetTopLevelContainer@CHtmlView@@QBEHXZ
+ 6898 stub -arch=win64 -noname ?InitLibId@CWinApp@@UEAAXXZ
+ 6899 stub -arch=i386 -noname ?GetTopLevelFrame@CWnd@@QBEPAVCFrameWnd@@XZ
+@@ -13780,7 +13780,7 @@
+ 7176 stub -arch=win64 -noname ?IsSignificantMessage@COleMessageFilter@@UEAAHPEAUtagMSG@@@Z
+ 7177 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7177 stub -arch=win64 -noname ?IsSinkedElement@CDHtmlDialog@@IEAAHPEAUIDispatch@@@Z
+-7178 stub -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++7178 thiscall -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitKeyboardManager
+ 7178 stub -arch=win64 -noname ?IsSQLUpdatable@CRecordset@@QEAAHPEB_W@Z
+ 7179 stub -arch=i386 -noname ?InitLibId@CWinApp@@UAEXXZ
+ 7179 stub -arch=win64 -noname ?IsStateExists@CWinAppEx@@QEAAHPEB_W@Z
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index c27ecdbed4d..8da0d837bab 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -14552,7 +14552,7 @@
+ 7533 stub -arch=i386 -noname ?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z
+ 7533 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 7534 stub -arch=i386 -noname ?GetTypeInfoCount@XAmbientProps@COleControlSite@@UAGJPAI@Z
+-7534 stub -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++7534 cdecl -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitKeyboardManager
+ 7535 stub -arch=i386 -noname ?GetTypeInfoCount@XEventSink@COleControlSite@@UAGJPAI@Z
+ 7535 stub -arch=win64 -noname ?InitLibId@CWinApp@@UEAAXXZ
+ 7536 stub -arch=i386 -noname ?GetTypeInfoOfGuid@CCmdTarget@@QAEJKABU_GUID@@PAPAUITypeInfo@@@Z
+@@ -15101,7 +15101,7 @@
+ 7808 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCPopupMenu@@MEAAHXZ
+ 7809 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7809 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+-7810 stub -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++7810 thiscall -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitKeyboardManager
+ 7810 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCPopupMenu@@MEAAHXZ
+ 7811 stub -arch=i386 -noname ?InitLibId@CWinApp@@UAEXXZ
+ 7811 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 13d83c0ff3b..5f98d57c9b8 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -14614,7 +14614,7 @@
+ 7564 stub -arch=i386 -noname ?GetTypeInfoCount@CDHtmlControlSink@@UAGJPAI@Z
+ 7564 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 7565 stub -arch=i386 -noname ?GetTypeInfoCount@CDHtmlElementEventSink@@UAGJPAI@Z
+-7565 stub -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++7565 cdecl -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitKeyboardManager
+ 7566 stub -arch=i386 -noname ?GetTypeInfoCount@CDHtmlEventSink@@UAGJPAI@Z
+ 7566 stub -arch=win64 -noname ?InitLibId@CWinApp@@UEAAXXZ
+ 7567 stub -arch=i386 -noname ?GetTypeInfoCount@COleDispatchImpl@@UAGJPAI@Z
+@@ -15173,7 +15173,7 @@
+ 7844 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+ 7845 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7845 stub -arch=win64 -noname ?IsSearchAndOrganizeHandler@CDocument@@QEBAHXZ
+-7846 stub -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++7846 thiscall -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitKeyboardManager
+ 7846 stub -arch=win64 -noname ?IsSelected@CMFCPropertyGridProperty@@UEBAHXZ
+ 7847 stub -arch=i386 -noname ?InitLibId@CWinApp@@UAEXXZ
+ 7847 stub -arch=win64 -noname ?IsSelected@CMFCRibbonTab@@QEBAHXZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index f2e9a0d50f7..cfb578d0987 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -14855,7 +14855,7 @@
+ 7686 stub -arch=i386 -noname ?GetTypeInfoOfGuid@CCmdTarget@@QAEJKABU_GUID@@PAPAUITypeInfo@@@Z
+ 7686 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 7687 stub -arch=i386 -noname ?GetTypeLib@CCmdTarget@@UAEJKPAPAUITypeLib@@@Z
+-7687 stub -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++7687 cdecl -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitKeyboardManager
+ 7688 stub -arch=i386 -noname ?GetTypeLibCache@CCmdTarget@@UAEPAVCTypeLibCache@@XZ
+ 7688 stub -arch=win64 -noname ?InitLibId@CWinApp@@UEAAXXZ
+ 7689 stub -arch=i386 -noname ?GetUBound@COleSafeArray@@QAEXKPAJ@Z
+@@ -15406,7 +15406,7 @@
+ 7961 stub -arch=win64 -noname ?IsRunning@XOleItemContainer@COleLinkingDoc@@UEAAJPEA_W@Z
+ 7962 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7962 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCPopupMenu@@MEAAHXZ
+-7963 stub -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++7963 thiscall -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitKeyboardManager
+ 7963 stub -arch=win64 -noname ?IsScrollDnAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+ 7964 stub -arch=i386 -noname ?InitLibId@CWinApp@@UAEXXZ
+ 7964 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCPopupMenu@@MEAAHXZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index 8cad692c5da..c4793dcd1f1 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -14917,7 +14917,7 @@
+ 7717 stub -arch=i386 -noname ?GetTypeInfoCount@XAccessible@CMFCBaseAccessibleObject@@UAGJPAI@Z
+ 7717 stub -arch=win64 -noname ?InitInstance@CWinThread@@UEAAHXZ
+ 7718 stub -arch=i386 -noname ?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z
+-7718 stub -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++7718 cdecl -arch=win64 -noname ?InitKeyboardManager@CWinAppEx@@QEAAHXZ(ptr) cwinapp_InitKeyboardManager
+ 7719 stub -arch=i386 -noname ?GetTypeInfoCount@XAmbientProps@COleControlSite@@UAGJPAI@Z
+ 7719 stub -arch=win64 -noname ?InitLibId@CWinApp@@UEAAXXZ
+ 7720 stub -arch=i386 -noname ?GetTypeInfoCount@XEventSink@COleControlSite@@UAGJPAI@Z
+@@ -15478,7 +15478,7 @@
+ 7997 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCPopupMenu@@MEAAHXZ
+ 7998 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
+ 7998 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
+-7999 stub -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ
++7999 thiscall -arch=i386 -noname ?InitKeyboardManager@CWinAppEx@@QAEHXZ(ptr) cwinapp_InitKeyboardManager
+ 7999 stub -arch=win64 -noname ?IsSearchAndOrganizeHandler@CDocument@@QEBAHXZ
+ 8000 stub -arch=i386 -noname ?InitLibId@CWinApp@@UAEXXZ
+ 8000 stub -arch=win64 -noname ?IsSelected@CMFCPropertyGridProperty@@UEBAHXZ
+-- 
+2.37.2
+

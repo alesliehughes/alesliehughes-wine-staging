@@ -1,4 +1,4 @@
-From a03caa84f54992f33026485103a52ce8a01ac589 Mon Sep 17 00:00:00 2001
+From 1b66e85dd397d829b5a50ddd7082bab16a940a90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 24 Sep 2022 14:01:41 +1000
 Subject: [PATCH] mfc: Use TCHAR parameter for AfxWinMain
@@ -88,7 +88,7 @@ index 7e0b2901d5e..ffac7f14582 100644
  }
 \ No newline at end of file
 diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
-index bb19e20d0f9..69f52bfef64 100644
+index bb7f127df1c..af53769aeb5 100644
 --- a/dlls/mfc100/mfc100.spec
 +++ b/dlls/mfc100/mfc100.spec
 @@ -3569,7 +3569,7 @@
@@ -110,7 +110,7 @@ index bb19e20d0f9..69f52bfef64 100644
  2089 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  2089 stub -arch=win64 -noname ?AmbientUserMode@COleControl@@QEAAHXZ
 diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
-index 1101028b0dd..0a17bed63a6 100644
+index a039d7ba4b6..11f8123bae2 100644
 --- a/dlls/mfc100u/mfc100u.spec
 +++ b/dlls/mfc100u/mfc100u.spec
 @@ -3571,7 +3571,7 @@
@@ -286,5 +286,5 @@ index cdd5d291d1d..f41c8a3ab82 100644
  1273 stub -arch=i386 -noname ?AfxWinTerm@@YGXXZ
  1273 stub -arch=win64 -noname ?Append@?$CSimpleStringT@D$00@ATL@@QEAAXAEBV12@@Z
 -- 
-2.35.1
+2.37.2
 
