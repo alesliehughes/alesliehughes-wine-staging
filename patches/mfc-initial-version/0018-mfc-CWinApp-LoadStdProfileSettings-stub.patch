@@ -33,7 +33,7 @@ index c51f6c45e23..33065e78a8c 100644
 + * ?LoadStdProfileSettings@CWinApp@@IAEXI@Z
 + * ?LoadStdProfileSettings@CWinApp@@IEAAXI@Z
 + */
-+DEFINE_THISCALL_WRAPPER(cwinapp_SetRegistryKeyUINT, 8)
++DEFINE_THISCALL_WRAPPER(cwinapp_LoadStdProfileSettings, 8)
 +void __thiscall cwinapp_LoadStdProfileSettings(struct c_winappex *winapp, UINT maxnt)
 +{
 +    FIXME("%p, %u\n", winapp, maxnt);
