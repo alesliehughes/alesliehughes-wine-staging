@@ -135,7 +135,7 @@ index ca02e93ffc8..411083d17c4 100644
 +    return 0;
 +}
 +
-+DEFINE_THISCALL_WRAPPER(cwinappex_dtor, 4)
++DEFINE_THISCALL_WRAPPER(cwinappex_unk, 4)
 +void __thiscall cwinappex_unk(struct c_winappex *winapp)
 +{
 +    FIXME("%p\n", winapp);
