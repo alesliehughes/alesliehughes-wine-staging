@@ -1,0 +1,182 @@
+From 2d2764c99e73ce65d37b5b7c4656492bc82f6a53 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 3 Oct 2022 19:52:05 +1100
+Subject: [PATCH] mfc: Semi-stub CMFCToolTipCtrl::GetThisClass
+
+---
+ dlls/mfc/afxstate.c       | 21 +++++++++++++++++++++
+ dlls/mfc100/mfc100.spec   |  4 ++--
+ dlls/mfc100u/mfc100u.spec |  4 ++--
+ dlls/mfc110/mfc110.spec   |  4 ++--
+ dlls/mfc110u/mfc110u.spec |  4 ++--
+ dlls/mfc140/mfc140.spec   |  4 ++--
+ dlls/mfc140u/mfc140u.spec |  4 ++--
+ 7 files changed, 33 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 16b443e70e6..8d93843671c 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -383,6 +383,27 @@ BOOL __thiscall cwinapp_InitTooltipManager(struct c_winappex *winapp)
+     return TRUE;
+ }
+ 
++/*
++ * ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++ * ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++ * ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++ * ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++ */
++struct CRuntimeClass * WINAPI cmfctooltoolctrl_GetThisClass(void)
++{
++    static struct CRuntimeClass mfctooltoolctrl = {
++        "CMFCToolTipCtrl",
++        0,  /* m_nObjectSize */
++        0,  /* m_wSchema */
++        NULL, /* struct CObject * (PASCAL* m_pfnCreateObject)(void); */
++        NULL, /* struct CRuntimeClass * (PASCAL* m_pfnGetBaseClass)(void); */
++        NULL, /* struct CRuntimeClass *m_pNextClass;*/
++        NULL /*void *m_pClassInit; */
++    };
++
++    return &mfctooltoolctrl;
++}
++
+ #endif
+ 
+ DEFINE_THISCALL_WRAPPER(cwinapp_SetAppIDW, 8)
+diff --git a/dlls/mfc100/mfc100.spec b/dlls/mfc100/mfc100.spec
+index f98f8d75894..15a3b738a14 100644
+--- a/dlls/mfc100/mfc100.spec
++++ b/dlls/mfc100/mfc100.spec
+@@ -11926,7 +11926,7 @@
+ 6248 stub -arch=i386 -noname ?GetTabTextColor@CMFCBaseTabCtrl@@UBEKH@Z
+ 6248 stub -arch=win64 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SAPEAUCRuntimeClass@@XZ
+ 6249 stub -arch=i386 -noname ?GetTabTextColor@CMFCVisualManagerOffice2007@@UAEKPBVCMFCBaseTabCtrl@@HH@Z
+-6249 stub -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++6249 cdecl -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 6250 stub -arch=i386 -noname ?GetTabWnd@CMFCBaseTabCtrl@@UBEPAVCWnd@@H@Z
+ 6250 stub -arch=win64 -noname ?GetThisClass@CMFCVisualManager@@SAPEAUCRuntimeClass@@XZ
+ 6251 stub -arch=i386 -noname ?GetTabWndNoWrapper@CMFCBaseTabCtrl@@UBEPAVCWnd@@H@Z
+@@ -12432,7 +12432,7 @@
+ 6501 stub -arch=win64 -noname ?GetThisMessageMap@CMFCShadowWnd@@KAPEBUAFX_MSGMAP@@XZ
+ 6502 stub -arch=i386 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SGPAUCRuntimeClass@@XZ
+ 6502 stub -arch=win64 -noname ?GetThisMessageMap@CMFCShellListCtrl@@KAPEBUAFX_MSGMAP@@XZ
+-6503 stub -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++6503 stdcall -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 6503 stub -arch=win64 -noname ?GetThisMessageMap@CMFCShellTreeCtrl@@KAPEBUAFX_MSGMAP@@XZ
+ 6504 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManager@@SGPAUCRuntimeClass@@XZ
+ 6504 stub -arch=win64 -noname ?GetThisMessageMap@CMFCSpinButtonCtrl@@KAPEBUAFX_MSGMAP@@XZ
+diff --git a/dlls/mfc100u/mfc100u.spec b/dlls/mfc100u/mfc100u.spec
+index 70321c25366..982629cfc36 100644
+--- a/dlls/mfc100u/mfc100u.spec
++++ b/dlls/mfc100u/mfc100u.spec
+@@ -11976,7 +11976,7 @@
+ 6273 stub -arch=i386 -noname ?GetTableDefInfo@CDaoDatabase@@QAEXHAAUCDaoTableDefInfo@@K@Z
+ 6273 stub -arch=win64 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SAPEAUCRuntimeClass@@XZ
+ 6274 stub -arch=i386 -noname ?GetTableDefInfo@CDaoDatabase@@QAEXPB_WAAUCDaoTableDefInfo@@K@Z
+-6274 stub -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++6274 cdecl -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 6275 stub -arch=i386 -noname ?GetTabNumberToDetach@CMFCBaseTabCtrl@@MBEHH@Z
+ 6275 stub -arch=win64 -noname ?GetThisClass@CMFCVisualManager@@SAPEAUCRuntimeClass@@XZ
+ 6276 stub -arch=i386 -noname ?GetTabNumberToDetach@CMFCOutlookBarTabCtrl@@MBEHH@Z
+@@ -12492,7 +12492,7 @@
+ 6531 stub -arch=win64 -noname ?GetThisMessageMap@CMFCShellTreeCtrl@@KAPEBUAFX_MSGMAP@@XZ
+ 6532 stub -arch=i386 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SGPAUCRuntimeClass@@XZ
+ 6532 stub -arch=win64 -noname ?GetThisMessageMap@CMFCSpinButtonCtrl@@KAPEBUAFX_MSGMAP@@XZ
+-6533 stub -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++6533 stdcall -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 6533 stub -arch=win64 -noname ?GetThisMessageMap@CMFCStandardColorsPropertyPage@@KAPEBUAFX_MSGMAP@@XZ
+ 6534 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManager@@SGPAUCRuntimeClass@@XZ
+ 6534 stub -arch=win64 -noname ?GetThisMessageMap@CMFCStatusBar@@KAPEBUAFX_MSGMAP@@XZ
+diff --git a/dlls/mfc110/mfc110.spec b/dlls/mfc110/mfc110.spec
+index b36947e5100..fdb61b5e856 100644
+--- a/dlls/mfc110/mfc110.spec
++++ b/dlls/mfc110/mfc110.spec
+@@ -13239,7 +13239,7 @@
+ 6876 stub -arch=i386 -noname ?GetThisClass@CAnimationBaseObject@@SGPAUCRuntimeClass@@XZ
+ 6876 stub -arch=win64 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SAPEAUCRuntimeClass@@XZ
+ 6877 stub -arch=i386 -noname ?GetThisClass@CAnimationColor@@SGPAUCRuntimeClass@@XZ
+-6877 stub -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++6877 cdecl -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 6878 stub -arch=i386 -noname ?GetThisClass@CAnimationController@@SGPAUCRuntimeClass@@XZ
+ 6878 stub -arch=win64 -noname ?GetThisClass@CMFCVisualManager@@SAPEAUCRuntimeClass@@XZ
+ 6879 stub -arch=i386 -noname ?GetThisClass@CAnimationPoint@@SGPAUCRuntimeClass@@XZ
+@@ -13746,7 +13746,7 @@
+ 7129 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonKeyTip@@KAPEBUAFX_MSGMAP@@XZ
+ 7130 stub -arch=i386 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SGPAUCRuntimeClass@@XZ
+ 7130 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonMiniToolBar@@KAPEBUAFX_MSGMAP@@XZ
+-7131 stub -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++7131 stdcall -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 7131 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonPanelMenu@@KAPEBUAFX_MSGMAP@@XZ
+ 7132 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManager@@SGPAUCRuntimeClass@@XZ
+ 7132 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonPanelMenuBar@@KAPEBUAFX_MSGMAP@@XZ
+diff --git a/dlls/mfc110u/mfc110u.spec b/dlls/mfc110u/mfc110u.spec
+index 643e4e7af9e..ecf02a2c538 100644
+--- a/dlls/mfc110u/mfc110u.spec
++++ b/dlls/mfc110u/mfc110u.spec
+@@ -13291,7 +13291,7 @@
+ 6902 stub -arch=i386 -noname ?GetTextSize@CMFCCaptionBar@@MAE?AVCSize@@PAVCDC@@ABV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z
+ 6902 stub -arch=win64 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SAPEAUCRuntimeClass@@XZ
+ 6903 stub -arch=i386 -noname ?GetTextTopLine@CMFCRibbonCategory@@QBEHXZ
+-6903 stub -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++6903 cdecl -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 6904 stub -arch=i386 -noname ?GetTheaterMode@CHtmlView@@QBEHXZ
+ 6904 stub -arch=win64 -noname ?GetThisClass@CMFCVisualManager@@SAPEAUCRuntimeClass@@XZ
+ 6905 stub -arch=i386 -noname ?GetThemeColor@CMFCVisualManagerOffice2003@@IBEKPAXH@Z
+@@ -13808,7 +13808,7 @@
+ 7160 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonPanelMenu@@KAPEBUAFX_MSGMAP@@XZ
+ 7161 stub -arch=i386 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SGPAUCRuntimeClass@@XZ
+ 7161 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonPanelMenuBar@@KAPEBUAFX_MSGMAP@@XZ
+-7162 stub -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++7162 stdcall -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 7162 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonRichEditCtrl@@KAPEBUAFX_MSGMAP@@XZ
+ 7163 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManager@@SGPAUCRuntimeClass@@XZ
+ 7163 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonSpinButtonCtrl@@KAPEBUAFX_MSGMAP@@XZ
+diff --git a/dlls/mfc140/mfc140.spec b/dlls/mfc140/mfc140.spec
+index 79b578696d8..9ff10585485 100644
+--- a/dlls/mfc140/mfc140.spec
++++ b/dlls/mfc140/mfc140.spec
+@@ -13523,7 +13523,7 @@
+ 7020 stub -arch=i386 -noname ?GetThisClass@CAnimationRect@@SGPAUCRuntimeClass@@XZ
+ 7020 stub -arch=win64 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SAPEAUCRuntimeClass@@XZ
+ 7021 stub -arch=i386 -noname ?GetThisClass@CAnimationSize@@SGPAUCRuntimeClass@@XZ
+-7021 stub -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++7021 cdecl -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 7022 stub -arch=i386 -noname ?GetThisClass@CAnimationValue@@SGPAUCRuntimeClass@@XZ
+ 7022 stub -arch=win64 -noname ?GetThisClass@CMFCVisualManager@@SAPEAUCRuntimeClass@@XZ
+ 7023 stub -arch=i386 -noname ?GetThisClass@CArchiveException@@SGPAUCRuntimeClass@@XZ
+@@ -14030,7 +14030,7 @@
+ 7273 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonBar@@KAPEBUAFX_MSGMAP@@XZ
+ 7274 stub -arch=i386 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SGPAUCRuntimeClass@@XZ
+ 7274 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonCommandsListBox@@KAPEBUAFX_MSGMAP@@XZ
+-7275 stub -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++7275 stdcall -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 7275 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonCustomizePropertyPage@@KAPEBUAFX_MSGMAP@@XZ
+ 7276 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManager@@SGPAUCRuntimeClass@@XZ
+ 7276 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonKeyboardCustomizeDialog@@KAPEBUAFX_MSGMAP@@XZ
+diff --git a/dlls/mfc140u/mfc140u.spec b/dlls/mfc140u/mfc140u.spec
+index a8c77dea94a..42c5b87418e 100644
+--- a/dlls/mfc140u/mfc140u.spec
++++ b/dlls/mfc140u/mfc140u.spec
+@@ -13575,7 +13575,7 @@
+ 7046 stub -arch=i386 -noname ?GetThisClass@CAnimateCtrl@@SGPAUCRuntimeClass@@XZ
+ 7046 stub -arch=win64 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SAPEAUCRuntimeClass@@XZ
+ 7047 stub -arch=i386 -noname ?GetThisClass@CAnimationBaseObject@@SGPAUCRuntimeClass@@XZ
+-7047 stub -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ
++7047 cdecl -arch=win64 -noname ?GetThisClass@CMFCToolTipCtrl@@SAPEAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 7048 stub -arch=i386 -noname ?GetThisClass@CAnimationColor@@SGPAUCRuntimeClass@@XZ
+ 7048 stub -arch=win64 -noname ?GetThisClass@CMFCVisualManager@@SAPEAUCRuntimeClass@@XZ
+ 7049 stub -arch=i386 -noname ?GetThisClass@CAnimationController@@SGPAUCRuntimeClass@@XZ
+@@ -14092,7 +14092,7 @@
+ 7304 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonCustomizePropertyPage@@KAPEBUAFX_MSGMAP@@XZ
+ 7305 stub -arch=i386 -noname ?GetThisClass@CMFCToolBarSystemMenuButton@@SGPAUCRuntimeClass@@XZ
+ 7305 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonKeyboardCustomizeDialog@@KAPEBUAFX_MSGMAP@@XZ
+-7306 stub -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ
++7306 stdcall -arch=i386 -noname ?GetThisClass@CMFCToolTipCtrl@@SGPAUCRuntimeClass@@XZ() cmfctooltoolctrl_GetThisClass
+ 7306 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonKeyTip@@KAPEBUAFX_MSGMAP@@XZ
+ 7307 stub -arch=i386 -noname ?GetThisClass@CMFCVisualManager@@SGPAUCRuntimeClass@@XZ
+ 7307 stub -arch=win64 -noname ?GetThisMessageMap@CMFCRibbonMiniToolBar@@KAPEBUAFX_MSGMAP@@XZ
+-- 
+2.37.2
+

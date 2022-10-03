@@ -1,4 +1,4 @@
-From 78c01b2d13603d90f3304835ac6aa7f65b0d3b69 Mon Sep 17 00:00:00 2001
+From d768ed09256a8908b4fb64f7d3d9b234cf089671 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 15:32:22 +1000
 Subject: [PATCH] mfc: CWinAppEx Constructor
@@ -12,7 +12,7 @@ Subject: [PATCH] mfc: CWinAppEx Constructor
  5 files changed, 25 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index 43f0754fe5e..9c74b60a109 100644
+index cfed541d43e..68af969b873 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -17,6 +17,7 @@
@@ -23,8 +23,8 @@ index 43f0754fe5e..9c74b60a109 100644
  
  #include "winbase.h"
  
-@@ -43,4 +44,20 @@ struct c_runtime_class
- void WINAPI AfxClassInit(struct c_runtime_class *runtime)
+@@ -55,4 +56,20 @@ struct CRuntimeClass
+ void WINAPI AfxClassInit(struct CRuntimeClass *runtime)
  {
      FIXME("%p\n", runtime);
 +}

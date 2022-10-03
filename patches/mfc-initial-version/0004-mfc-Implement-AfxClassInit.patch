@@ -1,10 +1,10 @@
-From 16018ad296c92506792d46a4c9440f4f3940fe88 Mon Sep 17 00:00:00 2001
+From f1b95a035e426fee378c785cac5932c92bc24550 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 19 Sep 2022 14:41:03 +1000
 Subject: [PATCH] mfc: Implement AfxClassInit
 
 ---
- dlls/mfc/afxstate.c       | 11 +++++++++++
+ dlls/mfc/afxstate.c       | 23 +++++++++++++++++++++++
  dlls/mfc100/mfc100.spec   |  4 ++--
  dlls/mfc100u/mfc100u.spec |  4 ++--
  dlls/mfc110/mfc110.spec   |  4 ++--
@@ -19,24 +19,36 @@ Subject: [PATCH] mfc: Implement AfxClassInit
  dlls/mfc80u/mfc80u.spec   |  4 ++--
  dlls/mfc90/mfc90.spec     |  4 ++--
  dlls/mfc90u/mfc90u.spec   |  4 ++--
- 15 files changed, 36 insertions(+), 25 deletions(-)
+ 15 files changed, 48 insertions(+), 25 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index aa86e734a93..43f0754fe5e 100644
+index aa86e734a93..cfed541d43e 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
-@@ -33,3 +33,14 @@ struct afx_module_state * WINAPI AfxGetModuleState(void)
+@@ -33,3 +33,26 @@ struct afx_module_state * WINAPI AfxGetModuleState(void)
  {
      return &global_module_state;
  }
 +
-+/* CRuntimeClass */
-+struct c_runtime_class
++struct CObject
 +{
 +    void *data;
 +};
 +
-+void WINAPI AfxClassInit(struct c_runtime_class *runtime)
++/* CRuntimeClass */
++struct CRuntimeClass
++{
++    LPCSTR m_lpszClassName;
++    int m_nObjectSize;
++    UINT m_wSchema;
++    struct CObject * (PASCAL* m_pfnCreateObject)(void);
++    struct CRuntimeClass * (PASCAL* m_pfnGetBaseClass)(void);
++
++    struct CRuntimeClass *m_pNextClass;
++    void *m_pClassInit;
++};
++
++void WINAPI AfxClassInit(struct CRuntimeClass *runtime)
 +{
 +    FIXME("%p\n", runtime);
 +}
