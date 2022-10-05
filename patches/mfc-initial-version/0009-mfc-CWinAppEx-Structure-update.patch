@@ -48,7 +48,7 @@ index b5673c23ea8..7e0b2901d5e 100644
 +    void **vtbl;
 +
 +    /* CCmdTarget */
-+    void *cmdtarget[8];
++    void *cmdtarget[7];
 +
 +    /* CWinThread */
 +    void *m_pMainWnd;        /* CWnd* */

@@ -22,8 +22,8 @@ index 2836b477b02..9725dc0f0c7 100644
  }
  
 +/*
-+ * ?InitKeyboardManager@CWinAppEx@@QAEHXZ
-+ * ?InitKeyboardManager@CWinAppEx@@QEAAHXZ
++ * ?InitTooltipManager@CWinAppEx@@QAEHXZ
++ * ?InitTooltipManager@CWinAppEx@@QEAAHXZ
 + */
 +DEFINE_THISCALL_WRAPPER(cwinapp_InitTooltipManager, 4)
 +BOOL __thiscall cwinapp_InitTooltipManager(struct c_winappex *winapp)

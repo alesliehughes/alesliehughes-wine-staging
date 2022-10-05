@@ -1,16 +1,11 @@
-From f397b3ca8f46fb29a714dd1a7f8dc9d9fd55464d Mon Sep 17 00:00:00 2001
+From 9393f0114b4f86d8e4512ed3085fa04bb698de90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Sep 2022 17:31:18 +1000
-Subject: [PATCH] mfc: Call CWinApp::InitInstamce in AfxWinMain
+Subject: mfc: Call CWinApp::InitInstamce in AfxWinMain
 
----
- dlls/mfc/afxstate.c       | 185 +++++++++++++++++++++++++++++++++++++-
- dlls/mfc140/mfc140.spec   |   4 +-
- dlls/mfc140u/mfc140u.spec |   4 +-
- 3 files changed, 188 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
-index ca02e93ffc8..411083d17c4 100644
+index cf28890f550..a3773064c9f 100644
 --- a/dlls/mfc/afxstate.c
 +++ b/dlls/mfc/afxstate.c
 @@ -21,6 +21,80 @@
@@ -94,7 +89,7 @@ index ca02e93ffc8..411083d17c4 100644
  /*
   *  We really need TCHAR to effectively support MFC.
   *  Each version of the library has an ASCII and unicode version of the library.  Duplicating the
-@@ -77,7 +151,7 @@ typedef enum _AFX_HELP_TYPE
+@@ -89,7 +163,7 @@ typedef enum _AFX_HELP_TYPE
  struct c_winappex
  {
      /* CObject */
@@ -102,8 +97,8 @@ index ca02e93ffc8..411083d17c4 100644
 +    const vtable_ptr *vtable;
  
      /* CCmdTarget */
-     void *cmdtarget[8];
-@@ -135,6 +209,8 @@ struct c_winappex
+     void *cmdtarget[7];
+@@ -147,6 +221,8 @@ struct c_winappex
  #endif
  };
  
@@ -112,7 +107,7 @@ index ca02e93ffc8..411083d17c4 100644
  static struct c_winappex *single_app;
  /*
   * ??0CWinAppEx@@QAE@H@Z
-@@ -146,6 +222,8 @@ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
+@@ -158,6 +234,8 @@ void __thiscall cwinappex_ctor(struct c_winappex *winapp, int smart_update)
      FIXME("%p, %d\n", winapp, smart_update);
  
      single_app = winapp;
@@ -121,7 +116,7 @@ index ca02e93ffc8..411083d17c4 100644
  }
  
  
-@@ -171,6 +249,109 @@ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
+@@ -183,6 +261,109 @@ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
      FIXME("%p, %s\n", winapp, debugstr_w(appid));
  }
  
@@ -231,7 +226,7 @@ index ca02e93ffc8..411083d17c4 100644
  /*
   * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
   * ?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
-@@ -180,5 +361,7 @@ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
+@@ -192,5 +373,7 @@ void __thiscall cwinapp_SetAppIDW(struct c_winappex *winapp, WCHAR *appid)
  int WINAPI AfxWinMain(HINSTANCE inst, HINSTANCE prev, TCHAR *cmdline, int show)
  {
      FIXME("cmdline %s\n", debugstr_tchar(cmdline));
@@ -284,6 +279,3 @@ index d363840b5ee..8820c62c95f 100644
  7997 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCPopupMenu@@MEAAHXZ
  7998 stub -arch=i386 -noname ?InitInstance@CWinThread@@UAEHXZ
  7998 stub -arch=win64 -noname ?IsScrollUpAvailable@CMFCRibbonPanelMenu@@UEAAHXZ
--- 
-2.37.2
-
