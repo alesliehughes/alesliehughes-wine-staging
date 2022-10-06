@@ -43,7 +43,7 @@ index 6163fa33f66..d38f1064396 100644
 +            hr = IStream_QueryInterface(steam, &IID_IUnknown, (void**)&pIUnknown);
 +            //*(IUnknown **)pSrc = &pIUnknown;
 +
-+            *(IUnknown**)(pSrc) = *(IUnknown**)&pIUnknown;
++            *((IUnknown**)pSrc) = pIUnknown;
 +            //hr = IStream_QueryInterface(steam, &IID_IUnknown, &pSrc);
 +
 +            FIXME("IStream_QueryInterface 0x%08lx (%I64d, %p)\n", hr, *(LONG_PTR*)(pSrc) ,pIUnknown);
