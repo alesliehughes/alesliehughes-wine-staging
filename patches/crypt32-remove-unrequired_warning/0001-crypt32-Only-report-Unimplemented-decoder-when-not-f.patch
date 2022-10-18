@@ -1,34 +1,37 @@
-From 93315b72eb150208761391118fbb1f29d49e632b Mon Sep 17 00:00:00 2001
+From 949d2fbe1d64d1843630fa2c9c53bcf359b13a0d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 28 Aug 2021 12:22:30 +1000
 Subject: [PATCH] crypt32: Only report Unimplemented decoder when not found in
  externall dll
 
-When using some applications, this can spam the console.
+Some applications spam this fixme.
 fixme:cryptasn:CRYPT_GetBuiltinDecoder Unsupported decoder for lpszStructType 1.3.6.1.4.1.311.2.1.4
 
-This OID is supported in wintrust.dll which crypt32 uses, so this console spam doesn't make sense.
-Another option is to make them a WARN but then it wont be obvious there is something missing.
+This OID is supported in wintrust.dll which crypt32 uses, so this console fixme doesn't make sense.
+The fixme will only appear if no support for the requested decoder is available.
+
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=53800
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/crypt32/decode.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ dlls/sapi/token.c     |  8 +++++++-
+ 2 files changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/crypt32/decode.c b/dlls/crypt32/decode.c
-index d2c3b2e9a3d..b06e04466b5 100644
+index d5a90928649..2658dccc748 100644
 --- a/dlls/crypt32/decode.c
 +++ b/dlls/crypt32/decode.c
-@@ -6299,7 +6299,7 @@ static CryptDecodeObjectExFunc CRYPT_GetBuiltinDecoder(DWORD dwCertEncodingType,
-             decodeFunc = CRYPT_AsnDecodeRsaPubKey_Bcrypt;
+@@ -6808,7 +6808,7 @@ static CryptDecodeObjectExFunc CRYPT_GetBuiltinDecoder(DWORD dwCertEncodingType,
+             decodeFunc = CRYPT_AsnDecodeOCSPBasicResponse;
              break;
          default:
 -            FIXME("Unimplemented decoder for lpszStructType OID %d\n", LOWORD(lpszStructType));
-+            return NULL;
++            break;
          }
      }
      else if (!strcmp(lpszStructType, szOID_CERT_EXTENSIONS))
-@@ -6356,8 +6356,6 @@ static CryptDecodeObjectExFunc CRYPT_GetBuiltinDecoder(DWORD dwCertEncodingType,
+@@ -6865,8 +6865,6 @@ static CryptDecodeObjectExFunc CRYPT_GetBuiltinDecoder(DWORD dwCertEncodingType,
          decodeFunc = CRYPT_AsnDecodeCTL;
      else if (!strcmp(lpszStructType, szOID_ECC_PUBLIC_KEY))
          decodeFunc = CRYPT_AsnDecodeObjectIdentifier;
@@ -37,7 +40,7 @@ index d2c3b2e9a3d..b06e04466b5 100644
      return decodeFunc;
  }
  
-@@ -6435,6 +6433,13 @@ BOOL WINAPI CryptDecodeObjectEx(DWORD dwCertEncodingType, LPCSTR lpszStructType,
+@@ -6945,6 +6943,13 @@ BOOL WINAPI CryptDecodeObjectEx(DWORD dwCertEncodingType, LPCSTR lpszStructType,
           debugstr_a(lpszStructType));
          decodeFunc = CRYPT_LoadDecoderExFunc(dwCertEncodingType, lpszStructType,
           &hFunc);
@@ -51,6 +54,33 @@ index d2c3b2e9a3d..b06e04466b5 100644
      }
      if (decodeFunc)
          ret = decodeFunc(dwCertEncodingType, lpszStructType, pbEncoded,
+diff --git a/dlls/sapi/token.c b/dlls/sapi/token.c
+index a2ef915ef98..2bc32f9868b 100644
+--- a/dlls/sapi/token.c
++++ b/dlls/sapi/token.c
+@@ -791,15 +791,21 @@ static HRESULT WINAPI token_enum_Item( ISpObjectTokenEnumBuilder *iface,
+ 
+     ret = RegOpenKeyExW (This->key, subkey, 0, KEY_READ, &key);
+     if (ret != ERROR_SUCCESS)
++    {
++        heap_free(subkey);
+         return HRESULT_FROM_WIN32(ret);
+-    heap_free(subkey);
++    }
+ 
+     hr = token_create( NULL, &IID_ISpObjectToken, (void**)&subtoken );
+     if (FAILED(hr))
++    {
++        heap_free(subkey);
+         return hr;
++    }
+ 
+     object = impl_from_ISpObjectToken( subtoken );
+     object->token_key = key;
++    object->token_id = subkey;
+ 
+     *token = subtoken;
+ 
 -- 
-2.32.0
+2.37.2
 
