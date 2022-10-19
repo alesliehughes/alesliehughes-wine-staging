@@ -15,7 +15,6 @@ Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=53800
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 ---
  dlls/crypt32/decode.c | 11 ++++++++---
- dlls/sapi/token.c     |  8 +++++++-
  2 files changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/crypt32/decode.c b/dlls/crypt32/decode.c
@@ -54,33 +53,6 @@ index d5a90928649..2658dccc748 100644
      }
      if (decodeFunc)
          ret = decodeFunc(dwCertEncodingType, lpszStructType, pbEncoded,
-diff --git a/dlls/sapi/token.c b/dlls/sapi/token.c
-index a2ef915ef98..2bc32f9868b 100644
---- a/dlls/sapi/token.c
-+++ b/dlls/sapi/token.c
-@@ -791,15 +791,21 @@ static HRESULT WINAPI token_enum_Item( ISpObjectTokenEnumBuilder *iface,
- 
-     ret = RegOpenKeyExW (This->key, subkey, 0, KEY_READ, &key);
-     if (ret != ERROR_SUCCESS)
-+    {
-+        heap_free(subkey);
-         return HRESULT_FROM_WIN32(ret);
--    heap_free(subkey);
-+    }
- 
-     hr = token_create( NULL, &IID_ISpObjectToken, (void**)&subtoken );
-     if (FAILED(hr))
-+    {
-+        heap_free(subkey);
-         return hr;
-+    }
- 
-     object = impl_from_ISpObjectToken( subtoken );
-     object->token_key = key;
-+    object->token_id = subkey;
- 
-     *token = subtoken;
- 
 -- 
 2.37.2
 
