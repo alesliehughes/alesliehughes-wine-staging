@@ -1,0 +1,67 @@
+From 3e7e180d8e0b56c2c72cddae0e4c285764bc1118 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 19 Oct 2022 16:20:19 +1100
+Subject: [PATCH] d3d11: CheckFeatureSupport support more options
+
+D3D11_FEATURE_D3D11_OPTIONS2
+D3D11_FEATURE_FORMAT_SUPPORT2
+---
+ dlls/d3d11/device.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index ee2cf91a263..1f748a9155a 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -4217,6 +4217,26 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CheckFeatureSupport(ID3D11Device2
+             return S_OK;
+         }
+ 
++        case D3D11_FEATURE_D3D11_OPTIONS2:
++        {
++            D3D11_FEATURE_DATA_D3D11_OPTIONS2 *options = feature_support_data;
++            if (feature_support_data_size != sizeof(*options))
++            {
++                WARN("Invalid data size.\n");
++                return E_INVALIDARG;
++            }
++
++            options->PSSpecifiedStencilRefSupported = FALSE;
++            options->TypedUAVLoadAdditionalFormats = FALSE;
++            options->ROVsSupported = FALSE;
++            options->ConservativeRasterizationTier = D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED;
++            options->TiledResourcesTier = D3D11_TILED_RESOURCES_NOT_SUPPORTED;
++            options->MapOnDefaultTextures = FALSE;
++            options->StandardSwizzle = FALSE;
++            options->UnifiedMemoryArchitecture = FALSE;
++            return S_OK;
++        }
++
+         case D3D11_FEATURE_D3D11_OPTIONS3:
+         {
+             D3D11_FEATURE_DATA_D3D11_OPTIONS3 *options = feature_support_data;
+@@ -4266,6 +4286,21 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CheckFeatureSupport(ID3D11Device2
+             return d3d11_device_CheckFormatSupport(iface, data->InFormat, &data->OutFormatSupport);
+         }
+ 
++        case D3D11_FEATURE_FORMAT_SUPPORT2:
++        {
++            D3D11_FEATURE_DATA_FORMAT_SUPPORT2 *data = feature_support_data;
++            if (feature_support_data_size != sizeof(*data))
++            {
++                WARN("Invalid size %u for D3D11_FEATURE_FORMAT_SUPPORT.\n", feature_support_data_size);
++                return E_INVALIDARG;
++            }
++
++            data->OutFormatSupport2 = 0;
++            return S_OK;
++        }
++
++
++
+         default:
+             FIXME("Unhandled feature %#x.\n", feature);
+             return E_NOTIMPL;
+-- 
+2.37.2
+
