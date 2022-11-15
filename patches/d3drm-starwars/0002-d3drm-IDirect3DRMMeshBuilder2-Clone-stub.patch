@@ -61,7 +61,7 @@ index 1f783baf1fe..479032b0363 100644
 +        mesh2->face_data_size = mesh_builder->face_data_size;
 +        if (mesh_builder->pFaceData && mesh_builder->face_data_size)
 +        {
-+            mesh2->pFaceData = heap_alloc(mesh_builder->face_data_size * 2);
++            mesh2->pFaceData = malloc(mesh_builder->face_data_size * 2);
 +            if(!mesh2->pFaceData)
 +            {
 +                IDirect3DRMMeshBuilder2_Release(&mesh2->IDirect3DRMMeshBuilder2_iface);
@@ -73,7 +73,7 @@ index 1f783baf1fe..479032b0363 100644
 +        mesh2->nb_coords2d = mesh_builder->nb_coords2d;
 +        if (mesh_builder->pCoords2d && mesh_builder->nb_coords2d)
 +        {
-+            mesh2->pCoords2d = heap_calloc(mesh_builder->nb_coords2d, sizeof(*mesh_builder->pCoords2d));
++            mesh2->pCoords2d = calloc(mesh_builder->nb_coords2d, sizeof(*mesh_builder->pCoords2d));
 +            if (!mesh2->pCoords2d)
 +            {
 +                IDirect3DRMMeshBuilder2_Release(&mesh2->IDirect3DRMMeshBuilder2_iface);

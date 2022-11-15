@@ -1,4 +1,4 @@
-From 79ed2abb1676bad3789c65744963635ad1beb373 Mon Sep 17 00:00:00 2001
+From c131cae56cb152e8c9079781c7d9b6f667febdae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 17:21:45 +1000
 Subject: [PATCH] d3drm: AddVertext creates a Coordinates list
@@ -10,10 +10,10 @@ Subject: [PATCH] d3drm: AddVertext creates a Coordinates list
  3 files changed, 54 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
-index 96a9c3e7f60..5adb4158dc0 100644
+index 296a9730954..799eb5fbb57 100644
 --- a/dlls/d3drm/d3drm_private.h
 +++ b/dlls/d3drm/d3drm_private.h
-@@ -165,7 +165,7 @@ struct d3drm_mesh_builder
+@@ -163,7 +163,7 @@ struct d3drm_mesh_builder
      DWORD nb_faces;
      DWORD face_data_size;
      void *pFaceData;
@@ -23,7 +23,7 @@ index 96a9c3e7f60..5adb4158dc0 100644
      D3DCOLOR color;
      IDirect3DRMMaterial2 *material;
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index eda879e0c1a..5205df6c159 100644
+index c039a8ed88e..e20b10aefc3 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
 @@ -1232,7 +1232,7 @@ HRESULT load_mesh_data(IDirect3DRMMeshBuilder3 *iface, IDirectXFileData *pData,
@@ -33,7 +33,7 @@ index eda879e0c1a..5205df6c159 100644
 -            TRACE("MeshTextureCoords: nb_coords2d = %ld\n", mesh_builder->nb_coords2d);
 +            TRACE("MeshTextureCoords: nb_coords2d = %Iu\n", mesh_builder->nb_coords2d);
  
-             mesh_builder->pCoords2d = heap_calloc(mesh_builder->nb_coords2d, sizeof(*mesh_builder->pCoords2d));
+             mesh_builder->pCoords2d = calloc(mesh_builder->nb_coords2d, sizeof(*mesh_builder->pCoords2d));
              memcpy(mesh_builder->pCoords2d, ptr + sizeof(DWORD), mesh_builder->nb_coords2d * sizeof(*mesh_builder->pCoords2d));
 @@ -1949,6 +1949,10 @@ static int WINAPI d3drm_mesh_builder3_AddVertex(IDirect3DRMMeshBuilder3 *iface,
      mesh_builder->vertices[mesh_builder->nb_vertices].u2.y = y;
@@ -47,7 +47,7 @@ index eda879e0c1a..5205df6c159 100644
  }
  
 diff --git a/dlls/d3drm/tests/d3drm.c b/dlls/d3drm/tests/d3drm.c
-index 178ab3d94eb..92f64be1c27 100644
+index 3a9db9214ff..b0b979d3c67 100644
 --- a/dlls/d3drm/tests/d3drm.c
 +++ b/dlls/d3drm/tests/d3drm.c
 @@ -854,6 +854,53 @@ static void test_Mesh(void)
@@ -104,7 +104,7 @@ index 178ab3d94eb..92f64be1c27 100644
  static void test_Face(void)
  {
      HRESULT hr;
-@@ -8202,6 +8249,7 @@ START_TEST(d3drm)
+@@ -8208,6 +8255,7 @@ START_TEST(d3drm)
      test_MeshBuilder();
      test_MeshBuilder3();
      test_Mesh();
@@ -113,5 +113,5 @@ index 178ab3d94eb..92f64be1c27 100644
      test_Frame();
      test_Device();
 -- 
-2.35.1
+2.38.1
 

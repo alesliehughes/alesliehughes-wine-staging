@@ -69,8 +69,8 @@ index 36a80c95675..7261d6458bb 100644
 +        {
 +            IDirect3DRMVisual_Release(array->visuals[i]);
 +        }*/
-+        //heap_free(array->visuals);
-+        heap_free(array);
++        //free(array->visuals);
++        free(array);
 +    }
 +
 +    return refcount;
@@ -125,7 +125,7 @@ index 36a80c95675..7261d6458bb 100644
      FIXME("iface %p, x %ld, y %ld, visuals %p stub!\n", iface, x, y, visuals);
  
 -    return E_NOTIMPL;
-+    if (!(array = heap_alloc_zero(sizeof(*array))))
++    if (!(array = calloc(1, sizeof(*array))))
 +        return E_OUTOFMEMORY;
 +
 +    array->IDirect3DRMPickedArray_iface.lpVtbl = &d3drm_picked_array_vtbl;
@@ -146,7 +146,7 @@ index 36a80c95675..7261d6458bb 100644
      FIXME("iface %p, x %ld, y %ld, visuals %p stub!\n", iface, x, y, visuals);
  
 -    return E_NOTIMPL;
-+    if (!(array = heap_alloc_zero(sizeof(*array))))
++    if (!(array = calloc(1, sizeof(*array))))
 +        return E_OUTOFMEMORY;
 +
 +    array->IDirect3DRMPickedArray_iface.lpVtbl = &d3drm_picked_array_vtbl;
