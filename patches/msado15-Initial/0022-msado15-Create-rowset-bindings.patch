@@ -1,4 +1,4 @@
-From d090aa389e2373208e2bba32f4f4bc0c7deeea43 Mon Sep 17 00:00:00 2001
+From 84be5f1181fed3336e03d415cc9f3f1cd5bd9074 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
 Subject: [PATCH] msado15: Create rowset bindings.
@@ -8,7 +8,7 @@ Subject: [PATCH] msado15: Create rowset bindings.
  1 file changed, 131 insertions(+)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 52d7306f3ff..0889b3a6236 100644
+index 47d79673f6a..b36283deb26 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -18,8 +18,8 @@ index 52d7306f3ff..0889b3a6236 100644
 +#include "sqlucode.h"
  
  #include "wine/debug.h"
- #include "wine/heap.h"
-@@ -1480,6 +1481,84 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+ 
+@@ -1481,6 +1482,84 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
@@ -44,7 +44,7 @@ index 52d7306f3ff..0889b3a6236 100644
 +    {
 +        offset = 1;
 +
-+        bindings = heap_alloc(sizeof(DBBINDING) * columns);
++        bindings = malloc(sizeof(DBBINDING) * columns);
 +        for (i=0; i < columns; i++)
 +        {
 +            TRACE("Column %I64u, pwszName: %s, pTypeInfo %p, iOrdinal %I64u, dwFlags 0x%08lx, "
@@ -104,7 +104,7 @@ index 52d7306f3ff..0889b3a6236 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1490,6 +1569,12 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1491,6 +1570,12 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -117,7 +117,7 @@ index 52d7306f3ff..0889b3a6236 100644
  
      FIXME( "%p, %s, %s, %d, %d, %ld Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
             cursor_type, lock_type, options );
-@@ -1534,6 +1619,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1535,6 +1620,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -143,17 +143,17 @@ index 52d7306f3ff..0889b3a6236 100644
 +    }
 +
 +    columns = get_column_count(recordset);
-+    dbstatus = heap_alloc(sizeof(DBBINDSTATUS) * columns );
++    dbstatus = malloc(sizeof(DBBINDSTATUS) * columns );
 +    hr = IAccessor_CreateAccessor(accessor, DBACCESSOR_ROWDATA, columns, bindings, 0, &haccessor, dbstatus);
 +    /* TODO - Check status */
-+    heap_free(dbstatus);
++    free(dbstatus);
 +    if (FAILED(hr))
 +    {
 +        IUnknown_Release(rowset);
 +        return hr;
 +    }
 +
-+    heap_free(bindings);
++    free(bindings);
 +    if (!resize_recordset( recordset, affected ))
 +    {
 +        IUnknown_Release(rowset);
@@ -171,5 +171,5 @@ index 52d7306f3ff..0889b3a6236 100644
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
 -- 
-2.34.1
+2.38.1
 

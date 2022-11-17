@@ -1,14 +1,18 @@
-From 8dfdb8483be7c793814ce2a0115bf486b59442e5 Mon Sep 17 00:00:00 2001
+From 3e7ca7f1251c710b798be2d8a4c6eba27304e0a3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 11 Mar 2021 10:47:16 +1100
-Subject: msado15: Loop data
+Subject: [PATCH] msado15: Loop data
 
+---
+ dlls/msado15/recordset.c     | 107 ++++++++++++++++++++++++++++++++++-
+ dlls/msado15/tests/msado15.c |  25 ++++++++
+ 2 files changed, 131 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 0889b3a6236..a06820ec59b 100644
+index b36283deb26..e8739fd71fd 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -1493,6 +1493,7 @@ static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDIN
+@@ -1494,6 +1494,7 @@ static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDIN
      DBBINDING *bindings;
      DBBYTEOFFSET offset;
  
@@ -16,7 +20,7 @@ index 0889b3a6236..a06820ec59b 100644
      hr = IUnknown_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&columninfo);
      if (FAILED(hr))
          return hr;
-@@ -1619,6 +1620,9 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1620,6 +1621,9 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -26,15 +30,15 @@ index 0889b3a6236..a06820ec59b 100644
      hr = fields_create( recordset, &recordset->fields );
      if (FAILED(hr))
      {
-@@ -1651,13 +1655,114 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1652,13 +1656,114 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
          return hr;
      }
  
--    heap_free(bindings);
+-    free(bindings);
 +    /* Create the data array */
      if (!resize_recordset( recordset, affected ))
      {
-+        heap_free(bindings);
++        free(bindings);
          IUnknown_Release(rowset);
          return E_OUTOFMEMORY;
      }
@@ -47,7 +51,7 @@ index 0889b3a6236..a06820ec59b 100644
 +        DBCOUNTITEM obtained;
 +        HROW *row = NULL;
 +        int datarow = 0, datacol;
-+        char *data = heap_alloc (datasize);
++        char *data = malloc (datasize);
 +
 +        hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
 +
@@ -131,22 +135,22 @@ index 0889b3a6236..a06820ec59b 100644
 +FIXME("obtained %I64u\n", obtained);
 +        }
 +
-+        heap_free(data);
++        free(data);
 +
 +        IRowset_Release(rowset2);
 +    }
 +}
 +
-+    heap_free(bindings);
++    free(bindings);
 +
      hr = IAccessor_ReleaseAccessor(accessor, haccessor, NULL);
      IAccessor_Release(accessor);
  
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index b0818110b91..b4ee60f442c 100644
+index fb9db3e33ed..a630db241e4 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1540,6 +1540,31 @@ static void test_connection_open(void)
+@@ -1554,6 +1554,31 @@ static void test_connection_open(void)
      ok( hr == S_OK, "got %08lx\n", hr );
      ok( 0, "After _Recordset_Open\n");
  
@@ -178,3 +182,6 @@ index b0818110b91..b4ee60f442c 100644
      hr = _Recordset_get_CursorType(recordset, &cursortype);
      ok( hr == S_OK, "got %08lx\n", hr );
      ok( cursortype == adOpenStatic, "got %d\n", cursortype );
+-- 
+2.38.1
+
