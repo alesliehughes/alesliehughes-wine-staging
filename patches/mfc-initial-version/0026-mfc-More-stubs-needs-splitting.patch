@@ -1,0 +1,409 @@
+From 41883688874d4ddfeef01d4c8216505e70b7529a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 22 Nov 2022 15:00:06 +1100
+Subject: [PATCH] mfc: More stubs - needs splitting
+
+This was an attempt to get "Sébastien Loeb Rally EVO" working.
+
+Needs to be seriously split into more managable chucks.
+
+---
+ dlls/mfc/afxstate.c       | 62 +++++++++++++++++++++++++++++++++++++++
+ dlls/mfc100/Makefile.in   |  2 +-
+ dlls/mfc100u/Makefile.in  |  2 +-
+ dlls/mfc110/Makefile.in   |  2 +-
+ dlls/mfc110u/Makefile.in  |  2 +-
+ dlls/mfc120u/Makefile.in  |  4 +++
+ dlls/mfc120u/mfc120u.spec | 34 ++++++++++-----------
+ dlls/mfc140/Makefile.in   |  2 +-
+ dlls/mfc140u/Makefile.in  |  2 +-
+ dlls/mfc42/Makefile.in    |  2 +-
+ dlls/mfc42u/Makefile.in   |  2 +-
+ dlls/mfc71/Makefile.in    |  2 +-
+ dlls/mfc71u/Makefile.in   |  2 +-
+ dlls/mfc80/Makefile.in    |  2 +-
+ dlls/mfc80u/Makefile.in   |  2 +-
+ dlls/mfc90/Makefile.in    |  2 +-
+ dlls/mfc90u/Makefile.in   |  2 +-
+ 17 files changed, 97 insertions(+), 31 deletions(-)
+
+diff --git a/dlls/mfc/afxstate.c b/dlls/mfc/afxstate.c
+index 6a8fde9853a..b27221dcbc8 100644
+--- a/dlls/mfc/afxstate.c
++++ b/dlls/mfc/afxstate.c
+@@ -534,4 +534,66 @@ int WINAPI AfxWinMain(HINSTANCE inst, HINSTANCE prev, TCHAR *cmdline, int show)
+ 
+     call_CWinAppEx_InitInstance(single_app);
+     return 0;
++}
++
++//  (public: __cdecl AFX_MODULE_STATE::AFX_MODULE_STATE(int,__int64 (__cdecl*)(struct HWND__ *,unsigned int,unsigned __int64,__int64),unsigned long,int))
++void WINAPI AFX_MODULE_STATE_ctor( int x1 , void *func_p, unsigned long x2, int x3)
++{
++    FIXME("\n");
++}
++
++void WINAPI AFX_MODULE_STATE_dtor(void *obj)
++{
++    FIXME("\n");
++}
++
++// (public: __cdecl ATL::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >(void))
++void WINAPI cstring_ctor(void)
++{
++    FIXME("\n");
++}
++
++void WINAPI cstring_dtor(void *cstring)
++{
++    FIXME("\n");
++}
++
++
++void WINAPI AfxCoreInitModule(void)
++{
++    FIXME("\n");
++}
++
++int WINAPI AfxWinInit(HINSTANCE h, HINSTANCE h2, TCHAR *s, int g)
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++void WINAPI AfxWinTerm(void)
++{
++    FIXME("\n");
++}
++
++void WINAPI AfxLockTempMaps(void)
++{
++    FIXME("\n");
++}
++
++int WINAPI AfxUnlockTempMaps(int x)
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++struct AFX_EXTENSION_MODULE
++{
++    int dummy;
++};
++
++void WINAPI AfxTermExtensionModule(struct AFX_EXTENSION_MODULE *mod, int x)
++{
++    FIXME("\n");
+ }
+\ No newline at end of file
+diff --git a/dlls/mfc100/Makefile.in b/dlls/mfc100/Makefile.in
+index 6ca3f2d66fc..8ed7a7ca615 100644
+--- a/dlls/mfc100/Makefile.in
++++ b/dlls/mfc100/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc100u/Makefile.in b/dlls/mfc100u/Makefile.in
+index 7d134219941..4fe76b38935 100644
+--- a/dlls/mfc100u/Makefile.in
++++ b/dlls/mfc100u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc110/Makefile.in b/dlls/mfc110/Makefile.in
+index 81ae4606afe..f9ff91a2ad0 100644
+--- a/dlls/mfc110/Makefile.in
++++ b/dlls/mfc110/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc110u/Makefile.in b/dlls/mfc110u/Makefile.in
+index 0f382dfad1e..ed95035867e 100644
+--- a/dlls/mfc110u/Makefile.in
++++ b/dlls/mfc110u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc120u/Makefile.in b/dlls/mfc120u/Makefile.in
+index 73e3bb7a7e4..733705a1daa 100644
+--- a/dlls/mfc120u/Makefile.in
++++ b/dlls/mfc120u/Makefile.in
+@@ -2,3 +2,7 @@ MODULE = mfc120u.dll
+ IMPORTS   = ole32
+ EXTRADEFS = -D_MFC_VER=0x0c00 -D_UNICODE
+ EXTRADLLFLAGS = -Wb,--prefer-native
++PARENTSRC = ../mfc
++
++C_SRCS = \
++	afxstate.c
+diff --git a/dlls/mfc120u/mfc120u.spec b/dlls/mfc120u/mfc120u.spec
+index 416c328f945..07994550977 100644
+--- a/dlls/mfc120u/mfc120u.spec
++++ b/dlls/mfc120u/mfc120u.spec
+@@ -79,7 +79,7 @@
+ 295 stub -noname -arch=i386 @ # ??0?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QAE@PBEPAUIAtlStringMgr@1@@Z (public: __thiscall ATL::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > >::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > >(unsigned char const *,struct ATL::IAtlStringMgr *))
+ 295 stub -noname -arch=win64 @ # ??0?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@QEAA@PEBEPEAUIAtlStringMgr@1@@Z (public: __cdecl ATL::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > >::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > >(unsigned char const *,struct ATL::IAtlStringMgr *))
+ 296 stub -noname -arch=i386 @ # ??0?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QAE@XZ (public: __thiscall ATL::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >(void))
+-296 stub -noname -arch=win64 @ # ??0?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ (public: __cdecl ATL::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >(void))
++296 cdecl -noname -arch=win64 ??0?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@XZ() cstring_ctor
+ 297 stub -noname -arch=i386 @ # ??0?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QAE@_WH@Z (public: __thiscall ATL::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >(wchar_t,int))
+ 297 stub -noname -arch=win64 @ # ??0?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QEAA@_WH@Z (public: __cdecl ATL::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >(wchar_t,int))
+ 298 stub -noname -arch=i386 @ # ??0?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QAE@ABUtagVARIANT@@@Z (public: __thiscall ATL::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >::CStringT<char,class StrTraitMFC_DLL<char,class ATL::ChTraitsCRT<char> > >(struct tagVARIANT const &))
+@@ -134,8 +134,8 @@
+ 322 stub -noname -arch=win64 @ # ??0AFX_MAINTAIN_STATE@@QEAA@PEAVAFX_MODULE_STATE@@@Z (public: __cdecl AFX_MAINTAIN_STATE::AFX_MAINTAIN_STATE(class AFX_MODULE_STATE *))
+ 323 stub -noname -arch=i386 @ # ??0AFX_MAINTAIN_STATE@@QAE@PAVAFX_MODULE_STATE@@@Z (public: __thiscall AFX_MAINTAIN_STATE::AFX_MAINTAIN_STATE(class AFX_MODULE_STATE *))
+ 323 stub -noname -arch=win64 @ # ??0AFX_MAINTAIN_STATE2@@QEAA@PEAVAFX_MODULE_STATE@@@Z (public: __cdecl AFX_MAINTAIN_STATE2::AFX_MAINTAIN_STATE2(class AFX_MODULE_STATE *))
+-324 stub -noname -arch=i386 @ # ??0AFX_MAINTAIN_STATE2@@QAE@PAVAFX_MODULE_STATE@@@Z (public: __thiscall AFX_MAINTAIN_STATE2::AFX_MAINTAIN_STATE2(class AFX_MODULE_STATE *))
+-324 stub -noname -arch=win64 @ # ??0AFX_MODULE_STATE@@QEAA@HP6A_JPEAUHWND__@@I_K_J@ZKH@Z (public: __cdecl AFX_MODULE_STATE::AFX_MODULE_STATE(int,__int64 (__cdecl*)(struct HWND__ *,unsigned int,unsigned __int64,__int64),unsigned long,int))
++324 stub -noname -arch=i386 ??0AFX_MAINTAIN_STATE2@@QAE@PAVAFX_MODULE_STATE@@@Z
++324 cdecl -noname -arch=win64 ??0AFX_MODULE_STATE@@QEAA@HP6A_JPEAUHWND__@@I_K_J@ZKH@Z(long ptr long long) AFX_MODULE_STATE_ctor
+ 325 stub -noname -arch=i386 @ # ??0AFX_MODULE_STATE@@QAE@HP6GJPAUHWND__@@IIJ@ZKH@Z (public: __thiscall AFX_MODULE_STATE::AFX_MODULE_STATE(int,long (__stdcall*)(struct HWND__ *,unsigned int,unsigned int,long),unsigned long,int))
+ 325 stub -noname -arch=win64 @ # ??0AFX_MODULE_THREAD_STATE@@QEAA@XZ (public: __cdecl AFX_MODULE_THREAD_STATE::AFX_MODULE_THREAD_STATE(void))
+ 326 stub -noname -arch=i386 @ # ??0AFX_MODULE_THREAD_STATE@@QAE@XZ (public: __thiscall AFX_MODULE_THREAD_STATE::AFX_MODULE_THREAD_STATE(void))
+@@ -1436,7 +1436,7 @@
+ 979 stub -noname -arch=i386 @ # ??0CTestCmdUI@@QAE@XZ (public: __thiscall CTestCmdUI::CTestCmdUI(void))
+ 979 stub -noname -arch=win64 @ # ??0CVSListBoxEditCtrl@@QEAA@XZ (public: __cdecl CVSListBoxEditCtrl::CVSListBoxEditCtrl(void))
+ 980 stub -noname -arch=i386 @ # ??0CThreadSlotData@@QAE@XZ (public: __thiscall CThreadSlotData::CThreadSlotData(void))
+-980 stub -noname -arch=win64 @ # ??0CWinApp@@QEAA@PEB_W@Z (public: __cdecl CWinApp::CWinApp(wchar_t const *))
++980 cdecl -noname -arch=win64 ??0CWinApp@@QEAA@PEB_W@Z(ptr ptr) cwinapp_ctor
+ 981 stub -noname -arch=i386 @ # ??0CToolBar@@QAE@XZ (public: __thiscall CToolBar::CToolBar(void))
+ 981 stub -noname -arch=win64 @ # ??0CWinAppEx@@QEAA@H@Z (public: __cdecl CWinAppEx::CWinAppEx(int))
+ 982 stub -noname -arch=i386 @ # ??0CToolTipCtrl@@QAE@XZ (public: __thiscall CToolTipCtrl::CToolTipCtrl(void))
+@@ -1536,7 +1536,7 @@
+ 1029 stub -noname -arch=i386 @ # ??0XGalleryGroup@XElementButtonGallery@CMFCRibbonInfo@@QAE@XZ (public: __thiscall CMFCRibbonInfo::XElementButtonGallery::XGalleryGroup::XGalleryGroup(void))
+ 1029 stub -noname -arch=win64 @ # ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ (public: __cdecl ATL::CSimpleStringT<char,1>::~CSimpleStringT<char,1>(void))
+ 1030 stub -noname -arch=i386 @ # ??0XGalleryGroup@XElementButtonGallery@CMFCRibbonInfo@@QAE@XZ (public: __thiscall CMFCRibbonInfo::XElementButtonGallery::XGalleryGroup::XGalleryGroup(void))
+-1030 stub -noname -arch=win64 @ # ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ (public: __cdecl ATL::CSimpleStringT<char,1>::~CSimpleStringT<char,1>(void))
++1030 cdecl -noname -arch=win64 ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ(ptr) cstring_dtor
+ 1031 stub -noname -arch=i386 @ # ??0XImage@CMFCRibbonInfo@@QAE@XZ (public: __thiscall CMFCRibbonInfo::XImage::XImage(void))
+ 1031 stub -noname -arch=win64 @ # ??1?$CSimpleStringT@D$00@ATL@@QEAA@XZ (public: __cdecl ATL::CSimpleStringT<char,1>::~CSimpleStringT<char,1>(void))
+ 1032 stub -noname -arch=i386 @ # ??0XInfoError@CMFCRibbonInfo@@QAE@XZ (public: __thiscall CMFCRibbonInfo::XInfoError::XInfoError(void))
+@@ -1550,7 +1550,7 @@
+ 1036 stub -noname -arch=i386 @ # ??0XRibbonBar@CMFCRibbonInfo@@QAE@XZ (public: __thiscall CMFCRibbonInfo::XRibbonBar::XRibbonBar(void))
+ 1036 stub -noname -arch=win64 @ # ??1AFX_MAINTAIN_STATE2@@QEAA@XZ (public: __cdecl AFX_MAINTAIN_STATE2::~AFX_MAINTAIN_STATE2(void))
+ 1037 stub -noname -arch=i386 @ # ??0XRibbonInfoParser@CMFCRibbonInfo@@IAE@XZ (protected: __thiscall CMFCRibbonInfo::XRibbonInfoParser::XRibbonInfoParser(void))
+-1037 stub -noname -arch=win64 @ # ??1AFX_MODULE_STATE@@UEAA@XZ (public: virtual __cdecl AFX_MODULE_STATE::~AFX_MODULE_STATE(void))
++1037 cdecl -noname -arch=win64 ??1AFX_MODULE_STATE@@UEAA@XZ(ptr) AFX_MODULE_STATE_dtor
+ 1038 stub -noname -arch=i386 @ # ??0XRibbonInfoParserCollection@CMFCRibbonInfo@@IAE@XZ (protected: __thiscall CMFCRibbonInfo::XRibbonInfoParserCollection::XRibbonInfoParserCollection(void))
+ 1038 stub -noname -arch=win64 @ # ??1AFX_MODULE_THREAD_STATE@@UEAA@XZ (public: virtual __cdecl AFX_MODULE_THREAD_STATE::~AFX_MODULE_THREAD_STATE(void))
+ 1039 stub -noname -arch=i386 @ # ??0XRibbonInfoParserRoot@CMFCRibbonInfo@@IAE@XZ (protected: __thiscall CMFCRibbonInfo::XRibbonInfoParserRoot::XRibbonInfoParserRoot(void))
+@@ -2366,7 +2366,7 @@
+ 1444 stub -noname -arch=i386 @ # ??1CStdioFile@@UAE@XZ (public: virtual __thiscall CStdioFile::~CStdioFile(void))
+ 1444 stub -noname -arch=win64 @ # ??1CVSListBoxEditCtrl@@UEAA@XZ (public: virtual __cdecl CVSListBoxEditCtrl::~CVSListBoxEditCtrl(void))
+ 1445 stub -noname -arch=i386 @ # ??1CStringArray@@UAE@XZ (public: virtual __thiscall CStringArray::~CStringArray(void))
+-1445 stub -noname -arch=win64 @ # ??1CWinApp@@UEAA@XZ (public: virtual __cdecl CWinApp::~CWinApp(void))
++1445 cdecl -noname -arch=win64 ??1CWinApp@@UEAA@XZ(ptr) cwinapp_dtor
+ 1446 stub -noname -arch=i386 @ # ??1CStringList@@UAE@XZ (public: virtual __thiscall CStringList::~CStringList(void))
+ 1446 stub -noname -arch=win64 @ # ??1CWinAppEx@@UEAA@XZ (public: virtual __cdecl CWinAppEx::~CWinAppEx(void))
+ 1447 stub -noname -arch=i386 @ # ??1CSyncObject@@UAE@XZ (public: virtual __thiscall CSyncObject::~CSyncObject(void))
+@@ -3712,7 +3712,7 @@
+ 2118 stub -noname -arch=i386 @ # ?AFX_WM_RESETKEYBOARD@@3IA (unsigned int AFX_WM_RESETKEYBOARD)
+ 2118 stub -noname -arch=win64 @ # ?AfxCopyValueByRef@@YAXPEAX0PEA_JH@Z (void __cdecl AfxCopyValueByRef(void *,void *,__int64 *,int))
+ 2119 stub -noname -arch=i386 @ # ?AFX_WM_RESETMENU@@3IA (unsigned int AFX_WM_RESETMENU)
+-2119 stub -noname -arch=win64 @ # ?AfxCoreInitModule@@YAXXZ (void __cdecl AfxCoreInitModule(void))
++2119 cdecl -noname -arch=win64 ?AfxCoreInitModule@@YAXXZ() AfxCoreInitModule
+ 2120 stub -noname -arch=i386 @ # ?AFX_WM_RESETRPROMPT@@3IA (unsigned int AFX_WM_RESETRPROMPT)
+ 2120 stub -noname -arch=win64 @ # ?AfxCreateDC@@YAPEAUHDC__@@PEAX0@Z (struct HDC__ * __cdecl AfxCreateDC(void *,void *))
+ 2121 stub -noname -arch=i386 @ # ?AFX_WM_RESETTOOLBAR@@3IA (unsigned int AFX_WM_RESETTOOLBAR)
+@@ -3814,7 +3814,7 @@
+ 2169 stub -noname -arch=i386 @ # ?AfxFailRadio@@YGXPAVCDataExchange@@@Z (void __stdcall AfxFailRadio(class CDataExchange *))
+ 2169 stub -noname -arch=win64 @ # ?AfxGetModuleShortFileName@@YAXPEAUHINSTANCE__@@AEAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z (void __cdecl AfxGetModuleShortFileName(struct HINSTANCE__ *,class ATL::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > > &))
+ 2170 stub -noname -arch=i386 @ # ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCDaoRecordset@@@Z (int __stdcall AfxFieldText(class CDataExchange *,int,void *,class CDaoRecordset *))
+-2170 stub -noname -arch=win64 @ # ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ (class AFX_MODULE_STATE * __cdecl AfxGetModuleState(void))
++2170 cdecl -noname -arch=win64 ?AfxGetModuleState@@YAPEAVAFX_MODULE_STATE@@XZ() AfxGetModuleState
+ 2171 stub -noname -arch=i386 @ # ?AfxFieldText@@YGHPAVCDataExchange@@HPAXPAVCRecordset@@@Z (int __stdcall AfxFieldText(class CDataExchange *,int,void *,class CRecordset *))
+ 2171 stub -noname -arch=win64 @ # ?AfxGetModuleThreadState@@YAPEAVAFX_MODULE_THREAD_STATE@@XZ (class AFX_MODULE_THREAD_STATE * __cdecl AfxGetModuleThreadState(void))
+ 2172 stub -noname -arch=i386 @ # ?AfxFindMessageEntry@@YGPBUAFX_MSGMAP_ENTRY@@PBU1@III@Z (struct AFX_MSGMAP_ENTRY const * __stdcall AfxFindMessageEntry(struct AFX_MSGMAP_ENTRY const *,unsigned int,unsigned int,unsigned int))
+@@ -3922,7 +3922,7 @@
+ 2223 stub -noname -arch=i386 @ # ?AfxHookWindowCreate@@YGXPAVCWnd@@@Z (void __stdcall AfxHookWindowCreate(class CWnd *))
+ 2223 stub -noname -arch=win64 @ # ?AfxLockGlobals@@YAXH@Z (void __cdecl AfxLockGlobals(int))
+ 2224 stub -noname -arch=i386 @ # ?AfxHtmlHelp@@YGPAUHWND__@@PAU1@PB_WIK@Z (struct HWND__ * __stdcall AfxHtmlHelp(struct HWND__ *,wchar_t const *,unsigned int,unsigned long))
+-2224 stub -noname -arch=win64 @ # ?AfxLockTempMaps@@YAXXZ (void __cdecl AfxLockTempMaps(void))
++2224 cdecl -noname -arch=win64 ?AfxLockTempMaps@@YAXXZ() AfxLockTempMaps
+ 2225 stub -noname -arch=i386 @ # ?AfxInitCurrentStateApp@@YGHXZ (int __stdcall AfxInitCurrentStateApp(void))
+ 2225 stub -noname -arch=win64 @ # ?afxMenuHash@@3VCMenuHash@@A (class CMenuHash afxMenuHash)
+ 2226 stub -noname -arch=i386 @ # ?AfxInitExtensionModule@@YGHAAUAFX_EXTENSION_MODULE@@PAUHINSTANCE__@@@Z (int __stdcall AfxInitExtensionModule(struct AFX_EXTENSION_MODULE &,struct HINSTANCE__ *))
+@@ -4043,8 +4043,8 @@
+ 2283 stub -noname -arch=win64 @ # ?AfxRFXBulkDefault@@YAXPEAVCFieldExchange@@PEB_WPEAXPEA_JH_K@Z (void __cdecl AfxRFXBulkDefault(class CFieldExchange *,wchar_t const *,void *,__int64 *,int,unsigned __int64))
+ 2284 stub -noname -arch=i386 @ # ?AfxOleUnlockControl@@YGHABU_GUID@@@Z (int __stdcall AfxOleUnlockControl(struct _GUID const &))
+ 2284 stub -noname -arch=win64 @ # ?AfxSafeArrayInit@@YAXPEAVCOleSafeArray@@@Z (void __cdecl AfxSafeArrayInit(class COleSafeArray *))
+-2285 stub -noname -arch=i386 @ # ?AfxOleUnlockControl@@YGHPB_W@Z (int __stdcall AfxOleUnlockControl(wchar_t const *))
+-2285 stub -noname -arch=win64 @ # ?AfxSetModuleState@@YAPEAVAFX_MODULE_STATE@@PEAV1@@Z (class AFX_MODULE_STATE * __cdecl AfxSetModuleState(class AFX_MODULE_STATE *))
++2285 stub -noname -arch=i386 ?AfxOleUnlockControl@@YGHPB_W@Z
++2285 cdecl -noname -arch=win64 ?AfxSetModuleState@@YAPEAVAFX_MODULE_STATE@@PEAV1@@Z() AfxGetModuleState
+ 2286 stub -noname -arch=i386 @ # ?AfxOleUnregisterClass@@YGHABU_GUID@@PB_W@Z (int __stdcall AfxOleUnregisterClass(struct _GUID const &,wchar_t const *))
+ 2286 stub -noname -arch=win64 @ # ?AfxSetNewHandler@@YAP6AH_K@ZP6AH0@Z@Z (int (__cdecl*__cdecl AfxSetNewHandler(int (__cdecl*)(unsigned __int64)))(unsigned __int64))
+ 2287 stub -noname -arch=i386 @ # ?AfxOleUnregisterHelper@@YGHPBQB_W0HPAUHKEY__@@@Z (int __stdcall AfxOleUnregisterHelper(wchar_t const * const *,wchar_t const * const *,int,struct HKEY__ *))
+@@ -4062,7 +4062,7 @@
+ 2293 stub -noname -arch=i386 @ # ?AfxPostQuitMessage@@YGXH@Z (void __stdcall AfxPostQuitMessage(int))
+ 2293 stub -noname -arch=win64 @ # ?AfxStringFromCLSID@@YA?AV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@AEBU_GUID@@@Z (class ATL::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > > __cdecl AfxStringFromCLSID(struct _GUID const &))
+ 2294 stub -noname -arch=i386 @ # ?AfxPreTranslateMessage@@YAHPAUtagMSG@@@Z (int __cdecl AfxPreTranslateMessage(struct tagMSG *))
+-2294 stub -noname -arch=win64 @ # ?AfxTermExtensionModule@@YAXAEAUAFX_EXTENSION_MODULE@@H@Z (void __cdecl AfxTermExtensionModule(struct AFX_EXTENSION_MODULE &,int))
++2294 cdecl -noname -arch=win64 ?AfxTermExtensionModule@@YAXAEAUAFX_EXTENSION_MODULE@@H@Z(ptr long) AfxTermExtensionModule
+ 2295 stub -noname -arch=i386 @ # ?AFXPrintPreview@@YAXPAVCView@@@Z (void __cdecl AFXPrintPreview(class CView *))
+ 2295 stub -noname -arch=win64 @ # ?AfxTermLocalData@@YAXPEAUHINSTANCE__@@H@Z (void __cdecl AfxTermLocalData(struct HINSTANCE__ *,int))
+ 2296 stub -noname -arch=i386 @ # ?AfxProcessWndProcException@@YGJPAVCException@@PBUtagMSG@@@Z (long __stdcall AfxProcessWndProcException(class CException *,struct tagMSG const *))
+@@ -4110,7 +4110,7 @@
+ 2317 stub -noname -arch=i386 @ # ?AfxRFXBulkDefault@@YGXPAVCFieldExchange@@PB_WPAXPAJHK@Z (void __stdcall AfxRFXBulkDefault(class CFieldExchange *,wchar_t const *,void *,long *,int,unsigned long))
+ 2317 stub -noname -arch=win64 @ # ?AfxUnlockGlobals@@YAXH@Z (void __cdecl AfxUnlockGlobals(int))
+ 2318 stub -noname -arch=i386 @ # ?AfxSafeArrayInit@@YGXPAVCOleSafeArray@@@Z (void __stdcall AfxSafeArrayInit(class COleSafeArray *))
+-2318 stub -noname -arch=win64 @ # ?AfxUnlockTempMaps@@YAHH@Z (int __cdecl AfxUnlockTempMaps(int))
++2318 cdecl -noname -arch=win64 ?AfxUnlockTempMaps@@YAHH@Z(long) AfxUnlockTempMaps
+ 2319 stub -noname -arch=i386 @ # ?AfxSetDefaultValue@@YAXPAU_DAOField@@AAV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@@Z (void __cdecl AfxSetDefaultValue(struct _DAOField *,class ATL::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > > &))
+ 2319 stub -noname -arch=win64 @ # ?AfxUnmergeMenus@@YAXPEAUHMENU__@@00@Z (void __cdecl AfxUnmergeMenus(struct HMENU__ *,struct HMENU__ *,struct HMENU__ *))
+ 2320 stub -noname -arch=i386 @ # ?AfxSetFieldInfo@@YAXPAU_DAOField@@AAUCDaoFieldInfo@@@Z (void __cdecl AfxSetFieldInfo(struct _DAOField *,struct CDaoFieldInfo &))
+@@ -4119,7 +4119,7 @@
+ 2321 stub -noname -arch=win64 @ # ?AfxUnregisterSiteFactory@@YAHPEAVIControlSiteFactory@@@Z (int __cdecl AfxUnregisterSiteFactory(class IControlSiteFactory *))
+ 2322 stub -noname -arch=i386 @ # ?AfxSetIndexInfo@@YAXPAU_DAOIndex@@AAUCDaoIndexInfo@@@Z (void __cdecl AfxSetIndexInfo(struct _DAOIndex *,struct CDaoIndexInfo &))
+ 2322 stub -noname -arch=win64 @ # ?AfxUnregisterWndClasses@@YAXXZ (void __cdecl AfxUnregisterWndClasses(void))
+-2323 stub -noname -arch=i386 @ # ?AfxSetModuleState@@YGPAVAFX_MODULE_STATE@@PAV1@@Z (class AFX_MODULE_STATE * __stdcall AfxSetModuleState(class AFX_MODULE_STATE *))
++2323 stdcall -noname -arch=i386 ?AfxSetModuleState@@YGPAVAFX_MODULE_STATE@@PAV1@@Z() AfxGetModuleState
+ 2323 stub -noname -arch=win64 @ # ?afxUserToolsManager@@3PEAVCUserToolsManager@@EA (class CUserToolsManager * afxUserToolsManager)
+ 2324 stub -noname -arch=i386 @ # ?AfxSetNewHandler@@YGP6AHI@ZP6AHI@Z@Z (int (__cdecl*__stdcall AfxSetNewHandler(int (__cdecl*)(unsigned int)))(unsigned int))
+ 2324 stub -noname -arch=win64 @ # ?AfxVariantInit@@YAXPEAUtagVARIANT@@@Z (void __cdecl AfxVariantInit(struct tagVARIANT *))
+@@ -4128,11 +4128,11 @@
+ 2326 stub -noname -arch=i386 @ # ?AfxSetWindowText@@YGXPAUHWND__@@PB_W@Z (void __stdcall AfxSetWindowText(struct HWND__ *,wchar_t const *))
+ 2326 stub -noname -arch=win64 @ # ?AfxW2AHelper@@YAPEADPEADPEB_WH@Z (char * __cdecl AfxW2AHelper(char *,wchar_t const *,int))
+ 2327 stub -noname -arch=i386 @ # ?afxShellManager@@3PAVCShellManager@@A (class CShellManager * afxShellManager)
+-2327 stub -noname -arch=win64 @ # ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEA_WH@Z (int __cdecl AfxWinInit(struct HINSTANCE__ *,struct HINSTANCE__ *,wchar_t *,int))
++2327 cdecl -noname -arch=win64 ?AfxWinInit@@YAHPEAUHINSTANCE__@@0PEA_WH@Z(ptr ptr ptr long) AfxWinInit
+ 2328 stub -noname -arch=i386 @ # ?AfxSocketTerm@@YGXXZ (void __stdcall AfxSocketTerm(void))
+ 2328 stub -noname -arch=win64 @ # ?AfxWinMain@@YAHPEAUHINSTANCE__@@0PEA_WH@Z (int __cdecl AfxWinMain(struct HINSTANCE__ *,struct HINSTANCE__ *,wchar_t *,int))
+ 2329 stub -noname -arch=i386 @ # ?AFXSoundThreadProc@@YAXPAX@Z (void __cdecl AFXSoundThreadProc(void *))
+-2329 stub -noname -arch=win64 @ # ?AfxWinTerm@@YAXXZ (void __cdecl AfxWinTerm(void))
++2329 cdecl -noname -arch=win64 ?AfxWinTerm@@YAXXZ() AfxWinTerm
+ 2330 stub -noname -arch=i386 @ # ?AfxStoreField@@YGXAAVCRecordset@@IPAX@Z (void __stdcall AfxStoreField(class CRecordset &,unsigned int,void *))
+ 2330 stub -noname -arch=win64 @ # ?AfxWndProc@@YA_JPEAUHWND__@@I_K_J@Z (__int64 __cdecl AfxWndProc(struct HWND__ *,unsigned int,unsigned __int64,__int64))
+ 2331 stub -noname -arch=i386 @ # ?AfxStringFromCLSID@@YG?AV?$CStringT@_WV?$StrTraitMFC_DLL@_WV?$ChTraitsCRT@_W@ATL@@@@@ATL@@ABU_GUID@@@Z (class ATL::CStringT<wchar_t,class StrTraitMFC_DLL<wchar_t,class ATL::ChTraitsCRT<wchar_t> > > __stdcall AfxStringFromCLSID(struct _GUID const &))
+diff --git a/dlls/mfc140/Makefile.in b/dlls/mfc140/Makefile.in
+index 5f8f8e83a8f..f4d7fbab034 100644
+--- a/dlls/mfc140/Makefile.in
++++ b/dlls/mfc140/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc140u/Makefile.in b/dlls/mfc140u/Makefile.in
+index 7a14795adb0..2761ab8f61b 100644
+--- a/dlls/mfc140u/Makefile.in
++++ b/dlls/mfc140u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc42/Makefile.in b/dlls/mfc42/Makefile.in
+index a84ebed6c0c..f4d25f20aa6 100644
+--- a/dlls/mfc42/Makefile.in
++++ b/dlls/mfc42/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc42u/Makefile.in b/dlls/mfc42u/Makefile.in
+index 3d2a51ab3dd..43beaf03db5 100644
+--- a/dlls/mfc42u/Makefile.in
++++ b/dlls/mfc42u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc71/Makefile.in b/dlls/mfc71/Makefile.in
+index 9ce74c619e0..c2ff10d980d 100644
+--- a/dlls/mfc71/Makefile.in
++++ b/dlls/mfc71/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc71u/Makefile.in b/dlls/mfc71u/Makefile.in
+index d118fc0a544..e54dc4cc7f7 100644
+--- a/dlls/mfc71u/Makefile.in
++++ b/dlls/mfc71u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc80/Makefile.in b/dlls/mfc80/Makefile.in
+index 3f43ad06b2e..8ae18e5b13d 100644
+--- a/dlls/mfc80/Makefile.in
++++ b/dlls/mfc80/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc80u/Makefile.in b/dlls/mfc80u/Makefile.in
+index 41344e3a9c9..dfc85073066 100644
+--- a/dlls/mfc80u/Makefile.in
++++ b/dlls/mfc80u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc90/Makefile.in b/dlls/mfc90/Makefile.in
+index 8599ffbea91..9966adc8dea 100644
+--- a/dlls/mfc90/Makefile.in
++++ b/dlls/mfc90/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+diff --git a/dlls/mfc90u/Makefile.in b/dlls/mfc90u/Makefile.in
+index ebe07ac23a1..bb61134b21b 100644
+--- a/dlls/mfc90u/Makefile.in
++++ b/dlls/mfc90u/Makefile.in
+@@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
+ PARENTSRC = ../mfc
+ 
+ C_SRCS = \
+-	afxstate.c
+\ No newline at end of file
++	afxstate.c
+-- 
+2.38.1
+
