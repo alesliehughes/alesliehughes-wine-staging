@@ -1,0 +1,37 @@
+From c0043fe0f2fb7ff4f0cb0b4a1c20ae50564906f8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 28 Nov 2022 18:40:56 +1100
+Subject: [PATCH 2/3] dmime: Assign DMUS_PMSG members in IDirectMusicGraph
+ StampPMsg
+
+---
+ dlls/dmime/graph.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/dlls/dmime/graph.c b/dlls/dmime/graph.c
+index 6cb719025c1..4d1b2b070bb 100644
+--- a/dlls/dmime/graph.c
++++ b/dlls/dmime/graph.c
+@@ -96,7 +96,19 @@ static ULONG WINAPI DirectMusicGraph_Release(IDirectMusicGraph *iface)
+ static HRESULT WINAPI DirectMusicGraph_StampPMsg(IDirectMusicGraph *iface, DMUS_PMSG *msg)
+ {
+     IDirectMusicGraphImpl *This = impl_from_IDirectMusicGraph(iface);
++    IDirectMusicTool *tool = NULL;
+     FIXME("(%p, %p): stub\n", This, msg);
++
++    IDirectMusicGraph_GetTool(iface, 0, &tool);
++
++    if (msg->pTool)
++        IDirectMusicTool_Release(msg->pTool);
++    msg->pTool = tool;
++    if (msg->pGraph)
++        IDirectMusicGraph_Release(msg->pGraph);
++    msg->pGraph = iface;
++    IDirectMusicGraph_AddRef(iface);
++
+     return S_OK;
+ }
+ 
+-- 
+2.38.1
+

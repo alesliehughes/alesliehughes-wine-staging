@@ -1,0 +1,86 @@
+From 8a3c53600dab2ed0ea3de40060f5076a33df2f13 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 28 Nov 2022 18:41:33 +1100
+Subject: [PATCH] dmime: HACK: IDirectMusicPerformance8 PlaySegmentEx send
+ message
+
+---
+ dlls/dmime/performance.c | 61 ++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 55 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/dmime/performance.c b/dlls/dmime/performance.c
+index d69a27540d6..b85631ce198 100644
+--- a/dlls/dmime/performance.c
++++ b/dlls/dmime/performance.c
+@@ -1036,13 +1036,62 @@ static HRESULT WINAPI IDirectMusicPerformance8Impl_PlaySegmentEx(IDirectMusicPer
+         __int64 i64StartTime, IDirectMusicSegmentState **ppSegmentState, IUnknown *pFrom,
+         IUnknown *pAudioPath)
+ {
+-        IDirectMusicPerformance8Impl *This = impl_from_IDirectMusicPerformance8(iface);
++    IDirectMusicPerformance8Impl *This = impl_from_IDirectMusicPerformance8(iface);
++    DMUS_NOTIFICATION_PMSG *msg;
++    HRESULT hr;
+ 
+-	FIXME("(%p, %p, %p, %p, %ld, 0x%s, %p, %p, %p): stub\n", This, pSource, pwzSegmentName,
+-	    pTransition, dwFlags, wine_dbgstr_longlong(i64StartTime), ppSegmentState, pFrom, pAudioPath);
+-	if (ppSegmentState)
+-          return create_dmsegmentstate(&IID_IDirectMusicSegmentState,(void**)ppSegmentState);
+-	return S_OK;
++    FIXME("(%p, %p, %p, %p, %ld, 0x%s, %p, %p, %p): semi-stub\n", This, pSource, pwzSegmentName,
++        pTransition, dwFlags, wine_dbgstr_longlong(i64StartTime), ppSegmentState, pFrom, pAudioPath);
++
++    /* TODO Check Notifcation */
++    if(TRUE)
++    {
++        IDirectMusicGraph *graph = NULL;
++        IDirectMusicSegment *segment;
++
++        hr = IUnknown_QueryInterface(pSource, &IID_IDirectMusicSegment, (void**)&segment);
++        if(FAILED(hr))
++            return hr;
++
++        hr = IDirectMusicSegment_GetGraph(segment, &graph);
++        IDirectMusicSegment8_Release(segment);
++        if(FAILED(hr))
++            return hr;
++
++        if (graph)
++        {
++            hr = IDirectMusicPerformance8_AllocPMsg(iface, sizeof(DMUS_NOTIFICATION_PMSG), (DMUS_PMSG **)&msg);
++            if(FAILED(hr))
++            {
++                IDirectMusicGraph_Release(graph);
++                return hr;
++            }
++
++            msg->dwType = DMUS_PMSGT_NOTIFICATION;
++            msg->guidNotificationType = GUID_NOTIFICATION_SEGMENT;
++            msg->dwNotificationOption = DMUS_NOTIFICATION_SEGSTART;
++
++            IDirectMusicGraph_StampPMsg(graph, (DMUS_PMSG *)msg);
++
++            hr = IDirectMusicTool_ProcessPMsg(msg->pTool, (IDirectMusicPerformance*)iface, (DMUS_PMSG *)msg);
++            TRACE("IDirectMusicTool_ProcessPMsg returned (0x%lx)\n", hr);
++
++            if (hr == DMUS_S_FREE)
++                IDirectMusicPerformance8_FreePMsg(iface, (DMUS_PMSG *)msg);
++            else
++                ERR("Unsupported return code (0x%lx)\n", hr);
++            IDirectMusicGraph_Release(graph);
++        }
++        else
++        {
++            ERR("Failed to find Graph object - Need to fetch from Defaut Audio?\n");
++        }
++    }
++
++    if (ppSegmentState)
++        return create_dmsegmentstate(&IID_IDirectMusicSegmentState,(void**)ppSegmentState);
++
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI IDirectMusicPerformance8Impl_StopEx(IDirectMusicPerformance8 *iface,
+-- 
+2.38.1
+
