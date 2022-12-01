@@ -1,0 +1,39 @@
+From ed80b334f15ed31de9e001bd5fe3d0f2ebac9f10 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 22 Apr 2022 16:20:36 +1000
+Subject: [PATCH] secur32: Use fallback if gnutls_priority_set_direct fails
+
+Failing to connect with MS SQL server.
+
+---
+ dlls/secur32/schannel_gnutls.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/dlls/secur32/schannel_gnutls.c b/dlls/secur32/schannel_gnutls.c
+index 0145c59e0f0..81e4d760484 100644
+--- a/dlls/secur32/schannel_gnutls.c
++++ b/dlls/secur32/schannel_gnutls.c
+@@ -117,6 +117,7 @@ MAKE_FUNCPTR(gnutls_x509_crt_deinit);
+ MAKE_FUNCPTR(gnutls_x509_crt_import);
+ MAKE_FUNCPTR(gnutls_x509_crt_init);
+ MAKE_FUNCPTR(gnutls_x509_privkey_deinit);
++MAKE_FUNCPTR(gnutls_set_default_priority);
+ #undef MAKE_FUNCPTR
+ 
+ #if GNUTLS_VERSION_MAJOR < 3
+@@ -522,6 +523,12 @@ static NTSTATUS schan_create_session( void *args )
+     err = pgnutls_priority_set_direct(*s, priority, NULL);
+     if (err != GNUTLS_E_SUCCESS)
+     {
++        WARN("gnutls_priority_set_direct failed %d\n", err);
++        err = pgnutls_set_default_priority(*s);
++    }
++    if (err != GNUTLS_E_SUCCESS)
++    {
++        ERR("gnutls_set_default_priority failed %d\n", err);
+         pgnutls_perror(err);
+         pgnutls_deinit(*s);
+         return STATUS_INTERNAL_ERROR;
+-- 
+2.35.1
+
