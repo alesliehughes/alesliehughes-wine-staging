@@ -1,0 +1,63 @@
+From 4658dd84ccae4444ed8c184a8a3144e16df442df Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 3 Aug 2022 16:25:11 +1000
+Subject: [PATCH] dmime: Store WAVE data when Loading.
+
+---
+ dlls/dmime/segment.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dmime/segment.c b/dlls/dmime/segment.c
+index 8ec4059e8f9..41e5f6274b2 100644
+--- a/dlls/dmime/segment.c
++++ b/dlls/dmime/segment.c
+@@ -33,6 +33,9 @@ typedef struct IDirectMusicSegment8Impl {
+     DMUS_IO_SEGMENT_HEADER header;
+     IDirectMusicGraph *pGraph;
+     struct list Tracks;
++
++    PCMWAVEFORMAT wave_format;
++    void *wave_data;
+ } IDirectMusicSegment8Impl;
+ 
+ static inline IDirectMusicSegment8Impl *impl_from_IDirectMusicSegment8(IDirectMusicSegment8 *iface)
+@@ -84,6 +87,9 @@ static ULONG WINAPI IDirectMusicSegment8Impl_Release(IDirectMusicSegment8 *iface
+     TRACE("(%p) ref=%ld\n", This, ref);
+ 
+     if (!ref) {
++        if (This->wave_data)
++            HeapFree(GetProcessHeap(), 0, This->wave_data);
++
+         HeapFree(GetProcessHeap(), 0, This);
+         DMIME_UnlockModule();
+     }
+@@ -808,7 +814,25 @@ static HRESULT WINAPI seg_IPersistStream_Load(IPersistStream *iface, IStream *st
+     if (riff.type == DMUS_FOURCC_SEGMENT_FORM)
+         hr = parse_segment_form(This, stream, &riff);
+     else {
+-        FIXME("WAVE form loading not implemented\n");
++        if ((hr = stream_get_chunk(stream, &riff)) == S_OK) {
++            if (riff.id == mmioFOURCC('f','m','t',' ')) {
++                if (FAILED(hr = stream_chunk_get_data(stream, &riff, &This->wave_format, sizeof(This->wave_format))))
++                    return hr;
++                TRACE("Wave Format tag %d\n", This->wave_format.wf.wFormatTag);
++            }
++
++            if ((hr = stream_get_chunk(stream, &riff)) == S_OK) {
++                if (riff.id == mmioFOURCC('d','a','t','a')) {
++                    TRACE("Wave Data size %lu\n", riff.size);
++                    This->wave_data = HeapAlloc(GetProcessHeap(), 0, riff.size);
++                    if (!This->wave_data)
++                        return E_OUTOFMEMORY;
++                    if (FAILED(hr = stream_chunk_get_data(stream, &riff, &This->wave_data, sizeof(riff.size))))
++                        return hr;
++                }
++            }
++        }
++
+         hr = S_OK;
+     }
+ 
+-- 
+2.35.1
+
