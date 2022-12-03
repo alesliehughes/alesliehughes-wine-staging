@@ -1,7 +1,7 @@
-From 1f842e6c0c89f420ecc54eb680f0c1055de99b09 Mon Sep 17 00:00:00 2001
+From 797b8ae2cb2b2e7c55f0c97332c0876a2e145e5d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Aug 2022 16:25:11 +1000
-Subject: [PATCH] dmime: Store WAVE data when Loading.
+Subject: [PATCH 1/2] dmime: Store WAVE data when Loading.
 
 ---
  dlls/dmime/segment.c | 41 +++++++++++++++++++++++++++++++++++++----
