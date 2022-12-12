@@ -1,0 +1,30 @@
+From cc981ad04a65b0bdbb079e08051f078ab57fa949 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 11 Dec 2022 15:09:10 +1100
+Subject: [PATCH] combase: Report missing Windows.System.DispatcherQueue once
+
+---
+ dlls/combase/roapi.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/dlls/combase/roapi.c b/dlls/combase/roapi.c
+index 78f35de39d4..f5fd6322ee2 100644
+--- a/dlls/combase/roapi.c
++++ b/dlls/combase/roapi.c
+@@ -158,6 +158,13 @@ HRESULT WINAPI RoGetActivationFactory(HSTRING classid, REFIID iid, void **class_
+     HMODULE module;
+     HRESULT hr;
+ 
++    if(!wcscmp(L"Windows.System.DispatcherQueue", WindowsGetStringRawBuffer(classid, NULL)))
++    {
++        static int once;
++        if (!once++)
++            FIXME("Failed to find library for %s\n", debugstr_hstring(classid));
++        return E_NOTIMPL;
++    }
+     FIXME("(%s, %s, %p): semi-stub\n", debugstr_hstring(classid), debugstr_guid(iid), class_factory);
+ 
+     if (!iid || !class_factory)
+-- 
+2.38.1
+
