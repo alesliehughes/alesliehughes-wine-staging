@@ -1,0 +1,103 @@
+From 9dd92da6c3d3a12cc1f97617a782c2f259788473 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Dec 2022 08:45:07 +1100
+Subject: [PATCH] msvcrt: Stub Cancellation_beacon ctor
+
+---
+ dlls/concrt140/concrt140.spec       |  6 +++---
+ dlls/msvcr110/msvcr110.spec         |  6 +++---
+ dlls/msvcr120/msvcr120.spec         |  6 +++---
+ dlls/msvcr120_app/msvcr120_app.spec |  6 +++---
+ dlls/msvcrt/concurrency.c           | 10 ++++++++++
+ 5 files changed, 22 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/concrt140/concrt140.spec b/dlls/concrt140/concrt140.spec
+index f2b2789a5e2..d5266913d4b 100644
+--- a/dlls/concrt140/concrt140.spec
++++ b/dlls/concrt140/concrt140.spec
+@@ -12,9 +12,9 @@
+ @ cdecl -arch=arm ??0SchedulerPolicy@Concurrency@@QAA@XZ(ptr) SchedulerPolicy_ctor
+ @ thiscall -arch=i386 ??0SchedulerPolicy@Concurrency@@QAE@XZ(ptr) SchedulerPolicy_ctor
+ @ varargs -arch=win64 ??0SchedulerPolicy@Concurrency@@QEAA@_KZZ(ptr long) SchedulerPolicy_ctor_policies
+-@ stub -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ
+-@ stub -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ
+-@ stub -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ
++@ cdecl -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ(ptr) _Cancellation_beacon_ctor
++@ thiscall -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ(ptr) _Cancellation_beacon_ctor
++@ cdecl -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ(ptr) _Cancellation_beacon_ctor
+ @ stub -arch=arm ??0_Concurrent_queue_base_v4@details@Concurrency@@IAA@I@Z
+ @ thiscall -arch=i386 ??0_Concurrent_queue_base_v4@details@Concurrency@@IAE@I@Z(ptr long) _Concurrent_queue_base_v4_ctor
+ @ cdecl -arch=win64 ??0_Concurrent_queue_base_v4@details@Concurrency@@IEAA@_K@Z(ptr long) _Concurrent_queue_base_v4_ctor
+diff --git a/dlls/msvcr110/msvcr110.spec b/dlls/msvcr110/msvcr110.spec
+index c23293ea658..cd4f7319e42 100644
+--- a/dlls/msvcr110/msvcr110.spec
++++ b/dlls/msvcr110/msvcr110.spec
+@@ -17,9 +17,9 @@
+ @ stub -arch=arm ??0_CancellationTokenState@details@Concurrency@@AAA@XZ
+ @ stub -arch=i386 ??0_CancellationTokenState@details@Concurrency@@AAE@XZ
+ @ stub -arch=win64 ??0_CancellationTokenState@details@Concurrency@@AEAA@XZ
+-@ stub -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ
+-@ stub -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ
+-@ stub -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ
++@ cdecl -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ(ptr) _Cancellation_beacon_ctor
++@ thiscall -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ(ptr) _Cancellation_beacon_ctor
++@ cdecl -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ(ptr) _Cancellation_beacon_ctor
+ @ cdecl -arch=arm ??0_Condition_variable@details@Concurrency@@QAA@XZ(ptr) _Condition_variable_ctor
+ @ thiscall -arch=i386 ??0_Condition_variable@details@Concurrency@@QAE@XZ(ptr) _Condition_variable_ctor
+ @ cdecl -arch=win64 ??0_Condition_variable@details@Concurrency@@QEAA@XZ(ptr) _Condition_variable_ctor
+diff --git a/dlls/msvcr120/msvcr120.spec b/dlls/msvcr120/msvcr120.spec
+index 6eac1937227..c61a7d320b8 100644
+--- a/dlls/msvcr120/msvcr120.spec
++++ b/dlls/msvcr120/msvcr120.spec
+@@ -14,9 +14,9 @@
+ @ cdecl -arch=arm ??0SchedulerPolicy@Concurrency@@QAA@XZ(ptr) SchedulerPolicy_ctor
+ @ thiscall -arch=i386 ??0SchedulerPolicy@Concurrency@@QAE@XZ(ptr) SchedulerPolicy_ctor
+ @ cdecl -arch=win64 ??0SchedulerPolicy@Concurrency@@QEAA@XZ(ptr) SchedulerPolicy_ctor
+-@ stub -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ
+-@ stub -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ
+-@ stub -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ
++@ cdecl -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ(ptr) _Cancellation_beacon_ctor
++@ thiscall -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ(ptr) _Cancellation_beacon_ctor
++@ cdecl -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ(ptr) _Cancellation_beacon_ctor
+ @ cdecl -arch=arm ??0_Condition_variable@details@Concurrency@@QAA@XZ(ptr) _Condition_variable_ctor
+ @ thiscall -arch=i386 ??0_Condition_variable@details@Concurrency@@QAE@XZ(ptr) _Condition_variable_ctor
+ @ cdecl -arch=win64 ??0_Condition_variable@details@Concurrency@@QEAA@XZ(ptr) _Condition_variable_ctor
+diff --git a/dlls/msvcr120_app/msvcr120_app.spec b/dlls/msvcr120_app/msvcr120_app.spec
+index aad6ece8acc..4eecf7a128e 100644
+--- a/dlls/msvcr120_app/msvcr120_app.spec
++++ b/dlls/msvcr120_app/msvcr120_app.spec
+@@ -12,9 +12,9 @@
+ @ cdecl -arch=arm ??0SchedulerPolicy@Concurrency@@QAA@XZ(ptr) msvcr120.??0SchedulerPolicy@Concurrency@@QAA@XZ
+ @ thiscall -arch=i386 ??0SchedulerPolicy@Concurrency@@QAE@XZ(ptr) msvcr120.??0SchedulerPolicy@Concurrency@@QAE@XZ
+ @ cdecl -arch=win64 ??0SchedulerPolicy@Concurrency@@QEAA@XZ(ptr) msvcr120.??0SchedulerPolicy@Concurrency@@QEAA@XZ
+-@ stub -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ
+-@ stub -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ
+-@ stub -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ
++@ cdecl -arch=arm ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ(ptr) msvcr120.??0_Cancellation_beacon@details@Concurrency@@QAA@XZ
++@ thiscall -arch=i386 ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ(ptr) msvcr120.??0_Cancellation_beacon@details@Concurrency@@QAE@XZ
++@ cdecl -arch=win64 ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ(ptr) msvcr120.??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ
+ @ cdecl -arch=arm ??0_Condition_variable@details@Concurrency@@QAA@XZ(ptr) msvcr120.??0_Condition_variable@details@Concurrency@@QAA@XZ
+ @ thiscall -arch=i386 ??0_Condition_variable@details@Concurrency@@QAE@XZ(ptr) msvcr120.??0_Condition_variable@details@Concurrency@@QAE@XZ
+ @ cdecl -arch=win64 ??0_Condition_variable@details@Concurrency@@QEAA@XZ(ptr) msvcr120.??0_Condition_variable@details@Concurrency@@QEAA@XZ
+diff --git a/dlls/msvcrt/concurrency.c b/dlls/msvcrt/concurrency.c
+index 16eae02f236..208428ba8f1 100644
+--- a/dlls/msvcrt/concurrency.c
++++ b/dlls/msvcrt/concurrency.c
+@@ -3492,4 +3492,14 @@ void msvcrt_free_scheduler_thread(void)
+     call_Context_dtor(context, 1);
+ }
+ 
++/* ??0_Cancellation_beacon@details@Concurrency@@QAA@XZ */
++/* ??0_Cancellation_beacon@details@Concurrency@@QAE@XZ */
++/* ??0_Cancellation_beacon@details@Concurrency@@QEAA@XZ */
++DEFINE_THISCALL_WRAPPER(_Cancellation_beacon_ctor, 4)
++void* __thiscall _Cancellation_beacon_ctor(void *this)
++{
++    return this;
++}
++
++
+ #endif /* _MSVCR_VER >= 100 */
+-- 
+2.39.0
+
