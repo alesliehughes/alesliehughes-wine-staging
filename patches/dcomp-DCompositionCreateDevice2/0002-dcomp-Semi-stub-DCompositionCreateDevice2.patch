@@ -1,0 +1,329 @@
+From fc6090025695ba5995e3f47d2e1ad8bd2b5c33c7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Dec 2022 15:56:21 +1100
+Subject: [PATCH 2/2] dcomp: Semi-stub DCompositionCreateDevice2
+
+---
+ dlls/dcomp/Makefile.in |   2 +-
+ dlls/dcomp/device.c    | 284 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 285 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dcomp/Makefile.in b/dlls/dcomp/Makefile.in
+index 271e480ad4e..f9f58458d01 100644
+--- a/dlls/dcomp/Makefile.in
++++ b/dlls/dcomp/Makefile.in
+@@ -1,5 +1,5 @@
+ MODULE    = dcomp.dll
+-
++IMPORTS   = uuid
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ 
+ C_SRCS = \
+diff --git a/dlls/dcomp/device.c b/dlls/dcomp/device.c
+index 2d0600ce50a..bfdded4b201 100644
+--- a/dlls/dcomp/device.c
++++ b/dlls/dcomp/device.c
+@@ -23,6 +23,9 @@
+ #include "dxgi.h"
+ #include "wine/debug.h"
+ 
++#include "initguid.h"
++#include "dcomp.h"
++
+ WINE_DEFAULT_DEBUG_CHANNEL(dcomp);
+ 
+ HRESULT WINAPI DCompositionCreateDevice(IDXGIDevice *dxgi_device, REFIID iid, void **device)
+@@ -32,9 +35,290 @@ HRESULT WINAPI DCompositionCreateDevice(IDXGIDevice *dxgi_device, REFIID iid, vo
+     return E_NOTIMPL;
+ }
+ 
++struct comp_desktop
++{
++    IDCompositionDesktopDevice IDCompositionDesktopDevice_iface;
++    LONG ref;
++};
++
++static inline struct comp_desktop *impl_from_IDCompositionDesktopDevice(IDCompositionDesktopDevice *iface)
++{
++    return CONTAINING_RECORD(iface, struct comp_desktop, IDCompositionDesktopDevice_iface);
++}
++
++static HRESULT WINAPI comp_desktop_QueryInterface(IDCompositionDesktopDevice *iface, REFIID riid, void **ret)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++
++    if (IsEqualIID(riid, &IID_IUnknown) || IsEqualIID(riid, &IID_IDCompositionDevice2) ||
++            IsEqualIID(riid, &IID_IDCompositionDesktopDevice))
++    {
++        *ret = &comp->IDCompositionDesktopDevice_iface;
++        return S_OK;
++    }
++
++    FIXME("(%p, %s, %p): not found\n", comp, debugstr_guid(riid), ret);
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI comp_desktop_AddRef(IDCompositionDesktopDevice *iface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    LONG ref = InterlockedIncrement(&comp->ref);
++
++    TRACE("(%p) ref=%ld\n", comp, ref);
++
++    return ref;
++}
++
++static ULONG WINAPI comp_desktop_Release(IDCompositionDesktopDevice *iface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    LONG ref = InterlockedDecrement(&comp->ref);
++
++    TRACE("(%p) ref=%ld\n", comp, ref);
++
++    if (!ref)
++    {
++        free(comp);
++    }
++
++    return ref;
++}
++
++static HRESULT WINAPI comp_desktop_Commit(IDCompositionDesktopDevice *iface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_WaitForCommitCompletion(IDCompositionDesktopDevice *iface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_GetFrameStatistics(IDCompositionDesktopDevice *iface, DCOMPOSITION_FRAME_STATISTICS *stats)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateVisual(IDCompositionDesktopDevice *iface, IDCompositionVisual2 **visual)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateSurfaceFactory(IDCompositionDesktopDevice *iface,
++    IUnknown *device, IDCompositionSurfaceFactory **factory)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateSurface(IDCompositionDesktopDevice *iface, UINT width,
++      UINT height, DXGI_FORMAT format, DXGI_ALPHA_MODE mode, IDCompositionSurface **surface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateVirtualSurface(IDCompositionDesktopDevice *iface,
++      UINT width, UINT height, DXGI_FORMAT format, DXGI_ALPHA_MODE mode, IDCompositionVirtualSurface **surface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateTranslateTransform(IDCompositionDesktopDevice *iface,
++        IDCompositionTranslateTransform **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateScaleTransform(IDCompositionDesktopDevice *iface,
++        IDCompositionScaleTransform **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateRotateTransform(IDCompositionDesktopDevice *iface,
++        IDCompositionRotateTransform **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateSkewTransform(IDCompositionDesktopDevice *iface,
++    IDCompositionSkewTransform **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateMatrixTransform(IDCompositionDesktopDevice *iface,
++        IDCompositionMatrixTransform **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateTransformGroup(IDCompositionDesktopDevice *iface,
++    IDCompositionTransform **transforms, UINT elements, IDCompositionTransform **group)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateTranslateTransform3D(IDCompositionDesktopDevice *iface,
++        IDCompositionTranslateTransform3D **tranform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateScaleTransform3D(IDCompositionDesktopDevice *iface,
++       IDCompositionScaleTransform3D **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateRotateTransform3D(IDCompositionDesktopDevice *iface,
++       IDCompositionRotateTransform3D **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateMatrixTransform3D(IDCompositionDesktopDevice *iface,
++       IDCompositionMatrixTransform3D **transform)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateTransform3DGroup(IDCompositionDesktopDevice *iface,
++        IDCompositionTransform3D **transforms, UINT elements, IDCompositionTransform3D **group)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateEffectGroup(IDCompositionDesktopDevice *iface,
++        IDCompositionEffectGroup **group)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateRectangleClip(IDCompositionDesktopDevice *iface,
++        IDCompositionRectangleClip **clip)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateAnimation(IDCompositionDesktopDevice *iface,
++        IDCompositionAnimation **animation)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateTargetForHwnd(IDCompositionDesktopDevice *iface,
++        HWND hwnd, BOOL topmost, IDCompositionTarget **target)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateSurfaceFromHandle(IDCompositionDesktopDevice *iface,
++        HANDLE handle, IUnknown **surface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI comp_desktop_CreateSurfaceFromHwnd(IDCompositionDesktopDevice *iface,
++        HWND hwnd, IUnknown **surface)
++{
++    struct comp_desktop *comp = impl_from_IDCompositionDesktopDevice(iface);
++    FIXME("(%p)\n", comp);
++    return E_NOTIMPL;
++}
++
++static const IDCompositionDesktopDeviceVtbl com_desktop_vtbl =
++{
++    comp_desktop_QueryInterface,
++    comp_desktop_AddRef,
++    comp_desktop_Release,
++    comp_desktop_Commit,
++    comp_desktop_WaitForCommitCompletion,
++    comp_desktop_GetFrameStatistics,
++    comp_desktop_CreateVisual,
++    comp_desktop_CreateSurfaceFactory,
++    comp_desktop_CreateSurface,
++    comp_desktop_CreateVirtualSurface,
++    comp_desktop_CreateTranslateTransform,
++    comp_desktop_CreateScaleTransform,
++    comp_desktop_CreateRotateTransform,
++    comp_desktop_CreateSkewTransform,
++    comp_desktop_CreateMatrixTransform,
++    comp_desktop_CreateTransformGroup,
++    comp_desktop_CreateTranslateTransform3D,
++    comp_desktop_CreateScaleTransform3D,
++    comp_desktop_CreateRotateTransform3D,
++    comp_desktop_CreateMatrixTransform3D,
++    comp_desktop_CreateTransform3DGroup,
++    comp_desktop_CreateEffectGroup,
++    comp_desktop_CreateRectangleClip,
++    comp_desktop_CreateAnimation,
++    comp_desktop_CreateTargetForHwnd,
++    comp_desktop_CreateSurfaceFromHandle,
++    comp_desktop_CreateSurfaceFromHwnd
++};
++
+ HRESULT WINAPI DCompositionCreateDevice2(IUnknown *rendering_device, REFIID iid, void **device)
+ {
++    struct comp_desktop *comp;
+     FIXME("%p, %s, %p.\n", rendering_device, debugstr_guid(iid), device);
+ 
++    if (IsEqualIID(iid, &IID_IDCompositionDesktopDevice))
++    {
++        comp = malloc(sizeof(*comp));
++        comp->IDCompositionDesktopDevice_iface.lpVtbl = &com_desktop_vtbl;
++        comp->ref = 1;
++
++        *device = comp;
++        return S_OK;
++    }
++
+     return E_NOTIMPL;
+ }
+-- 
+2.39.0
+
