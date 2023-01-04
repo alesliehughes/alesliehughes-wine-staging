@@ -1,0 +1,96 @@
+From ff3c4324e73790064f29b137ad0717c6ce59ac0a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 16 Nov 2022 11:19:28 +1100
+Subject: [PATCH 19/19] Configure MFC
+
+---
+ configure    | 36 ++++++++++++++++++++++++++++++++++++
+ configure.ac | 18 ++++++++++++++++++
+ 2 files changed, 54 insertions(+)
+
+diff --git a/configure b/configure
+index 74727004efd..6e373e580c6 100755
+--- a/configure
++++ b/configure
+@@ -1190,6 +1190,24 @@ enable_mciseq
+ enable_mciwave
+ enable_mf
+ enable_mf3216
++enable_mfc100
++enable_mfc100u
++enable_mfc110
++enable_mfc110u
++enable_mfc120
++enable_mfc120u
++enable_mfc140
++enable_mfc140u
++enable_mfc40
++enable_mfc40u
++enable_mfc42
++enable_mfc42u
++enable_mfc70
++enable_mfc70u
++enable_mfc80
++enable_mfc80u
++enable_mfc90
++enable_mfc90u
+ enable_mferror
+ enable_mfmediaengine
+ enable_mfplat
+@@ -21468,6 +21486,24 @@ wine_fn_config_makefile dlls/mciwave enable_mciwave
+ wine_fn_config_makefile dlls/mf enable_mf
+ wine_fn_config_makefile dlls/mf/tests enable_tests
+ wine_fn_config_makefile dlls/mf3216 enable_mf3216
++wine_fn_config_makefile dlls/mfc100 enable_mfc100
++wine_fn_config_makefile dlls/mfc100u enable_mfc100u
++wine_fn_config_makefile dlls/mfc110 enable_mfc110
++wine_fn_config_makefile dlls/mfc110u enable_mfc110u
++wine_fn_config_makefile dlls/mfc120 enable_mfc120
++wine_fn_config_makefile dlls/mfc120u enable_mfc120u
++wine_fn_config_makefile dlls/mfc140 enable_mfc140
++wine_fn_config_makefile dlls/mfc140u enable_mfc140u
++wine_fn_config_makefile dlls/mfc40 enable_mfc40
++wine_fn_config_makefile dlls/mfc40u enable_mfc40u
++wine_fn_config_makefile dlls/mfc42 enable_mfc42
++wine_fn_config_makefile dlls/mfc42u enable_mfc42u
++wine_fn_config_makefile dlls/mfc70 enable_mfc70
++wine_fn_config_makefile dlls/mfc70u enable_mfc70u
++wine_fn_config_makefile dlls/mfc80 enable_mfc80
++wine_fn_config_makefile dlls/mfc80u enable_mfc80u
++wine_fn_config_makefile dlls/mfc90 enable_mfc90
++wine_fn_config_makefile dlls/mfc90u enable_mfc90u
+ wine_fn_config_makefile dlls/mferror enable_mferror
+ wine_fn_config_makefile dlls/mfmediaengine enable_mfmediaengine
+ wine_fn_config_makefile dlls/mfmediaengine/tests enable_tests
+diff --git a/configure.ac b/configure.ac
+index 7313fde9a4e..86856d5c5f6 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2751,6 +2751,24 @@ WINE_CONFIG_MAKEFILE(dlls/mciwave)
+ WINE_CONFIG_MAKEFILE(dlls/mf)
+ WINE_CONFIG_MAKEFILE(dlls/mf/tests)
+ WINE_CONFIG_MAKEFILE(dlls/mf3216)
++WINE_CONFIG_MAKEFILE(dlls/mfc100)
++WINE_CONFIG_MAKEFILE(dlls/mfc100u)
++WINE_CONFIG_MAKEFILE(dlls/mfc110)
++WINE_CONFIG_MAKEFILE(dlls/mfc110u)
++WINE_CONFIG_MAKEFILE(dlls/mfc120)
++WINE_CONFIG_MAKEFILE(dlls/mfc120u)
++WINE_CONFIG_MAKEFILE(dlls/mfc140)
++WINE_CONFIG_MAKEFILE(dlls/mfc140u)
++WINE_CONFIG_MAKEFILE(dlls/mfc40)
++WINE_CONFIG_MAKEFILE(dlls/mfc40u)
++WINE_CONFIG_MAKEFILE(dlls/mfc42)
++WINE_CONFIG_MAKEFILE(dlls/mfc42u)
++WINE_CONFIG_MAKEFILE(dlls/mfc70)
++WINE_CONFIG_MAKEFILE(dlls/mfc70u)
++WINE_CONFIG_MAKEFILE(dlls/mfc80)
++WINE_CONFIG_MAKEFILE(dlls/mfc80u)
++WINE_CONFIG_MAKEFILE(dlls/mfc90)
++WINE_CONFIG_MAKEFILE(dlls/mfc90u)
+ WINE_CONFIG_MAKEFILE(dlls/mferror)
+ WINE_CONFIG_MAKEFILE(dlls/mfmediaengine)
+ WINE_CONFIG_MAKEFILE(dlls/mfmediaengine/tests)
+-- 
+2.38.1
+
