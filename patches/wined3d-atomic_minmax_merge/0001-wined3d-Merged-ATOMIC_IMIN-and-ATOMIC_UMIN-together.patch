@@ -8,6 +8,7 @@ Batman: Arkham Knight.
 0670:fixme:d3d_shader:shader_glsl_atomic Unhandled opcode 0x6 for unsigned integers.
 0670:fixme:d3d_shader:shader_glsl_atomic Unhandled opcode 0x7 for unsigned integers.
 
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=52233
 ---
  dlls/wined3d/glsl_shader.c | 36 ++++++++----------------------------
  1 file changed, 8 insertions(+), 28 deletions(-)
