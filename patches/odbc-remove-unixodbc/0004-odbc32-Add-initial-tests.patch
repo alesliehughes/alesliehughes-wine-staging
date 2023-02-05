@@ -1,16 +1,23 @@
-From 54cc57f9d19a93db926780d9c13a17aa80c952c7 Mon Sep 17 00:00:00 2001
+From 9c05578e088fc309305576b822c60efcef1cdc7e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Mon, 22 Oct 2018 15:06:51 +1100
-Subject: odbc32: Add initial tests
+Date: Fri, 3 Feb 2023 14:16:21 +1100
+Subject: [PATCH 4/8] odbc32: Add initial tests
 
-Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ configure                      |   1 +
+ configure.ac                   |   1 +
+ dlls/odbc32/tests/Makefile.in  |   4 +
+ dlls/odbc32/tests/connection.c | 165 +++++++++++++++++++++++++++++++++
+ 4 files changed, 171 insertions(+)
+ create mode 100644 dlls/odbc32/tests/Makefile.in
+ create mode 100644 dlls/odbc32/tests/connection.c
 
 diff --git a/configure b/configure
-index fe8135c5fa7..f5986ae0523 100755
+index 6b48c2aa038..a335c5fdb23 100755
 --- a/configure
 +++ b/configure
-@@ -21180,6 +21180,7 @@ wine_fn_config_makefile dlls/nvencodeapi enable_win32
- wine_fn_config_makefile dlls/nvencodeapi64 enable_win64
+@@ -21632,6 +21632,7 @@ wine_fn_config_makefile dlls/ntprint enable_ntprint
+ wine_fn_config_makefile dlls/ntprint/tests enable_tests
  wine_fn_config_makefile dlls/objsel enable_objsel
  wine_fn_config_makefile dlls/odbc32 enable_odbc32
 +wine_fn_config_makefile dlls/odbc32/tests enable_tests
@@ -18,11 +25,11 @@ index fe8135c5fa7..f5986ae0523 100755
  wine_fn_config_makefile dlls/odbccp32 enable_odbccp32
  wine_fn_config_makefile dlls/odbccp32/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index 432015c4458..4d5d80d5115 100644
+index f643eb0a070..eafe22ad338 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3661,6 +3661,7 @@ WINE_CONFIG_MAKEFILE(dlls/nvencodeapi,enable_win32)
- WINE_CONFIG_MAKEFILE(dlls/nvencodeapi64,enable_win64)
+@@ -2897,6 +2897,7 @@ WINE_CONFIG_MAKEFILE(dlls/ntprint)
+ WINE_CONFIG_MAKEFILE(dlls/ntprint/tests)
  WINE_CONFIG_MAKEFILE(dlls/objsel)
  WINE_CONFIG_MAKEFILE(dlls/odbc32)
 +WINE_CONFIG_MAKEFILE(dlls/odbc32/tests)
@@ -210,3 +217,6 @@ index 00000000000..ccea72c1d6c
 +    test_SQLDriver();
 +    test_SQLGetDiagRec();
 +}
+-- 
+2.39.1
+

@@ -1,44 +1,81 @@
-From f00ccb2c12584ba788c4110b422775b67f501c29 Mon Sep 17 00:00:00 2001
+From d156cc2be6cc1aa13d2e2f736549e72a539c86f1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 24 Nov 2020 11:42:43 +1100
-Subject: [PATCH] odbc32: Implement SQLAllocConnect
+Date: Fri, 3 Feb 2023 14:40:03 +1100
+Subject: [PATCH 5/8] odbc32: Implement SQLAllocConnect
 
-This should forward to SQLAllocHandle.
 ---
- dlls/odbc32/proxyodbc.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ dlls/odbc32/proxyodbc.c | 41 +++++++++++++++++++++++++++++++++++------
+ 1 file changed, 35 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 5c93474383f..f70cc637be2 100644
+index f80076ea161..4d357cf3832 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -54,9 +54,24 @@ struct SQLHENV_data
+@@ -49,17 +49,35 @@ struct SQLHENV_data
+     SQLINTEGER pooling;
+ };
  
- static SQLRETURN WINAPI null_SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionHandle)
++struct SQLHDBC_data
++{
++    int type;
++    struct SQLHENV_data *environment;
++};
+ 
+ /*************************************************************************
+  *				SQLAllocConnect           [ODBC32.001]
+  */
+ SQLRETURN WINAPI SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionHandle)
  {
-+    struct SQLHENV_data *data;
+-    SQLRETURN ret = SQL_ERROR;
++    struct SQLHDBC_data *hdbc;
 +
-+    TRACE("EnvironmentHandle %p, ConnectionHandle %p\n", EnvironmentHandle, ConnectionHandle);
-+
++    TRACE("(EnvironmentHandle %p, ConnectionHandle %p)\n", EnvironmentHandle, ConnectionHandle);
+ 
+-    FIXME("(EnvironmentHandle %p, ConnectionHandle %p)\n", EnvironmentHandle, ConnectionHandle);
 +    if(!ConnectionHandle)
 +        return SQL_ERROR;
-+
      *ConnectionHandle = SQL_NULL_HDBC;
--    TRACE("Not ready\n");
--    return SQL_ERROR;
+-    return ret;
 +
-+    data = heap_alloc_zero(sizeof(data));
-+    if (!data)
++    hdbc = calloc(1, sizeof(*hdbc));
++    if (!hdbc)
 +        return SQL_ERROR;
 +
-+    data->type = SQL_HANDLE_DBC;
++    hdbc->type = SQL_HANDLE_DBC;
++    hdbc->environment = EnvironmentHandle;
 +
-+    *ConnectionHandle = data;
++    *ConnectionHandle = hdbc;
 +
 +    return SQL_SUCCESS;
  }
  
- static SQLRETURN WINAPI null_SQLAllocEnv(SQLHENV *EnvironmentHandle)
+ /*************************************************************************
+@@ -401,11 +419,22 @@ SQLRETURN WINAPI SQLFetchScroll(SQLHSTMT StatementHandle, SQLSMALLINT FetchOrien
+  */
+ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
+ {
+-    SQLRETURN ret = SQL_ERROR;
++    struct SQLHDBC_data *hdbc = ConnectionHandle;
+ 
+-    FIXME("(ConnectionHandle %p)\n", ConnectionHandle);
++    TRACE("(ConnectionHandle %p)\n", ConnectionHandle);
+ 
+-    return ret;
++    if (!hdbc)
++        return SQL_ERROR;
++
++    if (hdbc->type != SQL_HANDLE_DBC)
++    {
++        WARN("Wrong handle type %d\n", hdbc->type);
++        return SQL_ERROR;
++    }
++
++    free(hdbc);
++
++    return SQL_SUCCESS;
+ }
+ 
+ /*************************************************************************
 -- 
-2.29.2
+2.39.1
 

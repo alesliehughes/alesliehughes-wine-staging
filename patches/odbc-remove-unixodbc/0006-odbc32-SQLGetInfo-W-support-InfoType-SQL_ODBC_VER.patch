@@ -1,51 +1,72 @@
-From 8281da9b21dc51538e54506533a60623c4342bf7 Mon Sep 17 00:00:00 2001
+From b6cb54d4ba607b845e7aa93c4dc40132cfaf0e58 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 24 Nov 2020 14:18:38 +1100
-Subject: [PATCH] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
+Date: Fri, 3 Feb 2023 14:46:44 +1100
+Subject: [PATCH 6/8] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
 
 ---
- dlls/odbc32/proxyodbc.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ dlls/odbc32/proxyodbc.c | 36 ++++++++++++++++++++++++++++++------
+ 1 file changed, 30 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index f70cc637be2..04d718d47b4 100644
+index 4d357cf3832..b51270a9045 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -580,12 +580,34 @@ static SQLRETURN WINAPI null_SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALL
- static SQLRETURN WINAPI null_SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
-                                         SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
+@@ -655,12 +655,24 @@ SQLRETURN WINAPI SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT Function
+ SQLRETURN WINAPI SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
+                             SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
  {
+-    SQLRETURN ret = SQL_ERROR;
 +    char *ptr = InfoValue;
+ 
+-    FIXME("(ConnectionHandle, %p, InfoType %d, InfoValue %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
++    TRACE("(ConnectionHandle, %p, InfoType %d, InfoValue %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
+           InfoType, InfoValue, BufferLength, StringLength);
+ 
+-    return ret;
 +    switch(InfoType)
 +    {
 +        case SQL_ODBC_VER:
 +            lstrcpynA(ptr, "03.80.0000", BufferLength);
-+            *StringLength = strlen(ptr);
-+            return SQL_SUCCESS;
++            if (StringLength)
++                *StringLength = strlen(ptr);
++            break;
 +        default:
 +            FIXME("Unsupported type %d\n", InfoType);
++            return SQL_ERROR;
 +    }
-     return SQL_ERROR;
++
++    return SQL_SUCCESS;
  }
  
- static SQLRETURN WINAPI null_SQLGetInfoW(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
-                                          SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
+ /*************************************************************************
+@@ -1594,12 +1606,24 @@ SQLRETURN WINAPI SQLGetConnectOptionW(SQLHDBC ConnectionHandle, SQLUSMALLINT Opt
+ SQLRETURN WINAPI SQLGetInfoW(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
+                              SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
  {
+-    SQLRETURN ret = SQL_ERROR;
 +    WCHAR *ptr = InfoValue;
-+
+ 
+-    FIXME("(ConnectionHandle, %p, InfoType %d, InfoValue %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
++    TRACE("(ConnectionHandle, %p, InfoType %d, InfoValue %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
+           InfoType, InfoValue, BufferLength, StringLength);
+ 
+-    return ret;
 +    switch(InfoType)
 +    {
 +        case SQL_ODBC_VER:
 +            lstrcpynW(ptr, L"03.80.0000", BufferLength);
 +            if (StringLength)
 +                *StringLength = wcslen(ptr);
-+            return SQL_SUCCESS;
++            break;
 +        default:
 +            FIXME("Unsupported type %d\n", InfoType);
++            return SQL_ERROR;
 +    }
-     return SQL_ERROR;
++
++    return SQL_SUCCESS;
  }
  
+ /*************************************************************************
 -- 
-2.29.2
+2.39.1
 
