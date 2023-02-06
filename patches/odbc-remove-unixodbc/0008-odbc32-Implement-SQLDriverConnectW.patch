@@ -1,4 +1,4 @@
-From 390a634993e6df46f55277ed0290193ece7cab8d Mon Sep 17 00:00:00 2001
+From 5bb0b3a3febeadd4df79f0cb20a29c20c8fcba1f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 4 Feb 2023 09:16:29 +1100
 Subject: [PATCH 08/36] odbc32: Implement SQLDriverConnectW
@@ -8,7 +8,7 @@ Subject: [PATCH 08/36] odbc32: Implement SQLDriverConnectW
  1 file changed, 343 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 809a348b882..6005fa6c690 100644
+index 6aa920d2f5e..b25edc23eeb 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -53,10 +53,257 @@ struct SQLHDBC_data
@@ -277,7 +277,7 @@ index 809a348b882..6005fa6c690 100644
  
      *ConnectionHandle = hdbc;
  
-@@ -435,6 +683,8 @@ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
+@@ -438,6 +686,8 @@ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
          return SQL_ERROR;
      }
  
@@ -286,7 +286,7 @@ index 809a348b882..6005fa6c690 100644
      free(hdbc);
  
      return SQL_SUCCESS;
-@@ -1593,6 +1843,62 @@ SQLRETURN WINAPI SQLColumnsW(SQLHSTMT StatementHandle, WCHAR *CatalogName, SQLSM
+@@ -1596,6 +1846,62 @@ SQLRETURN WINAPI SQLColumnsW(SQLHSTMT StatementHandle, WCHAR *CatalogName, SQLSM
      return ret;
  }
  
@@ -349,7 +349,7 @@ index 809a348b882..6005fa6c690 100644
  /*************************************************************************
   *				SQLDriverConnectW          [ODBC32.141]
   */
-@@ -1600,13 +1906,49 @@ SQLRETURN WINAPI SQLDriverConnectW(SQLHDBC ConnectionHandle, SQLHWND WindowHandl
+@@ -1603,13 +1909,49 @@ SQLRETURN WINAPI SQLDriverConnectW(SQLHDBC ConnectionHandle, SQLHWND WindowHandl
                                     SQLSMALLINT Length, WCHAR *OutConnectionString, SQLSMALLINT BufferLength,
                                     SQLSMALLINT *Length2, SQLUSMALLINT DriverCompletion)
  {

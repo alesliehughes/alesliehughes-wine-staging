@@ -1,4 +1,4 @@
-From b6cb54d4ba607b845e7aa93c4dc40132cfaf0e58 Mon Sep 17 00:00:00 2001
+From 2391868c0d40fd93f5ffdcc0bee6345d1a27fd1d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:46:44 +1100
 Subject: [PATCH 06/36] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
@@ -8,10 +8,10 @@ Subject: [PATCH 06/36] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
  1 file changed, 30 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 4d357cf3832..b51270a9045 100644
+index 1fd2864f78b..6e00661a62e 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -655,12 +655,24 @@ SQLRETURN WINAPI SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT Function
+@@ -658,12 +658,24 @@ SQLRETURN WINAPI SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT Function
  SQLRETURN WINAPI SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
                              SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
  {
@@ -39,7 +39,7 @@ index 4d357cf3832..b51270a9045 100644
  }
  
  /*************************************************************************
-@@ -1594,12 +1606,24 @@ SQLRETURN WINAPI SQLGetConnectOptionW(SQLHDBC ConnectionHandle, SQLUSMALLINT Opt
+@@ -1597,12 +1609,24 @@ SQLRETURN WINAPI SQLGetConnectOptionW(SQLHDBC ConnectionHandle, SQLUSMALLINT Opt
  SQLRETURN WINAPI SQLGetInfoW(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQLPOINTER InfoValue,
                               SQLSMALLINT BufferLength, SQLSMALLINT *StringLength)
  {

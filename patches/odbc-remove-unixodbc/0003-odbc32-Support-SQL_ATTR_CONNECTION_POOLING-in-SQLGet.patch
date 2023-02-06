@@ -1,4 +1,4 @@
-From e2502057a07a9105575eee7061a67edd52195d0c Mon Sep 17 00:00:00 2001
+From 14b1572f5bfc39e24ad779f7ec3b77e3cbf23407 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 13:41:20 +1100
 Subject: [PATCH 03/36] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
@@ -9,7 +9,7 @@ Subject: [PATCH 03/36] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
  1 file changed, 57 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 4823828067f..f80076ea161 100644
+index 24e84883aa5..811f9b66c8a 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -46,6 +46,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
@@ -20,7 +20,7 @@ index 4823828067f..f80076ea161 100644
  };
  
  
-@@ -76,6 +77,7 @@ SQLRETURN WINAPI SQLAllocEnv(SQLHENV *EnvironmentHandle)
+@@ -79,6 +80,7 @@ SQLRETURN WINAPI SQLAllocEnv(SQLHENV *EnvironmentHandle)
          return SQL_ERROR;
  
      henv->type = SQL_HANDLE_ENV;
@@ -28,7 +28,7 @@ index 4823828067f..f80076ea161 100644
  
      *EnvironmentHandle = henv;
  
-@@ -568,12 +570,42 @@ SQLRETURN WINAPI SQLGetDiagRec(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLSMAL
+@@ -571,12 +573,42 @@ SQLRETURN WINAPI SQLGetDiagRec(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLSMAL
  SQLRETURN WINAPI SQLGetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                 SQLINTEGER BufferLength, SQLINTEGER *StringLength)
  {
@@ -74,7 +74,7 @@ index 4823828067f..f80076ea161 100644
  }
  
  /*************************************************************************
-@@ -782,12 +814,31 @@ SQLRETURN WINAPI SQLSetDescRec(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumber,
+@@ -785,12 +817,31 @@ SQLRETURN WINAPI SQLSetDescRec(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumber,
  SQLRETURN WINAPI SQLSetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                 SQLINTEGER StringLength)
  {

@@ -1,4 +1,4 @@
-From 736fcd1ec67bcabf7ac914cfd5ce9b2bcb899fcc Mon Sep 17 00:00:00 2001
+From 06ec5bf48a72808ce5b39f95e7d112042eb30179 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 15:23:30 +1100
 Subject: [PATCH 34/36] odbc32: Forward SQLGetTypeInfo/W request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 34/36] odbc32: Forward SQLGetTypeInfo/W request onto driver
  1 file changed, 28 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b1e7ee2ec9e..4edd3eec669 100644
+index 66d294290f8..1b579dcdfdc 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1204,10 +1204,23 @@ SQLRETURN WINAPI SQLGetStmtOption(SQLHSTMT StatementHandle, SQLUSMALLINT Option,
+@@ -1207,10 +1207,23 @@ SQLRETURN WINAPI SQLGetStmtOption(SQLHSTMT StatementHandle, SQLUSMALLINT Option,
   */
  SQLRETURN WINAPI SQLGetTypeInfo(SQLHSTMT StatementHandle, SQLSMALLINT DataType)
  {
@@ -36,7 +36,7 @@ index b1e7ee2ec9e..4edd3eec669 100644
      return ret;
  }
  
-@@ -2510,10 +2523,23 @@ SQLRETURN WINAPI SQLGetInfoW(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQ
+@@ -2513,10 +2526,23 @@ SQLRETURN WINAPI SQLGetInfoW(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQ
   */
  SQLRETURN WINAPI SQLGetTypeInfoW(SQLHSTMT StatementHandle, SQLSMALLINT DataType)
  {

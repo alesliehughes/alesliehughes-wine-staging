@@ -1,4 +1,4 @@
-From fabb54f390c0f2be772255ad0e7a8bd35a8c732a Mon Sep 17 00:00:00 2001
+From 396d54fb6ed6b1259456351d2b712856afae41d3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:04:32 +1100
 Subject: [PATCH 18/36] odbc32: Forward SQLGetStmtAttr/W onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 18/36] odbc32: Forward SQLGetStmtAttr/W onto driver
  1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 050966f5464..4228c0d6e04 100644
+index ca0be3ab01c..07bc014de8b 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1024,17 +1024,31 @@ SQLRETURN WINAPI SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQL
+@@ -1027,17 +1027,31 @@ SQLRETURN WINAPI SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQL
  SQLRETURN WINAPI SQLGetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                  SQLINTEGER BufferLength, SQLINTEGER *StringLength)
  {
@@ -44,7 +44,7 @@ index 050966f5464..4228c0d6e04 100644
      return ret;
  }
  
-@@ -1922,17 +1936,31 @@ SQLRETURN WINAPI SQLGetDiagRecW(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLSMA
+@@ -1925,17 +1939,31 @@ SQLRETURN WINAPI SQLGetDiagRecW(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLSMA
  SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                   SQLINTEGER BufferLength, SQLINTEGER *StringLength)
  {

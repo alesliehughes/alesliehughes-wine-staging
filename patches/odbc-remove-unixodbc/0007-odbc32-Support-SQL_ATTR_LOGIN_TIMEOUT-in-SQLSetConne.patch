@@ -1,4 +1,4 @@
-From c15884a774364efe2106ca630ce87d49f5af97e3 Mon Sep 17 00:00:00 2001
+From 0717dd87191c2b63231123c30a4c883d9e2b4c90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 15:18:21 +1100
 Subject: [PATCH 07/36] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in
@@ -9,7 +9,7 @@ Subject: [PATCH 07/36] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in
  1 file changed, 25 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b51270a9045..809a348b882 100644
+index 6e00661a62e..6aa920d2f5e 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -53,6 +53,8 @@ struct SQLHDBC_data
@@ -29,7 +29,7 @@ index b51270a9045..809a348b882 100644
  
      *ConnectionHandle = hdbc;
  
-@@ -1545,12 +1548,31 @@ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+@@ -1548,12 +1551,31 @@ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
  SQLRETURN WINAPI SQLSetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                      SQLINTEGER StringLength)
  {

@@ -1,4 +1,4 @@
-From f19ef6ada85cff57108bcbe00d0a28b1d302ddb4 Mon Sep 17 00:00:00 2001
+From 3060fbd25a3dbb85fa8326f5a663f6c711563322 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 15:13:09 +1100
 Subject: [PATCH 33/36] odbc32: Forward SQLGetData request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 33/36] odbc32: Forward SQLGetData request onto driver
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 331d2533ebf..b1e7ee2ec9e 100644
+index aae8959a8eb..66d294290f8 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -918,11 +918,25 @@ SQLRETURN WINAPI SQLGetCursorName(SQLHSTMT StatementHandle, SQLCHAR *CursorName,
+@@ -921,11 +921,25 @@ SQLRETURN WINAPI SQLGetCursorName(SQLHSTMT StatementHandle, SQLCHAR *CursorName,
  SQLRETURN WINAPI SQLGetData(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNumber, SQLSMALLINT TargetType,
                              SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_Ind)
  {

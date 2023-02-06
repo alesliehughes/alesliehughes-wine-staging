@@ -1,4 +1,4 @@
-From 2c027b1fa6cba014f13b756998bae7b52d471eab Mon Sep 17 00:00:00 2001
+From e27981d45413e55990c643186b909490b255f122 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:30:58 +1100
 Subject: [PATCH 23/36] odbc32: Forward SQLColAttributes/W request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 23/36] odbc32: Forward SQLColAttributes/W request onto driver
  1 file changed, 31 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 8d6f42ce7f4..3d814025889 100644
+index 72e9c4edb3a..f6097587364 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1441,11 +1441,26 @@ SQLRETURN WINAPI SQLColAttributes(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLUSMALLIN
+@@ -1444,11 +1444,26 @@ SQLRETURN WINAPI SQLColAttributes(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLUSMALLIN
                                    SQLPOINTER rgbDesc, SQLSMALLINT cbDescMax, SQLSMALLINT *pcbDesc,
                                    SQLLEN *pfDesc)
  {
@@ -39,7 +39,7 @@ index 8d6f42ce7f4..3d814025889 100644
      return ret;
  }
  
-@@ -1753,11 +1768,25 @@ SQLRETURN WINAPI SQLColAttributesW(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLUSMALLI
+@@ -1756,11 +1771,25 @@ SQLRETURN WINAPI SQLColAttributesW(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLUSMALLI
                                     SQLPOINTER rgbDesc, SQLSMALLINT cbDescMax, SQLSMALLINT *pcbDesc,
                                     SQLLEN *pfDesc)
  {

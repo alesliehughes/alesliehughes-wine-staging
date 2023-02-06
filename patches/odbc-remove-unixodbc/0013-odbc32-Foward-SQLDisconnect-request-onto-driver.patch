@@ -1,4 +1,4 @@
-From fce7e34f5bc0f7701754693062c035375ea6f914 Mon Sep 17 00:00:00 2001
+From 829daf357a4a9cbd1bf0fe6823a346eb3e97999c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:26:57 +1100
 Subject: [PATCH 13/36] odbc32: Foward SQLDisconnect request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 13/36] odbc32: Foward SQLDisconnect request onto driver
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 4ddfa14b0a4..244946afcdf 100644
+index 3fc12ec1ada..a6f47832dc9 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -580,9 +580,23 @@ SQLRETURN WINAPI SQLDescribeCol(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNum
+@@ -583,9 +583,23 @@ SQLRETURN WINAPI SQLDescribeCol(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNum
   */
  SQLRETURN WINAPI SQLDisconnect(SQLHDBC ConnectionHandle)
  {

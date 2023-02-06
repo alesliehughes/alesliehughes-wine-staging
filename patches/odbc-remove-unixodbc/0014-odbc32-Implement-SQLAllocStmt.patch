@@ -1,4 +1,4 @@
-From f30c722de0144c20b76d6a8a8a46cedc5fc0401b Mon Sep 17 00:00:00 2001
+From c3007e69bdaf308e10dc480ceb35f62edb46d263 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:53:34 +1100
 Subject: [PATCH 14/36] odbc32: Implement SQLAllocStmt
@@ -8,7 +8,7 @@ Subject: [PATCH 14/36] odbc32: Implement SQLAllocStmt
  1 file changed, 33 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 244946afcdf..6b076c68c49 100644
+index a6f47832dc9..efe4bbb7070 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -178,6 +178,13 @@ struct SQLHDBC_data
@@ -25,7 +25,7 @@ index 244946afcdf..6b076c68c49 100644
  static void connection_bind_sql_funcs(struct SQLHDBC_data *connection)
  {
  #define LOAD_FUNCPTR(f) if((connection->p##f = (void*)GetProcAddress(connection->module, #f)) == NULL) \
-@@ -371,11 +378,36 @@ SQLRETURN WINAPI SQLAllocHandle(SQLSMALLINT HandleType, SQLHANDLE InputHandle, S
+@@ -374,11 +381,36 @@ SQLRETURN WINAPI SQLAllocHandle(SQLSMALLINT HandleType, SQLHANDLE InputHandle, S
   */
  SQLRETURN WINAPI SQLAllocStmt(SQLHDBC ConnectionHandle, SQLHSTMT *StatementHandle)
  {

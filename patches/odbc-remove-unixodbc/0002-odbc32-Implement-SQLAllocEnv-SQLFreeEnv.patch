@@ -1,14 +1,14 @@
-From 65e6e5f4a523f1586f8c0153850cf182f989cce9 Mon Sep 17 00:00:00 2001
+From 3fec7d14d1c33c7692c691a66091114003091c90 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 11:44:19 +1100
 Subject: [PATCH 02/36] odbc32: Implement SQLAllocEnv/SQLFreeEnv
 
 ---
- dlls/odbc32/proxyodbc.c | 28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ dlls/odbc32/proxyodbc.c | 31 +++++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index e8574430e74..4823828067f 100644
+index e8574430e74..24e84883aa5 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -43,6 +43,11 @@
@@ -23,7 +23,7 @@ index e8574430e74..4823828067f 100644
  
  /*************************************************************************
   *				SQLAllocConnect           [ODBC32.001]
-@@ -61,13 +66,20 @@ SQLRETURN WINAPI SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionH
+@@ -61,13 +66,23 @@ SQLRETURN WINAPI SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionH
   */
  SQLRETURN WINAPI SQLAllocEnv(SQLHENV *EnvironmentHandle)
  {
@@ -32,6 +32,9 @@ index e8574430e74..4823828067f 100644
  
 -    FIXME("(EnvironmentHandle %p)\n", EnvironmentHandle);
 +    TRACE("(EnvironmentHandle %p)\n", EnvironmentHandle);
++
++    if (!EnvironmentHandle)
++        return SQL_ERROR;
  
      *EnvironmentHandle = SQL_NULL_HENV;
 +    henv = calloc(1, sizeof(*henv));
@@ -47,7 +50,7 @@ index e8574430e74..4823828067f 100644
  }
  
  /*************************************************************************
-@@ -399,11 +411,15 @@ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
+@@ -399,11 +414,15 @@ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
   */
  SQLRETURN WINAPI SQLFreeEnv(SQLHENV EnvironmentHandle)
  {

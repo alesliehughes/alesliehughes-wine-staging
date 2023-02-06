@@ -1,4 +1,4 @@
-From e9157add85aa0aa2f8391def2db3ae0344fb331f Mon Sep 17 00:00:00 2001
+From 7a8e5231050a6d24b9f7a3ffa4ba49848f19fee0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 12:35:26 +1100
 Subject: [PATCH 28/36] odbc32: Forward SQLExtendedFetch request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 28/36] odbc32: Forward SQLExtendedFetch request onto driver
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 39e4902dc52..c81802ea35e 100644
+index 40efebff692..db21317def4 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1543,11 +1543,25 @@ SQLRETURN WINAPI SQLDescribeParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, SQLSMALLINT
+@@ -1546,11 +1546,25 @@ SQLRETURN WINAPI SQLDescribeParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, SQLSMALLINT
  SQLRETURN WINAPI SQLExtendedFetch(SQLHSTMT hstmt, SQLUSMALLINT fFetchType, SQLLEN irow, SQLULEN *pcrow,
                                    SQLUSMALLINT *rgfRowStatus)
  {

@@ -1,4 +1,4 @@
-From 7f631bf715c3ad4f0c23c5e820a9ad2552b1c6b3 Mon Sep 17 00:00:00 2001
+From b9b26a709949d42a9647f170558769f85d0ded4e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:36:33 +1100
 Subject: [PATCH 24/36] odbc32: Forward SQLNativeSql/W request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 24/36] odbc32: Forward SQLNativeSql/W request onto driver
  1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 3d814025889..23e048b298a 100644
+index f6097587364..5b0ff876fdf 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1566,11 +1566,25 @@ SQLRETURN WINAPI SQLMoreResults(SQLHSTMT StatementHandle)
+@@ -1569,11 +1569,25 @@ SQLRETURN WINAPI SQLMoreResults(SQLHSTMT StatementHandle)
  SQLRETURN WINAPI SQLNativeSql(SQLHDBC hdbc, SQLCHAR *szSqlStrIn, SQLINTEGER cbSqlStrIn, SQLCHAR *szSqlStr,
                                SQLINTEGER cbSqlStrMax, SQLINTEGER *pcbSqlStr)
  {
@@ -38,7 +38,7 @@ index 3d814025889..23e048b298a 100644
      return ret;
  }
  
-@@ -2435,11 +2449,25 @@ SQLRETURN WINAPI SQLForeignKeysW(SQLHSTMT hstmt, SQLWCHAR *szPkCatalogName, SQLS
+@@ -2438,11 +2452,25 @@ SQLRETURN WINAPI SQLForeignKeysW(SQLHSTMT hstmt, SQLWCHAR *szPkCatalogName, SQLS
  SQLRETURN WINAPI SQLNativeSqlW(SQLHDBC hdbc, SQLWCHAR *szSqlStrIn, SQLINTEGER cbSqlStrIn, SQLWCHAR *szSqlStr,
                                 SQLINTEGER cbSqlStrMax, SQLINTEGER *pcbSqlStr)
  {

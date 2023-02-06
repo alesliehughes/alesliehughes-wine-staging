@@ -1,4 +1,4 @@
-From 7fa64c1d7a60394c59845cab2ae8c6f0bf09577a Mon Sep 17 00:00:00 2001
+From 6486d6f524865d41c1bb43f00a5c0018c1f50216 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:44:00 +1100
 Subject: [PATCH 25/36] odbc32: Forward SQLPrepare/W request onto driver
@@ -8,10 +8,10 @@ Subject: [PATCH 25/36] odbc32: Forward SQLPrepare/W request onto driver
  1 file changed, 27 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 23e048b298a..e78b59a2e63 100644
+index 5b0ff876fdf..c12565f7427 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1135,11 +1135,24 @@ SQLRETURN WINAPI SQLParamData(SQLHSTMT StatementHandle, SQLPOINTER *Value)
+@@ -1138,11 +1138,24 @@ SQLRETURN WINAPI SQLParamData(SQLHSTMT StatementHandle, SQLPOINTER *Value)
   */
  SQLRETURN WINAPI SQLPrepare(SQLHSTMT StatementHandle, SQLCHAR *StatementText, SQLINTEGER TextLength)
  {
@@ -36,7 +36,7 @@ index 23e048b298a..e78b59a2e63 100644
      return ret;
  }
  
-@@ -1914,11 +1927,24 @@ SQLRETURN WINAPI SQLGetCursorNameW(SQLHSTMT StatementHandle, WCHAR *CursorName,
+@@ -1917,11 +1930,24 @@ SQLRETURN WINAPI SQLGetCursorNameW(SQLHSTMT StatementHandle, WCHAR *CursorName,
   */
  SQLRETURN WINAPI SQLPrepareW(SQLHSTMT StatementHandle, WCHAR *StatementText, SQLINTEGER TextLength)
  {

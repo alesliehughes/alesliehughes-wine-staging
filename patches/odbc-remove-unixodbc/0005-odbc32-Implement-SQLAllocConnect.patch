@@ -1,4 +1,4 @@
-From d156cc2be6cc1aa13d2e2f736549e72a539c86f1 Mon Sep 17 00:00:00 2001
+From 97c275dd29777306001d255d24992ee6adbec5a7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:40:03 +1100
 Subject: [PATCH 05/36] odbc32: Implement SQLAllocConnect
@@ -8,7 +8,7 @@ Subject: [PATCH 05/36] odbc32: Implement SQLAllocConnect
  1 file changed, 35 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index f80076ea161..4d357cf3832 100644
+index 811f9b66c8a..1fd2864f78b 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -49,17 +49,35 @@ struct SQLHENV_data
@@ -50,7 +50,7 @@ index f80076ea161..4d357cf3832 100644
  }
  
  /*************************************************************************
-@@ -401,11 +419,22 @@ SQLRETURN WINAPI SQLFetchScroll(SQLHSTMT StatementHandle, SQLSMALLINT FetchOrien
+@@ -404,11 +422,22 @@ SQLRETURN WINAPI SQLFetchScroll(SQLHSTMT StatementHandle, SQLSMALLINT FetchOrien
   */
  SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
  {

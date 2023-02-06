@@ -1,4 +1,4 @@
-From d7ef9495b946cfac923bcbe288c34fa36934644c Mon Sep 17 00:00:00 2001
+From a8d19c66c5f5876021819afe4d67ec06c68c3e82 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:02:34 +1100
 Subject: [PATCH 11/36] odbc32: Forward SQLGetFunctions requets onto the driver
@@ -8,10 +8,10 @@ Subject: [PATCH 11/36] odbc32: Forward SQLGetFunctions requets onto the driver
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 59efe6f74a6..8d79e5eba99 100644
+index c5d19f8553a..e0e86d3c317 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -895,9 +895,15 @@ SQLRETURN WINAPI SQLGetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute,
+@@ -898,9 +898,15 @@ SQLRETURN WINAPI SQLGetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute,
   */
  SQLRETURN WINAPI SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT FunctionId, SQLUSMALLINT *Supported)
  {

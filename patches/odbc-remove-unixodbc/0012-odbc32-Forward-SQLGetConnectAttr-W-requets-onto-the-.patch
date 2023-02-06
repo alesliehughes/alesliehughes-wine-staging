@@ -1,4 +1,4 @@
-From 5887bc9c825be26d3e235d5ad7cee98f641ca4d4 Mon Sep 17 00:00:00 2001
+From eff09247e7e8ed8932a9556555d431ac29ae02dc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:08:27 +1100
 Subject: [PATCH 12/36] odbc32: Forward SQLGetConnectAttr/W requets onto the
@@ -9,10 +9,10 @@ Subject: [PATCH 12/36] odbc32: Forward SQLGetConnectAttr/W requets onto the
  1 file changed, 32 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 8d79e5eba99..4ddfa14b0a4 100644
+index e0e86d3c317..3fc12ec1ada 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -736,11 +736,26 @@ SQLRETURN WINAPI SQLFreeStmt(SQLHSTMT StatementHandle, SQLUSMALLINT Option)
+@@ -739,11 +739,26 @@ SQLRETURN WINAPI SQLFreeStmt(SQLHSTMT StatementHandle, SQLUSMALLINT Option)
  SQLRETURN WINAPI SQLGetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                     SQLINTEGER BufferLength, SQLINTEGER *StringLength)
  {
@@ -40,7 +40,7 @@ index 8d79e5eba99..4ddfa14b0a4 100644
      return ret;
  }
  
-@@ -1718,11 +1733,26 @@ SQLRETURN WINAPI SQLColAttributeW(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnN
+@@ -1721,11 +1736,26 @@ SQLRETURN WINAPI SQLColAttributeW(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnN
  SQLRETURN WINAPI SQLGetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                      SQLINTEGER BufferLength, SQLINTEGER *StringLength)
  {
