@@ -1,7 +1,7 @@
 From d156cc2be6cc1aa13d2e2f736549e72a539c86f1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:40:03 +1100
-Subject: [PATCH 5/8] odbc32: Implement SQLAllocConnect
+Subject: [PATCH 05/36] odbc32: Implement SQLAllocConnect
 
 ---
  dlls/odbc32/proxyodbc.c | 41 +++++++++++++++++++++++++++++++++++------

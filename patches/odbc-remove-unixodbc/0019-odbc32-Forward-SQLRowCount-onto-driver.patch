@@ -1,0 +1,41 @@
+From d98f2b74f6a7fae32539a17168b5758085be330a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 11:08:41 +1100
+Subject: [PATCH 19/36] odbc32: Forward SQLRowCount onto driver
+
+---
+ dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 4228c0d6e04..b6f0841d148 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -1130,10 +1130,23 @@ SQLRETURN WINAPI SQLPutData(SQLHSTMT StatementHandle, SQLPOINTER Data, SQLLEN St
+  */
+ SQLRETURN WINAPI SQLRowCount(SQLHSTMT StatementHandle, SQLLEN *RowCount)
+ {
++    struct SQLHSTMT_data *statement = StatementHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(StatementHandle %p, RowCount %p)\n", StatementHandle, RowCount);
++    TRACE("(StatementHandle %p, RowCount %p)\n", StatementHandle, RowCount);
+ 
++    if (statement->type != SQL_HANDLE_STMT)
++    {
++        WARN("Wrong handle type %d\n", statement->type);
++        return SQL_ERROR;
++    }
++
++    if (statement->connection->pSQLRowCount)
++    {
++        ret = statement->connection->pSQLRowCount(statement->driver_stmt, RowCount);
++    }
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+-- 
+2.39.1
+

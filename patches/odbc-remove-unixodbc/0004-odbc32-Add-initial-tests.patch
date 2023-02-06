@@ -1,7 +1,7 @@
 From 9c05578e088fc309305576b822c60efcef1cdc7e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:16:21 +1100
-Subject: [PATCH 4/8] odbc32: Add initial tests
+Subject: [PATCH 04/36] odbc32: Add initial tests
 
 ---
  configure                      |   1 +

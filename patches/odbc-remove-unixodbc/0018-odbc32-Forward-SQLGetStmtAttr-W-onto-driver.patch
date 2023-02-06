@@ -1,0 +1,82 @@
+From fabb54f390c0f2be772255ad0e7a8bd35a8c732a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 11:04:32 +1100
+Subject: [PATCH 18/36] odbc32: Forward SQLGetStmtAttr/W onto driver
+
+---
+ dlls/odbc32/proxyodbc.c | 32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 050966f5464..4228c0d6e04 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -1024,17 +1024,31 @@ SQLRETURN WINAPI SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQL
+ SQLRETURN WINAPI SQLGetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute, SQLPOINTER Value,
+                                 SQLINTEGER BufferLength, SQLINTEGER *StringLength)
+ {
++    struct SQLHSTMT_data *statement = StatementHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(StatementHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", StatementHandle,
++    TRACE("(StatementHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", StatementHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
++    if (statement->type != SQL_HANDLE_STMT)
++    {
++        WARN("Wrong handle type %d\n", statement->type);
++        return SQL_ERROR;
++    }
++
+     if (!Value)
+     {
+         WARN("Unexpected NULL Value return address\n");
+         return SQL_ERROR;
+     }
+ 
++    if (statement->connection->pSQLGetStmtAttr)
++    {
++        ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute, Value,
++                                BufferLength, StringLength);
++    }
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+@@ -1922,17 +1936,31 @@ SQLRETURN WINAPI SQLGetDiagRecW(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLSMA
+ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute, SQLPOINTER Value,
+                                  SQLINTEGER BufferLength, SQLINTEGER *StringLength)
+ {
++    struct SQLHSTMT_data *statement = StatementHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(StatementHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", StatementHandle,
++    TRACE("(StatementHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", StatementHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
++    if (statement->type != SQL_HANDLE_STMT)
++    {
++        WARN("Wrong handle type %d\n", statement->type);
++        return SQL_ERROR;
++    }
++
+     if (!Value)
+     {
+         WARN("Unexpected NULL Value return address\n");
+         return SQL_ERROR;
+     }
+ 
++    if (statement->connection->pSQLGetStmtAttrW)
++    {
++        ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute, Value,
++                                 BufferLength, StringLength);
++    }
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+-- 
+2.39.1
+

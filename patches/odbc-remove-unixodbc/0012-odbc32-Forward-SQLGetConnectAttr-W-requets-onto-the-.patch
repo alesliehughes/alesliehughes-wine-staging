@@ -1,0 +1,73 @@
+From 5887bc9c825be26d3e235d5ad7cee98f641ca4d4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 09:08:27 +1100
+Subject: [PATCH 12/36] odbc32: Forward SQLGetConnectAttr/W requets onto the
+ driver
+
+---
+ dlls/odbc32/proxyodbc.c | 34 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 8d79e5eba99..4ddfa14b0a4 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -736,11 +736,26 @@ SQLRETURN WINAPI SQLFreeStmt(SQLHSTMT StatementHandle, SQLUSMALLINT Option)
+ SQLRETURN WINAPI SQLGetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribute, SQLPOINTER Value,
+                                    SQLINTEGER BufferLength, SQLINTEGER *StringLength)
+ {
++    struct SQLHDBC_data *connection = ConnectionHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(ConnectionHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
++    TRACE("(ConnectionHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
++    if (connection->type != SQL_HANDLE_DBC)
++    {
++        WARN("Wrong handle type %d\n", connection->type);
++        return SQL_ERROR;
++    }
++
++    if (connection->pSQLGetConnectAttr)
++    {
++        ret = connection->pSQLGetConnectAttr(connection->driver_hdbc, Attribute, Value,
++                                    BufferLength, StringLength);
++    }
++
++    TRACE("ret %d\n", ret);
++
+     return ret;
+ }
+ 
+@@ -1718,11 +1733,26 @@ SQLRETURN WINAPI SQLColAttributeW(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnN
+ SQLRETURN WINAPI SQLGetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribute, SQLPOINTER Value,
+                                     SQLINTEGER BufferLength, SQLINTEGER *StringLength)
+ {
++    struct SQLHDBC_data *connection = ConnectionHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(ConnectionHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
++    TRACE("(ConnectionHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
++    if (connection->type != SQL_HANDLE_DBC)
++    {
++        WARN("Wrong handle type %d\n", connection->type);
++        return SQL_ERROR;
++    }
++
++    if (connection->pSQLGetConnectAttrW)
++    {
++        ret = connection->pSQLGetConnectAttrW(connection->driver_hdbc, Attribute, Value,
++                                    BufferLength, StringLength);
++    }
++
++    TRACE("ret %d\n", ret);
++
+     return ret;
+ }
+ 
+-- 
+2.39.1
+

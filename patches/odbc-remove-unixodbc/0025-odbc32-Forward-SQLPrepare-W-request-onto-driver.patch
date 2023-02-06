@@ -1,0 +1,67 @@
+From 7fa64c1d7a60394c59845cab2ae8c6f0bf09577a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 11:44:00 +1100
+Subject: [PATCH 25/36] odbc32: Forward SQLPrepare/W request onto driver
+
+---
+ dlls/odbc32/proxyodbc.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 23e048b298a..e78b59a2e63 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -1135,11 +1135,24 @@ SQLRETURN WINAPI SQLParamData(SQLHSTMT StatementHandle, SQLPOINTER *Value)
+  */
+ SQLRETURN WINAPI SQLPrepare(SQLHSTMT StatementHandle, SQLCHAR *StatementText, SQLINTEGER TextLength)
+ {
++    struct SQLHSTMT_data *statement = StatementHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+     FIXME("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
+           debugstr_an((const char *)StatementText, TextLength), TextLength);
+ 
++    if (statement->type != SQL_HANDLE_STMT)
++    {
++        WARN("Wrong handle type %d\n", statement->type);
++        return SQL_ERROR;
++    }
++
++    if (statement->connection->pSQLPrepare)
++    {
++        ret = statement->connection->pSQLPrepare(statement->driver_stmt, StatementText, TextLength);
++    }
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+@@ -1914,11 +1927,24 @@ SQLRETURN WINAPI SQLGetCursorNameW(SQLHSTMT StatementHandle, WCHAR *CursorName,
+  */
+ SQLRETURN WINAPI SQLPrepareW(SQLHSTMT StatementHandle, WCHAR *StatementText, SQLINTEGER TextLength)
+ {
++    struct SQLHSTMT_data *statement = StatementHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
++    TRACE("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
+           debugstr_wn(StatementText, TextLength), TextLength);
+ 
++    if (statement->type != SQL_HANDLE_STMT)
++    {
++        WARN("Wrong handle type %d\n", statement->type);
++        return SQL_ERROR;
++    }
++
++    if (statement->connection->pSQLPrepareW)
++    {
++        ret = statement->connection->pSQLPrepareW(statement->driver_stmt, StatementText, TextLength);
++    }
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+-- 
+2.39.1
+

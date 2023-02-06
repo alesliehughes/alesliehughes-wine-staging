@@ -1,7 +1,7 @@
 From c15884a774364efe2106ca630ce87d49f5af97e3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 15:18:21 +1100
-Subject: [PATCH 7/8] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in
+Subject: [PATCH 07/36] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in
  SQLSetConnectAttrW
 
 ---

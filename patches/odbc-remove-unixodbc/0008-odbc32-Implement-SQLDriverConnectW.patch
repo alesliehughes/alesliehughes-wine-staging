@@ -1,21 +1,23 @@
-From 6148c9522ef533fe57f67c06715e2e8c08a5a9df Mon Sep 17 00:00:00 2001
+From 390a634993e6df46f55277ed0290193ece7cab8d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 4 Feb 2023 09:16:29 +1100
-Subject: [PATCH 8/8] odbc32: Implement SQLDriverConnectW
+Subject: [PATCH 08/36] odbc32: Implement SQLDriverConnectW
 
 ---
- dlls/odbc32/proxyodbc.c | 324 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 324 insertions(+)
+ dlls/odbc32/proxyodbc.c | 344 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 343 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 809a348b882..f4225877a17 100644
+index 809a348b882..6005fa6c690 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -53,10 +53,255 @@ struct SQLHDBC_data
+@@ -53,10 +53,257 @@ struct SQLHDBC_data
  {
      int type;
      struct SQLHENV_data *environment;
 +    HMODULE module;
++    SQLHENV driver_env;
++    SQLHDBC driver_hdbc;
 +
 +    SQLRETURN (WINAPI *pSQLAllocConnect)(SQLHENV,SQLHDBC*);
 +    SQLRETURN (WINAPI *pSQLAllocEnv)(SQLHENV*);
@@ -142,7 +144,7 @@ index 809a348b882..f4225877a17 100644
 +{
 +#define LOAD_FUNCPTR(f) if((connection->p##f = (void*)GetProcAddress(connection->module, #f)) == NULL) \
 +    { \
-+        WARN( "%s not found in driver.\n", #f ); \
++        WARN( "function '%s' not found in driver.\n", #f ); \
 +    }
 +
 +    LOAD_FUNCPTR(SQLAllocConnect);
@@ -267,7 +269,7 @@ index 809a348b882..f4225877a17 100644
  /*************************************************************************
   *				SQLAllocConnect           [ODBC32.001]
   */
-@@ -77,6 +322,7 @@ SQLRETURN WINAPI SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionH
+@@ -77,6 +324,7 @@ SQLRETURN WINAPI SQLAllocConnect(SQLHENV EnvironmentHandle, SQLHDBC *ConnectionH
      hdbc->type = SQL_HANDLE_DBC;
      hdbc->environment = EnvironmentHandle;
      hdbc->login_timeout = 0;
@@ -275,7 +277,7 @@ index 809a348b882..f4225877a17 100644
  
      *ConnectionHandle = hdbc;
  
-@@ -435,6 +681,8 @@ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
+@@ -435,6 +683,8 @@ SQLRETURN WINAPI SQLFreeConnect(SQLHDBC ConnectionHandle)
          return SQL_ERROR;
      }
  
@@ -284,7 +286,7 @@ index 809a348b882..f4225877a17 100644
      free(hdbc);
  
      return SQL_SUCCESS;
-@@ -1593,6 +1841,62 @@ SQLRETURN WINAPI SQLColumnsW(SQLHSTMT StatementHandle, WCHAR *CatalogName, SQLSM
+@@ -1593,6 +1843,62 @@ SQLRETURN WINAPI SQLColumnsW(SQLHSTMT StatementHandle, WCHAR *CatalogName, SQLSM
      return ret;
  }
  
@@ -347,25 +349,42 @@ index 809a348b882..f4225877a17 100644
  /*************************************************************************
   *				SQLDriverConnectW          [ODBC32.141]
   */
-@@ -1600,6 +1904,8 @@ SQLRETURN WINAPI SQLDriverConnectW(SQLHDBC ConnectionHandle, SQLHWND WindowHandl
+@@ -1600,13 +1906,49 @@ SQLRETURN WINAPI SQLDriverConnectW(SQLHDBC ConnectionHandle, SQLHWND WindowHandl
                                     SQLSMALLINT Length, WCHAR *OutConnectionString, SQLSMALLINT BufferLength,
                                     SQLSMALLINT *Length2, SQLUSMALLINT DriverCompletion)
  {
 +    struct SQLHDBC_data *connection = ConnectionHandle;
 +    HMODULE driver;
      SQLRETURN ret = SQL_ERROR;
++    WCHAR dsn[128];
++    WCHAR *p;
  
-     FIXME("(ConnectionHandle %p, WindowHandle %p, InConnectionString %s, Length %d, OutConnectionString %p,"
-@@ -1607,6 +1913,24 @@ SQLRETURN WINAPI SQLDriverConnectW(SQLHDBC ConnectionHandle, SQLHWND WindowHandl
+-    FIXME("(ConnectionHandle %p, WindowHandle %p, InConnectionString %s, Length %d, OutConnectionString %p,"
++    TRACE("(ConnectionHandle %p, WindowHandle %p, InConnectionString %s, Length %d, OutConnectionString %p,"
+           " BufferLength %d, Length2 %p, DriverCompletion %d)\n", ConnectionHandle, WindowHandle,
            debugstr_wn(InConnectionString, Length), Length, OutConnectionString, BufferLength, Length2,
            DriverCompletion);
  
-+    driver = load_odbc_driver(L"ea_example");
++    p = wcsstr(InConnectionString, L"DSN=");
++    if (p)
++    {
++        WCHAR *end = wcsstr(p, L";");
++
++        lstrcpynW(dsn, p+4, end - (p + 3));
++    }
++
++    driver = load_odbc_driver(dsn);
 +    if (!driver)
 +        return SQL_ERROR;
 +
 +    connection->module = driver;
 +    connection_bind_sql_funcs(connection);
++
++    if (connection->pSQLAllocHandle)
++    {
++        connection->pSQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &connection->driver_env);
++        connection->pSQLAllocHandle(SQL_HANDLE_DBC, connection->driver_env, &connection->driver_hdbc);
++    }
 +
 +    if(!connection->pSQLDriverConnectW)
 +    {
@@ -373,10 +392,10 @@ index 809a348b882..f4225877a17 100644
 +        return SQL_ERROR;
 +    }
 +
-+    ret = connection->pSQLDriverConnectW(ConnectionHandle, WindowHandle, InConnectionString, Length,
++    ret = connection->pSQLDriverConnectW(connection->driver_hdbc, WindowHandle, InConnectionString, Length,
 +                OutConnectionString, BufferLength, Length2, DriverCompletion);
 +
-+    FIXME("Driver returned %d\n", ret);
++    TRACE("Driver returned %d\n", ret);
 +
      return ret;
  }

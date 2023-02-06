@@ -1,0 +1,68 @@
+From f30c722de0144c20b76d6a8a8a46cedc5fc0401b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 09:53:34 +1100
+Subject: [PATCH 14/36] odbc32: Implement SQLAllocStmt
+
+---
+ dlls/odbc32/proxyodbc.c | 34 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 244946afcdf..6b076c68c49 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -178,6 +178,13 @@ struct SQLHDBC_data
+     SQLUINTEGER login_timeout;
+ };
+ 
++struct SQLHSTMT_data
++{
++    int type;
++    struct SQLHDBC_data *connection;
++    SQLHSTMT driver_stmt;
++};
++
+ static void connection_bind_sql_funcs(struct SQLHDBC_data *connection)
+ {
+ #define LOAD_FUNCPTR(f) if((connection->p##f = (void*)GetProcAddress(connection->module, #f)) == NULL) \
+@@ -371,11 +378,36 @@ SQLRETURN WINAPI SQLAllocHandle(SQLSMALLINT HandleType, SQLHANDLE InputHandle, S
+  */
+ SQLRETURN WINAPI SQLAllocStmt(SQLHDBC ConnectionHandle, SQLHSTMT *StatementHandle)
+ {
++    struct SQLHDBC_data *connection = ConnectionHandle;
++    struct SQLHSTMT_data *stmt;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(ConnectionHandle %p, StatementHandle %p)\n", ConnectionHandle, StatementHandle);
++    TRACE("(ConnectionHandle %p, StatementHandle %p)\n", ConnectionHandle, StatementHandle);
+ 
+     *StatementHandle = SQL_NULL_HSTMT;
++    if (connection->type != SQL_HANDLE_DBC)
++    {
++        WARN("Wrong handle type %d\n", connection->type);
++        return SQL_ERROR;
++    }
++
++    stmt = malloc(sizeof(*stmt));
++    if (!stmt)
++    {
++        return SQL_ERROR;
++    }
++
++    stmt->type = SQL_HANDLE_STMT;
++    stmt->connection = connection;
++
++    if (connection->pSQLAllocStmt)
++    {
++        ret = connection->pSQLAllocStmt(connection->driver_hdbc, &stmt->driver_stmt);
++    }
++
++    *StatementHandle = stmt;
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+-- 
+2.39.1
+

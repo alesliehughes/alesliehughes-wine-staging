@@ -1,0 +1,124 @@
+From 1ff9b13ad4a7459dca00958cb412e1e82a213570 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 14:00:41 +1100
+Subject: [PATCH 31/36] odbc32: SQLGetStmtAttr store some driver HDESC values
+
+---
+ dlls/odbc32/proxyodbc.c | 81 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 78 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 170d1768a53..df18340a7bc 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -178,11 +178,22 @@ struct SQLHDBC_data
+     SQLUINTEGER login_timeout;
+ };
+ 
++struct SQLHDESC_data
++{
++    struct SQLHSTMT_data *parent;
++    SQLHDESC driver_hdesc;
++};
++
+ struct SQLHSTMT_data
+ {
+     int type;
+     struct SQLHDBC_data *connection;
+     SQLHSTMT driver_stmt;
++
++    struct SQLHDESC_data app_row_desc;
++    struct SQLHDESC_data imp_row_desc;
++    struct SQLHDESC_data app_param_desc;
++    struct SQLHDESC_data imp_param_desc;
+ };
+ 
+ static void connection_bind_sql_funcs(struct SQLHDBC_data *connection)
+@@ -1122,8 +1133,40 @@ SQLRETURN WINAPI SQLGetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+ 
+     if (statement->connection->pSQLGetStmtAttr)
+     {
+-        ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute, Value,
++        switch(Attribute)
++        {
++            case SQL_ATTR_APP_ROW_DESC:
++                statement->app_row_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute,
++                                                             &statement->app_row_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->app_row_desc;
++                break;
++            case SQL_ATTR_IMP_ROW_DESC:
++                statement->imp_row_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute,
++                                                             &statement->imp_row_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->imp_row_desc;
++                break;
++            case SQL_ATTR_APP_PARAM_DESC:
++                statement->app_param_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute,
++                                                             &statement->app_param_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->app_param_desc;
++                break;
++            case SQL_ATTR_IMP_PARAM_DESC:
++                statement->imp_param_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute,
++                                                             &statement->imp_param_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->imp_param_desc;
++                break;
++            default:
++                ret = statement->connection->pSQLGetStmtAttr(statement->driver_stmt, Attribute, Value,
+                                 BufferLength, StringLength);
++        }
+     }
+ 
+     TRACE("ret %d\n", ret);
+@@ -2191,8 +2234,40 @@ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+ 
+     if (statement->connection->pSQLGetStmtAttrW)
+     {
+-        ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute, Value,
+-                                 BufferLength, StringLength);
++        switch(Attribute)
++        {
++            case SQL_ATTR_APP_ROW_DESC:
++                statement->app_row_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute,
++                                                             &statement->app_row_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->app_row_desc;
++                break;
++            case SQL_ATTR_IMP_ROW_DESC:
++                statement->imp_row_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute,
++                                                             &statement->imp_row_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->imp_row_desc;
++                break;
++            case SQL_ATTR_APP_PARAM_DESC:
++                statement->app_param_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute,
++                                                             &statement->app_param_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->app_param_desc;
++                break;
++            case SQL_ATTR_IMP_PARAM_DESC:
++                statement->imp_param_desc.parent = statement;
++                ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute,
++                                                             &statement->imp_param_desc.driver_hdesc,
++                                                             BufferLength, StringLength);
++                *((SQLHDESC*)Value) = &statement->imp_param_desc;
++                break;
++            default:
++                ret = statement->connection->pSQLGetStmtAttrW(statement->driver_stmt, Attribute, Value,
++                                BufferLength, StringLength);
++        }
+     }
+ 
+     TRACE("ret %d\n", ret);
+-- 
+2.39.1
+

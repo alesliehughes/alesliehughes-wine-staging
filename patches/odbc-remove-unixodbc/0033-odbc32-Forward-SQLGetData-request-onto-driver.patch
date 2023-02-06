@@ -1,0 +1,43 @@
+From f19ef6ada85cff57108bcbe00d0a28b1d302ddb4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Feb 2023 15:13:09 +1100
+Subject: [PATCH 33/36] odbc32: Forward SQLGetData request onto driver
+
+---
+ dlls/odbc32/proxyodbc.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 331d2533ebf..b1e7ee2ec9e 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -918,11 +918,25 @@ SQLRETURN WINAPI SQLGetCursorName(SQLHSTMT StatementHandle, SQLCHAR *CursorName,
+ SQLRETURN WINAPI SQLGetData(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNumber, SQLSMALLINT TargetType,
+                             SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_Ind)
+ {
++    struct SQLHSTMT_data *statement = StatementHandle;
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    FIXME("(StatementHandle %p, ColumnNumber %d, TargetType %d, TargetValue %p, BufferLength %s, StrLen_or_Ind %p)\n",
++    TRACE("(StatementHandle %p, ColumnNumber %d, TargetType %d, TargetValue %p, BufferLength %s, StrLen_or_Ind %p)\n",
+           StatementHandle, ColumnNumber, TargetType, TargetValue, debugstr_sqllen(BufferLength), StrLen_or_Ind);
+ 
++    if (statement->type != SQL_HANDLE_STMT)
++    {
++        WARN("Wrong handle type %d\n", statement->type);
++        return SQL_ERROR;
++    }
++
++    if (statement->connection->pSQLGetData)
++    {
++        ret = statement->connection->pSQLGetData(statement->driver_stmt, ColumnNumber, TargetType,
++                            TargetValue, BufferLength, StrLen_or_Ind);
++    }
++
++    TRACE("ret %d\n", ret);
+     return ret;
+ }
+ 
+-- 
+2.39.1
+
