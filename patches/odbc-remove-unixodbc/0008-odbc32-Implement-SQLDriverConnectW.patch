@@ -1,7 +1,7 @@
-From 5bb0b3a3febeadd4df79f0cb20a29c20c8fcba1f Mon Sep 17 00:00:00 2001
+From a951065e70183f1f227c37ff635af7edc0a3e7fc Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 4 Feb 2023 09:16:29 +1100
-Subject: [PATCH 08/36] odbc32: Implement SQLDriverConnectW
+Subject: [PATCH] odbc32: Implement SQLDriverConnectW
 
 ---
  dlls/odbc32/proxyodbc.c | 344 +++++++++++++++++++++++++++++++++++++++-

@@ -1,7 +1,7 @@
-From 6d4959f2648ee4fa75c2aab0761f2c283879b851 Mon Sep 17 00:00:00 2001
+From 1de21dc43324df781c0157d9ebcdfeeb57576ba7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Feb 2023 14:20:44 +1100
-Subject: [PATCH 01/36] odbc32: Remove unixODBC support
+Subject: [PATCH] odbc32: Remove unixODBC support
 
 ---
  configure.ac            |    3 -

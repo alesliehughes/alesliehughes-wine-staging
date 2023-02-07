@@ -1,8 +1,7 @@
-From eff09247e7e8ed8932a9556555d431ac29ae02dc Mon Sep 17 00:00:00 2001
+From 58cb7b0abba8000c70256ee5ad8abe765403fd1e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:08:27 +1100
-Subject: [PATCH 12/36] odbc32: Forward SQLGetConnectAttr/W requets onto the
- driver
+Subject: [PATCH] odbc32: Forward SQLGetConnectAttr/W requets onto the driver
 
 ---
  dlls/odbc32/proxyodbc.c | 34 ++++++++++++++++++++++++++++++++--

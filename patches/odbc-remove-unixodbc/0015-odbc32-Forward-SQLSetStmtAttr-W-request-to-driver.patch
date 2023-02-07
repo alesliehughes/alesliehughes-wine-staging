@@ -1,17 +1,17 @@
-From ca0a6514b95e5f2e019456cead32cdeb126d7b3d Mon Sep 17 00:00:00 2001
+From 73017cd288fcfce49071363076676e07e02abc69 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:59:14 +1100
-Subject: [PATCH 15/36] odbc32: Forward SQLSetStmtAttr/W request to driver
+Subject: [PATCH] odbc32: Forward SQLSetStmtAttr/W request to driver
 
 ---
  dlls/odbc32/proxyodbc.c | 30 ++++++++++++++++++++++++++++--
  1 file changed, 28 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index efe4bbb7070..b5c26d51459 100644
+index b3dd3630cbb..d40d74a5529 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1237,11 +1237,24 @@ SQLRETURN WINAPI SQLSetParam(SQLHSTMT StatementHandle, SQLUSMALLINT ParameterNum
+@@ -1242,11 +1242,24 @@ SQLRETURN WINAPI SQLSetParam(SQLHSTMT StatementHandle, SQLUSMALLINT ParameterNum
  SQLRETURN WINAPI SQLSetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                  SQLINTEGER StringLength)
  {
@@ -37,7 +37,7 @@ index efe4bbb7070..b5c26d51459 100644
      return ret;
  }
  
-@@ -2373,11 +2386,24 @@ SQLRETURN WINAPI SQLSetDescFieldW(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumb
+@@ -2378,11 +2391,24 @@ SQLRETURN WINAPI SQLSetDescFieldW(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumb
  SQLRETURN WINAPI SQLSetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute, SQLPOINTER Value,
                                   SQLINTEGER StringLength)
  {

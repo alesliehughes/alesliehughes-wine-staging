@@ -1,7 +1,7 @@
-From 2391868c0d40fd93f5ffdcc0bee6345d1a27fd1d Mon Sep 17 00:00:00 2001
+From d3ba6ae7c58879205bf6e599c3dcb5f3b6de4bb1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:46:44 +1100
-Subject: [PATCH 06/36] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
+Subject: [PATCH] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
 
 ---
  dlls/odbc32/proxyodbc.c | 36 ++++++++++++++++++++++++++++++------

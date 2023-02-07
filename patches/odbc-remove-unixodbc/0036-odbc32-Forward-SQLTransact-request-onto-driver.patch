@@ -1,17 +1,17 @@
-From 66dcc5b8da977ef64c2a35c9228f5c7eed93a4a2 Mon Sep 17 00:00:00 2001
+From 0e416ab5f5f680c577e7783bd1f75493eb30ae92 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 16:03:58 +1100
-Subject: [PATCH 36/36] odbc32: Forward SQLTransact request onto driver
+Subject: [PATCH] odbc32: Forward SQLTransact request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b618190af3d..3a3220e3001 100644
+index d7c39f50440..2fd79bcf881 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1545,11 +1545,24 @@ SQLRETURN WINAPI SQLTables(SQLHSTMT StatementHandle, SQLCHAR *CatalogName, SQLSM
+@@ -1550,11 +1550,24 @@ SQLRETURN WINAPI SQLTables(SQLHSTMT StatementHandle, SQLCHAR *CatalogName, SQLSM
   */
  SQLRETURN WINAPI SQLTransact(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle, SQLUSMALLINT CompletionType)
  {

@@ -1,7 +1,7 @@
-From a8d19c66c5f5876021819afe4d67ec06c68c3e82 Mon Sep 17 00:00:00 2001
+From a2194c5f3f8ef556d2d46d023a553192cb17b697 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:02:34 +1100
-Subject: [PATCH 11/36] odbc32: Forward SQLGetFunctions requets onto the driver
+Subject: [PATCH] odbc32: Forward SQLGetFunctions requets onto the driver
 
 ---
  dlls/odbc32/proxyodbc.c | 8 +++++++-

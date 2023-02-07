@@ -1,14 +1,14 @@
-From c3007e69bdaf308e10dc480ceb35f62edb46d263 Mon Sep 17 00:00:00 2001
+From 49d9c4db540f7b53277a61daff5214fbeb25ab7c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:53:34 +1100
-Subject: [PATCH 14/36] odbc32: Implement SQLAllocStmt
+Subject: [PATCH] odbc32: Implement SQLAllocStmt
 
 ---
- dlls/odbc32/proxyodbc.c | 34 +++++++++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ dlls/odbc32/proxyodbc.c | 39 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 38 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index a6f47832dc9..efe4bbb7070 100644
+index a6f47832dc9..b3dd3630cbb 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -178,6 +178,13 @@ struct SQLHDBC_data
@@ -25,7 +25,7 @@ index a6f47832dc9..efe4bbb7070 100644
  static void connection_bind_sql_funcs(struct SQLHDBC_data *connection)
  {
  #define LOAD_FUNCPTR(f) if((connection->p##f = (void*)GetProcAddress(connection->module, #f)) == NULL) \
-@@ -374,11 +381,36 @@ SQLRETURN WINAPI SQLAllocHandle(SQLSMALLINT HandleType, SQLHANDLE InputHandle, S
+@@ -374,11 +381,41 @@ SQLRETURN WINAPI SQLAllocHandle(SQLSMALLINT HandleType, SQLHANDLE InputHandle, S
   */
  SQLRETURN WINAPI SQLAllocStmt(SQLHDBC ConnectionHandle, SQLHSTMT *StatementHandle)
  {
@@ -52,7 +52,12 @@ index a6f47832dc9..efe4bbb7070 100644
 +    stmt->type = SQL_HANDLE_STMT;
 +    stmt->connection = connection;
 +
-+    if (connection->pSQLAllocStmt)
++    /* Default to ODBC v3 function */
++    if(connection->pSQLAllocHandle)
++    {
++        ret = connection->pSQLAllocHandle(SQL_HANDLE_STMT, connection->driver_hdbc, &stmt->driver_stmt);
++    }
++    else if (connection->pSQLAllocStmt)
 +    {
 +        ret = connection->pSQLAllocStmt(connection->driver_hdbc, &stmt->driver_stmt);
 +    }

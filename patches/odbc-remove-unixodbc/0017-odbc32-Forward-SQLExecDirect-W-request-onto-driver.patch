@@ -1,17 +1,17 @@
-From 192905ccd1caf555eae7b90444bb6f1f2bbb06e5 Mon Sep 17 00:00:00 2001
+From 3300c71f28837370b72960af0a880c43d38f6707 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 10:53:29 +1100
-Subject: [PATCH 17/36] odbc32: Forward SQLExecDirect/W request onto driver
+Subject: [PATCH] odbc32: Forward SQLExecDirect/W request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 30 ++++++++++++++++++++++++++++--
  1 file changed, 28 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 9e7cec379ca..ca0be3ab01c 100644
+index 43c032a64a9..676c6775ef7 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -669,11 +669,24 @@ SQLRETURN WINAPI SQLError(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle, S
+@@ -674,11 +674,24 @@ SQLRETURN WINAPI SQLError(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle, S
   */
  SQLRETURN WINAPI SQLExecDirect(SQLHSTMT StatementHandle, SQLCHAR *StatementText, SQLINTEGER TextLength)
  {
@@ -37,7 +37,7 @@ index 9e7cec379ca..ca0be3ab01c 100644
      return ret;
  }
  
-@@ -1737,11 +1750,24 @@ SQLRETURN WINAPI SQLErrorW(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle,
+@@ -1742,11 +1755,24 @@ SQLRETURN WINAPI SQLErrorW(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle,
   */
  SQLRETURN WINAPI SQLExecDirectW(SQLHSTMT StatementHandle, WCHAR *StatementText, SQLINTEGER TextLength)
  {

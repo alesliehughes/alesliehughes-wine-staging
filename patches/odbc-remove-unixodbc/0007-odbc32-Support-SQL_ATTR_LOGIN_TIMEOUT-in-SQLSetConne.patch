@@ -1,8 +1,7 @@
-From 0717dd87191c2b63231123c30a4c883d9e2b4c90 Mon Sep 17 00:00:00 2001
+From e0edd9d4bafdab180686f7e176fb9d888bbf30a5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 15:18:21 +1100
-Subject: [PATCH 07/36] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in
- SQLSetConnectAttrW
+Subject: [PATCH] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in SQLSetConnectAttrW
 
 ---
  dlls/odbc32/proxyodbc.c | 28 +++++++++++++++++++++++++---

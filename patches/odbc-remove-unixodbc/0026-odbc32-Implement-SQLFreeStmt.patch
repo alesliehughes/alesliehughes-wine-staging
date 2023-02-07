@@ -1,17 +1,17 @@
-From 363f33a5741541edd1f3736fd52443a55a8deca0 Mon Sep 17 00:00:00 2001
+From 08760f3c8cfdf3f8a8f680d56ad15bc86c005f30 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:47:40 +1100
-Subject: [PATCH 26/36] odbc32: Implement SQLFreeStmt
+Subject: [PATCH] odbc32: Implement SQLFreeStmt
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index c12565f7427..5f153709681 100644
+index 62a0b2eff18..33cf16e4d14 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -802,10 +802,23 @@ SQLRETURN WINAPI SQLFreeHandle(SQLSMALLINT HandleType, SQLHANDLE Handle)
+@@ -807,10 +807,23 @@ SQLRETURN WINAPI SQLFreeHandle(SQLSMALLINT HandleType, SQLHANDLE Handle)
   */
  SQLRETURN WINAPI SQLFreeStmt(SQLHSTMT StatementHandle, SQLUSMALLINT Option)
  {

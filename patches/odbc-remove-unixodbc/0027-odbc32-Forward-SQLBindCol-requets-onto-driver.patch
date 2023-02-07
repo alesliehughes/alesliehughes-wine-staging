@@ -1,17 +1,17 @@
-From c3af52799949fccda26bd839273dafdd84fc31fb Mon Sep 17 00:00:00 2001
+From 1ddc7e9eb12b91fa0c88df89a3ea99a28eabcb20 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:57:00 +1100
-Subject: [PATCH 27/36] odbc32: Forward SQLBindCol requets onto driver
+Subject: [PATCH] odbc32: Forward SQLBindCol requets onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 16 +++++++++++++++-
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 5f153709681..40efebff692 100644
+index 33cf16e4d14..6880c88e43f 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -442,11 +442,25 @@ static const char *debugstr_sqllen( SQLLEN len )
+@@ -447,11 +447,25 @@ static const char *debugstr_sqllen( SQLLEN len )
  SQLRETURN WINAPI SQLBindCol(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNumber, SQLSMALLINT TargetType,
                              SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_Ind)
  {

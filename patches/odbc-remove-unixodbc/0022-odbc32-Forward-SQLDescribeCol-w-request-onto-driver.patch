@@ -1,17 +1,17 @@
-From 2e67a4350cd0e2379511e988ba34a0ad064dd880 Mon Sep 17 00:00:00 2001
+From b1a471bee95846391a437a042bc1c80dcdbbfe76 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:17:59 +1100
-Subject: [PATCH 22/36] odbc32: Forward SQLDescribeCol/w request onto driver
+Subject: [PATCH] odbc32: Forward SQLDescribeCol/w request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 35 +++++++++++++++++++++++++++++++++--
  1 file changed, 33 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 139832a681f..72e9c4edb3a 100644
+index 29454e36c5e..52ef0c5bd08 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -601,12 +601,29 @@ SQLRETURN WINAPI SQLDescribeCol(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNum
+@@ -606,12 +606,29 @@ SQLRETURN WINAPI SQLDescribeCol(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNum
                                  SQLSMALLINT BufferLength, SQLSMALLINT *NameLength, SQLSMALLINT *DataType,
                                  SQLULEN *ColumnSize, SQLSMALLINT *DecimalDigits, SQLSMALLINT *Nullable)
  {
@@ -42,7 +42,7 @@ index 139832a681f..72e9c4edb3a 100644
      return ret;
  }
  
-@@ -1770,15 +1787,29 @@ SQLRETURN WINAPI SQLDescribeColW(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNu
+@@ -1775,15 +1792,29 @@ SQLRETURN WINAPI SQLDescribeColW(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNu
                                   SQLSMALLINT BufferLength, SQLSMALLINT *NameLength, SQLSMALLINT *DataType,
                                   SQLULEN *ColumnSize, SQLSMALLINT *DecimalDigits, SQLSMALLINT *Nullable)
  {

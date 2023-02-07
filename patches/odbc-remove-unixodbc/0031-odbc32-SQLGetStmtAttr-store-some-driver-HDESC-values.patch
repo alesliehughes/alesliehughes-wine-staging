@@ -1,14 +1,14 @@
-From 461e0f69321736acdc452dea00e81fc42b15368a Mon Sep 17 00:00:00 2001
+From 6d92c6d07215371788b4794857bef33a964b8d14 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 14:00:41 +1100
-Subject: [PATCH 31/36] odbc32: SQLGetStmtAttr store some driver HDESC values
+Subject: [PATCH] odbc32: SQLGetStmtAttr store some driver HDESC values
 
 ---
  dlls/odbc32/proxyodbc.c | 81 +++++++++++++++++++++++++++++++++++++++--
  1 file changed, 78 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 3a0eb836a89..16e4b93929a 100644
+index ec910391829..935d6024d2a 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -178,11 +178,22 @@ struct SQLHDBC_data
@@ -34,7 +34,7 @@ index 3a0eb836a89..16e4b93929a 100644
  };
  
  static void connection_bind_sql_funcs(struct SQLHDBC_data *connection)
-@@ -1125,8 +1136,40 @@ SQLRETURN WINAPI SQLGetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+@@ -1130,8 +1141,40 @@ SQLRETURN WINAPI SQLGetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
  
      if (statement->connection->pSQLGetStmtAttr)
      {
@@ -76,7 +76,7 @@ index 3a0eb836a89..16e4b93929a 100644
      }
  
      TRACE("ret %d\n", ret);
-@@ -2194,8 +2237,40 @@ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+@@ -2221,8 +2264,40 @@ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
  
      if (statement->connection->pSQLGetStmtAttrW)
      {

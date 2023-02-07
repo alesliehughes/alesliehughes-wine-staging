@@ -1,17 +1,17 @@
-From 585808f878d3fb9fd3c3af112e8b1eacfcf69c63 Mon Sep 17 00:00:00 2001
+From 47b24a47a10b7d0ef28ea70bbcee89e5a0069257 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 14:11:44 +1100
-Subject: [PATCH 32/36] odbc32: Forward SQLSetDescFieldW request onto driver
+Subject: [PATCH] odbc32: Forward SQLSetDescFieldW request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 9 ++++++++-
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 16e4b93929a..aae8959a8eb 100644
+index 935d6024d2a..a48efc76a0a 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -2191,6 +2191,7 @@ SQLRETURN WINAPI SQLGetDiagFieldW(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLS
+@@ -2218,6 +2218,7 @@ SQLRETURN WINAPI SQLGetDiagFieldW(SQLSMALLINT HandleType, SQLHANDLE Handle, SQLS
              ret = statement->connection->pSQLGetDiagFieldW(HandleType, statement->driver_stmt, RecNumber,
                                       DiagIdentifier, DiagInfo, BufferLength, StringLength);
      }
@@ -19,7 +19,7 @@ index 16e4b93929a..aae8959a8eb 100644
  
      return ret;
  }
-@@ -2763,11 +2764,17 @@ SQLRETURN WINAPI SQLDriversW(SQLHENV EnvironmentHandle, SQLUSMALLINT fDirection,
+@@ -2790,11 +2791,17 @@ SQLRETURN WINAPI SQLDriversW(SQLHENV EnvironmentHandle, SQLUSMALLINT fDirection,
  SQLRETURN WINAPI SQLSetDescFieldW(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumber, SQLSMALLINT FieldIdentifier,
                                    SQLPOINTER Value, SQLINTEGER BufferLength)
  {

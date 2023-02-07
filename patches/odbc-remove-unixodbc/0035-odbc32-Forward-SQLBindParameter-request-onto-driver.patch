@@ -1,17 +1,17 @@
-From 0f40b9d9bfba7f7922210285248f9e682c6c6bb2 Mon Sep 17 00:00:00 2001
+From 621d373104dd1b20c5888b6d0343ff1db2f418fd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 15:40:24 +1100
-Subject: [PATCH 35/36] odbc32: Forward SQLBindParameter request onto driver
+Subject: [PATCH] odbc32: Forward SQLBindParameter request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 16 +++++++++++++++-
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 1b579dcdfdc..b618190af3d 100644
+index a07c9c89696..d7c39f50440 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1896,12 +1896,26 @@ SQLRETURN WINAPI SQLBindParameter(SQLHSTMT hstmt, SQLUSMALLINT ipar, SQLSMALLINT
+@@ -1901,12 +1901,26 @@ SQLRETURN WINAPI SQLBindParameter(SQLHSTMT hstmt, SQLUSMALLINT ipar, SQLSMALLINT
                                    SQLSMALLINT ibScale, SQLPOINTER rgbValue, SQLLEN cbValueMax,
                                    SQLLEN *pcbValue)
  {

@@ -1,17 +1,17 @@
-From 330f869873e589ca627a48450044d6194c9df5d4 Mon Sep 17 00:00:00 2001
+From 3a3782b58dfffa4ebbc4bebbd7272da2ef02630b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:12:20 +1100
-Subject: [PATCH 21/36] odbc32: Forward SQLMoreResults request onto driver
+Subject: [PATCH] odbc32: Forward SQLMoreResults request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b760dcf0a70..139832a681f 100644
+index dd1392923b4..29454e36c5e 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1511,10 +1511,23 @@ SQLRETURN WINAPI SQLForeignKeys(SQLHSTMT hstmt, SQLCHAR *szPkCatalogName, SQLSMA
+@@ -1516,10 +1516,23 @@ SQLRETURN WINAPI SQLForeignKeys(SQLHSTMT hstmt, SQLCHAR *szPkCatalogName, SQLSMA
   */
  SQLRETURN WINAPI SQLMoreResults(SQLHSTMT StatementHandle)
  {

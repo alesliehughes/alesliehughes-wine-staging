@@ -1,17 +1,17 @@
-From cb52bbeeb1454a4c88020c5d665631ae51f9cad9 Mon Sep 17 00:00:00 2001
+From f556e8bbf7c801a88388745d8e1108c53c6e5537 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:08:41 +1100
-Subject: [PATCH 19/36] odbc32: Forward SQLRowCount onto driver
+Subject: [PATCH] odbc32: Forward SQLRowCount onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 07bc014de8b..125c526c90c 100644
+index 91538ea5304..adfcc522296 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1133,10 +1133,23 @@ SQLRETURN WINAPI SQLPutData(SQLHSTMT StatementHandle, SQLPOINTER Data, SQLLEN St
+@@ -1138,10 +1138,23 @@ SQLRETURN WINAPI SQLPutData(SQLHSTMT StatementHandle, SQLPOINTER Data, SQLLEN St
   */
  SQLRETURN WINAPI SQLRowCount(SQLHSTMT StatementHandle, SQLLEN *RowCount)
  {

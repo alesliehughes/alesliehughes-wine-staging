@@ -1,17 +1,17 @@
-From 1ec5c91a1659a2124cd472102f3e064d8c041d91 Mon Sep 17 00:00:00 2001
+From 8cae06ecfd6963547461ca301f45f89cb5fedad6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 10:50:26 +1100
-Subject: [PATCH 16/36] odbc32: Forward SQLParamOptions request onto driver
+Subject: [PATCH] odbc32: Forward SQLParamOptions request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b5c26d51459..9e7cec379ca 100644
+index d40d74a5529..43c032a64a9 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
-@@ -1496,10 +1496,23 @@ SQLRETURN WINAPI SQLNumParams(SQLHSTMT hstmt, SQLSMALLINT *pcpar)
+@@ -1501,10 +1501,23 @@ SQLRETURN WINAPI SQLNumParams(SQLHSTMT hstmt, SQLSMALLINT *pcpar)
   */
  SQLRETURN WINAPI SQLParamOptions(SQLHSTMT hstmt, SQLULEN crow, SQLULEN *pirow)
  {

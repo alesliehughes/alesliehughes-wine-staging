@@ -1,7 +1,7 @@
-From 5995576b1c705b9895aa35a49791842ee24cd4d5 Mon Sep 17 00:00:00 2001
+From f2eed5c26fbee6498cffb77ca50a642184ba8cc9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 08:47:46 +1100
-Subject: [PATCH 09/36] odbc32: Foward SQLGetInfo/W requests onto the driver
+Subject: [PATCH] odbc32: Foward SQLGetInfo/W requests onto the driver
 
 ---
  dlls/odbc32/proxyodbc.c | 32 ++++++++++++++++++++++++++------

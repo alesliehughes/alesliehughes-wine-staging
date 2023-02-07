@@ -1,7 +1,7 @@
-From 829daf357a4a9cbd1bf0fe6823a346eb3e97999c Mon Sep 17 00:00:00 2001
+From de5d768fe6c6b68a9257d83d8add2c97b84aea01 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:26:57 +1100
-Subject: [PATCH 13/36] odbc32: Foward SQLDisconnect request onto driver
+Subject: [PATCH] odbc32: Foward SQLDisconnect request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 16 +++++++++++++++-
