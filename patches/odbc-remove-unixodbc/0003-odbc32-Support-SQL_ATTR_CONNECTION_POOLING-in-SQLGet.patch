@@ -1,7 +1,7 @@
-From 3f6985ea6df8a1787f089464ca2031c2e703c7fd Mon Sep 17 00:00:00 2001
+From cd4b544dc92159ca8c80e790c25a36e93b848145 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 13:41:20 +1100
-Subject: [PATCH] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
+Subject: [PATCH 03/42] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
  SQLGetEnvAttr/SQLSetEnvAttr
 
 ---
@@ -9,14 +9,14 @@ Subject: [PATCH] odbc32: Support SQL_ATTR_CONNECTION_POOLING in
  1 file changed, 57 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 24e84883aa5..811f9b66c8a 100644
+index 24e84883aa5..1330c4c33fe 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -46,6 +46,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
  struct SQLHENV_data
  {
      int type;
-+    SQLINTEGER pooling;
++    SQLUINTEGER pooling;
  };
  
  
@@ -63,7 +63,7 @@ index 24e84883aa5..811f9b66c8a 100644
 +                WARN("Invalid buffer size\n");
 +                return SQL_ERROR;
 +            }
-+            *(SQLINTEGER*)Value = data->pooling;
++            *(SQLUINTEGER*)Value = data->pooling;
 +            break;
 +        default:
 +            FIXME("Unhandle attribute %d\n", Attribute);
@@ -96,7 +96,7 @@ index 24e84883aa5..811f9b66c8a 100644
 +    {
 +        case SQL_ATTR_CONNECTION_POOLING:
 +            if (Value)
-+                data->pooling = *(SQLINTEGER*)Value;
++                data->pooling = (uintptr_t)Value;
 +            else
 +                data->pooling = SQL_CP_OFF;
 +            break;

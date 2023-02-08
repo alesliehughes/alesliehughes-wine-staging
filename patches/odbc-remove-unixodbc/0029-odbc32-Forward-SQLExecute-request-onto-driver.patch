@@ -1,14 +1,14 @@
-From ad1f86b218f07b2f429dee2a21dba6156b12bc76 Mon Sep 17 00:00:00 2001
+From 04ef2a6e51678a60daac117cec90ed48d5fb3fa6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 13:14:19 +1100
-Subject: [PATCH] odbc32: Forward SQLExecute request onto driver
+Subject: [PATCH 29/42] odbc32: Forward SQLExecute request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b5665a79506..7d69cb8c191 100644
+index 5a03ea3d757..846b788b76b 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -743,10 +743,23 @@ SQLRETURN WINAPI SQLExecute(SQLHSTMT StatementHandle)

@@ -1,7 +1,7 @@
-From 1de21dc43324df781c0157d9ebcdfeeb57576ba7 Mon Sep 17 00:00:00 2001
+From de6ee9b0358cb5d6464808751a9d33ed0564afcd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Feb 2023 14:20:44 +1100
-Subject: [PATCH] odbc32: Remove unixODBC support
+Subject: [PATCH 01/42] odbc32: Remove unixODBC support
 
 ---
  configure.ac            |    3 -
@@ -15,7 +15,7 @@ Subject: [PATCH] odbc32: Remove unixODBC support
  delete mode 100644 dlls/odbc32/unixlib.h
 
 diff --git a/configure.ac b/configure.ac
-index e2bca2df99a..f643eb0a070 100644
+index 590ef29eb35..1033af2e613 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -1768,9 +1768,6 @@ then

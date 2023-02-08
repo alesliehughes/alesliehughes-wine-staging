@@ -1,14 +1,14 @@
-From 484a3e80f0e6c2a5d20b41bfdd2e5a98fb36e982 Mon Sep 17 00:00:00 2001
+From 7359117d8a80ac80ca0602ca81a3b2b3ce2d26c1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:10:54 +1100
-Subject: [PATCH] odbc32: Forward SQLNumResultCols onto driver
+Subject: [PATCH 20/42] odbc32: Forward SQLNumResultCols onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index adfcc522296..dd1392923b4 100644
+index 32c61eea427..1d1c575ca11 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -1089,10 +1089,23 @@ SQLRETURN WINAPI SQLGetTypeInfo(SQLHSTMT StatementHandle, SQLSMALLINT DataType)

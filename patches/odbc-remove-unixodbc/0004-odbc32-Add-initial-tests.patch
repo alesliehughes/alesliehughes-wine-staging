@@ -1,7 +1,7 @@
-From f71c1149853b5ddba6921786bcde6ad68a9140cc Mon Sep 17 00:00:00 2001
+From 648d4f13e26a076feca219b76111c03262504d95 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:16:21 +1100
-Subject: [PATCH] odbc32: Add initial tests
+Subject: [PATCH 04/42] odbc32: Add initial tests
 
 ---
  configure                      |   1 +
@@ -13,10 +13,10 @@ Subject: [PATCH] odbc32: Add initial tests
  create mode 100644 dlls/odbc32/tests/connection.c
 
 diff --git a/configure b/configure
-index 6b48c2aa038..a335c5fdb23 100755
+index 66e607337db..40b93ce0490 100755
 --- a/configure
 +++ b/configure
-@@ -21632,6 +21632,7 @@ wine_fn_config_makefile dlls/ntprint enable_ntprint
+@@ -21634,6 +21634,7 @@ wine_fn_config_makefile dlls/ntprint enable_ntprint
  wine_fn_config_makefile dlls/ntprint/tests enable_tests
  wine_fn_config_makefile dlls/objsel enable_objsel
  wine_fn_config_makefile dlls/odbc32 enable_odbc32
@@ -25,10 +25,10 @@ index 6b48c2aa038..a335c5fdb23 100755
  wine_fn_config_makefile dlls/odbccp32 enable_odbccp32
  wine_fn_config_makefile dlls/odbccp32/tests enable_tests
 diff --git a/configure.ac b/configure.ac
-index f643eb0a070..eafe22ad338 100644
+index 1033af2e613..249ea8b3f05 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2897,6 +2897,7 @@ WINE_CONFIG_MAKEFILE(dlls/ntprint)
+@@ -2898,6 +2898,7 @@ WINE_CONFIG_MAKEFILE(dlls/ntprint)
  WINE_CONFIG_MAKEFILE(dlls/ntprint/tests)
  WINE_CONFIG_MAKEFILE(dlls/objsel)
  WINE_CONFIG_MAKEFILE(dlls/odbc32)

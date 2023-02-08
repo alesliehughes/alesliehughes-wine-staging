@@ -1,18 +1,18 @@
-From 19d8fe745cf26f1445c5a0cf823341c38bcad846 Mon Sep 17 00:00:00 2001
+From 8d5b34c895f776ed4944fa5aeed0df3ddc847015 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:40:03 +1100
-Subject: [PATCH] odbc32: Implement SQLAllocConnect
+Subject: [PATCH 05/42] odbc32: Implement SQLAllocConnect
 
 ---
  dlls/odbc32/proxyodbc.c | 41 +++++++++++++++++++++++++++++++++++------
  1 file changed, 35 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 811f9b66c8a..1fd2864f78b 100644
+index 1330c4c33fe..b3680b7759d 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -49,17 +49,35 @@ struct SQLHENV_data
-     SQLINTEGER pooling;
+     SQLUINTEGER pooling;
  };
  
 +struct SQLHDBC_data

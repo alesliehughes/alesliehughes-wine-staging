@@ -1,14 +1,14 @@
-From a951065e70183f1f227c37ff635af7edc0a3e7fc Mon Sep 17 00:00:00 2001
+From 258bc40f574604e6d27cf3fb75e682f463dcde99 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 4 Feb 2023 09:16:29 +1100
-Subject: [PATCH] odbc32: Implement SQLDriverConnectW
+Subject: [PATCH 08/42] odbc32: Implement SQLDriverConnectW
 
 ---
  dlls/odbc32/proxyodbc.c | 344 +++++++++++++++++++++++++++++++++++++++-
  1 file changed, 343 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 6aa920d2f5e..b25edc23eeb 100644
+index b4ec548b09c..ebb6b53d62d 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -53,10 +53,257 @@ struct SQLHDBC_data

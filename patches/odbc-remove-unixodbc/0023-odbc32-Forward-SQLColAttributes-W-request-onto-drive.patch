@@ -1,14 +1,14 @@
-From 82ab1346c9071c25cc4984cc7af5172f2d8587ba Mon Sep 17 00:00:00 2001
+From 85be83ac84dea5b5e5aa43770d1c7e78ad07dbd5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:30:58 +1100
-Subject: [PATCH] odbc32: Forward SQLColAttributes/W request onto driver
+Subject: [PATCH 23/42] odbc32: Forward SQLColAttributes/W request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 55 +++++++++++++++++++++++++++++++++++++++--
  1 file changed, 53 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 52ef0c5bd08..b7c4f98c10c 100644
+index 318aba1cc48..8360cd0684f 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -1449,11 +1449,26 @@ SQLRETURN WINAPI SQLColAttributes(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLUSMALLIN

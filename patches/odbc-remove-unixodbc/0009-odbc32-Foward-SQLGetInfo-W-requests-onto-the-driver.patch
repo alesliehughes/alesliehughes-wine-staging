@@ -1,14 +1,14 @@
-From f2eed5c26fbee6498cffb77ca50a642184ba8cc9 Mon Sep 17 00:00:00 2001
+From 721fddbb419b2bdaf710c023b9d33851b77e1684 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 08:47:46 +1100
-Subject: [PATCH] odbc32: Foward SQLGetInfo/W requests onto the driver
+Subject: [PATCH 09/42] odbc32: Foward SQLGetInfo/W requests onto the driver
 
 ---
  dlls/odbc32/proxyodbc.c | 32 ++++++++++++++++++++++++++------
  1 file changed, 26 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index b25edc23eeb..a55404efd1b 100644
+index ebb6b53d62d..6e4e1a68011 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -911,7 +911,9 @@ SQLRETURN WINAPI SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT Function

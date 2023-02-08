@@ -1,14 +1,15 @@
-From e0edd9d4bafdab180686f7e176fb9d888bbf30a5 Mon Sep 17 00:00:00 2001
+From a6061eab04f7b9432acf1eb86eb47d3286d97f0e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 15:18:21 +1100
-Subject: [PATCH] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in SQLSetConnectAttrW
+Subject: [PATCH 07/42] odbc32: Support SQL_ATTR_LOGIN_TIMEOUT in
+ SQLSetConnectAttrW
 
 ---
  dlls/odbc32/proxyodbc.c | 28 +++++++++++++++++++++++++---
  1 file changed, 25 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 6e00661a62e..6aa920d2f5e 100644
+index c19f0248ef8..b4ec548b09c 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -53,6 +53,8 @@ struct SQLHDBC_data
@@ -50,7 +51,7 @@ index 6e00661a62e..6aa920d2f5e 100644
 +    {
 +        case SQL_ATTR_LOGIN_TIMEOUT:
 +            if (Value)
-+                hdbc->login_timeout = (SQLUINTEGER)Value;
++                hdbc->login_timeout = (intptr_t)Value;
 +            else
 +                hdbc->login_timeout = 0;
 +            break;

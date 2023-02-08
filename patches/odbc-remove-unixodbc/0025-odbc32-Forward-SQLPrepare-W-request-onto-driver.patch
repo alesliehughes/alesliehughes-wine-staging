@@ -1,14 +1,14 @@
-From 2d0df8926c678a14158a87d34ecafc59d8615fd8 Mon Sep 17 00:00:00 2001
+From ed6b6e8f1946b785aa6a587aad8eae517b645161 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:44:00 +1100
-Subject: [PATCH] odbc32: Forward SQLPrepare/W request onto driver
+Subject: [PATCH 25/42] odbc32: Forward SQLPrepare/W request onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 28 +++++++++++++++++++++++++++-
  1 file changed, 27 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 7c7e41e7e28..62a0b2eff18 100644
+index 5b63fded654..821c769c865 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -1143,11 +1143,24 @@ SQLRETURN WINAPI SQLParamData(SQLHSTMT StatementHandle, SQLPOINTER *Value)

@@ -1,14 +1,14 @@
-From 49d9c4db540f7b53277a61daff5214fbeb25ab7c Mon Sep 17 00:00:00 2001
+From 2bda5feb6297ec6c01a022a3c13338c2c6f6ff27 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:53:34 +1100
-Subject: [PATCH] odbc32: Implement SQLAllocStmt
+Subject: [PATCH 14/42] odbc32: Implement SQLAllocStmt
 
 ---
  dlls/odbc32/proxyodbc.c | 39 ++++++++++++++++++++++++++++++++++++++-
  1 file changed, 38 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index a6f47832dc9..b3dd3630cbb 100644
+index 65f882968c6..4ec5ecfcb83 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -178,6 +178,13 @@ struct SQLHDBC_data

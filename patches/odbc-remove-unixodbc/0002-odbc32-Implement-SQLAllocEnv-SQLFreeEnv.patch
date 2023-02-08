@@ -1,7 +1,7 @@
-From 165f646322b41df61996087aa1f1bc5502d1c797 Mon Sep 17 00:00:00 2001
+From b866665b60bc2c29105d45a0e071db8e259ac229 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 11:44:19 +1100
-Subject: [PATCH] odbc32: Implement SQLAllocEnv/SQLFreeEnv
+Subject: [PATCH 02/42] odbc32: Implement SQLAllocEnv/SQLFreeEnv
 
 ---
  dlls/odbc32/proxyodbc.c | 31 +++++++++++++++++++++++++------

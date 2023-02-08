@@ -1,14 +1,14 @@
-From d3ba6ae7c58879205bf6e599c3dcb5f3b6de4bb1 Mon Sep 17 00:00:00 2001
+From c4739858fb4397522f5e09e88400c5433a7cecf2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 3 Feb 2023 14:46:44 +1100
-Subject: [PATCH] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
+Subject: [PATCH 06/42] odbc32: SQLGetInfo/W support InfoType SQL_ODBC_VER
 
 ---
  dlls/odbc32/proxyodbc.c | 36 ++++++++++++++++++++++++++++++------
  1 file changed, 30 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 1fd2864f78b..6e00661a62e 100644
+index b3680b7759d..c19f0248ef8 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -658,12 +658,24 @@ SQLRETURN WINAPI SQLGetFunctions(SQLHDBC ConnectionHandle, SQLUSMALLINT Function

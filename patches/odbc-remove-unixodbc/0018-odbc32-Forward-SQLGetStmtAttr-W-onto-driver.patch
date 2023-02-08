@@ -1,14 +1,14 @@
-From 551768c0f092079248f804b70e11e381c12bc378 Mon Sep 17 00:00:00 2001
+From e1399a4847627be9772aa411c24f3c9a7269c18d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 11:04:32 +1100
-Subject: [PATCH] odbc32: Forward SQLGetStmtAttr/W onto driver
+Subject: [PATCH 18/42] odbc32: Forward SQLGetStmtAttr/W onto driver
 
 ---
  dlls/odbc32/proxyodbc.c | 32 ++++++++++++++++++++++++++++++--
  1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index 676c6775ef7..91538ea5304 100644
+index b43f2a0f876..ae790cd3651 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -1032,17 +1032,31 @@ SQLRETURN WINAPI SQLGetInfo(SQLHDBC ConnectionHandle, SQLUSMALLINT InfoType, SQL

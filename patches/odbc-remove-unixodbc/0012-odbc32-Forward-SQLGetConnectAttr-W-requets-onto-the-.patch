@@ -1,14 +1,15 @@
-From 58cb7b0abba8000c70256ee5ad8abe765403fd1e Mon Sep 17 00:00:00 2001
+From f5914eea19b16f6312de43ff72b289c82c08f846 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 6 Feb 2023 09:08:27 +1100
-Subject: [PATCH] odbc32: Forward SQLGetConnectAttr/W requets onto the driver
+Subject: [PATCH 12/42] odbc32: Forward SQLGetConnectAttr/W requets onto the
+ driver
 
 ---
  dlls/odbc32/proxyodbc.c | 34 ++++++++++++++++++++++++++++++++--
  1 file changed, 32 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
-index e0e86d3c317..3fc12ec1ada 100644
+index 7e92b90b10c..96357cd3f1d 100644
 --- a/dlls/odbc32/proxyodbc.c
 +++ b/dlls/odbc32/proxyodbc.c
 @@ -739,11 +739,26 @@ SQLRETURN WINAPI SQLFreeStmt(SQLHSTMT StatementHandle, SQLUSMALLINT Option)
