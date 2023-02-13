@@ -1,14 +1,14 @@
-From 84be5f1181fed3336e03d415cc9f3f1cd5bd9074 Mon Sep 17 00:00:00 2001
+From b74a9917d4a267a6283babd1d72fd4908ac1be0c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
 Subject: [PATCH] msado15: Create rowset bindings.
 
 ---
- dlls/msado15/recordset.c | 131 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 131 insertions(+)
+ dlls/msado15/recordset.c | 132 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 132 insertions(+)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 47d79673f6a..b36283deb26 100644
+index 7820815937b..d21d8ec948a 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -19,7 +19,7 @@ index 47d79673f6a..b36283deb26 100644
  
  #include "wine/debug.h"
  
-@@ -1481,6 +1482,84 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+@@ -1481,6 +1482,85 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
@@ -29,7 +29,7 @@ index 47d79673f6a..b36283deb26 100644
 +{
 +    HRESULT hr;
 +    IColumnsInfo *columninfo;
-+    DBORDINAL columns, i;
++    DBORDINAL columns;
 +    DBCOLUMNINFO *colinfo;
 +    OLECHAR *stringsbuffer;
 +    DBBINDING *bindings;
@@ -42,12 +42,13 @@ index 47d79673f6a..b36283deb26 100644
 +    hr = IColumnsInfo_GetColumnInfo(columninfo, &columns, &colinfo, &stringsbuffer);
 +    if (SUCCEEDED(hr))
 +    {
++        ULONG i;
 +        offset = 1;
 +
 +        bindings = malloc(sizeof(DBBINDING) * columns);
 +        for (i=0; i < columns; i++)
 +        {
-+            TRACE("Column %I64u, pwszName: %s, pTypeInfo %p, iOrdinal %I64u, dwFlags 0x%08lx, "
++            TRACE("Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %I64u, dwFlags 0x%08lx, "
 +                  "ulColumnSize %I64u, wType %d, bPrecision %d, bScale %d\n",
 +                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
 +                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
@@ -104,7 +105,7 @@ index 47d79673f6a..b36283deb26 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1491,6 +1570,12 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1491,6 +1571,12 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -117,7 +118,7 @@ index 47d79673f6a..b36283deb26 100644
  
      FIXME( "%p, %s, %s, %d, %d, %ld Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
             cursor_type, lock_type, options );
-@@ -1535,6 +1620,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1535,6 +1621,52 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -171,5 +172,5 @@ index 47d79673f6a..b36283deb26 100644
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
 -- 
-2.38.1
+2.39.1
 

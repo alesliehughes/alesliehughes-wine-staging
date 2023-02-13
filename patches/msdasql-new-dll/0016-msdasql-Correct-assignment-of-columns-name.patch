@@ -1,0 +1,37 @@
+From c26e73e2b6302c0a3d1bf45d1bf4cb98c6a1bba8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 13 Feb 2023 14:05:21 +1100
+Subject: [PATCH] msdasql: Correct assignment of columns name
+
+---
+ dlls/msdasql/session.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 61e3c07f2ee..cee340ba1f4 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -1107,7 +1107,7 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
+     RETCODE ret;
+     SQLSMALLINT colcnt;
+     int i;
+-    OLECHAR *ptr;
++    WCHAR *ptr;
+ 
+     TRACE("%p, %p, %p, %p\n", rowset, columns, colinfo, stringsbuffer);
+ 
+@@ -1148,9 +1148,10 @@ static HRESULT WINAPI rowset_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDIN
+             TRACE("%d: Column Name : %s, Column Name Len : %i, SQL Data Type : %i, Data Size : %i, DecimalDigits : %i, Nullable %i\n",
+                  i, debugstr_w(columnname), (int)ColumnNameLen, (int)ColumnDataType, (int)ColumnDataSize, (int)ColumnDataDigits,
+                  (int)ColumnDataNullable);
+-            lstrcpyW(ptr, columnname);
++            lstrcpynW(ptr, columnname, ColumnNameLen+1);
+ 
+             dbcolumn[i].pwszName = ptr;
++            ptr += ColumnNameLen + 2;
+             dbcolumn[i].pTypeInfo = NULL;
+             dbcolumn[i].iOrdinal = i+1;
+ 
+-- 
+2.39.1
+
