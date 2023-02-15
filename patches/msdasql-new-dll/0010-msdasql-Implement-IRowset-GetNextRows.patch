@@ -19,7 +19,7 @@ index 189dedd7e47..17f8fcfbcc3 100644
 -    return E_NOTIMPL;
 +    SQLRETURN ret;
 +
-+    TRACE("%p, %I64d, %I64d, %I64d, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
++    TRACE("%p, %ldd, %ldd, %ldd, %p, %p\n", rowset, reserved, offset, count, obtained, rows);
 +
 +    ret = SQLFetch(rowset->hstmt);
 +    if (ret == SQL_NO_DATA)

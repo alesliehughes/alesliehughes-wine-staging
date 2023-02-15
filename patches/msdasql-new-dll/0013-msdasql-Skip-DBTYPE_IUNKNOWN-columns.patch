@@ -11,21 +11,12 @@ diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
 index 6163fa33f66..d38f1064396 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -884,7 +884,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
-         CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
- 
-     FIXME("%p, %Id, %Id, %p\n", rowset, row, accessor, data);
--    FIXME("rowset->bind_cnt %ld\n", rowset->bind_cnt);
-+    FIXME("rowset->bind_cnt %I64d\n", rowset->bind_cnt);
-     //memcpy(data, access->data, access->size);
-     for(i=0; i < rowset->bind_cnt; i++)
-     {
 @@ -898,11 +898,36 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
          DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
          DBLENGTH*           pulDstLength;
  
 -        FIXME("ObValue %ld, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
-+        FIXME("ObValue %I64d, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
++        FIXME("ObValue %ld, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
          if(rowset->bindings[i].pObject)
              FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
                      debugstr_guid(&rowset->bindings[i].pObject->iid));
@@ -46,7 +37,7 @@ index 6163fa33f66..d38f1064396 100644
 +            *((IUnknown**)pSrc) = pIUnknown;
 +            //hr = IStream_QueryInterface(steam, &IID_IUnknown, &pSrc);
 +
-+            FIXME("IStream_QueryInterface 0x%08lx (%I64d, %p)\n", hr, *(LONG_PTR*)(pSrc) ,pIUnknown);
++            FIXME("IStream_QueryInterface 0x%08lx (%ld, %p)\n", hr, *(LONG_PTR*)(pSrc) ,pIUnknown);
 +//FIXME("pIUnknown %p\n", pIUnknown);
 +  //          if (pIUnknown)
 +    //            hr = IUnknown_QueryInterface(pIUnknown, &IID_ISequentialStream, (void**)&pISequentialStream);

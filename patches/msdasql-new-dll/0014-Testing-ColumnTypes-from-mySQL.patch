@@ -24,8 +24,8 @@ index 762277843e8..6244c172afb 100644
      if ((userid && *userid) || (password && *password))
          FIXME("Username/password parameters currently not supported\n");
  
-+    hr = IDBInitialize_Initialize( dbinit );
-+FIXME("1. IDBInitialize_Initialize 0x%08x\n", hr);
++//    hr = IDBInitialize_Initialize( dbinit );
++//FIXME("1. IDBInitialize_Initialize 0x%08x\n", hr);
      if ((hr = IDBInitialize_Initialize( dbinit )) != S_OK) goto done;
 +FIXME("2. IDBInitialize_Initialize 0x%08x\n", hr);
      if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&session )) != S_OK) goto done;
@@ -136,7 +136,7 @@ index 00fa9194459..e2ee60280c2 100644
 +            //ok (dbcolumninfo[i].pTypeInfo == colinfo_data[i].pTypeInfo, "got %p/%p", dbcolumninfo[i].pTypeInfo, colinfo_data[i].pTypeInfo);
 +            //ok (0, "Ordinal    : %ld\n", dbcolumninfo[i].iOrdinal);
 +            ok (0, "Flags      : 0x%08lx (%s)\n", dbcolumninfo[i].dwFlags, dump_flags(dbcolumninfo[i].dwFlags));
-+            ok (0, "Column Size: %I64u\n", dbcolumninfo[i].ulColumnSize);
++            ok (0, "Column Size: %lu\n", dbcolumninfo[i].ulColumnSize);
 +            ok (0, "Type       : %d\n", dbcolumninfo[i].wType);
 +            //ok (0, "got %d\n", dbcolumninfo[i].bPrecision);
 +            //ok (0, "got %d\n", dbcolumninfo[i].bScale);

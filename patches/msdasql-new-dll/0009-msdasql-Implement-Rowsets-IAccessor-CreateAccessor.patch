@@ -73,7 +73,7 @@ index 76e55421ff0..189dedd7e47 100644
 +    char *ptr;
 +    SQLSMALLINT type;
 +
-+    TRACE("%p 0x%08lx, %I64d, %p, %I64d, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
++    TRACE("%p 0x%08lx, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
 +
 +    heap_free(rowset->bindings); // ??? Varify.
 +    rowset->bindings = heap_alloc(sizeof(DBBINDING) * count);
@@ -88,8 +88,8 @@ index 76e55421ff0..189dedd7e47 100644
 +    {
 +        SQLRETURN ret;
 +
-+        TRACE("ord %I64d. Value %I64d, Len %I64d, status %I64d, typeinfo %p, part %ld, Owner %ld, io %ld,"
-+              "Max %I64d, flags %08lx, type %d,  prec %d, sacle %d\n",
++        TRACE("ord %lu. Value %lu, Len %lu, status %lu, typeinfo %p, part %ld, Owner %ld, io %ld,"
++              "Max %lu, flags %08lx, type %d,  prec %d, sacle %d\n",
 +                bindings[i].iOrdinal, bindings[i].obValue, bindings[i].obLength, bindings[i].obStatus,
 +                bindings[i].pTypeInfo, bindings[i].dwPart, bindings[i].dwMemOwner, bindings[i].eParamIO,
 +                bindings[i].cbMaxLen, bindings[i].dwFlags, bindings[i].wType, bindings[i].bPrecision,

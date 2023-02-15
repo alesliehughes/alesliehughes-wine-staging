@@ -121,7 +121,7 @@ index e2ee60280c2..03913d6e681 100644
 +
 +    hr = IColumnsInfo_GetColumnInfo(colinfo, &columns, &dbcolumninfo, &buffer);
 +    ok(hr == S_OK, "got 0x%08lx\n", hr);
-+    ok(columns == 3, "got %I64d\n", columns);
++    ok(columns == 3, "got %ld\n", columns);
 +
 +    CoTaskMemFree(dbcolumninfo);
 +    CoTaskMemFree(buffer);
