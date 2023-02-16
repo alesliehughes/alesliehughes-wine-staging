@@ -132,7 +132,7 @@ index b36283deb26..e8739fd71fd 100644
 +                ERR("Failed to ReleaseRows 0x%08lx\n", hr);
 +
 +            hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
-+FIXME("obtained %I64u\n", obtained);
++FIXME("obtained %lu\n", obtained);
 +        }
 +
 +        free(data);
