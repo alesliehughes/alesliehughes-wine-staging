@@ -205,7 +205,7 @@ index bf2d70952a1..e364b55191f 100644
 +    prop = malloc (sizeof(struct field_property));
 +    prop->Property_iface.lpVtbl = &field_property_vtbl;
 +
-+    *object = prop;
++    *object = &prop->Property_iface;
 +    return S_OK;
  }
  
