@@ -1,18 +1,18 @@
-From f9d5a0485db5063ecff961e20253f97d24082689 Mon Sep 17 00:00:00 2001
+From 94d904d307024a21c0592db1fed5959dc0175627 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Apr 2021 12:09:28 +1000
 Subject: [PATCH] msado15: Implement _Recordset put Filter
 
 ---
- dlls/msado15/recordset.c     | 26 ++++++++++++++++++++++----
- dlls/msado15/tests/msado15.c | 34 +++++++++++++++++++++++++++++++++-
- 2 files changed, 55 insertions(+), 5 deletions(-)
+ dlls/msado15/recordset.c     | 26 ++++++++++++++++++++----
+ dlls/msado15/tests/msado15.c | 39 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 60 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 5c31f79ccff..808d0bc8ae2 100644
+index 10f548849e5..b5a422a2b07 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -50,6 +50,7 @@ struct recordset
+@@ -49,6 +49,7 @@ struct recordset
      CursorTypeEnum     cursor_type;
      IRowset           *row_set;
      EditModeEnum      editmode;
@@ -20,7 +20,7 @@ index 5c31f79ccff..808d0bc8ae2 100644
  };
  
  struct fields
-@@ -1824,14 +1825,30 @@ static HRESULT WINAPI recordset_get_EditMode( _Recordset *iface, EditModeEnum *m
+@@ -1825,14 +1826,30 @@ static HRESULT WINAPI recordset_get_EditMode( _Recordset *iface, EditModeEnum *m
  
  static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria )
  {
@@ -42,7 +42,7 @@ index 5c31f79ccff..808d0bc8ae2 100644
 +    struct recordset *recordset = impl_from_Recordset( iface );
 +    TRACE( "%p, %s\n", recordset, debugstr_variant(&criteria) );
 +
-+    if (V_VT(&criteria) != VT_I4 && V_VT(&criteria) != VT_BSTR)
++    if (V_VT(&criteria) != VT_I2 && V_VT(&criteria) != VT_I4 && V_VT(&criteria) != VT_BSTR)
 +        return MAKE_ADO_HRESULT( adErrInvalidArgument );
 +
 +    if (V_VT(&criteria) == VT_BSTR && recordset->state == adStateOpen)
@@ -55,7 +55,7 @@ index 5c31f79ccff..808d0bc8ae2 100644
  }
  
  static HRESULT WINAPI recordset_get_PageCount( _Recordset *iface, ADO_LONGPTR *count )
-@@ -2373,6 +2390,7 @@ HRESULT Recordset_create( void **obj )
+@@ -2419,6 +2436,7 @@ HRESULT Recordset_create( void **obj )
      recordset->cursor_type = adOpenForwardOnly;
      recordset->row_set = NULL;
      recordset->editmode = adEditNone;
@@ -64,7 +64,7 @@ index 5c31f79ccff..808d0bc8ae2 100644
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index a630db241e4..a81d108ca18 100644
+index a630db241e4..97854c6abd5 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
 @@ -59,7 +59,7 @@ static void test_Recordset(void)
@@ -76,7 +76,7 @@ index a630db241e4..a81d108ca18 100644
      EditModeEnum editmode;
  
      hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
-@@ -123,6 +123,21 @@ static void test_Recordset(void)
+@@ -123,6 +123,26 @@ static void test_Recordset(void)
      hr = _Recordset_put_Bookmark( recordset, bookmark );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
  
@@ -95,10 +95,15 @@ index a630db241e4..a81d108ca18 100644
 +    hr = _Recordset_put_Filter( recordset, filter );
 +    ok( hr == S_OK, "got %08lx\n", hr );
 +
++    V_VT(&filter) = VT_I2;
++    V_I2(&filter) = 0;
++    hr = _Recordset_put_Filter( recordset, filter );
++    ok( hr == S_OK, "got %08lx\n", hr );
++
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
-@@ -248,6 +263,23 @@ static void test_Recordset(void)
+@@ -248,6 +268,23 @@ static void test_Recordset(void)
      ok( fields2 == fields, "expected same object\n" );
      Fields_Release( fields2 );
  
@@ -123,5 +128,5 @@ index a630db241e4..a81d108ca18 100644
      hr = Fields_get_Count( fields2, &count );
      ok( count == 1, "got %ld\n", count );
 -- 
-2.35.1
+2.39.2
 

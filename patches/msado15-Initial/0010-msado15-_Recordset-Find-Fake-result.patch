@@ -1,37 +1,79 @@
-From 2052e3e478306ede1a9a6b2c1dafd71348e14f7e Mon Sep 17 00:00:00 2001
+From 7fbf9bd02f32525144401fac842083ea8ce7a33a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
-Subject: [PATCH] msado15: _Recordset Find - Fake result
+Subject: [PATCH] msado15: Implement _Recordset Find
 
-This function, really needs to go through the data we actually have.
-
-NOTE: This function supports more than what the web site suggests.
 ---
- dlls/msado15/recordset.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ dlls/msado15/recordset.c | 55 ++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 53 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 6d3b3ca352f..098e1e9a0ab 100644
+index aa2db6e2968..cb3cbc56576 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -1725,9 +1725,15 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
+@@ -1725,9 +1725,60 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
  static HRESULT WINAPI recordset_Find( _Recordset *iface, BSTR criteria, LONG skip_records,
                                        SearchDirectionEnum search_direction, VARIANT start )
  {
 -    FIXME( "%p, %s, %ld, %d, %s\n", iface, debugstr_w(criteria), skip_records, search_direction,
 +    struct recordset *recordset = impl_from_Recordset( iface );
++    HRESULT hr;
++    WCHAR column[256];
++    WCHAR value[256];
++    WCHAR *p, *c;
++
 +    FIXME( "%p, %s, %ld, %d, %s\n", recordset, debugstr_w(criteria), skip_records, search_direction,
             debugstr_variant(&start) );
 -    return E_NOTIMPL;
 +
-+    if (search_direction == adSearchForward)
++    p = wcsstr(criteria, L"=");
++    if (p)
++    {
++        VARIANT index, rhs;
++        ULONG datacol = 0;
++        ULONG colcnt = get_column_count(recordset);
++
++        c = p;
++        while (isspace(*c) || *c == '=') --c; /* strip trailing LWS */
++        lstrcpynW(column, criteria, c - criteria + 2);
++
++        FIXME("Column %s\n", debugstr_w(column));
++
++        V_VT(&index) = VT_BSTR;
++        V_BSTR(&index) = column;
++
++        if ((hr = map_index( recordset->fields, &index, &datacol )) != S_OK)
++        {
++            FIXME("No Column name");
++            return hr;
++        }
++        FIXME("Column index %d\n", datacol);
++
++        lstrcpyW(value, p+2);
++        value[lstrlenW(value)-1] = '\0';
++        FIXME("value %s\n", debugstr_w(value));
++
++        V_VT(&rhs) = VT_BSTR;
++        V_BSTR(&rhs) = value;
++
++        recordset->index += skip_records;
++        for(; recordset->index < recordset->count; recordset->index++)
++        {
++            FIXME("Data %s\n", debugstr_variant(&recordset->data[recordset->index * colcnt + datacol]));
++            if (lstrcmpW(V_BSTR(&recordset->data[recordset->index * colcnt + datacol]), V_BSTR(&rhs)) == 0)
++                break;
++        }
++    }
++
++/*    if (search_direction == adSearchForward)
 +        recordset->index = recordset->count;
 +    else
 +        recordset->index = -1;
++*/
 +    return S_OK;
  }
  
  static HRESULT WINAPI recordset_Cancel( _Recordset *iface )
 -- 
-2.35.1
+2.39.2
 
