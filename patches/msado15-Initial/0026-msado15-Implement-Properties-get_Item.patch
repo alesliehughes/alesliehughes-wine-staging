@@ -1,13 +1,16 @@
-From b8e4bc4eb015eb0da53f64488d1a4059bb95a200 Mon Sep 17 00:00:00 2001
+From 527b5b0e2f223044675f966b5eca0a8919ed46a5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 18 Feb 2023 22:11:08 +1100
-Subject: [PATCH] msado15: Implement Properties get_Item
+Subject: [PATCH] msado15: Support "Optimize" in Properties get_Item
 
+The Optimize property tells msado15 to create index maps
+for lookups in Recordset Find.  Just store the value for
+now until Find is implemented.
 ---
  dlls/msado15/main.c            |   1 +
  dlls/msado15/msado15_private.h |   1 +
- dlls/msado15/recordset.c       | 162 ++++++++++++++++++++++++++++++++-
- 3 files changed, 163 insertions(+), 1 deletion(-)
+ dlls/msado15/recordset.c       | 188 ++++++++++++++++++++++++++++++++-
+ 3 files changed, 189 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/main.c b/dlls/msado15/main.c
 index edbbaeb9e6e..187c3cf7518 100644
@@ -34,10 +37,20 @@ index 71344934b95..f7062c94b27 100644
      Stream_tid,
      LAST_tid
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index bf2d70952a1..e364b55191f 100644
+index a5ad00d22fb..dad593d2cc5 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
-@@ -566,11 +566,171 @@ static HRESULT WINAPI field_props_Refresh(Properties *iface)
+@@ -75,6 +75,9 @@ struct field
+     LONG                attrs;
+     LONG                index;
+     struct recordset   *recordset;
++
++    /* Field Properties */
++    VARIANT             optimize;
+ };
+ 
+ static inline struct field *impl_from_Field( Field *iface )
+@@ -568,10 +571,193 @@ static HRESULT WINAPI field_props_Refresh(Properties *iface)
      return E_NOTIMPL;
  }
  
@@ -45,7 +58,8 @@ index bf2d70952a1..e364b55191f 100644
 +struct field_property
 +{
 +    Property Property_iface;
-+    LONG ref;
++    LONG refs;
++    VARIANT *value;
 +};
 +
 +static inline struct field_property *impl_from_Property( Property *iface )
@@ -55,12 +69,22 @@ index bf2d70952a1..e364b55191f 100644
 +
 +static ULONG WINAPI field_property_AddRef(Property *iface)
 +{
-+    return 2;
++    struct field_property *property = impl_from_Property( iface );
++    LONG refs = InterlockedIncrement( &property->refs );
++    TRACE( "%p new refcount %ld\n", property, refs );
++    return refs;
 +}
 +
 +static ULONG WINAPI field_property_Release(Property *iface)
 +{
-+    return 1;
++    struct field_property *property = impl_from_Property( iface );
++    LONG refs = InterlockedDecrement( &property->refs );
++    TRACE( "%p new refcount %ld\n", property, refs );
++    if (!refs)
++    {
++        free( property );
++    }
++    return refs;
 +}
 +
 +static HRESULT WINAPI field_property_QueryInterface(Property *iface, REFIID riid, void **obj)
@@ -68,15 +92,12 @@ index bf2d70952a1..e364b55191f 100644
 +    struct field_property *property = impl_from_Property( iface );
 +    TRACE( "%p, %s, %p\n", property, debugstr_guid(riid), obj );
 +
-+    if (IsEqualGUID( riid, &IID_Property ) || IsEqualGUID( riid, &IID_IDispatch ) ||
-+        IsEqualGUID( riid, &IID_IUnknown ))
++    if (IsEqualGUID( riid, &IID_Property )
++        || IsEqualGUID( riid, &IID_IDispatch )
++        || IsEqualGUID( riid, &IID_IUnknown ))
 +    {
 +        *obj = iface;
 +    }
-+/*    else if (IsEqualGUID( riid, &IID_ISupportErrorInfo ))
-+    {
-+        *obj = &field->ISupportErrorInfo_iface;
-+    }*/
 +    else
 +    {
 +        FIXME( "interface %s not implemented\n", debugstr_guid(riid) );
@@ -143,13 +164,17 @@ index bf2d70952a1..e364b55191f 100644
 +
 +static HRESULT WINAPI field_property_get_Value(Property *iface, VARIANT *val)
 +{
-+    FIXME("\n");
-+    return E_NOTIMPL;
++    struct field_property *property = impl_from_Property( iface );
++    TRACE("%p, %p\n", property, val);
++    VariantCopy(val, property->value);
++    return S_OK;
 +}
 +
 +static HRESULT WINAPI field_property_put_Value(Property *iface, VARIANT val)
 +{
-+    FIXME("Faking\n");
++    struct field_property *property = impl_from_Property( iface );
++    TRACE("%p, %s\n", property, debugstr_variant(&val));
++    VariantCopy(property->value, &val);
 +    return S_OK;
 +}
 +
@@ -197,19 +222,29 @@ index bf2d70952a1..e364b55191f 100644
  static HRESULT WINAPI field_props_get_Item(Properties *iface, VARIANT index, Property **object)
  {
      struct field *field = impl_from_Properties( iface );
+-    FIXME( "%p, %s, %p\n", field, debugstr_variant(&index), object);
 +    struct field_property *prop;
 +
-     FIXME( "%p, %s, %p\n", field, debugstr_variant(&index), object);
--    return MAKE_ADO_HRESULT(adErrItemNotFound);
++    TRACE( "%p, %s, %p\n", field, debugstr_variant(&index), object);
 +
-+    prop = malloc (sizeof(struct field_property));
-+    prop->Property_iface.lpVtbl = &field_property_vtbl;
++    if (V_VT(&index) == VT_BSTR)
++    {
++        if(!wcscmp(L"Optimize", V_BSTR(&index)))
++        {
++            prop = malloc (sizeof(struct field_property));
++            prop->Property_iface.lpVtbl = &field_property_vtbl;
++            prop->value = &field->optimize;
 +
-+    *object = &prop->Property_iface;
-+    return S_OK;
++            *object = &prop->Property_iface;
++            return S_OK;
++        }
++    }
++
++    FIXME("Unsupported property %s\n", debugstr_variant(&index));
++
+     return MAKE_ADO_HRESULT(adErrItemNotFound);
  }
  
- static struct PropertiesVtbl field_properties_vtbl =
 -- 
 2.39.2
 
