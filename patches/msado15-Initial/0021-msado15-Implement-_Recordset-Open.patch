@@ -1,15 +1,15 @@
-From b637692559c18d8b02d83807a54938bebcc93c86 Mon Sep 17 00:00:00 2001
+From 73535f89e14d207bb9aa95c404feb0de91ca6630 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
 Subject: [PATCH] msado15: Implement _Recordset Open
 
 ---
- dlls/msado15/recordset.c     | 250 +++++++++++++++++++++++++++++++++++
- dlls/msado15/tests/msado15.c |  25 ++++
- 2 files changed, 275 insertions(+)
+ dlls/msado15/recordset.c     | 363 +++++++++++++++++++++++++++++++++++
+ dlls/msado15/tests/msado15.c |  25 +++
+ 2 files changed, 388 insertions(+)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 7c2e9ebdc45..928306cfb29 100644
+index 7c2e9ebdc45..10c7de2e103 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -20,13 +20,62 @@ index 7c2e9ebdc45..928306cfb29 100644
  
  #include "wine/debug.h"
  
-@@ -1670,6 +1671,218 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+@@ -49,6 +50,8 @@ struct recordset
+     IRowset           *row_set;
+     EditModeEnum      editmode;
+     VARIANT            filter;
++
++    DBTYPE            *columntypes;
+ };
+ 
+ struct fields
+@@ -1234,6 +1237,8 @@ static ULONG WINAPI recordset_Release( _Recordset *iface )
+     if (!refs)
+     {
+         TRACE( "destroying %p\n", recordset );
++        if (recordset->columntypes)
++            free(recordset->columntypes);
+         close_recordset( recordset );
+         free( recordset );
+     }
+@@ -1670,6 +1675,323 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
 +#define ROUND_SIZE(size) (((size) + sizeof(void *) - 1) & ~(sizeof(void *) - 1))
 +
-+static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDING **bind, DBBYTEOFFSET *size)
++DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++
++static VARIANT_BOOL properties_multiple_objects(IUnknown *unk)
++{
++    VARIANT_BOOL supported = VARIANT_FALSE;
++    IRowsetInfo *info;
++    HRESULT hr;
++    ULONG propcnt;
++    DBPROPIDSET propidset;
++    DBPROPSET *propset;
++    DBPROPID row_props[1];
++
++    hr = IUnknown_QueryInterface(unk, &IID_IRowsetInfo, (void**)&info);
++
++    row_props[0] = DBPROP_MULTIPLESTORAGEOBJECTS;
++    propidset.rgPropertyIDs = row_props;
++    propidset.cPropertyIDs = 1;
++    propidset.guidPropertySet = DBPROPSET_ROWSET;
++
++    hr = IRowsetInfo_GetProperties(info, 1, &propidset, &propcnt, &propset);
++    if(hr == S_OK)
++        supported = V_BOOL(&propset->rgProperties[0].vValue);
++
++    CoTaskMemFree(propset[0].rgProperties);
++    CoTaskMemFree(propset);
++
++    IRowsetInfo_Release(info);
++
++    return supported;
++}
++
++static HRESULT create_bindings(IUnknown *rowset, struct recordset *recordset, DBBINDING **bind, DBBYTEOFFSET *size)
 +{
 +    HRESULT hr;
 +    IColumnsInfo *columninfo;
@@ -35,11 +84,14 @@ index 7c2e9ebdc45..928306cfb29 100644
 +    OLECHAR *stringsbuffer;
 +    DBBINDING *bindings;
 +    DBBYTEOFFSET offset;
-+
++    VARIANT_BOOL multiple;
 +
 +    hr = IUnknown_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&columninfo);
 +    if (FAILED(hr))
 +        return hr;
++
++    multiple = properties_multiple_objects(rowset);
++    TRACE("Multiple Object streams supported %d\n", multiple);
 +
 +    hr = IColumnsInfo_GetColumnInfo(columninfo, &columns, &colinfo, &stringsbuffer);
 +    if (SUCCEEDED(hr))
@@ -47,7 +99,8 @@ index 7c2e9ebdc45..928306cfb29 100644
 +        ULONG i;
 +        offset = 1;
 +
-+        bindings = malloc(sizeof(DBBINDING) * columns);
++        recordset->columntypes = malloc(sizeof(DBTYPE) * columns);
++        bindings = CoTaskMemAlloc(sizeof(DBBINDING) * columns);
 +        for (i=0; i < columns; i++)
 +        {
 +            TRACE("Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %Iu, dwFlags 0x%08lx, "
@@ -56,7 +109,7 @@ index 7c2e9ebdc45..928306cfb29 100644
 +                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
 +                  colinfo[i].bPrecision, colinfo[i].bScale);
 +
-+            hr = append_field(fields, colinfo[i].pwszName, colinfo[i].wType, colinfo[i].ulColumnSize,
++            hr = append_field(recordset->fields, colinfo[i].pwszName, colinfo[i].wType, colinfo[i].ulColumnSize,
 +                     colinfo[i].dwFlags, NULL);
 +
 +            bindings[i].iOrdinal = colinfo[i].iOrdinal;
@@ -68,14 +121,30 @@ index 7c2e9ebdc45..928306cfb29 100644
 +            bindings[i].dwMemOwner = DBMEMOWNER_CLIENTOWNED;
 +            bindings[i].eParamIO = 0;
 +
-+            if ( colinfo[i].wType == DBTYPE_WSTR)
++            recordset->columntypes[i] = colinfo[i].wType;
++            if (colinfo[i].dwFlags & DBCOLUMNFLAGS_ISLONG)
 +            {
++                /*
++                 * The provider might not support multiple ISequentialStream.
++                 */
++                FIXME("DBCOLUMNFLAGS_ISLONG\n");
++                /*
++                 * Columns that contain large amounts of data use an ISequentialStream
++                 * interface to retreive the data.
++                 */
++                colinfo[i].wType = DBTYPE_IUNKNOWN;
++                bindings[i].pObject = CoTaskMemAlloc(sizeof(DBOBJECT));
++                bindings[i].pObject->dwFlags = 0;
++                bindings[i].pObject->iid = IID_ISequentialStream;
++
 +                bindings[i].cbMaxLen = (colinfo[i].ulColumnSize + 1) * sizeof(WCHAR);
++                offset += sizeof(ISequentialStream*);
 +            }
 +            else
++            {
 +                bindings[i].cbMaxLen = colinfo[i].ulColumnSize;
-+
-+            offset += bindings[i].cbMaxLen;
++                offset += bindings[i].cbMaxLen;
++            }
 +
 +            bindings[i].dwFlags = 0;
 +            bindings[i].wType = colinfo[i].wType;
@@ -133,19 +202,21 @@ index 7c2e9ebdc45..928306cfb29 100644
 +    /* Create the data array */
 +    if (!resize_recordset( recordset, recordset->count ))
 +    {
-+        free(bindings);
++        WARN("Failed to resize recordset\n");
 +        return E_OUTOFMEMORY;
 +    }
 +
 +    hr = IUnknown_QueryInterface(rowset, &IID_IRowset, (void**)&rowset2);
 +    if (FAILED(hr))
 +    {
++        WARN("Cannot get IRowset interface\n");
 +        return hr;
 +    }
 +
 +    data = malloc (datasize);
 +    if (!data)
 +    {
++        ERR("Failed to allocate row data (%Iu)\n", datasize);
 +        IRowset_Release(rowset2);
 +        return E_OUTOFMEMORY;
 +    }
@@ -170,6 +241,58 @@ index 7c2e9ebdc45..928306cfb29 100644
 +            V_VT(&copy) = bindings[datacol].wType;
 +            switch(bindings[datacol].wType)
 +            {
++                case DBTYPE_IUNKNOWN:
++                {
++                    ISequentialStream *seq;
++                    IUnknown *unk = *(IUnknown**)(data + bindings[datacol].obValue);
++                    TRACE("Reading DBTYPE_IUNKNOWN %p\n", unk);
++
++                    if(IUnknown_QueryInterface(unk, &IID_ISequentialStream, (void**)&seq) == S_OK)
++                    {
++                        char unkdata[2048];
++                        ULONG size = 4096, dataRead = 0, total = 0;
++                        char *buffer = malloc(size), *p = buffer;
++                        HRESULT hr2;
++
++                        do
++                        {
++                            dataRead = 0;
++                            hr2 = ISequentialStream_Read(seq, unkdata, sizeof(unkdata), &dataRead);
++                            if (FAILED(hr) || !dataRead) break;
++
++                            total += dataRead;
++
++                            memcpy(p, unkdata, dataRead);
++                            p += dataRead;
++
++                            if (dataRead <= size)
++                            {
++                                size *= 2;  /* Double buffer */
++                                buffer = realloc(buffer, size);
++                                p = buffer + total;
++                            }
++                        } while(hr2 == S_OK);
++
++                        if (recordset->columntypes[datacol] == DBTYPE_WSTR)
++                        {
++                            V_VT(&copy) = VT_BSTR;
++                            V_BSTR(&copy) = SysAllocStringLen( (WCHAR*)buffer, total / sizeof(WCHAR) );
++
++                            TRACE("WSTR value %s\n", debugstr_variant(&copy));
++                        }
++                        else
++                        {
++                            FIXME("Unsupported conversion (%d)\n", recordset->columntypes[datacol]);
++                            V_VT(&copy) = VT_BSTR;
++                            V_BSTR(&copy) = SysAllocStringLen( NULL, 0 );
++                        }
++
++                        free(buffer);
++                        ISequentialStream_Release(seq);
++                    }
++
++                    break;
++                }
 +                case DBTYPE_R8:
 +                    V_R8(&copy) = *(DOUBLE*)(data + bindings[datacol].obValue);
 +                    break;
@@ -239,7 +362,7 @@ index 7c2e9ebdc45..928306cfb29 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1680,6 +1893,8 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1680,6 +2002,8 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -248,7 +371,7 @@ index 7c2e9ebdc45..928306cfb29 100644
  
      FIXME( "%p, %s, %s, %d, %d, %ld Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
             cursor_type, lock_type, options );
-@@ -1724,6 +1939,41 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1724,6 +2048,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -262,9 +385,10 @@ index 7c2e9ebdc45..928306cfb29 100644
 +        return hr;
 +    }
 +
-+    hr = create_bindings(rowset, recordset->fields, &bindings, &datasize);
++    hr = create_bindings(rowset, recordset, &bindings, &datasize);
 +    if (FAILED(hr))
 +    {
++        WARN("Failed to load bindings (%lx)\n", hr);
 +        IUnknown_Release(rowset);
 +        return hr;
 +    }
@@ -280,16 +404,26 @@ index 7c2e9ebdc45..928306cfb29 100644
 +        hr = load_all_recordset_data(recordset, rowset, bindings, datasize);
 +        if (FAILED(hr))
 +        {
++            WARN("Failed to load all recordset data (%lx)\n", hr);
++            CoTaskMemFree(bindings);
 +            IUnknown_Release(rowset);
 +            return hr;
 +        }
 +    }
 +
-+    free(bindings);
++    CoTaskMemFree(bindings);
 +
      ADORecordsetConstruction_put_Rowset(&recordset->ADORecordsetConstruction_iface, rowset);
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
+@@ -2421,6 +2783,7 @@ HRESULT Recordset_create( void **obj )
+     recordset->row_set = NULL;
+     recordset->editmode = adEditNone;
+     VariantInit( &recordset->filter );
++    recordset->columntypes = NULL;
+ 
+     *obj = &recordset->Recordset_iface;
+     TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
 index c4e973ff6a2..d12d3aa8aaf 100644
 --- a/dlls/msado15/tests/msado15.c
