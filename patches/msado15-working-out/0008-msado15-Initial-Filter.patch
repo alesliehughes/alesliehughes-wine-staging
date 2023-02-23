@@ -1,13 +1,13 @@
-From c4202a9e48e219819d2d7b3ef6728bfd3a5c2814 Mon Sep 17 00:00:00 2001
+From cecc37264a08785e62cbec27cde6f65b8c4ef552 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 4 May 2021 19:15:48 +1000
 Subject: [PATCH] msado15: Initial Filter
 
 ---
  dlls/msado15/Makefile.in |  6 +++
- dlls/msado15/filter.l    | 51 +++++++++++++++++++++++++
- dlls/msado15/filter.y    | 81 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 138 insertions(+)
+ dlls/msado15/filter.l    | 70 +++++++++++++++++++++++++++++
+ dlls/msado15/filter.y    | 97 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 173 insertions(+)
  create mode 100644 dlls/msado15/filter.l
  create mode 100644 dlls/msado15/filter.y
 
@@ -30,10 +30,10 @@ index 9c1fba502c5..81847e997bc 100644
  	msado15_tlb.idl
 diff --git a/dlls/msado15/filter.l b/dlls/msado15/filter.l
 new file mode 100644
-index 00000000000..c326b95a6c4
+index 00000000000..e958409b66a
 --- /dev/null
 +++ b/dlls/msado15/filter.l
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,70 @@
 +/*
 + * Copyright 2021 Alistair Leslie-Hughes
 + *
@@ -51,7 +51,15 @@ index 00000000000..c326b95a6c4
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
++%option noyywrap
++/* %option prefix="filter_" */
++%option noinput nounput never-interactive
++
 +%{
++#include <stdio.h>
++
++#define YY_DECL int yylex(void)
++
 +#include "wine/debug.h"
 +
 +#include "filter.tab.h"
@@ -63,35 +71,46 @@ index 00000000000..c326b95a6c4
 +    void* yyscanner;
 +} parser_param;
 +
++enum operations
++{
++	op_equal,
++	op_not_equal,
++	op_less,
++	op_less_equal,
++	op_greater,
++	op_greater_equal,
++	op_like
++};
++
 +%}
-+
-+%option noyywrap
-+%option prefix="filter_"
-+%option noinput nounput never-interactive
-+
-+
-+WHITESPACE              [ \t]+
-+NEWLINE                 (\n)|(\r\n)
-+
-+COLUMN                   [ A-Za-z_0-9\.]*
 +
 +%%
 +
-+'='                     { return TOKEN_EQ;          }
++[ \t]	; // ignore all whitespace
++[0-9]+\.[0-9]+ 	{yylval.fval = atof(yytext); return T_FLOAT;}
++[0-9]+		{yylval.ival = atoi(yytext); return T_INT;}
++\n		{return T_NEWLINE;}
 +
-+and                     { return TOKEN_AND;         }
-+or                      { return TOKEN_OR;          }
-+like                    { return TOKEN_LIKE;        }
-+{COLUMN}                { return TOKEN_COLUMN;      }
++
++"="                { yylval.ival = op_equal; return TOKEN_EQ; }
++">"                { yylval.ival = op_greater; return TOKEN_GREATER; }
++"<"                { yylval.ival = op_less; return TOKEN_LESS; }
++"<>"               { yylval.ival = op_not_equal; return TOKEN_NOT_EQ; }
++">="               { yylval.ival = op_greater_equal; return TOKEN_GREATER_EQ; }
++"<="               { yylval.ival = op_less_equal; return TOKEN_LESS_EQ; }
++"like"             { yylval.ival = op_like; return TOKEN_LIKE; }
++
++
++[A-Za-z_0-9\.]*    { yylval.token = strdup(yytext); return TOKEN_COLUMN; }
 +
 +%%
 \ No newline at end of file
 diff --git a/dlls/msado15/filter.y b/dlls/msado15/filter.y
 new file mode 100644
-index 00000000000..46b760ad802
+index 00000000000..087808a3d44
 --- /dev/null
 +++ b/dlls/msado15/filter.y
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,97 @@
 +/*
 + * Copyright 2021 Alistair Leslie-Hughes
 + *
@@ -109,10 +128,14 @@ index 00000000000..46b760ad802
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
-+
 +%{
 +
++#include <stdio.h>
++#include <stdlib.h>
++
 +/*#include "msado15_private.h"*/
++
++#define YY_EXTRA_TYPE parser_param*
 +/*#include "filter.h"*/
 +
 +#include "wine/debug.h"
@@ -124,54 +147,66 @@ index 00000000000..46b760ad802
 +    void* yyscanner;
 +} parser_param;
 +
-+//#define YYSTYPE char*
-+#define YY_EXTRA_TYPE parser_param*
 +
++extern int yylex(void);
++extern int yyparse(void);
 +
++void yyerror(const char* s);
 +%}
 +
 +%union {
-+    const WCHAR *string;
++	int ival;
++	float fval;
++
++	char *token;
++	int operation;
 +}
 +
-+%token <string> TOKEN_COLUMN
-+%token TOKEN_AND
-+%token TOKEN_OR
++%token<ival> T_INT
++%token<fval> T_FLOAT
 +
-+%token TOKEN_GREATER
-+%token TOKEN_GREATER_EQ
-+%token TOKEN_LESS
-+%token TOKEN_LESS_EQ
-+%token TOKEN_NOT_EQ
-+%token TOKEN_EQ
-+%token TOKEN_LIKE
++%token T_NEWLINE T_QUIT
 +
-+%token TOKEN_STRING
-+%token TOKEN_NUMBER
-+%token TOKEN_FLOAT
-+%token TOKEN_DATE
++%type<operation> oparations
 +
-+%start Filter
++%token<operation> TOKEN_GREATER
++%token<operation> TOKEN_GREATER_EQ
++%token<operation> TOKEN_LESS
++%token<operation> TOKEN_LESS_EQ
++%token<operation> TOKEN_NOT_EQ
++%token<operation> TOKEN_EQ
++%token<operation> TOKEN_LIKE
 +
-+%define api.prefix {filter_}
++%token<token> TOKEN_COLUMN
 +
-+%%
 +
-+Filter: Field
-+            ;
-+
-+Field: '[' TOKEN_COLUMN ']' |
-+	TOKEN_COLUMN
-+		{
-+
-+		}
++%start calculation
 +
 +%%
 +
++calculation:
++	| calculation line
 +
-+int filter_error(unsigned *loc, parser_param *ctx, const char *str)
-+{
-+    return 0;
++;
++
++line: T_NEWLINE
++	| TOKEN_COLUMN oparations T_INT { printf("%s %d, %d", $1, $2, $3); }
++;
++
++oparations: TOKEN_GREATER
++	| TOKEN_GREATER_EQ
++	| TOKEN_LESS
++	| TOKEN_LESS_EQ
++	| TOKEN_NOT_EQ
++	| TOKEN_EQ
++	| TOKEN_LIKE
++;
++
++%%
++
++void yyerror(const char* s) {
++	//fprintf(stderr, "Parse error: %s\n", s);
++	exit(1);
 +}
 \ No newline at end of file
 -- 

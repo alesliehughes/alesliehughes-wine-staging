@@ -1,0 +1,331 @@
+From b637692559c18d8b02d83807a54938bebcc93c86 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 3 Mar 2021 12:23:23 +1100
+Subject: [PATCH] msado15: Implement _Recordset Open
+
+---
+ dlls/msado15/recordset.c     | 250 +++++++++++++++++++++++++++++++++++
+ dlls/msado15/tests/msado15.c |  25 ++++
+ 2 files changed, 275 insertions(+)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 7c2e9ebdc45..928306cfb29 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -24,6 +24,7 @@
+ #include "objbase.h"
+ #include "msado15_backcompat.h"
+ #include "oledb.h"
++#include "sqlucode.h"
+ 
+ #include "wine/debug.h"
+ 
+@@ -1670,6 +1671,218 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+     return S_OK;
+ }
+ 
++#define ROUND_SIZE(size) (((size) + sizeof(void *) - 1) & ~(sizeof(void *) - 1))
++
++static HRESULT create_bindings(IUnknown *rowset, struct fields *fields, DBBINDING **bind, DBBYTEOFFSET *size)
++{
++    HRESULT hr;
++    IColumnsInfo *columninfo;
++    DBORDINAL columns;
++    DBCOLUMNINFO *colinfo;
++    OLECHAR *stringsbuffer;
++    DBBINDING *bindings;
++    DBBYTEOFFSET offset;
++
++
++    hr = IUnknown_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&columninfo);
++    if (FAILED(hr))
++        return hr;
++
++    hr = IColumnsInfo_GetColumnInfo(columninfo, &columns, &colinfo, &stringsbuffer);
++    if (SUCCEEDED(hr))
++    {
++        ULONG i;
++        offset = 1;
++
++        bindings = malloc(sizeof(DBBINDING) * columns);
++        for (i=0; i < columns; i++)
++        {
++            TRACE("Column %lu, pwszName: %s, pTypeInfo %p, iOrdinal %Iu, dwFlags 0x%08lx, "
++                  "ulColumnSize %Iu, wType %d, bPrecision %d, bScale %d\n",
++                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
++                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
++                  colinfo[i].bPrecision, colinfo[i].bScale);
++
++            hr = append_field(fields, colinfo[i].pwszName, colinfo[i].wType, colinfo[i].ulColumnSize,
++                     colinfo[i].dwFlags, NULL);
++
++            bindings[i].iOrdinal = colinfo[i].iOrdinal;
++            bindings[i].obValue = offset;
++            bindings[i].pTypeInfo = NULL;
++            bindings[i].pObject = NULL;
++            bindings[i].pBindExt = NULL;
++            bindings[i].dwPart = DBPART_VALUE | DBPART_LENGTH | DBPART_STATUS;
++            bindings[i].dwMemOwner = DBMEMOWNER_CLIENTOWNED;
++            bindings[i].eParamIO = 0;
++
++            if ( colinfo[i].wType == DBTYPE_WSTR)
++            {
++                bindings[i].cbMaxLen = (colinfo[i].ulColumnSize + 1) * sizeof(WCHAR);
++            }
++            else
++                bindings[i].cbMaxLen = colinfo[i].ulColumnSize;
++
++            offset += bindings[i].cbMaxLen;
++
++            bindings[i].dwFlags = 0;
++            bindings[i].wType = colinfo[i].wType;
++            bindings[i].bPrecision = colinfo[i].bPrecision;
++            bindings[i].bScale = colinfo[i].bScale;
++        }
++
++        offset = ROUND_SIZE(offset);
++        for (i=0; i < columns; i++)
++        {
++            bindings[i].obLength = offset;
++            bindings[i].obStatus = offset + sizeof(DBBYTEOFFSET);
++
++            offset += sizeof(DBBYTEOFFSET) + sizeof(DBBYTEOFFSET);
++        }
++
++        *size = offset;
++        *bind = bindings;
++
++        CoTaskMemFree(colinfo);
++        CoTaskMemFree(stringsbuffer);
++    }
++
++    IColumnsInfo_Release(columninfo);
++
++    return hr;
++}
++
++static HRESULT load_all_recordset_data(struct recordset *recordset, IUnknown *rowset, DBBINDING *bindings,
++        DBBYTEOFFSET datasize)
++{
++    IRowset *rowset2;
++    DBBINDSTATUS *dbstatus;
++    IAccessor *accessor;
++    HACCESSOR haccessor;
++    DBORDINAL columns;
++    HRESULT hr;
++    DBCOUNTITEM obtained;
++    HROW *row = NULL;
++    int datarow = 0, datacol;
++    char *data;
++
++    hr = IUnknown_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
++    if (FAILED(hr))
++    {
++        return hr;
++    }
++
++    columns = get_column_count(recordset);
++    dbstatus = malloc(sizeof(DBBINDSTATUS) * columns );
++    hr = IAccessor_CreateAccessor(accessor, DBACCESSOR_ROWDATA, columns, bindings, 0, &haccessor, dbstatus);
++    /* TODO - Check status */
++    free(dbstatus);
++
++    /* Create the data array */
++    if (!resize_recordset( recordset, recordset->count ))
++    {
++        free(bindings);
++        return E_OUTOFMEMORY;
++    }
++
++    hr = IUnknown_QueryInterface(rowset, &IID_IRowset, (void**)&rowset2);
++    if (FAILED(hr))
++    {
++        return hr;
++    }
++
++    data = malloc (datasize);
++    if (!data)
++    {
++        IRowset_Release(rowset2);
++        return E_OUTOFMEMORY;
++    }
++
++    hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
++    while (hr == S_OK)
++    {
++        VARIANT copy;
++
++        hr = IRowset_GetData(rowset2, *row, haccessor, data);
++        if (FAILED(hr))
++        {
++            ERR("Failed to GetData 0x%08lx\n", hr);
++            break;
++        }
++
++        for (datacol = 0; datacol < columns; datacol++)
++        {
++            VariantInit(&copy);
++
++            /* For most cases DBTYPE_* = VT_* type */
++            V_VT(&copy) = bindings[datacol].wType;
++            switch(bindings[datacol].wType)
++            {
++                case DBTYPE_R8:
++                    V_R8(&copy) = *(DOUBLE*)(data + bindings[datacol].obValue);
++                    break;
++                case DBTYPE_I8:
++                    V_VT(&copy) = VT_I4;
++                    V_I4(&copy) = *(LONG*)(data + bindings[datacol].obValue);
++                    break;
++                case DBTYPE_I4:
++                    V_I4(&copy) = *(LONG*)(data + bindings[datacol].obValue);
++                    break;
++                case DBTYPE_WSTR:
++                    V_VT(&copy) = VT_BSTR;
++                    V_BSTR(&copy) = SysAllocString( (WCHAR*)(data + bindings[datacol].obValue) );
++                    break;
++                case DBTYPE_DBTIMESTAMP:
++                {
++                    SYSTEMTIME st;
++                    DBTIMESTAMP *ts = (DBTIMESTAMP *)(data + bindings[datacol].obValue);
++                    DATE d;
++
++                    V_VT(&copy) = VT_DATE;
++
++                    st.wYear = ts->year;
++                    st.wMonth = ts->month;
++                    st.wDay = ts->day;
++                    st.wHour = ts->hour;
++                    st.wMinute = ts->minute;
++                    st.wSecond = ts->second;
++                    st.wMilliseconds = ts->fraction/1000000;
++                    hr = (SystemTimeToVariantTime(&st, &d) ? S_OK : E_FAIL);
++
++                    V_DATE(&copy) = d;
++                    break;
++                }
++                default:
++                    V_I2(&copy) = 0;
++                    FIXME("Unknown Type %d\n", bindings[datacol].wType);
++            }
++
++            VariantInit( &recordset->data[datarow * columns + datacol] );
++            if ((hr = VariantCopy( &recordset->data[datarow * columns + datacol] , &copy)) != S_OK)
++            {
++                ERR("Failed to copy data, Column %d - data %s\n", datacol, debugstr_variant(&copy));
++            }
++
++            VariantClear(&copy);
++        }
++
++        datarow++;
++
++        hr = IRowset_ReleaseRows(rowset2, 1, row, NULL, NULL, NULL);
++        if (FAILED(hr))
++            ERR("Failed to ReleaseRows 0x%08lx\n", hr);
++
++        hr = IRowset_GetNextRows(rowset2, 0, 0, 1, &obtained, &row);
++    }
++
++    free(data);
++    IRowset_Release(rowset2);
++
++    hr = IAccessor_ReleaseAccessor(accessor, haccessor, NULL);
++    IAccessor_Release(accessor);
++
++    return hr;
++}
++
+ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
+                                       CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
+ {
+@@ -1680,6 +1893,8 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+     DBROWCOUNT affected;
+     IUnknown *rowset;
+     HRESULT hr;
++    DBBINDING *bindings;
++    DBBYTEOFFSET datasize;
+ 
+     FIXME( "%p, %s, %s, %d, %d, %ld Semi-stub\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
+            cursor_type, lock_type, options );
+@@ -1724,6 +1939,41 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+     if (FAILED(hr) || !rowset)
+         return hr;
+ 
++    /* We want to create the field member variable without mapping the rowset fields, this will
++     * save quering the fields twice.  Fields will be added while we create the bindings
++     */
++    hr = fields_create( recordset, &recordset->fields );
++    if (FAILED(hr))
++    {
++        IUnknown_Release(rowset);
++        return hr;
++    }
++
++    hr = create_bindings(rowset, recordset->fields, &bindings, &datasize);
++    if (FAILED(hr))
++    {
++        IUnknown_Release(rowset);
++        return hr;
++    }
++
++    recordset->count = affected;
++    recordset->index = affected ? 0 : -1;
++
++    /*
++     * We can safely just return with an empty recordset here
++     */
++    if (affected > 0)
++    {
++        hr = load_all_recordset_data(recordset, rowset, bindings, datasize);
++        if (FAILED(hr))
++        {
++            IUnknown_Release(rowset);
++            return hr;
++        }
++    }
++
++    free(bindings);
++
+     ADORecordsetConstruction_put_Rowset(&recordset->ADORecordsetConstruction_iface, rowset);
+     recordset->cursor_type = cursor_type;
+     recordset->state = adStateOpen;
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index c4e973ff6a2..d12d3aa8aaf 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1591,6 +1591,31 @@ static void test_connection_open(void)
+     ok( hr == S_OK, "got %08lx\n", hr );
+     ok( 0, "After _Recordset_Open\n");
+ 
++    {
++        Fields *fields;
++        Field *field;
++        BSTR name;
++        VARIANT val, index;
++
++
++        hr = _Recordset_get_Fields( recordset, &fields );
++
++        name = SysAllocString( L"id" );
++        V_VT( &index ) = VT_BSTR;
++        V_BSTR( &index ) = name;
++        hr = Fields_get_Item( fields, index, &field );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        SysFreeString( name );
++
++        hr = Field_get_Value(field, &val);
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok( V_VT(&val) == VT_I4, "got %d\n", V_VT(&val) );
++        ok( V_I4(&val) == 1, "got %ld\n", V_I4(&val) );
++
++        Field_Release(field);
++        Fields_Release(fields);
++    }
++
+     hr = _Recordset_get_CursorType(recordset, &cursortype);
+     ok( hr == S_OK, "got %08lx\n", hr );
+     ok( cursortype == adOpenStatic, "got %d\n", cursortype );
+-- 
+2.39.2
+
