@@ -1,0 +1,36 @@
+From f9fecaba246536521efa3a7598c097fae81e0f6c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 24 Feb 2023 07:15:52 +1100
+Subject: [PATCH] msdasql dumpe IUnknown Field
+
+---
+ dlls/msdasql/session.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 61aff98fce9..2d4e7efa8ea 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -1311,7 +1311,19 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+ 
+         /* Don't bind Columns that will route though an interface, eg Blobs, Large text field */
+         if (bindings[i].wType == DBTYPE_IUNKNOWN)
++        {
++            SQLWCHAR      columnname[254];
++            SQLSMALLINT   ColumnNameLen;
++            SQLSMALLINT   ColumnDataType;
++            SQLULEN       ColumnDataSize;
++            SQLSMALLINT   ColumnDataDigits;
++            SQLSMALLINT   ColumnDataNullable;
++
++            SQLDescribeColW(rowset->hstmt, bindings[i].iOrdinal, columnname, 254, &ColumnNameLen, &ColumnDataType,
++                        &ColumnDataSize, &ColumnDataDigits, &ColumnDataNullable);
++            FIXME("%d: Column Name : %s\n", i, debugstr_w(columnname));
+             continue;
++        }
+ 
+         type = bindtype_to_sqltype(bindings[i].wType);
+         ret = SQLBindCol(rowset->hstmt, bindings[i].iOrdinal, type, &ptr[bindings[i].obValue],
+-- 
+2.39.2
+
