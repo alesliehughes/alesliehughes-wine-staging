@@ -1,14 +1,11 @@
-From 8cd913f66417279d1ff94a00ec3ac9dc768ffea8 Mon Sep 17 00:00:00 2001
+From 85d827615986a770bb2833462e45c9ac2f4838ca Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
-Subject: [PATCH] msado15: Implement _Recordset Open
+Subject: msado15: Implement _Recordset Open
 
----
- dlls/msado15/recordset.c | 406 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 405 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index c22b2460147..f0bfc3793b8 100644
+index 54625158ac9..837fca59e4a 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -40,7 +37,7 @@ index c22b2460147..f0bfc3793b8 100644
  
      if ( recordset->row_set ) IRowset_Release( recordset->row_set );
      recordset->row_set = NULL;
-@@ -1210,11 +1218,22 @@ static void close_recordset( struct recordset *recordset )
+@@ -1210,11 +1218,23 @@ static void close_recordset( struct recordset *recordset )
      if (!recordset->fields) return;
      col_count = get_column_count( recordset );
  
@@ -60,10 +57,11 @@ index c22b2460147..f0bfc3793b8 100644
 +    {
 +        IAccessor_Release(accessor);
 +        free(recordset->haccessors);
++        recordset->haccessors = NULL;
      }
      recordset->fields->count = 0;
      Fields_Release( &recordset->fields->Fields_iface );
-@@ -1672,6 +1691,349 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+@@ -1672,6 +1692,352 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
@@ -347,12 +345,15 @@ index c22b2460147..f0bfc3793b8 100644
 +
 +                    break;
 +                }
++                case DBTYPE_R4:
++                    V_R4(&copy) = *(float*)(data + bindings[datacol].obValue);
++                    break;
 +                case DBTYPE_R8:
 +                    V_R8(&copy) = *(DOUBLE*)(data + bindings[datacol].obValue);
 +                    break;
 +                case DBTYPE_I8:
-+                    V_VT(&copy) = VT_I4;
-+                    V_I4(&copy) = *(LONG*)(data + bindings[datacol].obValue);
++                    V_VT(&copy) = VT_I8;
++                    V_I8(&copy) = *(LONGLONG*)(data + bindings[datacol].obValue);
 +                    break;
 +                case DBTYPE_I4:
 +                    V_I4(&copy) = *(LONG*)(data + bindings[datacol].obValue);
@@ -413,7 +414,7 @@ index c22b2460147..f0bfc3793b8 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1682,8 +2044,10 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1682,8 +2048,10 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -425,7 +426,7 @@ index c22b2460147..f0bfc3793b8 100644
             cursor_type, lock_type, options );
  
      if (recordset->state == adStateOpen) return MAKE_ADO_HRESULT( adErrObjectOpen );
-@@ -1726,6 +2090,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1726,6 +2094,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -470,7 +471,7 @@ index c22b2460147..f0bfc3793b8 100644
      ADORecordsetConstruction_put_Rowset(&recordset->ADORecordsetConstruction_iface, rowset);
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
-@@ -2339,6 +2741,8 @@ HRESULT Recordset_create( void **obj )
+@@ -2339,6 +2745,8 @@ HRESULT Recordset_create( void **obj )
      recordset->row_set = NULL;
      recordset->editmode = adEditNone;
      VariantInit( &recordset->filter );
@@ -479,6 +480,3 @@ index c22b2460147..f0bfc3793b8 100644
  
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
--- 
-2.39.2
-
