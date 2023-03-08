@@ -1,11 +1,11 @@
-From 85d827615986a770bb2833462e45c9ac2f4838ca Mon Sep 17 00:00:00 2001
+From 55bb7b7184a6e2a27658f636836328f0b8f0f7e0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
 Subject: msado15: Implement _Recordset Open
 
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 54625158ac9..837fca59e4a 100644
+index 54625158ac9..da8d242b1b5 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -61,7 +61,7 @@ index 54625158ac9..837fca59e4a 100644
      }
      recordset->fields->count = 0;
      Fields_Release( &recordset->fields->Fields_iface );
-@@ -1672,6 +1692,352 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+@@ -1672,6 +1692,365 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
@@ -272,6 +272,12 @@ index 54625158ac9..837fca59e4a 100644
 +
 +            VariantInit(&copy);
 +
++            if ( *(DBBYTEOFFSET*)(data + bindings[datacol].obStatus) == DBSTATUS_S_ISNULL)
++            {
++                V_VT(&copy) = VT_NULL;
++                goto writedata;
++            }
++
 +            /* For most cases DBTYPE_* = VT_* type */
 +            V_VT(&copy) = bindings[datacol].wType;
 +            switch(bindings[datacol].wType)
@@ -279,18 +285,12 @@ index 54625158ac9..837fca59e4a 100644
 +                case DBTYPE_IUNKNOWN:
 +                {
 +                    ISequentialStream *seq;
-+                    IUnknown *unk = NULL;
++                    //IUnknown *unk = NULL;
 +
-+                    if ( *(DBBYTEOFFSET*)(data + bindings[datacol].obStatus) == DBSTATUS_S_ISNULL)
-+                    {
-+                        V_VT(&copy) = VT_NULL;
-+                        break;
-+                    }
++                    seq = *(ISequentialStream**)(data + bindings[datacol].obValue);
++                    TRACE("Reading DBTYPE_IUNKNOWN %p\n", seq);
 +
-+                    unk = *(IUnknown**)(data + bindings[datacol].obValue);
-+                    TRACE("Reading DBTYPE_IUNKNOWN %p\n", unk);
-+
-+                    if(IUnknown_QueryInterface(unk, &IID_ISequentialStream, (void**)&seq) == S_OK)
++                    //if(IUnknown_QueryInterface(unk, &IID_ISequentialStream, (void**)&seq) == S_OK)
 +                    {
 +                        char unkdata[2048];
 +                        ULONG size = 4096, dataRead = 0, total = 0;
@@ -319,7 +319,10 @@ index 54625158ac9..837fca59e4a 100644
 +                        if (recordset->columntypes[datacol] == DBTYPE_WSTR)
 +                        {
 +                            V_VT(&copy) = VT_BSTR;
-+                            V_BSTR(&copy) = SysAllocStringLen( (WCHAR*)buffer, total / sizeof(WCHAR) );
++                            if ( *(DBBYTEOFFSET*)(data + bindings[datacol].obStatus) == DBSTATUS_S_ISNULL)
++                                V_BSTR(&copy) = SysAllocStringLen( NULL, 0 );
++                            else
++                                V_BSTR(&copy) = SysAllocStringLen( (WCHAR*)buffer, total / sizeof(WCHAR) );
 +                        }
 +                        else if (recordset->columntypes[datacol] == DBTYPE_BYTES)
 +                        {
@@ -359,9 +362,18 @@ index 54625158ac9..837fca59e4a 100644
 +                    V_I4(&copy) = *(LONG*)(data + bindings[datacol].obValue);
 +                    break;
 +                case DBTYPE_WSTR:
-+                    V_VT(&copy) = VT_BSTR;
-+                    V_BSTR(&copy) = SysAllocString( (WCHAR*)(data + bindings[datacol].obValue) );
++                {
++                    if ( *(DBBYTEOFFSET*)(data + bindings[datacol].obStatus) == DBSTATUS_S_ISNULL)
++                    {
++                        V_VT(&copy) = VT_NULL;
++                    }
++                    else
++                    {
++                        V_VT(&copy) = VT_BSTR;
++                        V_BSTR(&copy) = SysAllocString( (WCHAR*)(data + bindings[datacol].obValue) );
++                    }
 +                    break;
++                }
 +                case DBTYPE_DBTIMESTAMP:
 +                {
 +                    SYSTEMTIME st;
@@ -387,6 +399,7 @@ index 54625158ac9..837fca59e4a 100644
 +                    FIXME("Unknown Type %d\n", bindings[datacol].wType);
 +            }
 +
++writedata:
 +            VariantInit( &recordset->data[datarow * columns + datacol] );
 +            if ((hr = VariantCopy( &recordset->data[datarow * columns + datacol] , &copy)) != S_OK)
 +            {
@@ -414,7 +427,7 @@ index 54625158ac9..837fca59e4a 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1682,8 +2048,10 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1682,8 +2061,10 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -426,7 +439,7 @@ index 54625158ac9..837fca59e4a 100644
             cursor_type, lock_type, options );
  
      if (recordset->state == adStateOpen) return MAKE_ADO_HRESULT( adErrObjectOpen );
-@@ -1726,6 +2094,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1726,6 +2107,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -471,7 +484,7 @@ index 54625158ac9..837fca59e4a 100644
      ADORecordsetConstruction_put_Rowset(&recordset->ADORecordsetConstruction_iface, rowset);
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
-@@ -2339,6 +2745,8 @@ HRESULT Recordset_create( void **obj )
+@@ -2339,6 +2758,8 @@ HRESULT Recordset_create( void **obj )
      recordset->row_set = NULL;
      recordset->editmode = adEditNone;
      VariantInit( &recordset->filter );
