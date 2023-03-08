@@ -1,0 +1,25 @@
+From 76597e129dcaec723e205093933a9a03dd063426 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 8 Mar 2023 16:01:11 +1100
+Subject: [PATCH] msdasql: Fake ReleaseAccessor success
+
+---
+ dlls/msdasql/session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 2d4e7efa8ea..060af8c716d 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -1357,7 +1357,7 @@ static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSO
+ {
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
+     FIXME("%p, %Id, %p\n", rowset, accessor, count);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ struct IAccessorVtbl accessor_vtbl =
+-- 
+2.39.2
+
