@@ -1,17 +1,14 @@
-From 52b17a11b9fc0efdf3eb3e7a69dc811274ee414b Mon Sep 17 00:00:00 2001
+From 432e8662e9198b90008208f50af725ba12de614e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 10 Oct 2020 15:02:32 +1100
-Subject: [PATCH] msado15: Add Open Test
+Subject: msado15: Add Open Test
 
----
- dlls/msado15/tests/msado15.c | 137 +++++++++++++++++++++++++++++++++++
- 1 file changed, 137 insertions(+)
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 94e9ae4fa09..3d2f569a4dd 100644
+index 724787870e0..57e7356c333 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -1495,6 +1495,142 @@ static void test_ConnectionPoint(void)
+@@ -1546,6 +1546,153 @@ static void test_ConnectionPoint(void)
      ok( !conn_event.refs, "got %ld\n", conn_event.refs );
  }
  
@@ -21,7 +18,7 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +    _Connection *connection;
 +    _Recordset  *recordset, *recordset2 = NULL;
 +    BSTR str, str2;
-+    VARIANT var, var2;
++    VARIANT var, var2, empty;
 +    VARIANT affected;
 +    CursorTypeEnum cursortype;
 +
@@ -59,6 +56,17 @@ index 94e9ae4fa09..3d2f569a4dd 100644
 +    hr = _Recordset_Open(recordset, var2, var, adOpenDynamic, adLockPessimistic, adCmdText);
 +    ok( hr == S_OK, "got %08lx\n", hr );
 +    ok( 0, "After _Recordset_Open\n");
++
++    VariantInit(&empty);
++    str = SysAllocString(L"col1 = 1 AND col2 = 1.0");
++    hr = _Recordset_Find(recordset,str, 0, adSearchForward, empty);
++    ok( hr == MAKE_ADO_HRESULT( adErrDataConversion ), "got %08lx\n", hr );
++    SysFreeString(str);
++
++    str = SysAllocString(L"");
++    hr = _Recordset_Find(recordset,str, 0, adSearchForward, empty);
++    ok( hr == MAKE_ADO_HRESULT( adErrDataConversion ), "got %08lx\n", hr );
++    SysFreeString(str);
 +
 +    hr = _Recordset_get_CursorType(recordset, &cursortype);
 +    ok( hr == S_OK, "got %08lx\n", hr );
@@ -154,13 +162,10 @@ index 94e9ae4fa09..3d2f569a4dd 100644
  START_TEST(msado15)
  {
      CoInitialize( NULL );
-@@ -1505,5 +1641,6 @@ START_TEST(msado15)
+@@ -1556,5 +1703,6 @@ START_TEST(msado15)
      test_Recordset();
      test_Stream();
      test_Command();
 +    test_connection_open();
      CoUninitialize();
  }
--- 
-2.34.1
-
