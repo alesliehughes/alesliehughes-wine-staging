@@ -1,11 +1,11 @@
-From 55bb7b7184a6e2a27658f636836328f0b8f0f7e0 Mon Sep 17 00:00:00 2001
+From 69385c68addd50f51bc0774ac4b67366f0ef86b5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 3 Mar 2021 12:23:23 +1100
 Subject: msado15: Implement _Recordset Open
 
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 54625158ac9..da8d242b1b5 100644
+index 54625158ac9..eb2abdc3a22 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -24,6 +24,7 @@
@@ -61,7 +61,7 @@ index 54625158ac9..da8d242b1b5 100644
      }
      recordset->fields->count = 0;
      Fields_Release( &recordset->fields->Fields_iface );
-@@ -1672,6 +1692,365 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
+@@ -1672,6 +1692,353 @@ static HRESULT create_command_text(IUnknown *session, BSTR command, ICommandText
      return S_OK;
  }
  
@@ -285,66 +285,61 @@ index 54625158ac9..da8d242b1b5 100644
 +                case DBTYPE_IUNKNOWN:
 +                {
 +                    ISequentialStream *seq;
-+                    //IUnknown *unk = NULL;
++                    char unkdata[2048];
++                    ULONG size = 4096, dataRead = 0, total = 0;
++                    char *buffer = malloc(size), *p = buffer;
++                    HRESULT hr2;
 +
++                    /*
++                     * Cast directly to the object we specified in our bindings. As this object
++                     *  is referenced counted in some case and will error in GetData if the object
++                     *  hasn't been released.
++                     */
 +                    seq = *(ISequentialStream**)(data + bindings[datacol].obValue);
 +                    TRACE("Reading DBTYPE_IUNKNOWN %p\n", seq);
 +
-+                    //if(IUnknown_QueryInterface(unk, &IID_ISequentialStream, (void**)&seq) == S_OK)
++                    do
 +                    {
-+                        char unkdata[2048];
-+                        ULONG size = 4096, dataRead = 0, total = 0;
-+                        char *buffer = malloc(size), *p = buffer;
-+                        HRESULT hr2;
++                        dataRead = 0;
++                        hr2 = ISequentialStream_Read(seq, unkdata, sizeof(unkdata), &dataRead);
++                        if (FAILED(hr2) || !dataRead) break;
 +
-+                        do
++                        total += dataRead;
++                        memcpy(p, unkdata, dataRead);
++                        p += dataRead;
++                        if (total == size)
 +                        {
-+                            dataRead = 0;
-+                            hr2 = ISequentialStream_Read(seq, unkdata, sizeof(unkdata), &dataRead);
-+                            if (FAILED(hr) || !dataRead) break;
-+
-+                            total += dataRead;
-+
-+                            memcpy(p, unkdata, dataRead);
-+                            p += dataRead;
-+
-+                            if (dataRead <= size)
-+                            {
-+                                size *= 2;  /* Double buffer */
-+                                buffer = realloc(buffer, size);
-+                                p = buffer + total;
-+                            }
-+                        } while(hr2 == S_OK);
-+
-+                        if (recordset->columntypes[datacol] == DBTYPE_WSTR)
-+                        {
-+                            V_VT(&copy) = VT_BSTR;
-+                            if ( *(DBBYTEOFFSET*)(data + bindings[datacol].obStatus) == DBSTATUS_S_ISNULL)
-+                                V_BSTR(&copy) = SysAllocStringLen( NULL, 0 );
-+                            else
-+                                V_BSTR(&copy) = SysAllocStringLen( (WCHAR*)buffer, total / sizeof(WCHAR) );
++                            size *= 2;  /* Double buffer */
++                            buffer = realloc(buffer, size);
++                            p = buffer + total;
 +                        }
-+                        else if (recordset->columntypes[datacol] == DBTYPE_BYTES)
-+                        {
-+                            SAFEARRAYBOUND sab;
++                    } while(hr2 == S_OK);
 +
-+                            sab.lLbound = 0;
-+                            sab.cElements = total;
-+
-+                            V_VT(&copy) = (VT_ARRAY|VT_UI1);
-+                            V_ARRAY(&copy) = SafeArrayCreate(VT_UI1, 1, &sab);
-+
-+                            memcpy( (BYTE*)V_ARRAY(&copy)->pvData, buffer, total);
-+                        }
-+                        else
-+                        {
-+                            FIXME("Unsupported conversion (%d)\n", recordset->columntypes[datacol]);
-+                            V_VT(&copy) = VT_NULL;
-+                        }
-+
-+                        free(buffer);
-+                        ISequentialStream_Release(seq);
++                    if (recordset->columntypes[datacol] == DBTYPE_WSTR)
++                    {
++                        V_VT(&copy) = VT_BSTR;
++                        V_BSTR(&copy) = SysAllocStringLen( (WCHAR*)buffer, total / sizeof(WCHAR) );
 +                    }
++                    else if (recordset->columntypes[datacol] == DBTYPE_BYTES)
++                    {
++                        SAFEARRAYBOUND sab;
++
++                        sab.lLbound = 0;
++                        sab.cElements = total;
++
++                        V_VT(&copy) = (VT_ARRAY|VT_UI1);
++                        V_ARRAY(&copy) = SafeArrayCreate(VT_UI1, 1, &sab);
++
++                        memcpy( (BYTE*)V_ARRAY(&copy)->pvData, buffer, total);
++                    }
++                    else
++                    {
++                        FIXME("Unsupported conversion (%d)\n", recordset->columntypes[datacol]);
++                        V_VT(&copy) = VT_NULL;
++                    }
++
++                    free(buffer);
++                    ISequentialStream_Release(seq);
 +
 +                    break;
 +                }
@@ -363,15 +358,8 @@ index 54625158ac9..da8d242b1b5 100644
 +                    break;
 +                case DBTYPE_WSTR:
 +                {
-+                    if ( *(DBBYTEOFFSET*)(data + bindings[datacol].obStatus) == DBSTATUS_S_ISNULL)
-+                    {
-+                        V_VT(&copy) = VT_NULL;
-+                    }
-+                    else
-+                    {
-+                        V_VT(&copy) = VT_BSTR;
-+                        V_BSTR(&copy) = SysAllocString( (WCHAR*)(data + bindings[datacol].obValue) );
-+                    }
++                    V_VT(&copy) = VT_BSTR;
++                    V_BSTR(&copy) = SysAllocString( (WCHAR*)(data + bindings[datacol].obValue) );
 +                    break;
 +                }
 +                case DBTYPE_DBTIMESTAMP:
@@ -427,7 +415,7 @@ index 54625158ac9..da8d242b1b5 100644
  static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT active_connection,
                                        CursorTypeEnum cursor_type, LockTypeEnum lock_type, LONG options )
  {
-@@ -1682,8 +2061,10 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1682,8 +2049,10 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      DBROWCOUNT affected;
      IUnknown *rowset;
      HRESULT hr;
@@ -439,7 +427,7 @@ index 54625158ac9..da8d242b1b5 100644
             cursor_type, lock_type, options );
  
      if (recordset->state == adStateOpen) return MAKE_ADO_HRESULT( adErrObjectOpen );
-@@ -1726,6 +2107,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+@@ -1726,6 +2095,44 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
      if (FAILED(hr) || !rowset)
          return hr;
  
@@ -484,7 +472,7 @@ index 54625158ac9..da8d242b1b5 100644
      ADORecordsetConstruction_put_Rowset(&recordset->ADORecordsetConstruction_iface, rowset);
      recordset->cursor_type = cursor_type;
      recordset->state = adStateOpen;
-@@ -2339,6 +2758,8 @@ HRESULT Recordset_create( void **obj )
+@@ -2339,6 +2746,8 @@ HRESULT Recordset_create( void **obj )
      recordset->row_set = NULL;
      recordset->editmode = adEditNone;
      VariantInit( &recordset->filter );
