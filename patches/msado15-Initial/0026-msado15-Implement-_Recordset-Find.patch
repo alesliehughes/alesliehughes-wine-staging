@@ -1,16 +1,16 @@
-From 13b6f75d686f590ce83e3bb67ba6eb11dcef96bd Mon Sep 17 00:00:00 2001
+From 3570c94d8642e4a1cd215ea07aa5e3f72ecb75e1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
 Subject: [PATCH] msado15: Implement _Recordset Find
 
 ---
  dlls/msado15/Makefile.in       |   6 +
- dlls/msado15/filter.l          | 101 +++++++++++++++
- dlls/msado15/filter.y          | 133 ++++++++++++++++++++
- dlls/msado15/msado15_private.h |  69 +++++++++++
- dlls/msado15/recordset.c       | 217 ++++++++++++++++++++++++++++-----
- dlls/msado15/tests/msado15.c   |   8 +-
- 6 files changed, 501 insertions(+), 33 deletions(-)
+ dlls/msado15/filter.l          | 101 ++++++++++++++
+ dlls/msado15/filter.y          | 134 ++++++++++++++++++
+ dlls/msado15/msado15_private.h |  69 +++++++++
+ dlls/msado15/recordset.c       | 246 ++++++++++++++++++++++++++++-----
+ dlls/msado15/tests/msado15.c   |  19 ++-
+ 6 files changed, 542 insertions(+), 33 deletions(-)
  create mode 100644 dlls/msado15/filter.l
  create mode 100644 dlls/msado15/filter.y
 
@@ -141,10 +141,10 @@ index 00000000000..6b12a7decca
 \ No newline at end of file
 diff --git a/dlls/msado15/filter.y b/dlls/msado15/filter.y
 new file mode 100644
-index 00000000000..adb50a8750d
+index 00000000000..15760ebd29f
 --- /dev/null
 +++ b/dlls/msado15/filter.y
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,134 @@
 +/*
 + * Copyright 2021 Alistair Leslie-Hughes
 + *
@@ -182,6 +182,7 @@ index 00000000000..adb50a8750d
 +
 +void yyerror(parser_param* param, void const* scanner, char const* msg);
 +parser_param* yyget_extra ( void* yyscanner );
++int yylex(void *yylval, void *scanner);
 +%}
 +
 +%define api.pure
@@ -360,7 +361,7 @@ index f7062c94b27..3e36fb677d3 100644
  
  HRESULT Command_create( void ** ) DECLSPEC_HIDDEN;
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 3705bef8d5a..35a4ebcab56 100644
+index 13807aa1c5a..9f885d9dbe0 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -20,41 +20,12 @@
@@ -489,17 +490,8 @@ index 3705bef8d5a..35a4ebcab56 100644
  static HRESULT WINAPI fields_get_Item( Fields *iface, VARIANT index, Field **obj )
  {
      struct fields *fields = impl_from_Fields( iface );
-@@ -1207,6 +1254,8 @@ static void close_recordset( struct recordset *recordset )
-     ULONG i;
-     IAccessor *accessor;
- 
-+    SysFreeString(recordset->criteria);
-+
-     if (recordset->haccessors)
-         IRowset_QueryInterface(recordset->row_set, &IID_IAccessor, (void**)&accessor);
- 
-@@ -2336,12 +2385,114 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
-     return E_NOTIMPL;
+@@ -1183,6 +1230,20 @@ static HRESULT fields_create( struct recordset *recordset, struct fields **ret )
+     return S_OK;
  }
  
 +static void clear_recordset_filter(struct recordset *recordset)
@@ -512,9 +504,77 @@ index 3705bef8d5a..35a4ebcab56 100644
 +        VariantClear(&filters->value);
 +        free(filters);
 +    }
-+    list_init(&recordset->filters);
 +    SysFreeString(recordset->criteria);
 +    recordset->criteria = NULL;
++}
++
+ static inline struct recordset *impl_from_Recordset( _Recordset *iface )
+ {
+     return CONTAINING_RECORD( iface, struct recordset, Recordset_iface );
+@@ -1207,6 +1268,8 @@ static void close_recordset( struct recordset *recordset )
+     ULONG i;
+     IAccessor *accessor;
+ 
++    clear_recordset_filter(recordset);
++
+     if (recordset->haccessors)
+         IRowset_QueryInterface(recordset->row_set, &IID_IAccessor, (void**)&accessor);
+ 
+@@ -2301,12 +2364,129 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
+     return E_NOTIMPL;
+ }
+ 
++static BOOL column_match_string(int condition, BSTR col_data, BSTR filter_data)
++{
++    BOOL match = FALSE;
++
++    switch (condition)
++    {
++        case op_equal:
++            match = lstrcmpW(col_data, filter_data) == 0;
++            break;
++        case op_not_equal:
++            match = lstrcmpW(col_data, filter_data) != 0;
++            break;
++        case op_like:
++            FIXME("LIKE currently not supported\n");
++            break;
++        default:
++            FIXME("Unsupported condition %d\n", condition);
++    }
++
++    return match;
++}
++
++static BOOL column_match_integer(int condition, INT col_data, INT filter_data)
++{
++    BOOL match = FALSE;
++
++    switch (condition)
++    {
++        case op_equal:
++            match = col_data == filter_data;
++            break;
++        case op_not_equal:
++            match = col_data != filter_data;
++            break;
++        case op_less:
++            match = col_data < filter_data;
++            break;
++        case op_less_equal:
++            match = col_data <= filter_data;
++            break;
++        case op_greater:
++            match = col_data > filter_data;
++            break;
++        case op_greater_equal:
++            match = col_data >= filter_data;
++            break;
++        default:
++            FIXME("Unsupported condition %d\n", condition);
++    }
++
++    return match;
 +}
 +
  static HRESULT WINAPI recordset_Find( _Recordset *iface, BSTR criteria, LONG skip_records,
@@ -560,48 +620,25 @@ index 3705bef8d5a..35a4ebcab56 100644
 +    {
 +        found = FALSE;
 +
-+        /* TODO - Split into functions for type. */
-+        if (datatype == adBSTR || datatype == adWChar)
++        switch(datatype)
 +        {
-+            if(filters->condition == op_equal)
++            case adBSTR:
++            case adWChar:
 +            {
-+                if (lstrcmpW(V_BSTR(&recordset->data[recordset->index * colcnt + filters->column]), V_BSTR(&filters->value)) == 0)
-+                {
-+                    found = TRUE;
-+                    continue;
-+                }
++                found = column_match_string(filters->condition,
++                                            V_BSTR(&recordset->data[recordset->index * colcnt + filters->column]),
++                                            V_BSTR(&filters->value));
++                break;
 +            }
-+            else if(filters->condition == op_not_equal)
++            case adInteger:
 +            {
-+                if (lstrcmpW(V_BSTR(&recordset->data[recordset->index * colcnt + filters->column]), V_BSTR(&filters->value)) != 0)
-+                {
-+                    found = TRUE;
-+                    continue;
-+                }
++                found = column_match_integer(filters->condition,
++                                         V_I4(&recordset->data[recordset->index * colcnt + filters->column]),
++                                         V_I4(&filters->value));
++                break;
 +            }
-+            else if(filters->condition == op_like)
-+            {
-+                ERR("No supported yet\n");
-+            }
-+        }
-+        else
-+        {
-+            if(filters->condition == op_equal)
-+            {
-+                if (V_I4(&recordset->data[recordset->index * colcnt + filters->column]) == V_I4(&filters->value))
-+                {
-+                    found = TRUE;
-+                    continue;
-+                }
-+            }
-+            else if(filters->condition == op_not_equal)
-+            {
-+                if (V_I4(&recordset->data[recordset->index * colcnt + filters->column]) != V_I4(&filters->value))
-+                {
-+                    found = TRUE;
-+                    continue;
-+                }
-+            }
++            default:
++                FIXME("Unsupported datatype %d\n", datatype);
 +        }
 +
 +        if (found)
@@ -615,7 +652,7 @@ index 3705bef8d5a..35a4ebcab56 100644
  }
  
  static HRESULT WINAPI recordset_Cancel( _Recordset *iface )
-@@ -2748,6 +2899,8 @@ HRESULT Recordset_create( void **obj )
+@@ -2713,6 +2893,8 @@ HRESULT Recordset_create( void **obj )
      VariantInit( &recordset->filter );
      recordset->columntypes = NULL;
      recordset->haccessors = NULL;
@@ -625,7 +662,7 @@ index 3705bef8d5a..35a4ebcab56 100644
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 57e7356c333..81052777e57 100644
+index 724787870e0..8016474c8f2 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
 @@ -57,7 +57,7 @@ static void test_Recordset(void)
@@ -650,6 +687,24 @@ index 57e7356c333..81052777e57 100644
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
+@@ -229,6 +235,17 @@ static void test_Recordset(void)
+     hr = _Recordset_Open( recordset, missing, missing, adOpenStatic, adLockBatchOptimistic, adCmdUnspecified );
+     ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08lx\n", hr );
+ 
++    V_VT( &index ) = VT_EMPTY;
++    crit = SysAllocString(L"field = 1 OR field = 2");
++    hr = _Recordset_Find(recordset, crit, 0, adSearchForward, index);
++    ok( hr == MAKE_ADO_HRESULT( adErrDataConversion ), "got %08lx\n", hr );
++    SysFreeString(crit);
++
++    crit = SysAllocString(L"");
++    hr = _Recordset_Find(recordset, crit, 0, adSearchForward, index);
++    ok( hr == MAKE_ADO_HRESULT( adErrDataConversion ), "got %08lx\n", hr );
++    SysFreeString(crit);
++
+     state = -1;
+     hr = _Recordset_get_State( recordset, &state );
+     ok( hr == S_OK, "got %08lx\n", hr );
 -- 
-2.39.2
+2.40.0
 
