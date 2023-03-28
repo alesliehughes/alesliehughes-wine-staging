@@ -1,8 +1,14 @@
-From 3570c94d8642e4a1cd215ea07aa5e3f72ecb75e1 Mon Sep 17 00:00:00 2001
+From 2ba4f642319e859a27275a1693549b4b27cc7c08 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
 Subject: [PATCH] msado15: Implement _Recordset Find
 
+Find only supports one Column to filter on.
+
+The parser for this will be the same for both Find/Filter with the only different
+is the Filter supports multiple columns.
+
+In trying to keep this patch small, only WSTR/BSTR/Integer have been supported. (The Common cases).
 ---
  dlls/msado15/Makefile.in       |   6 +
  dlls/msado15/filter.l          | 101 ++++++++++++++
