@@ -1,0 +1,333 @@
+From f07fea4adb84b9ce6cd444433e29409bf9a0dd5a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 1 Apr 2023 17:01:27 +1100
+Subject: [PATCH] msado15: Implement put_Filter
+
+WIP:
+---
+ dlls/msado15/msado15_private.h |   5 +
+ dlls/msado15/recordset.c       | 221 ++++++++++++++++++++++++---------
+ 2 files changed, 165 insertions(+), 61 deletions(-)
+
+diff --git a/dlls/msado15/msado15_private.h b/dlls/msado15/msado15_private.h
+index 56dc9b45367..ab5f2869620 100644
+--- a/dlls/msado15/msado15_private.h
++++ b/dlls/msado15/msado15_private.h
+@@ -61,6 +61,11 @@ struct recordset
+     HACCESSOR         *haccessors;
+ 
+     struct list       filters;
++
++    /* Filter data */
++    LONG              *indexes;
++    LONG              filter_idx;
++    LONG              filter_cnt;
+ };
+ 
+ typedef struct _parser_param
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 6ee1734ef85..4ff70723b73 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -943,6 +943,59 @@ static HRESULT map_index( struct fields *fields, VARIANT *index, ULONG *ret )
+     return MAKE_ADO_HRESULT(adErrItemNotFound);
+ }
+ 
++static BOOL column_match_string(int condition, BSTR col_data, BSTR filter_data)
++{
++    BOOL match = FALSE;
++
++    switch (condition)
++    {
++        case TOKEN_EQ:
++            match = lstrcmpW(col_data, filter_data) == 0;
++            break;
++        case TOKEN_NOT_EQ:
++            match = lstrcmpW(col_data, filter_data) != 0;
++            break;
++        case TOKEN_LIKE:
++            FIXME("LIKE currently not supported\n");
++            break;
++        default:
++            FIXME("Unsupported condition %d\n", condition);
++    }
++
++    return match;
++}
++
++static BOOL column_match_integer(int condition, INT col_data, INT filter_data)
++{
++    BOOL match = FALSE;
++
++    switch (condition)
++    {
++        case TOKEN_EQ:
++            match = col_data == filter_data;
++            break;
++        case TOKEN_NOT_EQ:
++            match = col_data != filter_data;
++            break;
++        case TOKEN_LESS:
++            match = col_data < filter_data;
++            break;
++        case TOKEN_LESS_EQ:
++            match = col_data <= filter_data;
++            break;
++        case TOKEN_GREATER:
++            match = col_data > filter_data;
++            break;
++        case TOKEN_GREATER_EQ:
++            match = col_data >= filter_data;
++            break;
++        default:
++            FIXME("Unsupported condition %d\n", condition);
++    }
++
++    return match;
++}
++
+ static inline WCHAR *heap_strdupAtoW(const char *str)
+ {
+     LPWSTR ret = NULL;
+@@ -1460,7 +1513,10 @@ static HRESULT WINAPI recordset_get_BOF( _Recordset *iface, VARIANT_BOOL *bof )
+ 
+     TRACE( "%p, %p\n", recordset, bof );
+ 
+-    *bof = (recordset->index < 0) ? VARIANT_TRUE : VARIANT_FALSE;
++    if (recordset->indexes)
++        *bof = (!recordset->filter_cnt) ? VARIANT_TRUE : VARIANT_FALSE;
++    else
++        *bof = (recordset->index < 0) ? VARIANT_TRUE : VARIANT_FALSE;
+     return S_OK;
+ }
+ 
+@@ -1528,7 +1584,10 @@ static HRESULT WINAPI recordset_get_EOF( _Recordset *iface, VARIANT_BOOL *eof )
+ 
+     TRACE( "%p, %p\n", recordset, eof );
+ 
+-    *eof = (!recordset->count || recordset->index >= recordset->count) ? VARIANT_TRUE : VARIANT_FALSE;
++    if (recordset->indexes)
++        *eof = (!recordset->filter_cnt || recordset->filter_idx >= recordset->filter_cnt) ? VARIANT_TRUE : VARIANT_FALSE;
++    else
++        *eof = (!recordset->count || recordset->index >= recordset->count) ? VARIANT_TRUE : VARIANT_FALSE;
+     return S_OK;
+ }
+ 
+@@ -1681,7 +1740,10 @@ static HRESULT WINAPI recordset_MoveNext( _Recordset *iface )
+ 
+     TRACE( "%p\n", recordset );
+ 
+-    if (recordset->index < recordset->count) recordset->index++;
++    if (recordset->indexes && recordset->filter_idx < recordset->filter_cnt)
++        recordset->index = recordset->indexes[++recordset->filter_idx];
++    else if (recordset->index < recordset->count)
++        recordset->index++;
+     return S_OK;
+ }
+ 
+@@ -1691,6 +1753,8 @@ static HRESULT WINAPI recordset_MovePrevious( _Recordset *iface )
+ 
+     TRACE( "%p\n", recordset );
+ 
++    if (recordset->indexes && recordset->filter_idx >= 0)
++        recordset->index = recordset->indexes[--recordset->filter_idx];
+     if (recordset->index >= 0) recordset->index--;
+     return S_OK;
+ }
+@@ -1701,7 +1765,10 @@ static HRESULT WINAPI recordset_MoveFirst( _Recordset *iface )
+ 
+     TRACE( "%p\n", recordset );
+ 
+-    recordset->index = 0;
++    if (recordset->indexes)
++        recordset->index = recordset->indexes[0];
++    else
++        recordset->index = 0;
+     return S_OK;
+ }
+ 
+@@ -1711,7 +1778,10 @@ static HRESULT WINAPI recordset_MoveLast( _Recordset *iface )
+ 
+     TRACE( "%p\n", recordset );
+ 
+-    recordset->index = (recordset->count > 0) ? recordset->count - 1 : 0;
++    if (recordset->indexes)
++        recordset->index = (recordset->filter_cnt > 0) ? recordset->indexes[recordset->filter_cnt-1] : 0;
++    else
++        recordset->index = (recordset->count > 0) ? recordset->count - 1 : 0;
+     return S_OK;
+ }
+ 
+@@ -2237,17 +2307,95 @@ static HRESULT WINAPI recordset_get_Filter( _Recordset *iface, VARIANT *criteria
+ static HRESULT WINAPI recordset_put_Filter( _Recordset *iface, VARIANT criteria )
+ {
+     struct recordset *recordset = impl_from_Recordset( iface );
++    int i;
++    DataTypeEnum datatype;
++    ULONG colcnt;
++
+     TRACE( "%p, %s\n", recordset, debugstr_variant(&criteria) );
+ 
+     if (V_VT(&criteria) != VT_I2 && V_VT(&criteria) != VT_I4 && V_VT(&criteria) != VT_BSTR)
+         return MAKE_ADO_HRESULT( adErrInvalidArgument );
+ 
+-    if (V_VT(&criteria) == VT_BSTR && recordset->state == adStateOpen)
++    VariantCopy(&recordset->filter, &criteria);
++
++    if (V_VT(&criteria) != VT_BSTR || !*V_BSTR(&criteria) )
+     {
+-        FIXME("Validating fields not performed\n");
++        free (recordset->indexes);
++        recordset->indexes = NULL;
++        return S_OK;
+     }
+ 
+-    VariantCopy(&recordset->filter, &criteria);
++    if (!recordset->criteria || wcscmp(recordset->criteria, V_BSTR(&criteria)) != 0)
++    {
++        clear_recordset_filter(recordset);
++
++        recordset->criteria = SysAllocString(V_BSTR(&criteria));
++
++        /* Parse criteria */
++        recordset_parse_filter(V_BSTR(&criteria), recordset);
++    }
++
++    if (list_count(&recordset->filters) == 0)
++    {
++        WARN("Invalid number of filters.\n");
++        clear_recordset_filter(recordset);
++        return MAKE_ADO_HRESULT( adErrDataConversion );
++    }
++
++    /* Assume that no records will be filtered */
++    free (recordset->indexes);
++    recordset->indexes = malloc(recordset->count * sizeof(*recordset->indexes));
++    recordset->filter_cnt = 0;
++    recordset->filter_idx = 0;
++
++    colcnt = get_column_count(recordset);
++
++    FIXME("Recordset Count %ld, filter cnt %d\n", recordset->count, list_count(&recordset->filters));
++    for(i=0; i < recordset->count; i++)
++    {
++        struct column_filter *filter;
++        BOOL matched = FALSE;
++
++        LIST_FOR_EACH_ENTRY( filter, &recordset->filters, struct column_filter, entry )
++        {
++            BOOL found = FALSE;
++            field_get_Type(recordset->fields->field[filter->column], &datatype);
++            switch(datatype)
++            {
++                case adBSTR:
++                case adWChar:
++                {
++                    found = column_match_string(filter->condition,
++                                                V_BSTR(&recordset->data[recordset->index * colcnt + filter->column]),
++                                                V_BSTR(&filter->value));
++                    break;
++                }
++                case adInteger:
++                {
++                    found = column_match_integer(filter->condition,
++                                             V_I4(&recordset->data[recordset->index * colcnt + filter->column]),
++                                             V_I4(&filter->value));
++                    break;
++                }
++                default:
++                    FIXME("Unsupported datatype %d\n", datatype);
++            }
++
++            // TODO
++            matched = matched | found;
++        }
++
++        if (matched)
++        {
++            TRACE("Adding record index %ld\n", recordset->index);
++            recordset->indexes[recordset->filter_cnt] = i;
++            recordset->filter_cnt++;
++        }
++    }
++
++    if (recordset->filter_cnt > 0)
++        recordset->index = recordset->indexes[0];
++
+     return S_OK;
+ }
+ 
+@@ -2375,59 +2523,6 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
+     return E_NOTIMPL;
+ }
+ 
+-static BOOL column_match_string(int condition, BSTR col_data, BSTR filter_data)
+-{
+-    BOOL match = FALSE;
+-
+-    switch (condition)
+-    {
+-        case TOKEN_EQ:
+-            match = lstrcmpW(col_data, filter_data) == 0;
+-            break;
+-        case TOKEN_NOT_EQ:
+-            match = lstrcmpW(col_data, filter_data) != 0;
+-            break;
+-        case TOKEN_LIKE:
+-            FIXME("LIKE currently not supported\n");
+-            break;
+-        default:
+-            FIXME("Unsupported condition %d\n", condition);
+-    }
+-
+-    return match;
+-}
+-
+-static BOOL column_match_integer(int condition, INT col_data, INT filter_data)
+-{
+-    BOOL match = FALSE;
+-
+-    switch (condition)
+-    {
+-        case TOKEN_EQ:
+-            match = col_data == filter_data;
+-            break;
+-        case TOKEN_NOT_EQ:
+-            match = col_data != filter_data;
+-            break;
+-        case TOKEN_LESS:
+-            match = col_data < filter_data;
+-            break;
+-        case TOKEN_LESS_EQ:
+-            match = col_data <= filter_data;
+-            break;
+-        case TOKEN_GREATER:
+-            match = col_data > filter_data;
+-            break;
+-        case TOKEN_GREATER_EQ:
+-            match = col_data >= filter_data;
+-            break;
+-        default:
+-            FIXME("Unsupported condition %d\n", condition);
+-    }
+-
+-    return match;
+-}
+-
+ static HRESULT WINAPI recordset_Find( _Recordset *iface, BSTR criteria, LONG skip_records,
+                                       SearchDirectionEnum search_direction, VARIANT start )
+ {
+@@ -2907,6 +3002,10 @@ HRESULT Recordset_create( void **obj )
+     recordset->criteria = NULL;
+     list_init(&recordset->filters);
+ 
++    recordset->indexes = NULL;
++    recordset->filter_cnt = 0;
++    recordset->filter_idx = 0;
++
+     *obj = &recordset->Recordset_iface;
+     TRACE( "returning iface %p\n", *obj );
+     return S_OK;
+-- 
+2.40.0
+
