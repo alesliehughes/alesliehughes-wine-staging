@@ -25,9 +25,9 @@ index 762277843e8..6244c172afb 100644
          FIXME("Username/password parameters currently not supported\n");
  
 +//    hr = IDBInitialize_Initialize( dbinit );
-+//FIXME("1. IDBInitialize_Initialize 0x%08x\n", hr);
++//FIXME("1. IDBInitialize_Initialize 0x%08lx\n", hr);
      if ((hr = IDBInitialize_Initialize( dbinit )) != S_OK) goto done;
-+FIXME("2. IDBInitialize_Initialize 0x%08x\n", hr);
++FIXME("2. IDBInitialize_Initialize 0x%08lx\n", hr);
      if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&session )) != S_OK) goto done;
      if ((hr = IDBCreateSession_CreateSession( session, NULL, &IID_IUnknown, &connection->session )) == S_OK)
      {
