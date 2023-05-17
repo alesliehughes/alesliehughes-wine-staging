@@ -1,4 +1,4 @@
-From 6410cdcf1a92b7c3c955e5c7a130c42c77a238ec Mon Sep 17 00:00:00 2001
+From 64c5bd406f1a6546ca526a96cc8eb4756d593525 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
 Subject: [PATCH] msado15: Implement _Recordset Find
@@ -11,12 +11,13 @@ is the Filter supports multiple columns.
 In trying to keep this patch small, only WSTR/BSTR/Integer have been supported. (The Common cases).
 ---
  dlls/msado15/Makefile.in       |   6 +
- dlls/msado15/filter.l          | 100 ++++++++++++++
- dlls/msado15/filter.y          | 130 ++++++++++++++++++
+ dlls/msado15/filter.l          |  98 ++++++++++++++
+ dlls/msado15/filter.y          | 132 +++++++++++++++++++
  dlls/msado15/msado15_private.h |  58 +++++++++
  dlls/msado15/recordset.c       | 232 ++++++++++++++++++++++++++++-----
- dlls/msado15/tests/msado15.c   |  19 ++-
- 6 files changed, 512 insertions(+), 33 deletions(-)
+ dlls/msado15/tests/Makefile.in |   2 +-
+ dlls/msado15/tests/msado15.c   | 184 +++++++++++++++++++++++++-
+ 7 files changed, 678 insertions(+), 34 deletions(-)
  create mode 100644 dlls/msado15/filter.l
  create mode 100644 dlls/msado15/filter.y
 
@@ -39,10 +40,10 @@ index 9c1fba502c5..0c10402269e 100644
  	msado15_tlb.idl
 diff --git a/dlls/msado15/filter.l b/dlls/msado15/filter.l
 new file mode 100644
-index 00000000000..a736bfecee9
+index 00000000000..7ebd10403d7
 --- /dev/null
 +++ b/dlls/msado15/filter.l
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,98 @@
 +/*
 + * Copyright 2021 Alistair Leslie-Hughes
 + *
@@ -108,8 +109,7 @@ index 00000000000..a736bfecee9
 +"<="            { return (yylval->operation = TOKEN_LESS_EQ); }
 +like            { return TOKEN_LIKE; }
 +
-+	/* Column Name: Column1 or table.Column1 */
-+[A-Za-z_0-9\.]*    { yylval->sval = strdup(yytext); return TOKEN_COLUMN; }
++[A-Za-z_0-9]*    { yylval->sval = strdup(yytext); return TOKEN_COLUMN; }
 +
 +%%
 +
@@ -121,15 +121,14 @@ index 00000000000..a736bfecee9
 +    int len;
 +    int ret;
 +
-+    TRACE("(%s)\n", debugstr_w(filter));
 +    memset(&p, 0, sizeof(parser_param));
 +    p.recordset = recordset;
 +
-+    len = WideCharToMultiByte(CP_ACP, 0, filter, wcslen(filter)+1, 0, 0, NULL, NULL);
++    len = WideCharToMultiByte(CP_ACP, 0, filter, -1, 0, 0, NULL, NULL);
 +    str = malloc(len);
 +    if (!str)
 +        return 2; /* Out of Memory */
-+    len = WideCharToMultiByte(CP_ACP, 0, filter, wcslen(filter)+1, str, len, NULL, NULL);
++    len = WideCharToMultiByte(CP_ACP, 0, filter, -1, str, len, NULL, NULL);
 +
 +    yylex_init(&p.yyscanner);
 +    yyset_extra(&p, p.yyscanner);
@@ -143,13 +142,12 @@ index 00000000000..a736bfecee9
 +
 +    return ret;
 +}
-\ No newline at end of file
 diff --git a/dlls/msado15/filter.y b/dlls/msado15/filter.y
 new file mode 100644
-index 00000000000..d02bd76b2a7
+index 00000000000..ea9ac7c0c48
 --- /dev/null
 +++ b/dlls/msado15/filter.y
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,132 @@
 +/*
 + * Copyright 2021 Alistair Leslie-Hughes
 + *
@@ -260,6 +258,8 @@ index 00000000000..d02bd76b2a7
 +			}
 +			$3++;
 +		}
++		stripped[i] = '\0';
++
 +		TRACE("Stripped: %s, %s\n", debugstr_a($3), debugstr_a(stripped));
 +		filter_add_string_column(p->recordset, $1, $2, stripped);
 +		free(stripped);
@@ -280,7 +280,6 @@ index 00000000000..d02bd76b2a7
 +{
 +    FIXME("%p, %p, error: %s\n", param, scanner, msg);
 +}
-\ No newline at end of file
 diff --git a/dlls/msado15/msado15_private.h b/dlls/msado15/msado15_private.h
 index f7062c94b27..f14494e1c37 100644
 --- a/dlls/msado15/msado15_private.h
@@ -351,7 +350,7 @@ index f7062c94b27..f14494e1c37 100644
  
  HRESULT Command_create( void ** ) DECLSPEC_HIDDEN;
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index c9c04a87282..4d98e9acca9 100644
+index 5522a3c9e61..ad2309de430 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -20,40 +20,13 @@
@@ -469,7 +468,7 @@ index c9c04a87282..4d98e9acca9 100644
      return S_OK;
  }
  
-+static void clear_recordset_filter(struct recordset *recordset)
++static void free_recordset_filters(struct recordset *recordset)
 +{
 +    struct column_filter *filters, *filters2;
 +
@@ -490,7 +489,7 @@ index c9c04a87282..4d98e9acca9 100644
      ULONG i;
      IAccessor *accessor;
  
-+    clear_recordset_filter(recordset);
++    free_recordset_filters(recordset);
 +
      if (recordset->haccessors)
          IRowset_QueryInterface(recordset->row_set, &IID_IAccessor, (void**)&accessor);
@@ -570,7 +569,7 @@ index c9c04a87282..4d98e9acca9 100644
 +
 +    if (!recordset->criteria || wcscmp(recordset->criteria, criteria) != 0)
 +    {
-+        clear_recordset_filter(recordset);
++        free_recordset_filters(recordset);
 +
 +        recordset->criteria = SysAllocString(criteria);
 +
@@ -581,7 +580,7 @@ index c9c04a87282..4d98e9acca9 100644
 +    if (list_count(&recordset->filters) != 1)
 +    {
 +        WARN("Invalid number of filters.\n");
-+        clear_recordset_filter(recordset);
++        free_recordset_filters(recordset);
 +        return MAKE_ADO_HRESULT( adErrDataConversion );
 +    }
 +
@@ -636,11 +635,33 @@ index c9c04a87282..4d98e9acca9 100644
  
      *obj = &recordset->Recordset_iface;
      TRACE( "returning iface %p\n", *obj );
+diff --git a/dlls/msado15/tests/Makefile.in b/dlls/msado15/tests/Makefile.in
+index a97f3dd4339..e7ade35fa38 100644
+--- a/dlls/msado15/tests/Makefile.in
++++ b/dlls/msado15/tests/Makefile.in
+@@ -1,5 +1,5 @@
+ TESTDLL  = msado15.dll
+-IMPORTS  = oleaut32 ole32
++IMPORTS  = oleaut32 ole32 odbccp32
+ 
+ C_SRCS = \
+ 	msado15.c
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 57e7356c333..4c527f032d4 100644
+index 724787870e0..e2b1f06924c 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
-@@ -57,7 +57,7 @@ static void test_Recordset(void)
+@@ -19,8 +19,10 @@
+ #include <stdio.h>
+ #define COBJMACROS
+ #include <initguid.h>
++#include "msdasc.h"
+ #include <oledb.h>
+ #include <olectl.h>
++#include "odbcinst.h"
+ #include <msado15_backcompat.h>
+ #include "wine/test.h"
+ #include "msdasql.h"
+@@ -57,7 +59,7 @@ static void test_Recordset(void)
      VARIANT missing, val, index;
      CursorLocationEnum location;
      CursorTypeEnum cursor;
@@ -649,7 +670,7 @@ index 57e7356c333..4c527f032d4 100644
      HRESULT hr;
      VARIANT bookmark, filter;
      EditModeEnum editmode;
-@@ -143,6 +143,12 @@ static void test_Recordset(void)
+@@ -143,6 +145,12 @@ static void test_Recordset(void)
      hr = _Recordset_put_Filter( recordset, filter );
      ok( hr == S_OK, "got %08lx\n", hr );
  
@@ -662,24 +683,194 @@ index 57e7356c333..4c527f032d4 100644
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
-@@ -229,6 +235,17 @@ static void test_Recordset(void)
-     hr = _Recordset_Open( recordset, missing, missing, adOpenStatic, adLockBatchOptimistic, adCmdUnspecified );
-     ok( hr == MAKE_ADO_HRESULT( adErrObjectOpen ), "got %08lx\n", hr );
+@@ -1335,6 +1343,179 @@ static void test_Command(void)
+     _Command_Release( command );
+ }
  
-+    V_VT( &index ) = VT_EMPTY;
-+    crit = SysAllocString(L"field = 1 OR field = 2");
-+    hr = _Recordset_Find(recordset, crit, 0, adSearchForward, index);
-+    ok( hr == MAKE_ADO_HRESULT( adErrDataConversion ), "got %08lx\n", hr );
-+    SysFreeString(crit);
++static BOOL db_created = TRUE;
++static char mdbpath[MAX_PATH];
 +
-+    crit = SysAllocString(L"");
-+    hr = _Recordset_Find(recordset, crit, 0, adSearchForward, index);
-+    ok( hr == MAKE_ADO_HRESULT( adErrDataConversion ), "got %08lx\n", hr );
-+    SysFreeString(crit);
++static void setup_database(void)
++{
++    char *driver;
++    DWORD code;
++    char buffer[1024];
++    WORD size;
 +
-     state = -1;
-     hr = _Recordset_get_State( recordset, &state );
-     ok( hr == S_OK, "got %08lx\n", hr );
++    if (winetest_interactive)
++    {
++        trace("assuming odbc 'wine_msado15' is available\n");
++        db_created = TRUE;
++        return;
++    }
++
++    /*
++     * 32 bit Windows has a default driver for "Microsoft Access Driver" (Windows 7+)
++     *  and has the ability to create files on the fly.
++     *
++     * 64 bit Windows ONLY has a driver for "SQL Server", which we cannot use since we don't have a
++     *   server to connect to.
++     *
++     * The filename passed to CREATE_DB must end in mdb.
++     */
++    GetTempPathA(sizeof(mdbpath), mdbpath);
++    strcat(mdbpath, "wine_msado15.mdb");
++
++    driver = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof("DSN=wine_msado15\0CREATE_DB=") + strlen(mdbpath) + 2);
++    memcpy(driver, "DSN=wine_msado15\0CREATE_DB=", sizeof("DSN=wine_msado15\0CREATE_DB="));
++    strcat(driver+sizeof("DSN=wine_msado15\0CREATE_DB=")-1, mdbpath);
++
++    db_created = SQLConfigDataSource(NULL, ODBC_ADD_DSN, "Microsoft Access Driver (*.mdb)", driver);
++    if (!db_created)
++    {
++        SQLInstallerError(1, &code, buffer, sizeof(buffer), &size);
++        trace("code  %ld, buffer %s, size %d\n", code, debugstr_a(buffer), size);
++
++        HeapFree(GetProcessHeap(), 0, driver);
++
++        return;
++    }
++
++    memcpy(driver, "DSN=wine_msado15\0DBQ=", sizeof("DSN=wine_msado15\0DBQ="));
++    strcat(driver+sizeof("DSN=wine_msado15\0DBQ=")-1, mdbpath);
++    db_created = SQLConfigDataSource(NULL, ODBC_ADD_DSN, "Microsoft Access Driver (*.mdb)", driver);
++
++    HeapFree(GetProcessHeap(), 0, driver);
++}
++
++static void cleanup_database(void)
++{
++    BOOL ret;
++
++    if (winetest_interactive)
++        return;
++
++    ret = SQLConfigDataSource(NULL, ODBC_REMOVE_DSN, "Microsoft Access Driver (*.mdb)", "DSN=wine_msado15\0\0");
++    if (!ret)
++    {
++        DWORD code;
++        char buffer[1024];
++        WORD size;
++
++        SQLInstallerError(1, &code, buffer, sizeof(buffer), &size);
++        trace("code  %ld, buffer %s, size %d\n", code, debugstr_a(buffer), size);
++    }
++
++    DeleteFileA(mdbpath);
++}
++
++struct recfilter
++{
++    const WCHAR *filter;
++    HRESULT expected;
++};
++
++static void test_recordset_Find(void)
++{
++    HRESULT hr;
++    _Connection *connection;
++    _Recordset *recordset;
++    VARIANT start_index;
++    BSTR str;
++    int i;
++    static const struct recfilter filters[] =
++    {
++        {L"field1 = 1", MAKE_ADO_HRESULT( adErrItemNotFound ) },
++        {L"col1 = 1 OR col3 = 2", MAKE_ADO_HRESULT( adErrInvalidArgument ) },
++        {L"col1 = 1", S_OK },
++        {L"'testing.col1' = 1", MAKE_ADO_HRESULT( adErrInvalidArgument ) },
++        {L"col1 <> 1", S_OK },
++        {L"col1 = 0", S_OK },
++        {L"", MAKE_ADO_HRESULT( adErrInvalidArgument ) },
++    };
++
++    setup_database();
++
++    if (!db_created)
++    {
++        skip("ODBC source wine_msado15 not available.\n");
++        return;
++    }
++
++    str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_msado15");
++
++    hr = CoCreateInstance( &CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection );
++    ok( hr == S_OK, "got %08lx\n", hr );
++
++    hr = _Connection_put_CursorLocation( connection, adUseClient );
++    ok( hr == S_OK, "got %08lx\n", hr );
++
++    hr = _Connection_Open( connection, str, NULL, NULL, adConnectUnspecified );
++    ok( hr == S_OK, "got %08lx\n", hr );
++    SysFreeString( str );
++
++    str = SysAllocString(L"CREATE TABLE testing (col1 INT, col2 VARCHAR(20) NOT NULL, col3 FLOAT)");
++    hr = _Connection_Execute(connection, str, NULL, 0, &recordset);
++    ok( hr == S_OK, "got %08lx\n", hr );
++    _Recordset_Release(recordset);
++    SysFreeString( str );
++
++    str = SysAllocString(L"insert into testing values(1, 'red', 1.0)");
++    hr = _Connection_Execute(connection, str, NULL, 0, &recordset);
++    ok( hr == S_OK, "got %08lx\n", hr );
++    _Recordset_Release(recordset);
++    SysFreeString( str );
++
++    str = SysAllocString(L"insert into testing values(2, 'red', 1.0)");
++    hr = _Connection_Execute(connection, str, NULL, 0, &recordset);
++    ok( hr == S_OK, "got %08lx\n", hr );
++    _Recordset_Release(recordset);
++    SysFreeString( str );
++
++    str = SysAllocString(L"SELECT * from testing");
++    hr = _Connection_Execute(connection, str, NULL, 0, &recordset);
++    ok( hr == S_OK, "got %08lx\n", hr );
++    SysFreeString( str );
++
++    for (i=0; i < ARRAY_SIZE(filters); i++)
++    {
++        BSTR crit = SysAllocString( filters[i].filter );
++
++        hr = _Recordset_MoveFirst( recordset );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &start_index ) = VT_I4;
++        V_I4( &start_index) = 0;
++
++        hr = _Recordset_Find( recordset, crit, 0, adSearchForward, start_index );
++        ok( hr == filters[i].expected, "%d got %08lx expected %08lx\n", i, hr, filters[i].expected );
++        SysFreeString( crit );
++    }
++
++    str = SysAllocStringLen( NULL, 0 );
++    hr = _Recordset_Find( recordset, str, 0, adSearchForward, start_index );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08lx\n", hr );
++    SysFreeString( str );
++
++    hr = _Recordset_Find( recordset, NULL, 0, adSearchForward, start_index );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08lx\n", hr );
++
++    hr = _Recordset_Close( recordset );
++    ok( hr == S_OK, "got %08lx\n", hr );
++    _Recordset_Release( recordset );
++
++    hr = _Connection_Close( connection );
++    ok( hr == S_OK, "got %08lx\n", hr );
++
++    cleanup_database();
++}
++
+ struct conn_event {
+     ConnectionEventsVt conn_event_sink;
+     LONG refs;
+@@ -1554,6 +1735,7 @@ START_TEST(msado15)
+     test_ConnectionPoint();
+     test_Fields();
+     test_Recordset();
++    test_recordset_Find();
+     test_Stream();
+     test_Command();
+     CoUninitialize();
 -- 
-2.40.0
+2.40.1
 
