@@ -185,7 +185,7 @@ index 6ee1734ef85..4ff70723b73 100644
 -    VariantCopy(&recordset->filter, &criteria);
 +    if (!recordset->criteria || wcscmp(recordset->criteria, V_BSTR(&criteria)) != 0)
 +    {
-+        clear_recordset_filter(recordset);
++        free_recordset_filters(recordset);
 +
 +        recordset->criteria = SysAllocString(V_BSTR(&criteria));
 +
@@ -196,7 +196,7 @@ index 6ee1734ef85..4ff70723b73 100644
 +    if (list_count(&recordset->filters) == 0)
 +    {
 +        WARN("Invalid number of filters.\n");
-+        clear_recordset_filter(recordset);
++        free_recordset_filters(recordset);
 +        return MAKE_ADO_HRESULT( adErrDataConversion );
 +    }
 +
