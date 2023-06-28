@@ -1,43 +1,16 @@
-From abfa1b54239b3897aef14f80df428a282ee84b37 Mon Sep 17 00:00:00 2001
+From 85dd3897d3ff7afd068738d6fbad8192d0fa8abf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 23 Jun 2023 14:38:31 +1000
-Subject: [PATCH] msscript.ocx: dump QuickActivate controls
+Subject: [PATCH] msscript.ocx: Add QuickActivate controls stub
 
 ---
- dlls/msscript.ocx/msscript.c | 40 ++++++++++++++++++++++++++++++++----
- 1 file changed, 36 insertions(+), 4 deletions(-)
+ dlls/msscript.ocx/msscript.c | 34 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 33 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msscript.ocx/msscript.c b/dlls/msscript.ocx/msscript.c
-index b5731a6e622..8803fb0d760 100644
+index b5731a6e622..368e344e1cf 100644
 --- a/dlls/msscript.ocx/msscript.c
 +++ b/dlls/msscript.ocx/msscript.c
-@@ -3381,7 +3381,7 @@ static HRESULT WINAPI PersistStreamInit_Load(IPersistStreamInit *iface, IStream
- 
-     FIXME("(%p)->(%p)\n", This, stream);
- 
--    return E_NOTIMPL;
-+    return S_OK;
- }
- 
- static HRESULT WINAPI PersistStreamInit_Save(IPersistStreamInit *iface, IStream *stream, BOOL clear_dirty)
-@@ -3471,7 +3471,7 @@ static HRESULT WINAPI OleControl_OnAmbientPropertyChange(IOleControl *iface, DIS
- 
-     FIXME("(%p)->(%#lx)\n", This, dispid);
- 
--    return E_NOTIMPL;
-+    return S_OK;
- }
- 
- static HRESULT WINAPI OleControl_FreezeEvents(IOleControl *iface, BOOL freeze)
-@@ -3480,7 +3480,7 @@ static HRESULT WINAPI OleControl_FreezeEvents(IOleControl *iface, BOOL freeze)
- 
-     FIXME("(%p)->(%d)\n", This, freeze);
- 
--    return E_NOTIMPL;
-+    return S_OK;
- }
- 
- static const IOleControlVtbl OleControlVtbl = {
 @@ -3517,7 +3517,39 @@ static HRESULT WINAPI QuickActivate_QuickActivate(IQuickActivate *iface, QACONTA
  
      FIXME("(%p)->(%p %p)\n", This, container, control);
