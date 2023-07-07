@@ -1,4 +1,4 @@
-From 167a8d00a27436c446f0ba160dbeac351cf18da7 Mon Sep 17 00:00:00 2001
+From 72e962f03dd7b4728061753b1e18421d9dbe698b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
 Subject: msado15: Implement _Recordset Find
@@ -27,250 +27,8 @@ index 9c1fba502c5..0c10402269e 100644
  IDL_SRCS = \
  	msado15_classes.idl \
  	msado15_tlb.idl
-diff --git a/dlls/msado15/filter.l b/dlls/msado15/filter.l
-new file mode 100644
-index 00000000000..7ebd10403d7
---- /dev/null
-+++ b/dlls/msado15/filter.l
-@@ -0,0 +1,98 @@
-+/*
-+ * Copyright 2021 Alistair Leslie-Hughes
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2.1 of the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
-+ */
-+%option noyywrap
-+%option caseless
-+%option noinput nounput never-interactive
-+%option reentrant bison-bridge
-+
-+%{
-+#include <stdio.h>
-+
-+#include "msado15_private.h"
-+#include "filter.tab.h"
-+
-+#include "wine/debug.h"
-+
-+WINE_DEFAULT_DEBUG_CHANNEL(msado15);
-+
-+%}
-+
-+%%
-+
-+[ \r\t]         { /* ignore all whitespace */ } ;
-+[0-9]+\.[0-9]+ 	{ yylval->fval = atof(yytext); return T_FLOAT; }
-+[-]?[0-9]+      { yylval->ival = atoi(yytext); return T_INT;   }
-+
-+'[^'].*'        {
-+                    yylval->sval = malloc(strlen(yytext)-1);
-+                    memcpy(yylval->sval, yytext+1, strlen(yytext)-2);
-+                    yylval->sval[strlen(yytext)-2] = '\0';
-+                    return T_STRING;
-+                }
-+#.*#            {
-+                    yylval->sval = malloc(strlen(yytext)-1);
-+                    memcpy(yylval->sval, yytext+1, strlen(yytext)-2);
-+                    yylval->sval[strlen(yytext)-2] = '\0';
-+                    return T_STRING;
-+                }
-+
-+\n              { return T_NEWLINE;}
-+"("             { /* Ignored for now */ }
-+")"             { /* Ignored for now */ }
-+
-+"="             { return (yylval->operation = TOKEN_EQ); }
-+">"             { return (yylval->operation = TOKEN_GREATER); }
-+"<"             { return (yylval->operation = TOKEN_LESS); }
-+"<>"            { return (yylval->operation = TOKEN_NOT_EQ); }
-+">="            { return (yylval->operation = TOKEN_GREATER_EQ); }
-+"<="            { return (yylval->operation = TOKEN_LESS_EQ); }
-+like            { return TOKEN_LIKE; }
-+
-+[A-Za-z_0-9]*    { yylval->sval = strdup(yytext); return TOKEN_COLUMN; }
-+
-+%%
-+
-+int recordset_parse_filter(WCHAR *filter, struct recordset *recordset)
-+{
-+    char *str;
-+    parser_param p;
-+    YY_BUFFER_STATE buffer;
-+    int len;
-+    int ret;
-+
-+    memset(&p, 0, sizeof(parser_param));
-+    p.recordset = recordset;
-+
-+    len = WideCharToMultiByte(CP_ACP, 0, filter, -1, 0, 0, NULL, NULL);
-+    str = malloc(len);
-+    if (!str)
-+        return 2; /* Out of Memory */
-+    len = WideCharToMultiByte(CP_ACP, 0, filter, -1, str, len, NULL, NULL);
-+
-+    yylex_init(&p.yyscanner);
-+    yyset_extra(&p, p.yyscanner);
-+
-+    buffer = yy_scan_string(str, p.yyscanner);
-+    ret = yyparse(&p, p.yyscanner);
-+    yy_delete_buffer(buffer, p.yyscanner);
-+    yylex_destroy(p.yyscanner);
-+
-+    free(str);
-+
-+    return ret;
-+}
-diff --git a/dlls/msado15/filter.y b/dlls/msado15/filter.y
-new file mode 100644
-index 00000000000..ea9ac7c0c48
---- /dev/null
-+++ b/dlls/msado15/filter.y
-@@ -0,0 +1,132 @@
-+/*
-+ * Copyright 2021 Alistair Leslie-Hughes
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2.1 of the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
-+ */
-+%{
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+
-+#define COBJMACROS
-+#include "objbase.h"
-+#include "msado15_backcompat.h"
-+
-+#include "oledb.h"
-+#include "sqlucode.h"
-+
-+#include "msado15_private.h"
-+
-+#include "wine/debug.h"
-+
-+WINE_DEFAULT_DEBUG_CHANNEL(msado15);
-+
-+void yyerror(parser_param* param, void const* scanner, char const* msg);
-+parser_param* yyget_extra ( void* yyscanner );
-+%}
-+
-+%define api.pure
-+%parse-param {parser_param* p}
-+%parse-param {void* scanner}
-+%lex-param {yyscan_t scanner}
-+
-+%union {
-+	int operation;
-+	int join;
-+
-+	/* Possible values types */
-+	int ival;
-+	float fval;
-+	char *sval;
-+}
-+
-+%code provides
-+{
-+int yylex(YYSTYPE *yylval, void *scanner);
-+}
-+
-+
-+%token<ival> T_INT
-+%token<fval> T_FLOAT
-+%token<sval> T_STRING
-+
-+%token T_NEWLINE
-+
-+%type<operation> operations
-+
-+%token<operation> TOKEN_GREATER
-+%token<operation> TOKEN_GREATER_EQ
-+%token<operation> TOKEN_LESS
-+%token<operation> TOKEN_LESS_EQ
-+%token<operation> TOKEN_NOT_EQ
-+%token<operation> TOKEN_EQ
-+%token<operation> TOKEN_LIKE
-+
-+%token<sval> TOKEN_COLUMN
-+
-+
-+%start filter
-+
-+%%
-+
-+filter: %empty
-+	| filter line
-+;
-+
-+line: T_NEWLINE
-+	| TOKEN_COLUMN operations T_INT {
-+		filter_add_integer_column(p->recordset, $1, $2, $3);
-+	}
-+	| TOKEN_COLUMN operations T_FLOAT {
-+		filter_add_float_column(p->recordset, $1, $2, $3);
-+	}
-+	| TOKEN_COLUMN operations T_STRING {
-+		filter_add_string_column(p->recordset, $1, $2, $3);
-+	}
-+
-+	/* Like is always followed by a string */
-+	| TOKEN_COLUMN TOKEN_LIKE T_STRING {
-+		int i = 0;
-+		char *stripped = malloc(strlen($3) + 1);
-+		while(*$3 != '\0')
-+		{
-+			if(*$3 != '*')
-+			{
-+				stripped[i++] = *$3;
-+			}
-+			$3++;
-+		}
-+		stripped[i] = '\0';
-+
-+		TRACE("Stripped: %s, %s\n", debugstr_a($3), debugstr_a(stripped));
-+		filter_add_string_column(p->recordset, $1, $2, stripped);
-+		free(stripped);
-+	}
-+;
-+
-+operations: TOKEN_GREATER
-+	| TOKEN_GREATER_EQ
-+	| TOKEN_LESS
-+	| TOKEN_LESS_EQ
-+	| TOKEN_NOT_EQ
-+	| TOKEN_EQ
-+;
-+
-+%%
-+
-+void yyerror(parser_param* param, void const* scanner, char const* msg)
-+{
-+    FIXME("%p, %p, error: %s\n", param, scanner, msg);
-+}
 diff --git a/dlls/msado15/msado15_private.h b/dlls/msado15/msado15_private.h
-index f7062c94b27..f14494e1c37 100644
+index f7062c94b27..d7800c35df4 100644
 --- a/dlls/msado15/msado15_private.h
 +++ b/dlls/msado15/msado15_private.h
 @@ -19,6 +19,64 @@
@@ -330,16 +88,16 @@ index f7062c94b27..f14494e1c37 100644
 +
 +#define YY_EXTRA_TYPE parser_param*
 +
-+int recordset_parse_filter(WCHAR *filter, struct recordset *recordset) DECLSPEC_HIDDEN;
-+void filter_add_integer_column(struct recordset *recordset, char *name, LONG cond, LONG value) DECLSPEC_HIDDEN;
-+void filter_add_float_column(struct recordset *recordset, char *name, LONG cond, float value) DECLSPEC_HIDDEN;
-+void filter_add_string_column(struct recordset *recordset, char *name, LONG cond, char *value) DECLSPEC_HIDDEN;
++int recordset_parse_filter(WCHAR *filter, struct recordset *recordset);
++void filter_add_integer_column(struct recordset *recordset, char *name, LONG cond, LONG value);
++void filter_add_float_column(struct recordset *recordset, char *name, LONG cond, float value);
++void filter_add_string_column(struct recordset *recordset, char *name, LONG cond, char *value);
 +
  #define MAKE_ADO_HRESULT( err ) MAKE_HRESULT( SEVERITY_ERROR, FACILITY_CONTROL, err )
  
  HRESULT Command_create( void ** ) DECLSPEC_HIDDEN;
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 84db7fc581d..2b1a012f22c 100644
+index 02f9e325d3d..239490d2fb1 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -20,40 +20,13 @@
