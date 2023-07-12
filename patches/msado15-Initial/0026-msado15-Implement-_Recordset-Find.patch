@@ -1,7 +1,7 @@
-From 72e962f03dd7b4728061753b1e18421d9dbe698b Mon Sep 17 00:00:00 2001
+From 9f9a95aab663aefd2303fb948631b5675bbe65ed Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 23 Mar 2021 12:30:24 +1100
-Subject: msado15: Implement _Recordset Find
+Subject: [PATCH] msado15: Implement _Recordset Find
 
 Find only supports one Column to filter on.
 
@@ -9,6 +9,13 @@ The parser for this will be the same for both Find/Filter with the only differen
 is the Filter supports multiple columns.
 
 In trying to keep this patch small, only WSTR/BSTR/Integer have been supported. (The Common cases).
+---
+ dlls/msado15/Makefile.in       |   6 +
+ dlls/msado15/msado15_private.h |  58 +++++++++
+ dlls/msado15/recordset.c       | 232 ++++++++++++++++++++++++++++-----
+ dlls/msado15/tests/Makefile.in |   2 +-
+ dlls/msado15/tests/msado15.c   | 184 +++++++++++++++++++++++++-
+ 5 files changed, 448 insertions(+), 34 deletions(-)
 
 diff --git a/dlls/msado15/Makefile.in b/dlls/msado15/Makefile.in
 index 9c1fba502c5..0c10402269e 100644
@@ -28,7 +35,7 @@ index 9c1fba502c5..0c10402269e 100644
  	msado15_classes.idl \
  	msado15_tlb.idl
 diff --git a/dlls/msado15/msado15_private.h b/dlls/msado15/msado15_private.h
-index f7062c94b27..d7800c35df4 100644
+index f8a515a596f..181402bf391 100644
 --- a/dlls/msado15/msado15_private.h
 +++ b/dlls/msado15/msado15_private.h
 @@ -19,6 +19,64 @@
@@ -95,7 +102,7 @@ index f7062c94b27..d7800c35df4 100644
 +
  #define MAKE_ADO_HRESULT( err ) MAKE_HRESULT( SEVERITY_ERROR, FACILITY_CONTROL, err )
  
- HRESULT Command_create( void ** ) DECLSPEC_HIDDEN;
+ HRESULT Command_create( void ** );
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
 index 02f9e325d3d..239490d2fb1 100644
 --- a/dlls/msado15/recordset.c
@@ -618,3 +625,6 @@ index 724787870e0..e2b1f06924c 100644
      test_Stream();
      test_Command();
      CoUninitialize();
+-- 
+2.40.1
+
