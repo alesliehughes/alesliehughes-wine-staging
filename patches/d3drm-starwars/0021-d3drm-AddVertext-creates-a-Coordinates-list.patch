@@ -1,4 +1,4 @@
-From c131cae56cb152e8c9079781c7d9b6f667febdae Mon Sep 17 00:00:00 2001
+From 7dddaef03abb131d8a5fce465691d5d7813c6e3b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 17:21:45 +1000
 Subject: [PATCH] d3drm: AddVertext creates a Coordinates list
@@ -10,10 +10,10 @@ Subject: [PATCH] d3drm: AddVertext creates a Coordinates list
  3 files changed, 54 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/d3drm/d3drm_private.h b/dlls/d3drm/d3drm_private.h
-index 296a9730954..799eb5fbb57 100644
+index e07efa1c799..53d2d76d18a 100644
 --- a/dlls/d3drm/d3drm_private.h
 +++ b/dlls/d3drm/d3drm_private.h
-@@ -163,7 +163,7 @@ struct d3drm_mesh_builder
+@@ -161,7 +161,7 @@ struct d3drm_mesh_builder
      DWORD nb_faces;
      DWORD face_data_size;
      void *pFaceData;
@@ -23,7 +23,7 @@ index 296a9730954..799eb5fbb57 100644
      D3DCOLOR color;
      IDirect3DRMMaterial2 *material;
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index c039a8ed88e..e20b10aefc3 100644
+index 8f9a3cb71a7..70ab332359c 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
 @@ -1232,7 +1232,7 @@ HRESULT load_mesh_data(IDirect3DRMMeshBuilder3 *iface, IDirectXFileData *pData,
@@ -36,8 +36,8 @@ index c039a8ed88e..e20b10aefc3 100644
              mesh_builder->pCoords2d = calloc(mesh_builder->nb_coords2d, sizeof(*mesh_builder->pCoords2d));
              memcpy(mesh_builder->pCoords2d, ptr + sizeof(DWORD), mesh_builder->nb_coords2d * sizeof(*mesh_builder->pCoords2d));
 @@ -1949,6 +1949,10 @@ static int WINAPI d3drm_mesh_builder3_AddVertex(IDirect3DRMMeshBuilder3 *iface,
-     mesh_builder->vertices[mesh_builder->nb_vertices].u2.y = y;
-     mesh_builder->vertices[mesh_builder->nb_vertices].u3.z = z;
+     mesh_builder->vertices[mesh_builder->nb_vertices].y = y;
+     mesh_builder->vertices[mesh_builder->nb_vertices].z = z;
  
 +    if (!d3drm_array_reserve((void **)&mesh_builder->pCoords2d, &mesh_builder->nb_coords2d,
 +            mesh_builder->nb_coords2d + 1, sizeof(*mesh_builder->pCoords2d)))
@@ -113,5 +113,5 @@ index 3a9db9214ff..b0b979d3c67 100644
      test_Frame();
      test_Device();
 -- 
-2.38.1
+2.40.1
 
