@@ -1,0 +1,106 @@
+From cc217f54fc666ba0a460839759ba2a3318f64edf Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 31 Jul 2023 13:41:45 +1000
+Subject: [PATCH 4/6] d3dx11_43: D3DX11LoadTextureFromTexture Improve stub
+
+---
+ dlls/d3dx11_42/Makefile.in |  2 +-
+ dlls/d3dx11_43/Makefile.in |  2 +-
+ dlls/d3dx11_43/texture.c   | 55 +++++++++++++++++++++++++++++++++++---
+ 3 files changed, 53 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/d3dx11_42/Makefile.in b/dlls/d3dx11_42/Makefile.in
+index 78ca5f707a7..570e83be8f1 100644
+--- a/dlls/d3dx11_42/Makefile.in
++++ b/dlls/d3dx11_42/Makefile.in
+@@ -1,7 +1,7 @@
+ EXTRADEFS = -DD3DX11_SDK_VERSION=42
+ MODULE    = d3dx11_42.dll
+ IMPORTLIB = d3dx11_42
+-IMPORTS = d3dcompiler
++IMPORTS = d3dcompiler dxguid
+ DELAYIMPORTS = windowscodecs
+ PARENTSRC = ../d3dx11_43
+ 
+diff --git a/dlls/d3dx11_43/Makefile.in b/dlls/d3dx11_43/Makefile.in
+index 6854c73ebcb..53f1e7c69d0 100644
+--- a/dlls/d3dx11_43/Makefile.in
++++ b/dlls/d3dx11_43/Makefile.in
+@@ -1,7 +1,7 @@
+ EXTRADEFS = -DD3DX11_SDK_VERSION=43
+ MODULE = d3dx11_43.dll
+ IMPORTLIB = d3dx11
+-IMPORTS   = d3dcompiler
++IMPORTS   = d3dcompiler dxguid
+ DELAYIMPORTS = windowscodecs
+ 
+ EXTRADLLFLAGS = -Wb,--prefer-native
+diff --git a/dlls/d3dx11_43/texture.c b/dlls/d3dx11_43/texture.c
+index 7a1e51663a5..d633e5ce3e3 100644
+--- a/dlls/d3dx11_43/texture.c
++++ b/dlls/d3dx11_43/texture.c
+@@ -604,10 +604,57 @@ HRESULT WINAPI D3DX11SaveTextureToMemory(ID3D11DeviceContext *context, ID3D11Res
+ }
+ 
+ HRESULT WINAPI D3DX11LoadTextureFromTexture(ID3D11DeviceContext *context, ID3D11Resource *src_texture,
+-   D3DX11_TEXTURE_LOAD_INFO *info, ID3D11Resource *dst_texture)
++        D3DX11_TEXTURE_LOAD_INFO *info, ID3D11Resource *dst_texture)
+ {
+-    FIXME("context %p, src_texture %p, info %p, dst_texture %p stub!\n",
+-            context, src_texture, info, dst_texture);
++    D3D11_RESOURCE_DIMENSION dimension = 0;
+ 
+-    return E_NOTIMPL;
++    FIXME("context %p, src_texture %p, info %p, dst_texture %p\n", context, src_texture, info, dst_texture);
++
++    if (!context || !src_texture || !info || !dst_texture)
++        return E_INVALIDARG;
++
++    FIXME("pSrcBox %p, pDstBox %p, SrcFirstMip %u, DstFirstMip %u, NumMips %u, SrcFirstElement %u, "
++            "DstFirstElement %u, NumElements %u, Filter %u, MipFilter %u\n",
++            info->pSrcBox, info->pDstBox, info->SrcFirstMip, info->DstFirstMip, info->NumMips,
++            info->SrcFirstElement, info->DstFirstElement, info->NumElements, info->Filter,
++            info->MipFilter);
++
++    /* Valid Src/Dst size, etc??? */
++    ID3D11Resource_GetType(src_texture, &dimension);
++
++    if (dimension == D3D11_RESOURCE_DIMENSION_TEXTURE2D)
++    {
++        D3D11_TEXTURE2D_DESC desc, dst_desc;
++        ID3D11Texture2D *srctexture, *dsttexture;
++
++        if (FAILED(ID3D11Resource_QueryInterface(src_texture, &IID_ID3D11Texture2D, (void**)&srctexture)))
++        {
++            WARN("TEXTURE2D: QueryInterface Failed\n");
++            return E_FAIL;
++        }
++
++        if (FAILED(ID3D11Resource_QueryInterface(dst_texture, &IID_ID3D11Texture2D, (void**)&dsttexture)))
++        {
++            WARN("TEXTURE2D: QueryInterface Failed\n");
++            return E_FAIL;
++        }
++
++        ID3D11Texture2D_GetDesc(srctexture, &desc);
++        ID3D11Texture2D_Release(srctexture);
++
++        ID3D11Texture2D_GetDesc(dsttexture, &dst_desc);
++        ID3D11Texture2D_Release(dsttexture);
++
++        FIXME("Format %d/%d\n", desc.Format, dst_desc.Format);
++
++        ID3D11DeviceContext_ResolveSubresource(context, dst_texture, info->DstFirstMip, src_texture, info->SrcFirstMip,
++                                           desc.Format);
++    }
++    else
++        FIXME("Unsupported Type %d\n", dimension);
++
++
++
++
++    return S_OK;
+ }
+-- 
+2.40.1
+

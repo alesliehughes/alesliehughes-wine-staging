@@ -1,0 +1,40 @@
+From ef2a943b1b6d1791a190dc699fce09a5101bf06b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 31 Jul 2023 11:37:20 +1000
+Subject: [PATCH 3/6] d3dx11_43: D3DX11GetImageInfoFromMemory limit to header
+ info on read
+
+---
+ dlls/d3dx11_43/texture.c       | 2 +-
+ dlls/windowscodecs/ddsformat.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/d3dx11_43/texture.c b/dlls/d3dx11_43/texture.c
+index 7b8e740d42a..7a1e51663a5 100644
+--- a/dlls/d3dx11_43/texture.c
++++ b/dlls/d3dx11_43/texture.c
+@@ -314,7 +314,7 @@ HRESULT WINAPI D3DX11GetImageInfoFromMemory(const void *src_data, SIZE_T src_dat
+ 
+     WICCreateImagingFactory_Proxy(WINCODEC_SDK_VERSION, &factory);
+     IWICImagingFactory_CreateStream(factory, &stream);
+-    hr = IWICStream_InitializeFromMemory(stream, (BYTE *)src_data, src_data_size);
++    hr = IWICStream_InitializeFromMemory(stream, (BYTE *)src_data, 128);
+     if (FAILED(hr))
+     {
+         WARN("Failed to initialize stream.\n");
+diff --git a/dlls/windowscodecs/ddsformat.c b/dlls/windowscodecs/ddsformat.c
+index d7bc010a1c8..5bc7e7b7fc4 100644
+--- a/dlls/windowscodecs/ddsformat.c
++++ b/dlls/windowscodecs/ddsformat.c
+@@ -1408,7 +1408,7 @@ static HRESULT WINAPI DdsDecoder_Dds_GetFrame(IWICDdsDecoder *iface,
+     hr = IStream_Seek(This->stream, seek, SEEK_SET, NULL);
+     if (hr != S_OK) goto end;
+     hr = IStream_Read(This->stream, frame_decode->block_data, frame_size, &bytesread);
+-    if (hr != S_OK || bytesread != frame_size) {
++    if (hr != S_OK || (bytesread != frame_size && bytesread != 0)) {
+         hr = WINCODEC_ERR_STREAMREAD;
+         goto end;
+     }
+-- 
+2.40.1
+
