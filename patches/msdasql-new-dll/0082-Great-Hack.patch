@@ -1,4 +1,4 @@
-From 74de79bf57d46772fe045322f3cb421c2c086103 Mon Sep 17 00:00:00 2001
+From 639bc7652a3990a571125313f607b528a97424a2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 26 May 2020 16:47:25 +1000
 Subject: [PATCH] Great Hack
@@ -8,12 +8,12 @@ Subject: [PATCH] Great Hack
  1 file changed, 162 insertions(+), 49 deletions(-)
 
 diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
-index 5746b51d55c..3e5d94fd3d2 100644
+index 6991be65f65..50300a113f3 100644
 --- a/dlls/oledb32/dslocator.c
 +++ b/dlls/oledb32/dslocator.c
-@@ -37,6 +37,9 @@
+@@ -36,6 +36,9 @@
+ 
  #include "wine/debug.h"
- #include "wine/heap.h"
  
 +#include "initguid.h"
 +#include "msado15_backcompat.h"
@@ -21,7 +21,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
  WINE_DEFAULT_DEBUG_CHANNEL(oledb);
  
  struct datasource
-@@ -47,6 +50,22 @@ struct datasource
+@@ -46,6 +49,22 @@ struct datasource
      WCHAR *description;
  };
  
@@ -43,8 +43,8 @@ index 5746b51d55c..3e5d94fd3d2 100644
 +
  static struct datasource *create_datasource(WCHAR *guid)
  {
-     struct datasource *data = heap_alloc_zero(sizeof(struct datasource));
-@@ -327,6 +346,56 @@ static void add_connections_providers(HWND lv)
+     struct datasource *data = calloc(1, sizeof(struct datasource));
+@@ -326,6 +345,56 @@ static void add_connections_providers(HWND lv)
      RegCloseKey(key);
  }
  
@@ -101,7 +101,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
  static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
-@@ -335,13 +404,15 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -334,13 +403,15 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
          {
@@ -121,7 +121,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
              break;
          }
          case WM_DESTROY:
-@@ -365,48 +436,8 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -364,48 +435,8 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
              NMHDR *hdr = ((LPNMHDR)lp);
              switch(hdr->code)
              {
@@ -172,7 +172,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
              }
  
              break;
-@@ -414,7 +445,10 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -413,7 +444,10 @@ static INT_PTR CALLBACK data_link_properties_dlg_proc(HWND hwnd, UINT msg, WPARA
          case WM_COMMAND:
          {
              if (LOWORD(wp) == IDC_BTN_NEXT)
@@ -184,7 +184,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
              break;
          }
          default:
-@@ -483,11 +517,51 @@ static INT_PTR CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
+@@ -482,11 +516,51 @@ static INT_PTR CALLBACK data_link_connection_dlg_proc(HWND hwnd, UINT msg, WPARA
      {
          case WM_INITDIALOG:
          {
@@ -236,7 +236,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
          case WM_COMMAND:
          {
              switch (LOWORD(wp))
-@@ -555,6 +629,11 @@ static INT_PTR CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
+@@ -554,6 +628,11 @@ static INT_PTR CALLBACK data_link_advanced_dlg_proc(HWND hwnd, UINT msg, WPARAM
      {
          case WM_INITDIALOG:
          {
@@ -248,7 +248,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
              EnableWindow(GetDlgItem(hwnd, IDC_LBL_LEVEL), FALSE);
              EnableWindow(GetDlgItem(hwnd, IDC_CBO_LEVEL), FALSE);
              EnableWindow(GetDlgItem(hwnd, IDC_LBL_PROTECTION), FALSE);
-@@ -600,9 +679,26 @@ static INT_PTR CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -599,9 +678,26 @@ static INT_PTR CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
          case WM_INITDIALOG:
          {
              HWND lv = GetDlgItem(hwnd, IDC_LST_PROPERTIES);
@@ -275,7 +275,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
          case WM_COMMAND:
          {
              if (LOWORD(wp) == IDC_BTN_EDIT)
-@@ -614,14 +710,16 @@ static INT_PTR CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
+@@ -613,14 +709,16 @@ static INT_PTR CALLBACK data_link_all_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, L
       }
  
       return 0;
@@ -293,7 +293,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
  
      FIXME("(%p, %p) Semi-stub\n", iface, connection);
  
-@@ -636,11 +734,13 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -635,11 +733,13 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
      pages[0].hInstance = instance;
      pages[0].pszTemplate = MAKEINTRESOURCEW(IDD_PROVIDER);
      pages[0].pfnDlgProc = data_link_properties_dlg_proc;
@@ -307,7 +307,7 @@ index 5746b51d55c..3e5d94fd3d2 100644
  
      pages[2].dwSize = sizeof(PROPSHEETPAGEW);
      pages[2].hInstance = instance;
-@@ -661,8 +761,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
+@@ -660,8 +760,21 @@ static HRESULT WINAPI dslocator_PromptNew(IDataSourceLocator *iface, IDispatch *
      hdr.ppsp = pages;
      hdr.nPages = ARRAY_SIZE(pages);
      ret = PropertySheetW(&hdr);
