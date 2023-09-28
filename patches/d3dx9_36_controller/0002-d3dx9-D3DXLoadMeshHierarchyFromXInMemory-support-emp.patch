@@ -1,0 +1,127 @@
+From 196fe697e7ae9087ce9547aa8b75e0cc6b36f28d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 28 Sep 2023 12:35:29 +1000
+Subject: [PATCH] d3dx9: D3DXLoadMeshHierarchyFromXInMemory support empty mesh.
+
+---
+ dlls/d3dx9_36/mesh.c       | 33 ++++++++++++++++++++++++++++-----
+ dlls/d3dx9_36/tests/mesh.c | 21 +++++++++++++++++++++
+ 2 files changed, 49 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/d3dx9_36/mesh.c b/dlls/d3dx9_36/mesh.c
+index 7aa70783735..0a1c29d877e 100644
+--- a/dlls/d3dx9_36/mesh.c
++++ b/dlls/d3dx9_36/mesh.c
+@@ -3553,6 +3553,13 @@ HRESULT WINAPI D3DXLoadSkinMeshFromXof(struct ID3DXFileData *filedata, DWORD opt
+         }
+     }
+ 
++    if (total_vertices == 0)
++    {
++        *mesh_out = NULL;
++        hr = D3D_OK;
++        goto cleanup;
++    }
++
+     hr = D3DXCreateMeshFVF(mesh_data.num_tri_faces, total_vertices, options, mesh_data.fvf, device, &d3dxmesh);
+     if (FAILED(hr)) goto cleanup;
+ 
+@@ -3815,7 +3822,8 @@ static HRESULT load_mesh_container(struct ID3DXFileData *filedata, DWORD options
+     hr = filedata_get_name(filedata, &name);
+     if (FAILED(hr)) goto cleanup;
+ 
+-    hr = alloc_hier->lpVtbl->CreateMeshContainer(alloc_hier, name, &mesh_data,
++    if (mesh_data.pMesh)
++        hr = alloc_hier->lpVtbl->CreateMeshContainer(alloc_hier, name, &mesh_data,
+             materials ? ID3DXBuffer_GetBufferPointer(materials) : NULL,
+             effects ? ID3DXBuffer_GetBufferPointer(effects) : NULL,
+             num_materials,
+@@ -4200,13 +4208,21 @@ static HRESULT parse_frame(struct ID3DXFileData *filedata, DWORD options, struct
+                 hr = E_OUTOFMEMORY;
+                 goto err;
+             }
+-            list_add_tail(container_list, &container->entry);
+-            container->transform = transform;
+ 
+             hr = D3DXLoadSkinMeshFromXof(child, options, device,
+                     (provide_flags & PROVIDE_ADJACENCY) ? &container->adjacency : NULL,
+                     (provide_flags & PROVIDE_MATERIALS) ? &container->materials : NULL,
+                     NULL, &container->num_materials, NULL, &container->mesh);
++
++            if (container->mesh)
++            {
++                list_add_tail(container_list, &container->entry);
++                container->transform = transform;
++            }
++            else
++            {
++                HeapFree(GetProcessHeap(), HEAP_ZERO_MEMORY, container);
++            }
+         } else if (IsEqualGUID(&type, &TID_D3DRMFrameTransformMatrix)) {
+             D3DXMATRIX new_transform;
+             hr = parse_transform_matrix(child, &new_transform);
+@@ -4294,13 +4310,20 @@ HRESULT WINAPI D3DXLoadMeshFromXInMemory(const void *memory, DWORD memory_size,
+                     hr = E_OUTOFMEMORY;
+                     goto cleanup;
+                 }
+-                list_add_tail(&container_list, &container_ptr->entry);
+-                D3DXMatrixIdentity(&container_ptr->transform);
+ 
+                 hr = D3DXLoadSkinMeshFromXof(filedata, options, device,
+                         (provide_flags & PROVIDE_ADJACENCY) ? &container_ptr->adjacency : NULL,
+                         (provide_flags & PROVIDE_MATERIALS) ? &container_ptr->materials : NULL,
+                         NULL, &container_ptr->num_materials, NULL, &container_ptr->mesh);
++                if (container_ptr->mesh)
++                {
++                    list_add_tail(&container_list, &container_ptr->entry);
++                    D3DXMatrixIdentity(&container_ptr->transform);
++                }
++                else
++                {
++                    HeapFree(GetProcessHeap(), 0, container_ptr);
++                }
+             } else if (IsEqualGUID(&guid, &TID_D3DRMFrame)) {
+                 hr = parse_frame(filedata, options, device, &identity, &container_list, provide_flags);
+             }
+diff --git a/dlls/d3dx9_36/tests/mesh.c b/dlls/d3dx9_36/tests/mesh.c
+index e5ba6e24996..5bc4ac37336 100644
+--- a/dlls/d3dx9_36/tests/mesh.c
++++ b/dlls/d3dx9_36/tests/mesh.c
+@@ -2068,6 +2068,14 @@ static void D3DXLoadMeshTest(void)
+             "}"
+             "Mesh { 3; 0.0; 0.0; 0.0;, 0.0; 1.0; 0.0;, 3.0; 1.0; 0.0;; 1; 3; 0, 1, 2;; }"
+         "}";
++    static const char framed_xfile2[] =
++        "xof 0303txt 0032"
++        "Frame Box01 {"
++            "Mesh { 0;; 0;;"
++                "MeshNormals { 0;; 0;; }"
++            "}"
++        "}";
++
+     static const WORD framed_index_buffer[] = { 0, 1, 2 };
+     static const D3DXVECTOR3 framed_vertex_buffers[3][3] = {
+         {{0.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {1.0, 1.0, 0.0}},
+@@ -2513,6 +2521,19 @@ static void D3DXLoadMeshTest(void)
+         frame_hier = NULL;
+     }
+ 
++    hr = D3DXLoadMeshHierarchyFromXInMemory(framed_xfile2, sizeof(framed_xfile2) - 1,
++            D3DXMESH_MANAGED, device, &alloc_hier, NULL, &frame_hier, NULL);
++    ok(hr == D3D_OK, "Expected D3D_OK, got %#lx\n", hr);
++    if (SUCCEEDED(hr)) {
++        D3DXMESHCONTAINER *container = frame_hier->pMeshContainer;
++
++        ok(!strcmp(frame_hier->Name, "Box01"), "Expected '', got '%s'\n", frame_hier->Name);
++        ok(container == NULL, "Expected NULL, got %p\n", container);
++
++        hr = D3DXFrameDestroy(frame_hier, &alloc_hier);
++        ok(hr == D3D_OK, "Expected D3D_OK, got %#lx\n", hr);
++        frame_hier = NULL;
++    }
+ 
+     hr = D3DXLoadMeshFromXInMemory(NULL, 0, D3DXMESH_MANAGED,
+                                    device, NULL, NULL, NULL, NULL, &mesh);
+-- 
+2.40.1
+
