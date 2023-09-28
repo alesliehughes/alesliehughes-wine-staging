@@ -1,0 +1,106 @@
+From 2fa5abe191028c916c3b131f6df174703e7d1634 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 28 Sep 2023 16:20:11 +1000
+Subject: [PATCH] msdasql: Show that IColumnsRowset GetAvailableColumns returns
+ data
+
+Testing shows that 19 extra columns are returns.
+Any columns return here must be append to the list of data columns returned.
+
+Reference
+https://www.codeproject.com/Articles/331/Making-ATL-OLE-DB-Provider-templates-support-upd-2
+---
+ dlls/msado15/recordset.c     | 18 ++++++++++++++++++
+ dlls/msado15/tests/msado15.c |  2 ++
+ dlls/msdasql/session.c       | 16 ++++++++++++++--
+ 3 files changed, 34 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 92a776c7ae9..8e8fd483f97 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -2194,6 +2194,24 @@ static HRESULT WINAPI recordset_Update( _Recordset *iface, VARIANT fields, VARIA
+     if (V_DISPATCH(&recordset->active_connection) == NULL)
+         return S_OK;
+ 
++    {
++        HRESULT hr;
++        IColumnsRowset *columns = NULL;
++        DBORDINAL count;
++        DBID *dbids;
++
++        hr = IRowset_QueryInterface(recordset->row_set, &IID_IColumnsRowset, (void**)&columns);
++        FIXME("IRowset_QueryInterface %0lx\n", hr);
++        if (FAILED(hr))
++            return hr;
++
++        hr = IColumnsRowset_GetAvailableColumns(columns, &count, &dbids);
++        FIXME("%0lx, count %ld\n", hr, count);
++
++        IColumnsRowset_Release(columns);
++
++    }
++
+     recordset->editmode = adEditNone;
+     return S_OK;
+ }
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 242c33c035b..1f0d37f44ff 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1569,10 +1569,12 @@ static void test_recordset_Find(void)
+         V_VT(&active) = VT_DISPATCH;
+         V_DISPATCH(&active) = dispatch;
+ 
++        ok(0, "Before _Recordset_Open\n");
+         hr = _Recordset_Open(recordset, source, active, adOpenDynamic, adLockOptimistic, 0);
+         VariantClear(&active);
+         VariantClear(&source);
+         ok( hr == S_OK, "got %08lx\n", hr );
++        ok(0, "After _Recordset_Open\n");
+         //SysFreeString( str );
+ 
+         ok(0, "Before _Recordset_AddNew\n");
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 45038ccdfcb..1d45e599228 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -1384,6 +1384,12 @@ static ULONG WINAPI column_rs_AddRef(IColumnsRowset *iface)
+     return IRowset_AddRef(&rowset->IRowset_iface);
+ }
+ 
++#define DBCIDGUID   {0x0C733A81L,0x2A1C,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}}
++
++const DBID DBCOLUMN_BASETABLENAME         = {DBCIDGUID, DBKIND_GUID_PROPID, (LPOLESTR)11 };
++const DBID DBCOLUMN_BASECOLUMNNAME        = {DBCIDGUID, DBKIND_GUID_PROPID, (LPOLESTR)10 };
++const DBID DBCOLUMN_KEYCOLUMN             = {DBCIDGUID, DBKIND_GUID_PROPID, (LPOLESTR)41 };
++
+ static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
+ {
+     struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
+@@ -1393,14 +1399,20 @@ static ULONG WINAPI column_rs_Release(IColumnsRowset *iface)
+ static HRESULT WINAPI column_rs_GetAvailableColumns(IColumnsRowset *iface, DBORDINAL *count, DBID **columns)
+ {
+     struct msdasql_rowset *rowset = impl_from_IColumnsRowset( iface );
++    DBID *pOptCols;
+ 
+     TRACE("%p, %p, %p\n", rowset, count, columns);
+ 
+     if (!count || !columns)
+         return E_INVALIDARG;
+ 
+-    *count = 0;
+-    *columns = NULL;
++    pOptCols = (DBID*)CoTaskMemAlloc(sizeof(DBID) * 3);
++    pOptCols[0] = DBCOLUMN_BASETABLENAME;
++    pOptCols[1] =  DBCOLUMN_BASECOLUMNNAME;
++    pOptCols[2] =  DBCOLUMN_KEYCOLUMN;
++
++    *count = 3;
++    *columns = pOptCols;
+ 
+     return S_OK;
+ }
+-- 
+2.40.1
+

@@ -1,0 +1,25 @@
+From b37b5af2990053d7a3abcac66f49f4bbb7272b7b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 28 Sep 2023 15:09:46 +1000
+Subject: [PATCH] msdasql: DBTYPE_R8 support
+
+---
+ dlls/msdasql/session.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index b2b32cce361..45038ccdfcb 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -202,6 +202,8 @@ static SQLSMALLINT bindtype_to_sqltype(DBTYPE type)
+     {
+         case DBTYPE_NUMERIC:
+             return SQL_DECIMAL;
++        case DBTYPE_R8:
++            return SQL_DOUBLE;
+         case DBTYPE_I8:
+             return SQL_C_SBIGINT;
+         case DBTYPE_I4:
+-- 
+2.40.1
+
