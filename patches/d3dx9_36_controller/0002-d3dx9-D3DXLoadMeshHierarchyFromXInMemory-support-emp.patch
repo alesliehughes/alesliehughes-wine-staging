@@ -1,32 +1,35 @@
-From 196fe697e7ae9087ce9547aa8b75e0cc6b36f28d Mon Sep 17 00:00:00 2001
+From c79c2913f06f0fe703f00ca324270e0551ca7027 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 28 Sep 2023 12:35:29 +1000
 Subject: [PATCH] d3dx9: D3DXLoadMeshHierarchyFromXInMemory support empty mesh.
 
 ---
- dlls/d3dx9_36/mesh.c       | 33 ++++++++++++++++++++++++++++-----
- dlls/d3dx9_36/tests/mesh.c | 21 +++++++++++++++++++++
- 2 files changed, 49 insertions(+), 5 deletions(-)
+ dlls/d3dx9_36/mesh.c       | 36 ++++++++++++++++++++++++-----
+ dlls/d3dx9_36/tests/mesh.c | 46 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 77 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/d3dx9_36/mesh.c b/dlls/d3dx9_36/mesh.c
-index 7aa70783735..0a1c29d877e 100644
+index 442b56a7e19..c85a9774fdd 100644
 --- a/dlls/d3dx9_36/mesh.c
 +++ b/dlls/d3dx9_36/mesh.c
-@@ -3553,6 +3553,13 @@ HRESULT WINAPI D3DXLoadSkinMeshFromXof(struct ID3DXFileData *filedata, DWORD opt
-         }
-     }
+@@ -3506,6 +3506,16 @@ HRESULT WINAPI D3DXLoadSkinMeshFromXof(struct ID3DXFileData *filedata, DWORD opt
+     hr = parse_mesh(filedata, &mesh_data, provide_flags);
+     if (FAILED(hr)) goto cleanup;
  
-+    if (total_vertices == 0)
++    if (mesh_data.num_vertices == 0)
 +    {
++        if (adjacency_out) *adjacency_out = NULL;
++        if (materials_out) *materials_out = NULL;
++        if (effects_out) *effects_out = NULL;
 +        *mesh_out = NULL;
 +        hr = D3D_OK;
 +        goto cleanup;
 +    }
 +
-     hr = D3DXCreateMeshFVF(mesh_data.num_tri_faces, total_vertices, options, mesh_data.fvf, device, &d3dxmesh);
-     if (FAILED(hr)) goto cleanup;
- 
-@@ -3815,7 +3822,8 @@ static HRESULT load_mesh_container(struct ID3DXFileData *filedata, DWORD options
+     total_vertices = mesh_data.num_vertices;
+     if (mesh_data.fvf & D3DFVF_NORMAL) {
+         /* duplicate vertices with multiple normals */
+@@ -3815,7 +3825,8 @@ static HRESULT load_mesh_container(struct ID3DXFileData *filedata, DWORD options
      hr = filedata_get_name(filedata, &name);
      if (FAILED(hr)) goto cleanup;
  
@@ -36,7 +39,7 @@ index 7aa70783735..0a1c29d877e 100644
              materials ? ID3DXBuffer_GetBufferPointer(materials) : NULL,
              effects ? ID3DXBuffer_GetBufferPointer(effects) : NULL,
              num_materials,
-@@ -4200,13 +4208,21 @@ static HRESULT parse_frame(struct ID3DXFileData *filedata, DWORD options, struct
+@@ -4201,13 +4212,21 @@ static HRESULT parse_frame(struct ID3DXFileData *filedata, DWORD options, struct
                  hr = E_OUTOFMEMORY;
                  goto err;
              }
@@ -60,7 +63,7 @@ index 7aa70783735..0a1c29d877e 100644
          } else if (IsEqualGUID(&type, &TID_D3DRMFrameTransformMatrix)) {
              D3DXMATRIX new_transform;
              hr = parse_transform_matrix(child, &new_transform);
-@@ -4294,13 +4310,20 @@ HRESULT WINAPI D3DXLoadMeshFromXInMemory(const void *memory, DWORD memory_size,
+@@ -4295,13 +4314,20 @@ HRESULT WINAPI D3DXLoadMeshFromXInMemory(const void *memory, DWORD memory_size,
                      hr = E_OUTOFMEMORY;
                      goto cleanup;
                  }
@@ -84,7 +87,7 @@ index 7aa70783735..0a1c29d877e 100644
                  hr = parse_frame(filedata, options, device, &identity, &container_list, provide_flags);
              }
 diff --git a/dlls/d3dx9_36/tests/mesh.c b/dlls/d3dx9_36/tests/mesh.c
-index e5ba6e24996..5bc4ac37336 100644
+index ce0f238412d..21428f12e26 100644
 --- a/dlls/d3dx9_36/tests/mesh.c
 +++ b/dlls/d3dx9_36/tests/mesh.c
 @@ -2068,6 +2068,14 @@ static void D3DXLoadMeshTest(void)
@@ -122,6 +125,45 @@ index e5ba6e24996..5bc4ac37336 100644
  
      hr = D3DXLoadMeshFromXInMemory(NULL, 0, D3DXMESH_MANAGED,
                                     device, NULL, NULL, NULL, NULL, &mesh);
+@@ -11426,6 +11447,9 @@ static void test_load_skin_mesh_from_xof(void)
+             "1;"
+             "3; 0, 1, 2;;"
+         "}";
++    static const char simple_xfile_empty[] =
++        "xof 0303txt 0032"
++        "Mesh { 0;; 0;; }";
+     static const D3DVERTEXELEMENT9 expected_declaration[] =
+     {
+         {0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
+@@ -11537,6 +11561,28 @@ static void test_load_skin_mesh_from_xof(void)
+     mesh->lpVtbl->Release(mesh);
+     adjacency->lpVtbl->Release(adjacency);
+     file_data->lpVtbl->Release(file_data);
++
++    /* Empty Mesh Test */
++    file_data = get_mesh_data(simple_xfile_empty, sizeof(simple_xfile_empty) - 1);
++    ok(!!file_data, "Failed to load mesh data.\n");
++
++    adjacency = materials = effects = (void *)0xdeadbeef;
++    count = ~0u;
++    skin_info = (void *)0xdeadbeef;
++    mesh = (void *)0xdeadbeef;
++
++    hr = D3DXLoadSkinMeshFromXof(file_data, 0, device, &adjacency, &materials, &effects, &count,
++            &skin_info, &mesh);
++    todo_wine ok(hr == D3DXERR_LOADEDMESHASNODATA, "Got unexpected hr %#lx.\n", hr);
++    ok(!adjacency, "Got unexpected value %p.\n", adjacency);
++    ok(!materials, "Got unexpected value %p.\n", materials);
++    ok(!effects, "Got unexpected value %p.\n", effects);
++    ok(count == ~0u, "Got unexpected value %lu.\n", count);
++    ok(skin_info == (void *)0xdeadbeef, "Got unexpected value %p.\n", skin_info);
++    ok(!mesh, "Got unexpected value %p.\n", mesh);
++
++    file_data->lpVtbl->Release(file_data);
++
+     refcount = IDirect3DDevice9_Release(device);
+     ok(!refcount, "Device has %lu references left.\n", refcount);
+     DestroyWindow(hwnd);
 -- 
-2.40.1
+2.42.0
 
