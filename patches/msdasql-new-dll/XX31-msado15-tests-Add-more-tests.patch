@@ -1,0 +1,94 @@
+From a14becb3c16151c9e89574dc5439bf1a53eba4d7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 4 Oct 2023 14:18:22 +1100
+Subject: [PATCH] msado15/tests: Add more tests
+
+---
+ dlls/msado15/tests/msado15.c | 71 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 6bc3ad99f1b..751d4527f43 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1541,6 +1541,77 @@ static void test_recordset_Find(void)
+ 
+     hr = _Recordset_Close( recordset );
+     ok( hr == S_OK, "got %08lx\n", hr );
++
++    {
++        VARIANT active, source, val, index;
++        Fields *fields;
++        Field *field;
++        VARIANT missing;
++        IDispatch *dispatch;
++
++        V_VT( &missing ) = VT_ERROR;
++        V_ERROR( &missing ) = DISP_E_PARAMNOTFOUND;
++
++        VariantInit(&active);
++        hr = _Recordset_get_ActiveConnection(recordset, &active);
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT(&source) = VT_BSTR;
++        V_BSTR(&source) = SysAllocString(L"SELECT * from testing where 1 = 0");
++
++        hr = _Connection_QueryInterface( connection, &IID_IDispatch, (void**)&dispatch );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &active ) = VT_DISPATCH;
++        V_DISPATCH( &active ) = dispatch;
++
++        ok(0, "Before _Recordset_Open\n");
++        hr = _Recordset_Open(recordset, source, active, adOpenDynamic, adLockOptimistic, 0);
++        ok(0, "After _Recordset_Open\n");
++        ok( hr == S_OK, "got %08lx\n", hr );
++        VariantClear(&active);
++        VariantClear(&source);
++
++        ok(0, "Before _Recordset_AddNew\n");
++        hr = _Recordset_AddNew(recordset, missing, missing);
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok(0, "After _Recordset_AddNew\n");
++
++        hr = _Recordset_get_Fields( recordset, &fields );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        /* Col1  - int */
++        V_VT( &index ) = VT_I4;
++        V_I4( &index ) = 0;
++        hr = Fields_get_Item( fields, index, &field );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &val ) = VT_I4;
++        V_I4( &val ) = 0;
++        hr = Field_put_Value( field, val );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        Field_Release(field);
++
++        /* Col2 - String */
++        V_VT( &index ) = VT_I4;
++        V_I4( &index ) = 1;
++        hr = Fields_get_Item( fields, index, &field );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &val ) = VT_BSTR;
++        V_BSTR( &val ) = SysAllocString(L"Hello");
++        hr = Field_put_Value( field, val );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        Field_Release(field);
++
++        Fields_Release(fields);
++
++        ok(0, "Before _Recordset_Update\n");
++        hr = _Recordset_Update(recordset, missing, missing);
++        ok(0, "After _Recordset_Update\n");
++        ok( hr == S_OK, "got %08lx\n", hr );
++    }
++
+     _Recordset_Release( recordset );
+ 
+     hr = _Connection_Close( connection );
+-- 
+2.42.0
+
