@@ -1,15 +1,15 @@
-From f0a57b8e74ed020b4ad9520cd4142a05098a16e2 Mon Sep 17 00:00:00 2001
+From 27c6e778e56efe29f70a2de0eb4f48b4b5647ee0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 17 Nov 2021 15:49:11 +1100
 Subject: [PATCH] msdasql: Implement IRowset GetData
 
 ---
  dlls/msdasql/msdasql_main.c |  2 ++
- dlls/msdasql/session.c      | 46 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 47 insertions(+), 1 deletion(-)
+ dlls/msdasql/session.c      | 47 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 48 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/msdasql/msdasql_main.c b/dlls/msdasql/msdasql_main.c
-index ae57811799a..738fb0055a4 100644
+index 2f25498abca..a18e09da183 100644
 --- a/dlls/msdasql/msdasql_main.c
 +++ b/dlls/msdasql/msdasql_main.c
 @@ -30,6 +30,8 @@
@@ -22,19 +22,20 @@ index ae57811799a..738fb0055a4 100644
  #include "sqlext.h"
  #include "sqlucode.h"
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 17f8fcfbcc3..e271f36afa9 100644
+index 8da921c8c98..725714819e8 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -25,6 +25,8 @@
+@@ -25,6 +25,9 @@
  #include "objbase.h"
  #include "rpcproxy.h"
  #include "msdasc.h"
 +#include "msdadc.h"
 +#include "msdaguid.h"
- #include "wine/heap.h"
++
  #include "wine/debug.h"
  
-@@ -869,11 +871,53 @@ static HRESULT WINAPI msdasql_rowset_AddRefRows(IRowset *iface, DBCOUNTITEM coun
+ #include "msdasql.h"
+@@ -867,11 +870,53 @@ static HRESULT WINAPI msdasql_rowset_AddRefRows(IRowset *iface, DBCOUNTITEM coun
      return E_NOTIMPL;
  }
  
@@ -90,5 +91,5 @@ index 17f8fcfbcc3..e271f36afa9 100644
  
  static HRESULT WINAPI msdasql_rowset_GetNextRows(IRowset *iface, HCHAPTER reserved, DBROWOFFSET offset,
 -- 
-2.34.1
+2.42.0
 

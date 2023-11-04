@@ -39,10 +39,10 @@ index e271f36afa9..6163fa33f66 100644
          pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
 @@ -1274,7 +1280,7 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
  
-     access = heap_alloc( sizeof(struct msdasql_accessor));
+     access = malloc( sizeof(struct msdasql_accessor));
      access->size = 0;
--    ptr = access->data = heap_alloc(1024);
-+    ptr = access->data = heap_alloc(4096);
+-    ptr = access->data = malloc(1024);
++    ptr = access->data = malloc(4096);
      for ( i=0; i < count; i++)
      {
          SQLRETURN ret;

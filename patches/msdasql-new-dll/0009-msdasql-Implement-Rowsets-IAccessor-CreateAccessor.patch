@@ -75,15 +75,15 @@ index 76e55421ff0..189dedd7e47 100644
 +
 +    TRACE("%p 0x%08lx, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
 +
-+    //heap_free(rowset->bindings); // ??? Verify.
-+    rowset->bindings = heap_alloc(sizeof(DBBINDING) * count);
++    //free(rowset->bindings); // ??? Verify.
++    rowset->bindings = malloc(sizeof(DBBINDING) * count);
 +    rowset->bind_cnt = count;
 +
 +    memcpy(rowset->bindings, bindings, sizeof(DBBINDING) * count);
 +
-+    access = heap_alloc( sizeof(struct msdasql_accessor));
++    access = malloc( sizeof(struct msdasql_accessor));
 +    access->size = 0;
-+    ptr = access->data = heap_alloc(1024);
++    ptr = access->data = malloc(1024);
 +    for ( i=0; i < count; i++)
 +    {
 +        SQLRETURN ret;
@@ -106,8 +106,8 @@ index 76e55421ff0..189dedd7e47 100644
 +        {
 +            dump_sql_diag_records(SQL_HANDLE_STMT, rowset->hstmt);
 +
-+            heap_free(access->data);
-+            heap_free(access);
++            free(access->data);
++            free(access);
 +            return E_FAIL;
 +        }
 +    }
