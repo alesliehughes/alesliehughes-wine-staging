@@ -106,7 +106,7 @@ index 6ca3f2d66fc..8ed7a7ca615 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -117,7 +117,7 @@ index 7d134219941..4fe76b38935 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -128,7 +128,7 @@ index 81ae4606afe..f9ff91a2ad0 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -139,7 +139,7 @@ index 0f382dfad1e..ed95035867e 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -153,7 +153,7 @@ index 73e3bb7a7e4..733705a1daa 100644
  EXTRADLLFLAGS = -Wb,--prefer-native
 +PARENTSRC = ../mfc
 +
-+C_SRCS = \
++SOURCES = \
 +	afxstate.c
 diff --git a/dlls/mfc120u/mfc120u.spec b/dlls/mfc120u/mfc120u.spec
 index 416c328f945..07994550977 100644
@@ -301,7 +301,7 @@ index 5f8f8e83a8f..f4d7fbab034 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -312,7 +312,7 @@ index 7a14795adb0..2761ab8f61b 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -323,7 +323,7 @@ index a84ebed6c0c..f4d25f20aa6 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -334,7 +334,7 @@ index 3d2a51ab3dd..43beaf03db5 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -345,7 +345,7 @@ index 9ce74c619e0..c2ff10d980d 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -356,7 +356,7 @@ index d118fc0a544..e54dc4cc7f7 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -367,7 +367,7 @@ index 3f43ad06b2e..8ae18e5b13d 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -378,7 +378,7 @@ index 41344e3a9c9..dfc85073066 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -389,7 +389,7 @@ index 8599ffbea91..9966adc8dea 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
@@ -400,7 +400,7 @@ index ebe07ac23a1..bb61134b21b 100644
 @@ -5,4 +5,4 @@ EXTRADLLFLAGS = -Wb,--prefer-native
  PARENTSRC = ../mfc
  
- C_SRCS = \
+ SOURCES = \
 -	afxstate.c
 \ No newline at end of file
 +	afxstate.c
