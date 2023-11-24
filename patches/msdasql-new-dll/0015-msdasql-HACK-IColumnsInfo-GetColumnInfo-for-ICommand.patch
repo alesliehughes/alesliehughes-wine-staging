@@ -1,4 +1,4 @@
-From 83a624946d6781710897a9198f3815d5e5233a3d Mon Sep 17 00:00:00 2001
+From d9271d747ef42944b37dfce303795d1df8c22587 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 22 Nov 2021 16:17:01 +1100
 Subject: [PATCH] msdasql: HACK - IColumnsInfo GetColumnInfo for ICommandText
@@ -15,10 +15,10 @@ going to change between GetColumnInfo(Command), and GetColumnInfo(Rowset).
  2 files changed, 73 insertions(+), 32 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 338f7219f13..90576fb2cdd 100644
+index 3247b6aa664..5a414ca5d2f 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -1773,7 +1773,20 @@ static HRESULT WINAPI colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDINAL *col
+@@ -1782,7 +1782,20 @@ static HRESULT WINAPI colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDINAL *col
  {
      struct command *command = impl_from_IColumnsInfo( iface );
      FIXME("%p, %p, %p, %p\n", command, columns, colinfo, stringsbuffer);
@@ -41,12 +41,12 @@ index 338f7219f13..90576fb2cdd 100644
  
  static HRESULT WINAPI colsinfo_MapColumnIDs(IColumnsInfo *iface, DBORDINAL column_ids,
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index e2ee60280c2..03913d6e681 100644
+index f7b9f426cb2..d29119a8a7d 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
-@@ -43,6 +43,37 @@ static char mdbpath[MAX_PATH];
- 
- static const VARTYPE intptr_vartype = (sizeof(void *) == 8 ? VT_I8 : VT_I4);
+@@ -69,6 +69,37 @@ static void free_dbpropinfoset(ULONG count, DBPROPINFOSET *propinfoset)
+     CoTaskMemFree(propinfoset);
+ }
  
 +static char *dump_flags(DWORD flags)
 +{
@@ -82,7 +82,7 @@ index e2ee60280c2..03913d6e681 100644
  static void test_msdasql(void)
  {
      HRESULT hr;
-@@ -387,6 +418,11 @@ static void test_command_text(IUnknown *cmd)
+@@ -444,6 +475,11 @@ static void test_command_text(IUnknown *cmd)
      HRESULT hr;
      OLECHAR *str;
      GUID dialect;
@@ -94,7 +94,7 @@ index e2ee60280c2..03913d6e681 100644
  
      hr = IUnknown_QueryInterface(cmd, &IID_ICommandText, (void**)&command_text);
      ok(hr == S_OK, "got 0x%08lx\n", hr);
-@@ -394,6 +430,12 @@ static void test_command_text(IUnknown *cmd)
+@@ -451,6 +487,12 @@ static void test_command_text(IUnknown *cmd)
      hr = ICommandText_GetCommandText(command_text, &dialect, &str);
      ok(hr == DB_E_NOCOMMAND, "got 0x%08lx\n", hr);
  
@@ -107,7 +107,7 @@ index e2ee60280c2..03913d6e681 100644
  if (0)
  {
      /* Crashes under windows */
-@@ -430,6 +472,23 @@ if (0)
+@@ -487,6 +529,23 @@ if (0)
      ok (!lstrcmpW(L"select * from testing", str), "got %s\n", debugstr_w(str));
      HeapFree(GetProcessHeap(), 0, str);
  
@@ -131,7 +131,7 @@ index e2ee60280c2..03913d6e681 100644
      ICommandText_Release(command_text);
  }
  
-@@ -449,37 +508,6 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
+@@ -506,37 +565,6 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
      ICommandText_Release(command_text);
  }
  
@@ -170,5 +170,5 @@ index e2ee60280c2..03913d6e681 100644
  {
      IRowsetInfo *info;
 -- 
-2.34.1
+2.42.0
 
