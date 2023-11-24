@@ -1,0 +1,206 @@
+From c4960a513e1f7481ab77c1396ba3eee2cde3f920 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 4 Oct 2023 14:18:22 +1100
+Subject: [PATCH 2/5] msado15/tests: Add more tests
+
+---
+ dlls/msado15/tests/msado15.c  | 77 +++++++++++++++++++++++++++++++++++
+ dlls/msdasql/tests/provider.c | 72 +++++++++++++++++++++++++++++---
+ 2 files changed, 144 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 6bc3ad99f1b..6174abc1fea 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1500,6 +1500,12 @@ static void test_recordset_Find(void)
+     if (hr == S_OK)
+         _Recordset_Release(recordset);
+     SysFreeString( str );
++
++    str = SysAllocString(L"DELETE from testing");
++    hr = _Connection_Execute(connection, str, NULL, 0, &recordset);
++    ok( hr == S_OK, "got %08lx\n", hr );
++    SysFreeString( str );
++
+     str = SysAllocString(L"insert into testing values(1, 'red', 1.0)");
+     hr = _Connection_Execute(connection, str, NULL, 0, &recordset);
+     ok( hr == S_OK, "got %08lx\n", hr );
+@@ -1541,6 +1547,77 @@ static void test_recordset_Find(void)
+ 
+     hr = _Recordset_Close( recordset );
+     ok( hr == S_OK, "got %08lx\n", hr );
++
++    {
++        VARIANT active, source, val, index;
++        Fields *fields;
++        Field *field;
++        VARIANT missing;
++        IDispatch *dispatch;
++
++        V_VT( &missing ) = VT_ERROR;
++        V_ERROR( &missing ) = DISP_E_PARAMNOTFOUND;
++
++        VariantInit(&active);
++        hr = _Recordset_get_ActiveConnection(recordset, &active);
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT(&source) = VT_BSTR;
++        V_BSTR(&source) = SysAllocString(L"SELECT * from testing where 1 = 0");
++
++        hr = _Connection_QueryInterface( connection, &IID_IDispatch, (void**)&dispatch );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &active ) = VT_DISPATCH;
++        V_DISPATCH( &active ) = dispatch;
++
++        ok(0, "Before _Recordset_Open\n");
++        hr = _Recordset_Open(recordset, source, active, adOpenDynamic, adLockOptimistic, 0);
++        ok(0, "After _Recordset_Open\n");
++        ok( hr == S_OK, "got %08lx\n", hr );
++        VariantClear(&active);
++        VariantClear(&source);
++
++        ok(0, "Before _Recordset_AddNew\n");
++        hr = _Recordset_AddNew(recordset, missing, missing);
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok(0, "After _Recordset_AddNew\n");
++
++        hr = _Recordset_get_Fields( recordset, &fields );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        /* Col1  - int */
++        V_VT( &index ) = VT_I4;
++        V_I4( &index ) = 0;
++        hr = Fields_get_Item( fields, index, &field );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &val ) = VT_I4;
++        V_I4( &val ) = 0;
++        hr = Field_put_Value( field, val );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        Field_Release(field);
++
++        /* Col2 - String */
++        V_VT( &index ) = VT_I4;
++        V_I4( &index ) = 1;
++        hr = Fields_get_Item( fields, index, &field );
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        V_VT( &val ) = VT_BSTR;
++        V_BSTR( &val ) = SysAllocString(L"Hello");
++        hr = Field_put_Value( field, val );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        Field_Release(field);
++
++        Fields_Release(fields);
++
++        ok(0, "Before _Recordset_Update\n");
++        hr = _Recordset_Update(recordset, missing, missing);
++        ok(0, "After _Recordset_Update\n");
++        ok( hr == S_OK, "got %08lx\n", hr );
++    }
++
+     _Recordset_Release( recordset );
+ 
+     hr = _Connection_Close( connection );
+diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
+index d29119a8a7d..e8e4b84b2e3 100644
+--- a/dlls/msdasql/tests/provider.c
++++ b/dlls/msdasql/tests/provider.c
+@@ -18,6 +18,7 @@
+ 
+ #include <stdio.h>
+ #define COBJMACROS
++#define DBINITCONSTANTS
+ 
+ #include "msdasc.h"
+ #include "oledb.h"
+@@ -31,12 +32,12 @@
+ 
+ #include "wine/test.h"
+ 
+-DEFINE_GUID(DBPROPSET_DATASOURCEINFO, 0xc8b522bb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++//DEFINE_GUID(DBPROPSET_DATASOURCEINFO, 0xc8b522bb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++//DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++//DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++//DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+ 
+-DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
++//DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+ 
+ static BOOL db_created = TRUE;
+ static char mdbpath[MAX_PATH];
+@@ -626,6 +627,67 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
+ 
+     hr = IRowset_QueryInterface(rowset, &IID_IColumnsRowset, (void**)&col_rs);
+     ok(hr == S_OK, "got 0x%08lx\n", hr);
++
++    {
++        IRowset *rs_meta = NULL;
++        IRowset *rs_meta2 = NULL;
++        DBID columns[3];
++
++        columns[0] = DBCOLUMN_BASETABLENAME;
++        columns[1] = DBCOLUMN_BASECOLUMNNAME;
++        columns[2] = DBCOLUMN_KEYCOLUMN;
++
++        /* IColumnsRowset_GetColumnsRowset returns a constant set columns plus the columns requested. */
++        hr = IColumnsRowset_GetColumnsRowset(col_rs, NULL, 3, columns, &IID_IRowset, 0, NULL, (IUnknown**)&rs_meta);
++        ok(hr == S_OK, "got 0x%08lx\n", hr);
++        hr = IColumnsRowset_GetColumnsRowset(col_rs, NULL, 3, columns, &IID_IRowset, 0, NULL, (IUnknown**)&rs_meta2);
++        ok(hr == S_OK, "got 0x%08lx\n", hr);
++        ok(rs_meta != rs_meta2, "Same pointer returned\n");
++        IRowset_Release(rs_meta2);
++
++        if (hr == S_OK)
++        {
++            DBORDINAL i;
++            IAccessor *meta_acc = NULL;
++            IColumnsInfo *meta_colinfo = NULL;
++
++            DBORDINAL                 cColumns=0;
++            DBCOLUMNINFO *        colinfo            = NULL;
++            LPWSTR                pStringBuffer            = NULL;
++
++            hr= IRowset_QueryInterface(rs_meta, &IID_IColumnsInfo, (void**)&meta_colinfo);
++            ok(hr == S_OK, "got 0x%08lx\n", hr);
++
++            hr = IColumnsInfo_GetColumnInfo(meta_colinfo, &cColumns, &colinfo, &pStringBuffer);
++            ok(hr == S_OK, "got 0x%08lx\n", hr);
++            /* 12 static columns plus 3 above appended. */
++            ok(cColumns == 15, "cColumns 0x%08lx\n", cColumns);
++
++            for(i=0; i < cColumns; i++)
++            {
++                //ok(0, "ord %ld, %s, dbid.eKind %ld, dbid.uName %ld\n", rgColumnInfo[i].iOrdinal, debugstr_w(rgColumnInfo[i].pwszName), rgColumnInfo[i].columnid.eKind, rgColumnInfo[i].columnid.uName.ulPropid);
++                ok(0,"Column %Iu, pwszName: %s, pTypeInfo %p, iOrdinal %Iu, dwFlags 0x%08lx, "
++                  "ulColumnSize %Iu, wType %d, bPrecision %d, bScale %d, dbid.eKind %ld, dbid.uName %ld\n",
++                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
++                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
++                  colinfo[i].bPrecision, colinfo[i].bScale,
++                  colinfo[i].columnid.eKind, colinfo[i].columnid.uName.ulPropid);
++            }
++            CoTaskMemFree(colinfo);
++            CoTaskMemFree(pStringBuffer);
++
++            IColumnsInfo_Release(meta_colinfo);
++
++            hr= IRowset_QueryInterface(rs_meta, &IID_IAccessor, (void**)&meta_acc);
++            ok(hr == S_OK, "got 0x%08lx\n", hr);
++
++            IAccessor_Release(meta_acc);
++
++            IRowset_Release(rs_meta);
++        }
++
++        ok(hr == S_OK, "got 0x%08lx\n", hr);
++    }
+     IColumnsRowset_Release(col_rs);
+ 
+     hr = IRowset_QueryInterface(rowset, &IID_IRowsetChange, (void**)&unk);
+-- 
+2.42.0
+
