@@ -1,14 +1,11 @@
-From 1434855ce3d3d0b817edd6c8ed68e612514e0e9d Mon Sep 17 00:00:00 2001
+From ec3a5d194b6d6a63df5d775f9eeffd955d5ca3f9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 24 Nov 2023 08:31:20 +1100
-Subject: [PATCH 4/5] msdasql: Support IColumnsInfo for metadata recordset
+Subject: msdasql: Support IColumnsInfo for metadata recordset
 
----
- dlls/msdasql/session.c | 61 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 12941ee790d..999ffa1b53e 100644
+index 12941ee790d..71c6abd2d27 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
 @@ -1416,6 +1416,7 @@ static HRESULT WINAPI column_rs_GetAvailableColumns(IColumnsRowset *iface, DBORD
@@ -42,7 +39,7 @@ index 12941ee790d..999ffa1b53e 100644
  
      if(*ppv)
      {
-@@ -1527,6 +1537,56 @@ static const struct IRowsetVtbl metadata_rowset_vtbl =
+@@ -1527,6 +1537,54 @@ static const struct IRowsetVtbl metadata_rowset_vtbl =
      metadata_rowset_RestartPosition
  };
  
@@ -67,8 +64,6 @@ index 12941ee790d..999ffa1b53e 100644
 +static HRESULT WINAPI meta_colsinfo_GetColumnInfo(IColumnsInfo *iface, DBORDINAL *columns,
 +        DBCOLUMNINFO **colinfo, OLECHAR **stringsbuffer)
 +{
-+#define MAX_COLUMN_LEN 128
-+
 +    struct metadata_rowset *rowset = meta_impl_from_IColumnsInfo( iface );
 +
 +    FIXME("%p, %p, %p, %p\n", rowset, columns, colinfo, stringsbuffer);
@@ -99,7 +94,7 @@ index 12941ee790d..999ffa1b53e 100644
  static HRESULT WINAPI column_rs_GetColumnsRowset(IColumnsRowset *iface, IUnknown *outer, DBORDINAL count,
          const DBID columns[], REFIID riid, ULONG property_cnt, DBPROPSET property_sets[], IUnknown **unk_rs)
  {
-@@ -1554,6 +1614,7 @@ static HRESULT WINAPI column_rs_GetColumnsRowset(IColumnsRowset *iface, IUnknown
+@@ -1554,6 +1612,7 @@ static HRESULT WINAPI column_rs_GetColumnsRowset(IColumnsRowset *iface, IUnknown
          return E_OUTOFMEMORY;
  
      metadata_rs->IRowset_iface.lpVtbl = &metadata_rowset_vtbl;
@@ -107,6 +102,3 @@ index 12941ee790d..999ffa1b53e 100644
      metadata_rs->refs = 1;
      metadata_rs->dbid_cnt = count;
      if (count)
--- 
-2.42.0
-
