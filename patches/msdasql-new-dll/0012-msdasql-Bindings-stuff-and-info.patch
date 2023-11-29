@@ -21,7 +21,7 @@ index e271f36afa9..6163fa33f66 100644
          CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
  
      FIXME("%p, %Id, %Id, %p\n", rowset, row, accessor, data);
-+    FIXME("rowset->bind_cnt %ld\n", rowset->bind_cnt);
++    FIXME("rowset->bind_cnt %Id\n", rowset->bind_cnt);
      //memcpy(data, access->data, access->size);
      for(i=0; i < rowset->bind_cnt; i++)
      {

@@ -1,7 +1,7 @@
-From c4960a513e1f7481ab77c1396ba3eee2cde3f920 Mon Sep 17 00:00:00 2001
+From 4d2af85aef2c480373d037911c49d495b0dfb655 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 4 Oct 2023 14:18:22 +1100
-Subject: [PATCH 2/5] msado15/tests: Add more tests
+Subject: [PATCH] msado15/tests: Add more tests
 
 ---
  dlls/msado15/tests/msado15.c  | 77 +++++++++++++++++++++++++++++++++++
@@ -104,7 +104,7 @@ index 6bc3ad99f1b..6174abc1fea 100644
  
      hr = _Connection_Close( connection );
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index d29119a8a7d..e8e4b84b2e3 100644
+index d29119a8a7d..80b9047b92d 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
 @@ -18,6 +18,7 @@
@@ -176,9 +176,9 @@ index d29119a8a7d..e8e4b84b2e3 100644
 +            for(i=0; i < cColumns; i++)
 +            {
 +                //ok(0, "ord %ld, %s, dbid.eKind %ld, dbid.uName %ld\n", rgColumnInfo[i].iOrdinal, debugstr_w(rgColumnInfo[i].pwszName), rgColumnInfo[i].columnid.eKind, rgColumnInfo[i].columnid.uName.ulPropid);
-+                ok(0,"Column %Iu, pwszName: %s, pTypeInfo %p, iOrdinal %Iu, dwFlags 0x%08lx, "
++                ok(0,"Column %Iu, pwszName: %s, iOrdinal %Iu, dwFlags 0x%08lx, "
 +                  "ulColumnSize %Iu, wType %d, bPrecision %d, bScale %d, dbid.eKind %ld, dbid.uName %ld\n",
-+                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].pTypeInfo, colinfo[i].iOrdinal,
++                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].iOrdinal,
 +                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
 +                  colinfo[i].bPrecision, colinfo[i].bScale,
 +                  colinfo[i].columnid.eKind, colinfo[i].columnid.uName.ulPropid);
