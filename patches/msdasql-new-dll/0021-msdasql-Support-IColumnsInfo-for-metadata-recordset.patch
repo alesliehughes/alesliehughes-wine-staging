@@ -1,7 +1,7 @@
 From ec3a5d194b6d6a63df5d775f9eeffd955d5ca3f9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 24 Nov 2023 08:31:20 +1100
-Subject: msdasql: Support IColumnsInfo for metadata recordset
+Subject: msdasql: Support IColumnsInfo for metadata rowset
 
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c

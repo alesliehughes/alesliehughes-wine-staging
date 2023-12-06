@@ -1,18 +1,14 @@
-From 602e83b2495e3b2131811eb4a3216800b0a112ac Mon Sep 17 00:00:00 2001
+From c63c2f31d9b9c9793b34b3da6ac4132d38372c0b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 27 Nov 2023 15:06:07 +1100
-Subject: [PATCH] msdasql: Implement IColumnsInfo::GetColumnInfo for column
- metadata.
+Subject: msdasql: Implement IColumnsInfo::GetColumnInfo for column metadata.
 
----
- dlls/msdasql/session.c | 101 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 99 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index 61e351b0ca7..b8758a172b1 100644
+index 61e351b0ca7..4d866e03e64 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -1555,17 +1555,114 @@ static ULONG  WINAPI meta_colsinfo_Release(IColumnsInfo *iface)
+@@ -1555,17 +1555,117 @@ static ULONG  WINAPI meta_colsinfo_Release(IColumnsInfo *iface)
      return IRowset_Release(&rowset->IRowset_iface);
  }
  
@@ -22,9 +18,12 @@ index 61e351b0ca7..b8758a172b1 100644
 +{
 +    DBCOLUMNINFO *column = &columns[ordinal];
 +    if(colname)
++    {
 +        lstrcpyW(namebuf, colname);
-+
-+    column->pwszName = namebuf;
++        column->pwszName = namebuf;
++    }
++    else
++        column->pwszName = NULL;
 +    column->pTypeInfo = NULL;
 +    column->iOrdinal = ordinal;
 +    column->wType = bindtype;
@@ -48,7 +47,8 @@ index 61e351b0ca7..b8758a172b1 100644
 +    DBORDINAL colcnt;
 +    OLECHAR *ptr;
 +    int i;
-+#define MAX_COLUMN_LEN 128
++    int col = 0;
++#define MAX_COLUMN_LEN 64
 +#define META_COLUMN_CNT 12
  
 -    FIXME("%p, %p, %p, %p\n", rowset, columns, colinfo, stringsbuffer);
@@ -73,49 +73,47 @@ index 61e351b0ca7..b8758a172b1 100644
 +    memset(dbcolumn, 0, colcnt * sizeof(DBCOLUMNINFO));
 +
 +    /* 12 Standard columns */
-+    ptr = meta_set_column_info(dbcolumn, ptr, NULL, 0, DBTYPE_UI4,
++    ptr = meta_set_column_info(dbcolumn, ptr, NULL, col++, DBTYPE_UI4,
 +                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_ISBOOKMARK, 4, 10, &DBCOLUMN_IDNAME);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_IDNAME", 1, DBTYPE_WSTR,
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_IDNAME", col++, DBTYPE_WSTR,
 +                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, 255, &DBCOLUMN_IDNAME);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_GUID", 2, DBTYPE_GUID,
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_GUID", col++, DBTYPE_GUID,
 +                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 16, 255, &DBCOLUMN_GUID);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_PROPID", 3, DBTYPE_UI4,
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_PROPID", col++, DBTYPE_UI4,
 +                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 10, &DBCOLUMN_PROPID);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_NAME", 4, DBTYPE_WSTR,
-+                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, 10, &DBCOLUMN_NAME);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_NUMBER", 5, DBTYPE_WSTR,
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_NAME", col++, DBTYPE_WSTR,
++                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, 255, &DBCOLUMN_NAME);
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_NUMBER", col++, DBTYPE_UI4,
 +                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 10, &DBCOLUMN_NUMBER);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_TYPE", 6, DBTYPE_UI2,
-+                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 5, &DBCOLUMN_TYPE);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_TYPEINFO", 7, DBTYPE_IUNKNOWN,
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_TYPE", col++, DBTYPE_UI2,
++                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 5, &DBCOLUMN_TYPE);
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_TYPEINFO", col++, DBTYPE_IUNKNOWN,
 +                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 255, &DBCOLUMN_TYPEINFO);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_COLUMNSIZE", 8, DBTYPE_UI4,
-+                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 255, &DBCOLUMN_COLUMNSIZE);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_PRECISION", 9, DBTYPE_UI2,
-+                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 255, &DBCOLUMN_PRECISION);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_SCALE", 10, DBTYPE_I2,
-+                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 255, &DBCOLUMN_SCALE);
-+    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_FLAGS", 11, DBTYPE_UI4,
-+                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 255, &DBCOLUMN_FLAGS);
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_COLUMNSIZE", col++, DBTYPE_UI4,
++                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 10, &DBCOLUMN_COLUMNSIZE);
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_PRECISION", col++, DBTYPE_UI2,
++                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 5, &DBCOLUMN_PRECISION);
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_SCALE", col++, DBTYPE_I2,
++                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 5, &DBCOLUMN_SCALE);
++    ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_FLAGS", col++, DBTYPE_UI4,
++                                    DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, 10, &DBCOLUMN_FLAGS);
 +
 +    /* Requested columns */
 +    for (i=0; i < rowset->dbid_cnt; i++)
 +    {
-+        int col = 12 + i;
-+
 +        switch(rowset->dbids[i].uName.ulPropid)
 +        {
 +            case 10:
-+                ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_BASECOLUMNNAME", col, DBTYPE_WSTR,
++                ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_BASECOLUMNNAME", col++, DBTYPE_WSTR,
 +                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, 255, &DBCOLUMN_BASECOLUMNNAME);
 +                break;
 +            case 11:
-+                ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_BASETABLENAME", col, DBTYPE_WSTR,
++                ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_BASETABLENAME", col++, DBTYPE_WSTR,
 +                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, 255, &DBCOLUMN_BASETABLENAME);
 +                break;
 +            case 41:
-+                ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_KEYCOLUMN", col, DBTYPE_BOOL,
-+                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 255, &DBCOLUMN_KEYCOLUMN);
++                ptr = meta_set_column_info(dbcolumn, ptr, L"DBCOLUMN_KEYCOLUMN", col++, DBTYPE_BOOL,
++                                    DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, 255, &DBCOLUMN_KEYCOLUMN);
 +                break;
 +            default:
 +                ERR("Unsupported DBID %ld\n", rowset->dbids[i].uName.ulPropid);
@@ -125,10 +123,8 @@ index 61e351b0ca7..b8758a172b1 100644
 +
 +    *colinfo = dbcolumn;
 +#undef MAX_COLUMN_LEN
++#undef META_COLUMN_CNT
 +    return S_OK;
  }
  
  static HRESULT WINAPI meta_colsinfo_MapColumnIDs(IColumnsInfo *iface, DBORDINAL column_ids,
--- 
-2.43.0
-

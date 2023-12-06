@@ -1,0 +1,170 @@
+From dda893c29719bd0c9fd3430fdf738f5dec5d3c3b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 7 Dec 2023 07:55:38 +1100
+Subject: [PATCH] msdasql/tests: Add tests for metadata rowset
+
+---
+ dlls/msdasql/tests/provider.c | 116 +++++++++++++++++++++++++---------
+ 1 file changed, 87 insertions(+), 29 deletions(-)
+
+diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
+index d29119a8a7d..1203bff231e 100644
+--- a/dlls/msdasql/tests/provider.c
++++ b/dlls/msdasql/tests/provider.c
+@@ -18,6 +18,7 @@
+ 
+ #include <stdio.h>
+ #define COBJMACROS
++#define DBINITCONSTANTS
+ 
+ #include "msdasc.h"
+ #include "oledb.h"
+@@ -31,12 +32,6 @@
+ 
+ #include "wine/test.h"
+ 
+-DEFINE_GUID(DBPROPSET_DATASOURCEINFO, 0xc8b522bb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+-
+-DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
+ 
+ static BOOL db_created = TRUE;
+ static char mdbpath[MAX_PATH];
+@@ -574,6 +569,14 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
+     ICommandText *specification = NULL;
+     IUnknown *unk;
+     HRESULT hr;
++    IRowset *rs_meta = NULL, *rs_meta2 = NULL;
++    IAccessor *meta_acc = NULL;
++    IColumnsInfo *meta_colinfo = NULL;
++    DBORDINAL i;
++    DBID columns[3];
++    DBORDINAL column_cnt = 0;
++    DBCOLUMNINFO *dbcolumninfo;
++    OLECHAR *buffer;
+ 
+     hr = IRowset_QueryInterface(rowset, &IID_IRowsetInfo, (void**)&info);
+     ok(hr == S_OK, "got 0x%08lx\n", hr);
+@@ -592,39 +595,94 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
+ 
+     hr = IRowset_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&col_info);
+     ok(hr == S_OK, "got 0x%08lx\n", hr);
++
++    hr = IColumnsInfo_GetColumnInfo(col_info, &column_cnt, &dbcolumninfo, &buffer);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++    ok(column_cnt == 3, "Column count %Id\n", column_cnt);
++
++    CoTaskMemFree(dbcolumninfo);
++    CoTaskMemFree(buffer);
++    IColumnsInfo_Release(col_info);
++
++    hr = IRowset_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++    IAccessor_Release(accessor);
++
++    hr = IRowset_QueryInterface(rowset, &IID_IColumnsRowset, (void**)&col_rs);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++
++    columns[0] = DBCOLUMN_BASETABLENAME;
++    columns[1] = DBCOLUMN_BASECOLUMNNAME;
++    columns[2] = DBCOLUMN_KEYCOLUMN;
++
++    /* IColumnsRowset_GetColumnsRowset returns a constant set columns plus the requested columns. */
++    hr = IColumnsRowset_GetColumnsRowset(col_rs, NULL, 3, columns, &IID_IRowset, 0, NULL, (IUnknown**)&rs_meta);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++    hr = IColumnsRowset_GetColumnsRowset(col_rs, NULL, 3, columns, &IID_IRowset, 0, NULL, (IUnknown**)&rs_meta2);
++    ok(hr == S_OK, "got 0x%08lx\n", hr);
++    ok(rs_meta != rs_meta2, "Same pointer returned\n");
++    IRowset_Release(rs_meta2);
++
+     if (hr == S_OK)
+     {
+-        DBORDINAL columns;
+-        DBCOLUMNINFO *dbcolumninfo;
+-        OLECHAR *buffer;
+-        int i;
++        LPWSTR                pStringBuffer            = NULL;
++        DBCOLUMNINFO colinfo_data[] =
++        {
++            { NULL,                           NULL,  0, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_ISBOOKMARK, 4,  DBTYPE_UI4,  10, 255 },
++            { (WCHAR*)L"DBCOLUMN_IDNAME",     NULL,  1, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, DBTYPE_WSTR, 255, 255 },
++            { (WCHAR*)L"DBCOLUMN_GUID",       NULL,  2, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 16, DBTYPE_GUID, 255, 255 },
++            { (WCHAR*)L"DBCOLUMN_PROPID",     NULL,  3, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, DBTYPE_UI4, 10, 255 },
++            { (WCHAR*)L"DBCOLUMN_NAME",       NULL,  4, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, DBTYPE_WSTR, 255, 255 },
++            { (WCHAR*)L"DBCOLUMN_NUMBER",     NULL,  5, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, DBTYPE_UI4, 10, 255 },
++            { (WCHAR*)L"DBCOLUMN_TYPE",       NULL,  6, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, DBTYPE_UI2, 5, 255 },
++            { (WCHAR*)L"DBCOLUMN_TYPEINFO",   NULL,  7, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, DBTYPE_IUNKNOWN, 255, 255 },
++            { (WCHAR*)L"DBCOLUMN_COLUMNSIZE", NULL,  8, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, DBTYPE_UI4, 10, 255 },
++            { (WCHAR*)L"DBCOLUMN_PRECISION",  NULL,  9, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, DBTYPE_UI2, 5, 255 },
++            { (WCHAR*)L"DBCOLUMN_SCALE",      NULL, 10, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, DBTYPE_I2, 5, 255 },
++            { (WCHAR*)L"DBCOLUMN_FLAGS",      NULL, 11, DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 4, DBTYPE_UI4, 10, 255 },
++            /* Requested columns */
++            { (WCHAR*)L"DBCOLUMN_BASETABLENAME",  NULL, 12, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, DBTYPE_WSTR, 255, 255 },
++            { (WCHAR*)L"DBCOLUMN_BASECOLUMNNAME", NULL, 13, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_WRITEUNKNOWN, 192, DBTYPE_WSTR, 255, 255 },
++            { (WCHAR*)L"DBCOLUMN_KEYCOLUMN",      NULL, 14, DBCOLUMNFLAGS_MAYBENULL | DBCOLUMNFLAGS_ISFIXEDLENGTH | DBCOLUMNFLAGS_WRITEUNKNOWN, 2, DBTYPE_BOOL, 255, 255 }
++        };
++
++        hr = IRowset_QueryInterface(rs_meta, &IID_IColumnsInfo, (void**)&meta_colinfo);
++        ok(hr == S_OK, "got 0x%08lx\n", hr);
+ 
+-        hr = IColumnsInfo_GetColumnInfo(col_info, &columns, &dbcolumninfo, &buffer);
++        column_cnt = 0;
++        hr = IColumnsInfo_GetColumnInfo(meta_colinfo, &column_cnt, &dbcolumninfo, &pStringBuffer);
+         ok(hr == S_OK, "got 0x%08lx\n", hr);
++        /* 12 static columns plus 3 above appended. */
++        ok(column_cnt == 15, "Column count %Id\n", column_cnt);
+ 
+-        for( i = 0; i < columns; i++ )
++        for( i = 0; i < ARRAY_SIZE(colinfo_data); i++ )
+         {
+-            ok (0, "%d *************\n", i);
+-            ok (0, "Name       : %s\n", debugstr_w(dbcolumninfo[i].pwszName));
+-
+-            //ok (dbcolumninfo[i].pTypeInfo == colinfo_data[i].pTypeInfo, "got %p/%p", dbcolumninfo[i].pTypeInfo, colinfo_data[i].pTypeInfo);
+-            //ok (0, "Ordinal    : %ld\n", dbcolumninfo[i].iOrdinal);
+-            ok (0, "Flags      : 0x%08lx (%s)\n", dbcolumninfo[i].dwFlags, dump_flags(dbcolumninfo[i].dwFlags));
+-            ok (0, "Column Size: %lu\n", dbcolumninfo[i].ulColumnSize);
+-            ok (0, "Type       : %d\n", dbcolumninfo[i].wType);
+-            //ok (0, "got %d\n", dbcolumninfo[i].bPrecision);
+-            //ok (0, "got %d\n", dbcolumninfo[i].bScale);
++            if (!dbcolumninfo[i].pwszName || !colinfo_data[i].pwszName)
++                ok (dbcolumninfo[i].pwszName == colinfo_data[i].pwszName, "got %p/%p\n", dbcolumninfo[i].pwszName, colinfo_data[i].pwszName);
++            else
++                ok ( !wcscmp(dbcolumninfo[i].pwszName, colinfo_data[i].pwszName), "got %s/%s\n",
++                     debugstr_w(dbcolumninfo[i].pwszName), debugstr_w(colinfo_data[i].pwszName));
++
++            ok (dbcolumninfo[i].pTypeInfo == colinfo_data[i].pTypeInfo, "got %p/%p\n", dbcolumninfo[i].pTypeInfo, colinfo_data[i].pTypeInfo);
++            ok (dbcolumninfo[i].iOrdinal == colinfo_data[i].iOrdinal, "got %Id/%Id\n", dbcolumninfo[i].iOrdinal, colinfo_data[i].iOrdinal);
++            ok (dbcolumninfo[i].dwFlags == colinfo_data[i].dwFlags, "%Id got 0x%08lx/0x%08lx\n", i, dbcolumninfo[i].dwFlags, colinfo_data[i].dwFlags);
++            ok (dbcolumninfo[i].ulColumnSize == colinfo_data[i].ulColumnSize, "got %Iu/%Iu\n", dbcolumninfo[i].ulColumnSize, colinfo_data[i].ulColumnSize);
++            ok (dbcolumninfo[i].wType == colinfo_data[i].wType, "got %d/%d\n", dbcolumninfo[i].wType, colinfo_data[i].wType);
++            ok (dbcolumninfo[i].bPrecision == colinfo_data[i].bPrecision, "got %d/%d\n", dbcolumninfo[i].bPrecision, colinfo_data[i].bPrecision);
++            ok (dbcolumninfo[i].bScale == colinfo_data[i].bScale, "got %d/%d\n", dbcolumninfo[i].bScale, colinfo_data[i].bScale);
+         }
++        CoTaskMemFree(dbcolumninfo);
++        CoTaskMemFree(pStringBuffer);
+ 
+-        CoTaskMemFree(buffer);
+-    }
+-    IColumnsInfo_Release(col_info);
++        IColumnsInfo_Release(meta_colinfo);
+ 
+-    hr = IRowset_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
+-    ok(hr == S_OK, "got 0x%08lx\n", hr);
+-    IAccessor_Release(accessor);
++        hr= IRowset_QueryInterface(rs_meta, &IID_IAccessor, (void**)&meta_acc);
++        ok(hr == S_OK, "got 0x%08lx\n", hr);
++        IAccessor_Release(meta_acc);
++
++        IRowset_Release(rs_meta);
++    }
+ 
+-    hr = IRowset_QueryInterface(rowset, &IID_IColumnsRowset, (void**)&col_rs);
+     ok(hr == S_OK, "got 0x%08lx\n", hr);
+     IColumnsRowset_Release(col_rs);
+ 
+-- 
+2.43.0
+
