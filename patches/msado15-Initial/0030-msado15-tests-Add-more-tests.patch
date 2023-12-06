@@ -1,12 +1,11 @@
-From 4d2af85aef2c480373d037911c49d495b0dfb655 Mon Sep 17 00:00:00 2001
+From 5af5a9b67f9b67ecdf1dd183329709e53d052bae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Wed, 4 Oct 2023 14:18:22 +1100
+Date: Thu, 7 Dec 2023 07:54:46 +1100
 Subject: [PATCH] msado15/tests: Add more tests
 
 ---
- dlls/msado15/tests/msado15.c  | 77 +++++++++++++++++++++++++++++++++++
- dlls/msdasql/tests/provider.c | 72 +++++++++++++++++++++++++++++---
- 2 files changed, 144 insertions(+), 5 deletions(-)
+ dlls/msado15/tests/msado15.c | 77 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
 
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
 index 6bc3ad99f1b..6174abc1fea 100644
@@ -103,104 +102,6 @@ index 6bc3ad99f1b..6174abc1fea 100644
      _Recordset_Release( recordset );
  
      hr = _Connection_Close( connection );
-diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index d29119a8a7d..80b9047b92d 100644
---- a/dlls/msdasql/tests/provider.c
-+++ b/dlls/msdasql/tests/provider.c
-@@ -18,6 +18,7 @@
- 
- #include <stdio.h>
- #define COBJMACROS
-+#define DBINITCONSTANTS
- 
- #include "msdasc.h"
- #include "oledb.h"
-@@ -31,12 +32,12 @@
- 
- #include "wine/test.h"
- 
--DEFINE_GUID(DBPROPSET_DATASOURCEINFO, 0xc8b522bb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
--DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
--DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
--DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
-+//DEFINE_GUID(DBPROPSET_DATASOURCEINFO, 0xc8b522bb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
-+//DEFINE_GUID(DBPROPSET_DBINITALL, 0xc8b522ca, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
-+//DEFINE_GUID(DBPROPSET_DBINIT,    0xc8b522bc, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
-+//DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
- 
--DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
-+//DEFINE_GUID(DBGUID_DEFAULT,      0xc8b521fb, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0xaa, 0x00, 0x44, 0x77, 0x3d);
- 
- static BOOL db_created = TRUE;
- static char mdbpath[MAX_PATH];
-@@ -626,6 +627,67 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
- 
-     hr = IRowset_QueryInterface(rowset, &IID_IColumnsRowset, (void**)&col_rs);
-     ok(hr == S_OK, "got 0x%08lx\n", hr);
-+
-+    {
-+        IRowset *rs_meta = NULL;
-+        IRowset *rs_meta2 = NULL;
-+        DBID columns[3];
-+
-+        columns[0] = DBCOLUMN_BASETABLENAME;
-+        columns[1] = DBCOLUMN_BASECOLUMNNAME;
-+        columns[2] = DBCOLUMN_KEYCOLUMN;
-+
-+        /* IColumnsRowset_GetColumnsRowset returns a constant set columns plus the columns requested. */
-+        hr = IColumnsRowset_GetColumnsRowset(col_rs, NULL, 3, columns, &IID_IRowset, 0, NULL, (IUnknown**)&rs_meta);
-+        ok(hr == S_OK, "got 0x%08lx\n", hr);
-+        hr = IColumnsRowset_GetColumnsRowset(col_rs, NULL, 3, columns, &IID_IRowset, 0, NULL, (IUnknown**)&rs_meta2);
-+        ok(hr == S_OK, "got 0x%08lx\n", hr);
-+        ok(rs_meta != rs_meta2, "Same pointer returned\n");
-+        IRowset_Release(rs_meta2);
-+
-+        if (hr == S_OK)
-+        {
-+            DBORDINAL i;
-+            IAccessor *meta_acc = NULL;
-+            IColumnsInfo *meta_colinfo = NULL;
-+
-+            DBORDINAL                 cColumns=0;
-+            DBCOLUMNINFO *        colinfo            = NULL;
-+            LPWSTR                pStringBuffer            = NULL;
-+
-+            hr= IRowset_QueryInterface(rs_meta, &IID_IColumnsInfo, (void**)&meta_colinfo);
-+            ok(hr == S_OK, "got 0x%08lx\n", hr);
-+
-+            hr = IColumnsInfo_GetColumnInfo(meta_colinfo, &cColumns, &colinfo, &pStringBuffer);
-+            ok(hr == S_OK, "got 0x%08lx\n", hr);
-+            /* 12 static columns plus 3 above appended. */
-+            ok(cColumns == 15, "cColumns 0x%08lx\n", cColumns);
-+
-+            for(i=0; i < cColumns; i++)
-+            {
-+                //ok(0, "ord %ld, %s, dbid.eKind %ld, dbid.uName %ld\n", rgColumnInfo[i].iOrdinal, debugstr_w(rgColumnInfo[i].pwszName), rgColumnInfo[i].columnid.eKind, rgColumnInfo[i].columnid.uName.ulPropid);
-+                ok(0,"Column %Iu, pwszName: %s, iOrdinal %Iu, dwFlags 0x%08lx, "
-+                  "ulColumnSize %Iu, wType %d, bPrecision %d, bScale %d, dbid.eKind %ld, dbid.uName %ld\n",
-+                  i, debugstr_w(colinfo[i].pwszName), colinfo[i].iOrdinal,
-+                  colinfo[i].dwFlags, colinfo[i].ulColumnSize, colinfo[i].wType,
-+                  colinfo[i].bPrecision, colinfo[i].bScale,
-+                  colinfo[i].columnid.eKind, colinfo[i].columnid.uName.ulPropid);
-+            }
-+            CoTaskMemFree(colinfo);
-+            CoTaskMemFree(pStringBuffer);
-+
-+            IColumnsInfo_Release(meta_colinfo);
-+
-+            hr= IRowset_QueryInterface(rs_meta, &IID_IAccessor, (void**)&meta_acc);
-+            ok(hr == S_OK, "got 0x%08lx\n", hr);
-+
-+            IAccessor_Release(meta_acc);
-+
-+            IRowset_Release(rs_meta);
-+        }
-+
-+        ok(hr == S_OK, "got 0x%08lx\n", hr);
-+    }
-     IColumnsRowset_Release(col_rs);
- 
-     hr = IRowset_QueryInterface(rowset, &IID_IRowsetChange, (void**)&unk);
 -- 
-2.42.0
+2.43.0
 
