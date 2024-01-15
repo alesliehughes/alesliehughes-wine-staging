@@ -1,0 +1,295 @@
+From eb54dfe48a4237aead03977b45e9973ef94812f6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 15 Jan 2024 10:26:03 +1100
+Subject: [PATCH] d3dx9_*: D3DXMatrixMultiply Support SSE maths
+
+Wine-bug: https://bugs.winehq.org/show_bug.cgi?id=38284
+
+---
+ dlls/d3dx9_24/Makefile.in |  2 +-
+ dlls/d3dx9_25/Makefile.in |  2 +-
+ dlls/d3dx9_26/Makefile.in |  2 +-
+ dlls/d3dx9_27/Makefile.in |  2 +-
+ dlls/d3dx9_28/Makefile.in |  2 +-
+ dlls/d3dx9_29/Makefile.in |  2 +-
+ dlls/d3dx9_30/Makefile.in |  2 +-
+ dlls/d3dx9_31/Makefile.in |  2 +-
+ dlls/d3dx9_32/Makefile.in |  2 +-
+ dlls/d3dx9_33/Makefile.in |  2 +-
+ dlls/d3dx9_34/Makefile.in |  2 +-
+ dlls/d3dx9_35/Makefile.in |  2 +-
+ dlls/d3dx9_36/Makefile.in |  2 +-
+ dlls/d3dx9_36/math.c      | 39 ++++++++++++++++++++++++++++++++++++---
+ dlls/d3dx9_37/Makefile.in |  2 +-
+ dlls/d3dx9_38/Makefile.in |  2 +-
+ dlls/d3dx9_39/Makefile.in |  2 +-
+ dlls/d3dx9_40/Makefile.in |  2 +-
+ dlls/d3dx9_41/Makefile.in |  2 +-
+ dlls/d3dx9_42/Makefile.in |  2 +-
+ dlls/d3dx9_43/Makefile.in |  2 +-
+ 21 files changed, 56 insertions(+), 23 deletions(-)
+
+diff --git a/dlls/d3dx9_24/Makefile.in b/dlls/d3dx9_24/Makefile.in
+index d0fef3bebd0..645f425d92b 100644
+--- a/dlls/d3dx9_24/Makefile.in
++++ b/dlls/d3dx9_24/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=24
++EXTRADEFS = -DD3DX_SDK_VERSION=24 -msse
+ MODULE    = d3dx9_24.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_25/Makefile.in b/dlls/d3dx9_25/Makefile.in
+index 869c1162904..fe53e16425a 100644
+--- a/dlls/d3dx9_25/Makefile.in
++++ b/dlls/d3dx9_25/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=25
++EXTRADEFS = -DD3DX_SDK_VERSION=25 -msse
+ MODULE    = d3dx9_25.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_26/Makefile.in b/dlls/d3dx9_26/Makefile.in
+index ae3f2e18953..6bd3f3cdde2 100644
+--- a/dlls/d3dx9_26/Makefile.in
++++ b/dlls/d3dx9_26/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=26
++EXTRADEFS = -DD3DX_SDK_VERSION=26 -msse
+ MODULE    = d3dx9_26.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_27/Makefile.in b/dlls/d3dx9_27/Makefile.in
+index 4f2993638f3..168d4766f86 100644
+--- a/dlls/d3dx9_27/Makefile.in
++++ b/dlls/d3dx9_27/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=27
++EXTRADEFS = -DD3DX_SDK_VERSION=27 -msse
+ MODULE    = d3dx9_27.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_28/Makefile.in b/dlls/d3dx9_28/Makefile.in
+index 3c7ddb93c2e..2be24707767 100644
+--- a/dlls/d3dx9_28/Makefile.in
++++ b/dlls/d3dx9_28/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=28
++EXTRADEFS = -DD3DX_SDK_VERSION=28 -msse
+ MODULE    = d3dx9_28.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_29/Makefile.in b/dlls/d3dx9_29/Makefile.in
+index 75eb3e73243..22d17865284 100644
+--- a/dlls/d3dx9_29/Makefile.in
++++ b/dlls/d3dx9_29/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=29
++EXTRADEFS = -DD3DX_SDK_VERSION=29 -msse
+ MODULE    = d3dx9_29.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_30/Makefile.in b/dlls/d3dx9_30/Makefile.in
+index 9b8eb133611..159f4358674 100644
+--- a/dlls/d3dx9_30/Makefile.in
++++ b/dlls/d3dx9_30/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=30
++EXTRADEFS = -DD3DX_SDK_VERSION=30 -msse
+ MODULE    = d3dx9_30.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_31/Makefile.in b/dlls/d3dx9_31/Makefile.in
+index 52d3a3d0986..c5519061e2a 100644
+--- a/dlls/d3dx9_31/Makefile.in
++++ b/dlls/d3dx9_31/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=31
++EXTRADEFS = -DD3DX_SDK_VERSION=31 -msse
+ MODULE    = d3dx9_31.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_32/Makefile.in b/dlls/d3dx9_32/Makefile.in
+index 70a1696de97..9ede4e64a54 100644
+--- a/dlls/d3dx9_32/Makefile.in
++++ b/dlls/d3dx9_32/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=32
++EXTRADEFS = -DD3DX_SDK_VERSION=32 -msse
+ MODULE    = d3dx9_32.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_33/Makefile.in b/dlls/d3dx9_33/Makefile.in
+index 2c01e9da3d9..df3ed76fc55 100644
+--- a/dlls/d3dx9_33/Makefile.in
++++ b/dlls/d3dx9_33/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=33
++EXTRADEFS = -DD3DX_SDK_VERSION=33 -msse
+ MODULE    = d3dx9_33.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_34/Makefile.in b/dlls/d3dx9_34/Makefile.in
+index 1e317f37226..bc1644a0970 100644
+--- a/dlls/d3dx9_34/Makefile.in
++++ b/dlls/d3dx9_34/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=34
++EXTRADEFS = -DD3DX_SDK_VERSION=34 -msse
+ MODULE    = d3dx9_34.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_35/Makefile.in b/dlls/d3dx9_35/Makefile.in
+index 859cef9b1ce..84c344964a0 100644
+--- a/dlls/d3dx9_35/Makefile.in
++++ b/dlls/d3dx9_35/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=35
++EXTRADEFS = -DD3DX_SDK_VERSION=35 -msse
+ MODULE    = d3dx9_35.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_36/Makefile.in b/dlls/d3dx9_36/Makefile.in
+index 5370b3e7e7a..798ac14bd53 100644
+--- a/dlls/d3dx9_36/Makefile.in
++++ b/dlls/d3dx9_36/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=36
++EXTRADEFS = -DD3DX_SDK_VERSION=36 -msse
+ MODULE    = d3dx9_36.dll
+ IMPORTLIB = d3dx9
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+diff --git a/dlls/d3dx9_36/math.c b/dlls/d3dx9_36/math.c
+index f018f499c43..f6fdcc7f2a7 100644
+--- a/dlls/d3dx9_36/math.c
++++ b/dlls/d3dx9_36/math.c
+@@ -390,20 +390,53 @@ D3DXMATRIX * WINAPI D3DXMatrixLookAtRH(D3DXMATRIX *out, const D3DXVECTOR3 *eye,
+     return out;
+ }
+ 
++#include "intrin.h"
++
++typedef union SSE_D3DXMATRIX {
++    D3DXMATRIX m;
++    __m128 row[4];
++} SSE_D3DXMATRIX;
++
++static inline __m128 lincomb_SSE(const __m128 a, const SSE_D3DXMATRIX *B)
++{
++    __m128 result;
++    result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), B->row[0]);
++    result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), B->row[1]));
++    result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xaa), B->row[2]));
++    result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xff), B->row[3]));
++    return result;
++}
++
++static void matmult_SSE(SSE_D3DXMATRIX *out, const SSE_D3DXMATRIX *A, const SSE_D3DXMATRIX *B)
++{
++    // out_ij = sum_k a_ik b_kj
++    // => out_0j = a_00 * b_0j + a_01 * b_1j + a_02 * b_2j + a_03 * b_3j
++    __m128 out0x = lincomb_SSE(A->row[0], B);
++    __m128 out1x = lincomb_SSE(A->row[1], B);
++    __m128 out2x = lincomb_SSE(A->row[2], B);
++    __m128 out3x = lincomb_SSE(A->row[3], B);
++
++    out->row[0] = out0x;
++    out->row[1] = out1x;
++    out->row[2] = out2x;
++    out->row[3] = out3x;
++}
++
+ D3DXMATRIX* WINAPI D3DXMatrixMultiply(D3DXMATRIX *pout, const D3DXMATRIX *pm1, const D3DXMATRIX *pm2)
+ {
+     D3DXMATRIX out;
+-    int i,j;
++    //int i,j;
+ 
+     TRACE("pout %p, pm1 %p, pm2 %p\n", pout, pm1, pm2);
+ 
+-    for (i=0; i<4; i++)
++    /*for (i=0; i<4; i++)
+     {
+         for (j=0; j<4; j++)
+         {
+             out.m[i][j] = pm1->m[i][0] * pm2->m[0][j] + pm1->m[i][1] * pm2->m[1][j] + pm1->m[i][2] * pm2->m[2][j] + pm1->m[i][3] * pm2->m[3][j];
+         }
+-    }
++    }*/
++    matmult_SSE(&out, pm1, pm2);
+ 
+     *pout = out;
+     return pout;
+diff --git a/dlls/d3dx9_37/Makefile.in b/dlls/d3dx9_37/Makefile.in
+index 150f1ceb215..bbf6bc9f181 100644
+--- a/dlls/d3dx9_37/Makefile.in
++++ b/dlls/d3dx9_37/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=37
++EXTRADEFS = -DD3DX_SDK_VERSION=37 -msse
+ MODULE    = d3dx9_37.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_38/Makefile.in b/dlls/d3dx9_38/Makefile.in
+index 5706fe9b203..2e1c890d0ae 100644
+--- a/dlls/d3dx9_38/Makefile.in
++++ b/dlls/d3dx9_38/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=38
++EXTRADEFS = -DD3DX_SDK_VERSION=38 -msse
+ MODULE    = d3dx9_38.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_39/Makefile.in b/dlls/d3dx9_39/Makefile.in
+index 9e8f8f6199e..337eb88e43a 100644
+--- a/dlls/d3dx9_39/Makefile.in
++++ b/dlls/d3dx9_39/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=39
++EXTRADEFS = -DD3DX_SDK_VERSION=39 -msse
+ MODULE    = d3dx9_39.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_40/Makefile.in b/dlls/d3dx9_40/Makefile.in
+index fe10a5d3dcb..5aa511fb386 100644
+--- a/dlls/d3dx9_40/Makefile.in
++++ b/dlls/d3dx9_40/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=40
++EXTRADEFS = -DD3DX_SDK_VERSION=40 -msse
+ MODULE    = d3dx9_40.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_41/Makefile.in b/dlls/d3dx9_41/Makefile.in
+index bc02a280d33..9f951f0edbe 100644
+--- a/dlls/d3dx9_41/Makefile.in
++++ b/dlls/d3dx9_41/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=41
++EXTRADEFS = -DD3DX_SDK_VERSION=41 -msse
+ MODULE    = d3dx9_41.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_42/Makefile.in b/dlls/d3dx9_42/Makefile.in
+index 5efa6cc00cd..1ed25d50cc7 100644
+--- a/dlls/d3dx9_42/Makefile.in
++++ b/dlls/d3dx9_42/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=42
++EXTRADEFS = -DD3DX_SDK_VERSION=42 -msse
+ MODULE    = d3dx9_42.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+diff --git a/dlls/d3dx9_43/Makefile.in b/dlls/d3dx9_43/Makefile.in
+index e28429c5236..b9d578fc86e 100644
+--- a/dlls/d3dx9_43/Makefile.in
++++ b/dlls/d3dx9_43/Makefile.in
+@@ -1,4 +1,4 @@
+-EXTRADEFS = -DD3DX_SDK_VERSION=43
++EXTRADEFS = -DD3DX_SDK_VERSION=43 -msse
+ MODULE    = d3dx9_43.dll
+ IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
+ PARENTSRC = ../d3dx9_36
+-- 
+2.43.0
+
