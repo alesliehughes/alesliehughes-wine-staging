@@ -1,22 +1,17 @@
-From 52b918628cb8912c36a3e67d79e2b74ceec52927 Mon Sep 17 00:00:00 2001
+From 26115864fe14e18bbf65d4be116a8e62ba47d35d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Jul 2019 13:40:01 +1000
-Subject: [PATCH 1/8] include: Added d2d1helper.h
+Subject: include: Added d2d1helper.h
 
----
- include/Makefile.in  |  1 +
- include/d2d1helper.h | 30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
- create mode 100644 include/d2d1helper.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 9b397ffa183..6516b1f85d5 100644
+index a4d3c9f7501..8ead7cdccb4 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -101,6 +101,7 @@ SOURCES = \
- 	d2d1_1.idl \
- 	d2d1_2.idl \
+@@ -111,6 +111,7 @@ SOURCES = \
  	d2d1effects.idl \
+ 	d2d1effects_1.idl \
+ 	d2d1effects_2.idl \
 +	d2d1helper.h \
  	d2dbasetypes.h \
  	d2derr.h \
@@ -57,6 +52,3 @@ index 00000000000..3430b5b04ee
 +#endif /* D2D_USE_C_DEFINITIONS */
 +
 +#endif /* _D2D1_HELPER_H_ */
--- 
-2.17.1
-
