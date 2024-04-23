@@ -1,19 +1,19 @@
-From 48f4719d3222d47d64a15a017428f1c44f09ddb4 Mon Sep 17 00:00:00 2001
+From dd2c15fba666c9b9083d207380e8f20b5b140d35 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 30 Jul 2019 09:37:34 +1000
-Subject: [PATCH 4/8] include: Added atldef.h
+Subject: [PATCH] include: Added atldef.h
 
 ---
- include/Makefile.in |  1 +
- include/atldef.h    | 64 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 65 insertions(+)
+ include/Makefile.in |   1 +
+ include/atldef.h    | 129 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 130 insertions(+)
  create mode 100644 include/atldef.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 6392cf4fcbd..38bc34d02e0 100644
+index 80c380d993c..fa8c096eabd 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -25,6 +25,7 @@ SOURCES = \
+@@ -28,6 +28,7 @@ SOURCES = \
  	asysta.idl \
  	atlbase.h \
  	atlcom.h \
@@ -23,10 +23,10 @@ index 6392cf4fcbd..38bc34d02e0 100644
  	atlwin.h \
 diff --git a/include/atldef.h b/include/atldef.h
 new file mode 100644
-index 00000000000..a93a53c09b2
+index 00000000000..ae3f5f53e2a
 --- /dev/null
 +++ b/include/atldef.h
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,129 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -66,31 +66,96 @@ index 00000000000..a93a53c09b2
 +#define ATLASSERT(x)
 +#endif
 +
++#ifndef ATLASSUME
++#define ATLASSUME(x)
++#endif
++
++#ifndef ATLENSURE
++#define ATLENSURE(expr)
++#endif
++
++#define ATL_NOINLINE
++
++#define _ATL_DECLSPEC_ALLOCATOR
++
 +#ifndef _FormatMessage_format_string_
 +#define _FormatMessage_format_string_
 +#endif
 +
 +#define ATLAPI HRESULT __stdcall
 +#define ATLAPI_(x) x __stdcall
++#define ATLINLINE inline
 +
++/* Belongs elsewhere */
++#define ATLTRACE(...)
++
++#define ATL_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
++#define ATL_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
++#ifndef RC_INVOKED
++# ifdef WINE_NO_UNICODE_MACROS /* force using a cast */
++#  define ATL_MAKEINTRESOURCE(i) ((ULONG_PTR)((WORD)(i)))
++# else
++#  define MAKEINTRESOURCE WINELIB_NAME_AW(MAKEINTRESOURCE)
++# endif
++#endif
++
++#define ATL_IS_INTRESOURCE(x) (((ULONG_PTR)(x) >> 16) == 0)
++
++#define ATL_RT_CURSOR           ATL_MAKEINTRESOURCEA(1)
++#define ATL_RT_BITMAP           ATL_MAKEINTRESOURCEA(2)
++#define ATL_RT_ICON             ATL_MAKEINTRESOURCEA(3)
++#define ATL_RT_MENU             ATL_MAKEINTRESOURCEA(4)
++#define ATL_RT_DIALOG           ATL_MAKEINTRESOURCEA(5)
++#define ATL_RT_STRING           ATL_MAKEINTRESOURCEA(6)
++#define ATL_RT_FONTDIR          ATL_MAKEINTRESOURCEA(7)
++#define ATL_RT_FONT             ATL_MAKEINTRESOURCEA(8)
++#define ATL_RT_ACCELERATOR      ATL_MAKEINTRESOURCEA(9)
++#define ATL_RT_RCDATA           ATL_MAKEINTRESOURCEA(10)
++#define ATL_RT_MESSAGETABLE     ATL_MAKEINTRESOURCEA(11)
++
++#define ATL_DIFFERENCE          11
++#define ATL_RT_GROUP_CURSOR     ATL_MAKEINTRESOURCEW((ULONG_PTR)ATL_RT_CURSOR + ATL_DIFFERENCE)
++#define ATL_RT_GROUP_ICON       ATL_MAKEINTRESOURCEW((ULONG_PTR)ATL_RT_ICON + ATL_DIFFERENCE)
++#define ATL_RT_VERSION          ATL_MAKEINTRESOURCEA(16)
++#define ATL_RT_DLGINCLUDE       ATL_MAKEINTRESOURCEA(17)
++#define ATL_RT_PLUGPLAY         ATL_MAKEINTRESOURCEA(19)
++#define ATL_RT_VXD              ATL_MAKEINTRESOURCEA(20)
++#define ATL_RT_ANICURSOR        ATL_MAKEINTRESOURCEA(21)
++#define ATL_RT_ANIICON          ATL_MAKEINTRESOURCEA(22)
++#define ATL_RT_HTML             ATL_MAKEINTRESOURCEA(23)
++
++#ifndef AtlThrow
++#ifndef _ATL_CUSTOM_THROW
 +#define AtlThrow ATL::AtlThrowImpl
++#endif
++#endif
 +
 +#ifdef __cplusplus
++
++template < typename T >
++inline T* SAL_Assume_bytecap_for_opt_(T* buf, size_t dwLen)
++{
++    return buf;
++}
 +
 +namespace ATL
 +{
 +    template <typename T>
 +    inline T* SAL_Assume_notnull_for_opt_z_(T* buf)
 +    {
-+	    ATLASSUME(buf!=0);
-+    	return buf;
-+    }	
++        ATLASSUME(buf!=0);
++        return buf;
++    }
++
++#ifndef _ATL_CUSTOM_THROW
++    ATL_NOINLINE __declspec(noreturn) inline void WINAPI AtlThrowImpl(_In_ HRESULT hr);
++#endif
++    ATL_NOINLINE __declspec(noreturn) inline void WINAPI AtlThrowLastWin32();
 +}
 +
 +#endif
 +
-+
 +#endif /* __ATLDEF_H__ */
 -- 
-2.17.1
+2.43.0
 
