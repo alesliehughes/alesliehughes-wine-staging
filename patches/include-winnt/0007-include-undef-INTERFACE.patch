@@ -1,0 +1,24 @@
+From 130b45a781bf379f630f18a63400bca6dd567faa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 24 Apr 2024 09:15:44 +1000
+Subject: [PATCH] include: undef INTERFACE
+
+---
+ include/shlwapi.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/shlwapi.h b/include/shlwapi.h
+index c643d2a4e3a..631dc945336 100644
+--- a/include/shlwapi.h
++++ b/include/shlwapi.h
+@@ -294,6 +294,7 @@ typedef enum
+ 
+ typedef struct IQueryAssociations *LPQUERYASSOCIATIONS;
+ 
++#undef INTERFACE
+ #define INTERFACE IQueryAssociations
+ DECLARE_INTERFACE_(IQueryAssociations,IUnknown)
+ {
+-- 
+2.43.0
+

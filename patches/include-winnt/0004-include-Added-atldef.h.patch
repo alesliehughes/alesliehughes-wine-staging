@@ -1,4 +1,4 @@
-From dd2c15fba666c9b9083d207380e8f20b5b140d35 Mon Sep 17 00:00:00 2001
+From a798ebb9260a4ddbf6d8629e4b198332b7f1c68d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 30 Jul 2019 09:37:34 +1000
 Subject: [PATCH] include: Added atldef.h
@@ -23,7 +23,7 @@ index 80c380d993c..fa8c096eabd 100644
  	atlwin.h \
 diff --git a/include/atldef.h b/include/atldef.h
 new file mode 100644
-index 00000000000..ae3f5f53e2a
+index 00000000000..5232c6a4b31
 --- /dev/null
 +++ b/include/atldef.h
 @@ -0,0 +1,129 @@
@@ -95,7 +95,7 @@ index 00000000000..ae3f5f53e2a
 +# ifdef WINE_NO_UNICODE_MACROS /* force using a cast */
 +#  define ATL_MAKEINTRESOURCE(i) ((ULONG_PTR)((WORD)(i)))
 +# else
-+#  define MAKEINTRESOURCE WINELIB_NAME_AW(MAKEINTRESOURCE)
++#  define ATL_MAKEINTRESOURCE WINELIB_NAME_AW(ATL_MAKEINTRESOURCE)
 +# endif
 +#endif
 +
@@ -148,9 +148,9 @@ index 00000000000..ae3f5f53e2a
 +    }
 +
 +#ifndef _ATL_CUSTOM_THROW
-+    ATL_NOINLINE __declspec(noreturn) inline void WINAPI AtlThrowImpl(_In_ HRESULT hr);
++    ATL_NOINLINE DECLSPEC_NORETURN inline void WINAPI AtlThrowImpl(_In_ HRESULT hr);
 +#endif
-+    ATL_NOINLINE __declspec(noreturn) inline void WINAPI AtlThrowLastWin32();
++    ATL_NOINLINE DECLSPEC_NORETURN inline void WINAPI AtlThrowLastWin32();
 +}
 +
 +#endif
