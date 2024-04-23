@@ -1,0 +1,228 @@
+From 6a9160118176a685fd1a33c66d25a4cf6d99bb6a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 23 Apr 2024 14:55:48 +1000
+Subject: [PATCH] msdasql - Rewrite Accessor using lists
+
+---
+ dlls/msdasql/session.c | 106 ++++++++++++++++++++++++++++++-----------
+ 1 file changed, 77 insertions(+), 29 deletions(-)
+
+diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
+index 63dcca3d617..6e441cacf66 100644
+--- a/dlls/msdasql/session.c
++++ b/dlls/msdasql/session.c
+@@ -29,6 +29,7 @@
+ #include "msdaguid.h"
+ 
+ #include "wine/debug.h"
++#include "wine/list.h"
+ 
+ #include "msdasql.h"
+ #include "oledberr.h"
+@@ -713,6 +714,7 @@ static ULONG WINAPI command_Release(ICommandText *iface)
+ {
+     struct command *command = impl_from_ICommandText( iface );
+     LONG refs = InterlockedDecrement( &command->refs );
++
+     TRACE( "%p new refcount %ld\n", command, refs );
+     if (!refs)
+     {
+@@ -739,6 +741,11 @@ static HRESULT WINAPI command_Cancel(ICommandText *iface)
+ 
+ struct msdasql_accessor
+ {
++    struct list entry;
++
++    DBBINDING *bindings;
++    DBCOUNTITEM bind_cnt;
++
+     int size;
+     char *data;
+ };
+@@ -754,8 +761,7 @@ struct msdasql_rowset
+     LONG refs;
+     SQLHSTMT hstmt;
+ 
+-    DBBINDING *bindings;
+-    DBCOUNTITEM bind_cnt;
++    struct list accessor_list;
+ };
+ 
+ static inline struct msdasql_rowset *impl_from_IRowset( IRowset *iface )
+@@ -852,8 +858,19 @@ static ULONG WINAPI msdasql_rowset_Release(IRowset *iface)
+     TRACE( "%p new refcount %ld\n", rowset, refs );
+     if (!refs)
+     {
++        struct msdasql_accessor *access, *cursor;
++
+         TRACE( "destroying %p\n", rowset );
+ 
++        LIST_FOR_EACH_ENTRY_SAFE(access, cursor, &rowset->accessor_list, struct msdasql_accessor, entry)
++        {
++            list_remove(&access->entry);
++
++            free (access->data);
++            free (access->bindings);
++            free (access);
++        }
++
+         SQLFreeHandle(SQL_HANDLE_STMT, rowset->hstmt);
+ 
+         if (rowset->caller)
+@@ -885,26 +902,26 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+         CoCreateInstance(&CLSID_OLEDB_CONVERSIONLIBRARY, NULL, CLSCTX_INPROC_SERVER, &IID_IDataConvert, (void**)&convert);
+ 
+     FIXME("%p, %Id, %Id, %p\n", rowset, row, accessor, data);
+-    FIXME("rowset->bind_cnt %Id\n", rowset->bind_cnt);
++    FIXME("access->bind_cnt %Id\n", access->bind_cnt);
+     //memcpy(data, access->data, access->size);
+-    for(i=0; i < rowset->bind_cnt; i++)
++    for(i=0; i < access->bind_cnt; i++)
+     {
+-        void *pSrc = &access->data[rowset->bindings[i].obValue];
++        void *pSrc = &access->data[access->bindings[i].obValue];
+         void *pDst;
+         ULONG                       dwSrcStatus = 0;
+         ULONG                       *pdwDstStatus;
+         DWORD                       dwPart;
+         //DBTYPE                      dwSrcType;
+-        DBTYPE                      dwDstType = rowset->bindings[i].wType;
+-        DBBYTEOFFSET        ulSrcLength = rowset->bindings[i].cbMaxLen;
++        DBTYPE                      dwDstType = access->bindings[i].wType;
++        DBBYTEOFFSET        ulSrcLength = access->bindings[i].cbMaxLen;
+         DBLENGTH*           pulDstLength;
+ 
+-        FIXME("ObValue %ld, Type %d\n", rowset->bindings[i].obValue, rowset->bindings[i].wType);
+-        if(rowset->bindings[i].pObject)
+-            FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", rowset->bindings[i].pObject->dwFlags,
+-                    debugstr_guid(&rowset->bindings[i].pObject->iid));
++        FIXME("ObValue %ld, Type %d\n", access->bindings[i].obValue, access->bindings[i].wType);
++        if(access->bindings[i].pObject)
++            FIXME("DBOBJECT 0x%08lx, %s currently not supported\n", access->bindings[i].pObject->dwFlags,
++                    debugstr_guid(&access->bindings[i].pObject->iid));
+ 
+-        if (rowset->bindings[i].wType == DBTYPE_IUNKNOWN)
++        if (access->bindings[i].wType == DBTYPE_IUNKNOWN)
+         {
+             IStream *steam;
+             //ISequentialStream* pISequentialStream = NULL;
+@@ -929,7 +946,7 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+             continue;
+         }
+ 
+-        if (rowset->bindings[i].cbMaxLen > 1024)
++        if (access->bindings[i].cbMaxLen > 1024)
+ {
+             SQLWCHAR data[4096];
+             SQLLEN size;
+@@ -941,16 +958,16 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+             continue;
+ }
+ 
+-        dwPart = rowset->bindings[i].dwPart;
+-        pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
+-        pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
+-        pdwDstStatus = dwPart & DBPART_STATUS ? (ULONG *) ((BYTE*)data + rowset->bindings[i].obStatus) : NULL;
++        dwPart = access->bindings[i].dwPart;
++        pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + access->bindings[i].obValue) : NULL;
++        pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + access->bindings[i].obLength) : NULL;
++        pdwDstStatus = dwPart & DBPART_STATUS ? (ULONG *) ((BYTE*)data + access->bindings[i].obStatus) : NULL;
+         //rowset->bindings[i]
+ //        memcpy(data, access->data, access->size);
+ 
+-        hr = IDataConvert_DataConvert(convert, rowset->bindings[i].wType, dwDstType, ulSrcLength, pulDstLength, pSrc, pDst,
+-                                      rowset->bindings[i].cbMaxLen, dwSrcStatus, pdwDstStatus,
+-                                      rowset->bindings[i].bPrecision, rowset->bindings[i].bScale,
++        hr = IDataConvert_DataConvert(convert, access->bindings[i].wType, dwDstType, ulSrcLength, pulDstLength, pSrc, pDst,
++                                      access->bindings[i].cbMaxLen, dwSrcStatus, pdwDstStatus,
++                                      access->bindings[i].bPrecision, access->bindings[i].bScale,
+                                       DBDATACONVERT_DEFAULT);
+ 
+         if (dwDstType == 130)
+@@ -1286,14 +1303,24 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+ 
+     TRACE("%p 0x%08lx, %lu, %p, %lu, %p, %p\n", rowset, flags, count, bindings, row_size, accessor, status);
+ 
+-    //free(rowset->bindings); // ??? Verify.
+-    rowset->bindings = malloc(sizeof(DBBINDING) * count);
+-    rowset->bind_cnt = count;
++    access = malloc( sizeof(struct msdasql_accessor));
++    if (!access)
++    {
++        return E_OUTOFMEMORY;
++    }
+ 
+-    memcpy(rowset->bindings, bindings, sizeof(DBBINDING) * count);
++    access->bindings = calloc(1, sizeof(DBBINDING) * count);
++    if (!access->bindings)
++    {
++        free (access);
++        return E_OUTOFMEMORY;
++    }
+ 
+-    access = malloc( sizeof(struct msdasql_accessor));
++    access->bind_cnt = count;
+     access->size = 0;
++
++    memcpy(access->bindings, bindings, sizeof(DBBINDING) * count);
++
+     ptr = access->data = malloc(4096);
+     for ( i=0; i < count; i++)
+     {
+@@ -1333,12 +1360,15 @@ static HRESULT WINAPI rowset_accessor_CreateAccessor(IAccessor *iface, DBACCESSO
+         {
+             dump_sql_diag_records(SQL_HANDLE_STMT, rowset->hstmt);
+ 
+-            free(access->data);
+-            free(access);
++            free (access->data);
++            free (access->bindings);
++            free (access);
+             return E_FAIL;
+         }
+     }
+ 
++    list_add_tail(&rowset->accessor_list, &access->entry);
++
+     *accessor = (HACCESSOR)access;
+     if (status)
+          *status = DBBINDSTATUS_OK;
+@@ -1357,8 +1387,25 @@ static HRESULT WINAPI rowset_accessor_GetBindings(IAccessor *iface, HACCESSOR ac
+ static HRESULT WINAPI rowset_accessor_ReleaseAccessor(IAccessor *iface, HACCESSOR accessor, DBREFCOUNT *count)
+ {
+     struct msdasql_rowset *rowset = impl_from_IAccessor( iface );
+-    FIXME("%p, %Id, %p\n", rowset, accessor, count);
+-    return S_OK;
++    struct msdasql_accessor *haccess = (struct msdasql_accessor *)accessor;
++    struct msdasql_accessor *access;
++
++    TRACE("%p, %Id, %p\n", rowset, accessor, count);
++
++    LIST_FOR_EACH_ENTRY(access, &rowset->accessor_list, struct msdasql_accessor, entry)
++    {
++        if(haccess == access)
++        {
++            list_remove(&access->entry);
++
++            free (access->data);
++            free (access->bindings);
++            free (access);
++            return S_OK;
++        }
++    }
++
++    return DB_E_BADACCESSORHANDLE;
+ }
+ 
+ struct IAccessorVtbl accessor_vtbl =
+@@ -1874,6 +1921,7 @@ static HRESULT WINAPI command_Execute(ICommandText *iface, IUnknown *outer, REFI
+         ICommandText_QueryInterface(iface, &IID_IUnknown, (void**)&msrowset->caller);
+         msrowset->hstmt = hstmt;
+         free_hstmt = FALSE;
++        list_init(&msrowset->accessor_list);
+ 
+         hr = IRowset_QueryInterface(&msrowset->IRowset_iface, riid, (void**)rowset);
+         IRowset_Release(&msrowset->IRowset_iface);
+-- 
+2.43.0
+
