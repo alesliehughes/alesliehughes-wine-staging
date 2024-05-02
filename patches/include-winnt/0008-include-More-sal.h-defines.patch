@@ -1,0 +1,24 @@
+From 7ecf7f02e75663597a0558adfc8a41e7622b193e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 1 May 2024 15:31:59 +1000
+Subject: [PATCH] include: More sal.h defines
+
+---
+ include/sal.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/sal.h b/include/sal.h
+index d49f6308327..91a2b290780 100644
+--- a/include/sal.h
++++ b/include/sal.h
+@@ -21,6 +21,7 @@
+ 
+ #define _Always_(exp)
+ 
++#define _Analysis_assume_(x)
+ #define _Analysis_noreturn_
+ 
+ #define _At_(a, b)
+-- 
+2.43.0
+
