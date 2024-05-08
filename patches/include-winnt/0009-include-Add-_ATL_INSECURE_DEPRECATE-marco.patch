@@ -1,0 +1,28 @@
+From 15fa4de67e77df7ef4c0350e2395fb741db6474e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 May 2024 07:00:00 +1000
+Subject: [PATCH] include: Add _ATL_INSECURE_DEPRECATE marco
+
+---
+ include/atldef.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/atldef.h b/include/atldef.h
+index 700aded1137..bcf8e972802 100644
+--- a/include/atldef.h
++++ b/include/atldef.h
+@@ -60,6 +60,11 @@
+ /* Belongs elsewhere */
+ #define ATLTRACE(...)
+ 
++#ifndef _ATL_INSECURE_DEPRECATE
++#define _ATL_INSECURE_DEPRECATE(_Message)
++#endif
++
++
+ #define ATL_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
+ #define ATL_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
+ #ifndef RC_INVOKED
+-- 
+2.43.0
+
