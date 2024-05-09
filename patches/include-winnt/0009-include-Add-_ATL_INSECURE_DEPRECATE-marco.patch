@@ -1,22 +1,40 @@
-From 15fa4de67e77df7ef4c0350e2395fb741db6474e Mon Sep 17 00:00:00 2001
+From f22194d0658c36597c98fe71741dce7143825786 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 May 2024 07:00:00 +1000
 Subject: [PATCH] include: Add _ATL_INSECURE_DEPRECATE marco
 
 ---
- include/atldef.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ include/atldef.h | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
 diff --git a/include/atldef.h b/include/atldef.h
-index 700aded1137..bcf8e972802 100644
+index 700aded1137..08897687a13 100644
 --- a/include/atldef.h
 +++ b/include/atldef.h
-@@ -60,6 +60,11 @@
+@@ -60,6 +60,29 @@
  /* Belongs elsewhere */
  #define ATLTRACE(...)
  
++#if defined(__GNUC__) || defined(__clang__)
++#define ATL_DEPRECATED(X) __attribute__((deprecated))
++#elif defined(_MSC_VER)
++#define ATL_DEPRECATED(X) __declspec(deprecated)
++#endif
++
 +#ifndef _ATL_INSECURE_DEPRECATE
 +#define _ATL_INSECURE_DEPRECATE(_Message)
++#endif
++
++#define ATLTRYALLOC(x) try { x; } catch(CException* e) { e->Delete(); }
++#define ATLTRY(x) ATLTRYALLOC(x)
++
++#ifndef _ATLTRY
++#define _ATLTRY try
++# ifdef _AFX
++#  define _ATLCATCH( e ) catch( CException* e )
++# else
++#  define _ATLCATCH( e ) catch( CAtlException e )
++#endif
 +#endif
 +
 +
