@@ -1,17 +1,17 @@
-From f22194d0658c36597c98fe71741dce7143825786 Mon Sep 17 00:00:00 2001
+From 22c43bb47da554305e1ba046a411358493cc7789 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 May 2024 07:00:00 +1000
 Subject: [PATCH] include: Add _ATL_INSECURE_DEPRECATE marco
 
 ---
- include/atldef.h | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ include/atldef.h | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
 diff --git a/include/atldef.h b/include/atldef.h
-index 700aded1137..08897687a13 100644
+index 700aded1137..86a1f876050 100644
 --- a/include/atldef.h
 +++ b/include/atldef.h
-@@ -60,6 +60,29 @@
+@@ -60,6 +60,42 @@
  /* Belongs elsewhere */
  #define ATLTRACE(...)
  
@@ -35,6 +35,19 @@ index 700aded1137..08897687a13 100644
 +# else
 +#  define _ATLCATCH( e ) catch( CAtlException e )
 +#endif
++#endif
++
++#ifndef ATLENSURE_THROW
++#define ATLENSURE_THROW(expr, hr) \
++do { \
++    int condition=!!(expr); \
++    ATLASSUME(condition); \
++    if(!(condition)) AtlThrow(hr); \
++} while (0)
++#endif
++
++#ifndef ATLENSURE
++#define ATLENSURE(expr) ATLENSURE_THROW(expr, E_FAIL)
 +#endif
 +
 +
