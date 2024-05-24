@@ -1,40 +1,40 @@
-From e892b3b5a1040e59bdd3973ebd9352e4420d40b6 Mon Sep 17 00:00:00 2001
+From da0f267893b19125c0fc9576b6b6c9f817c608fb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 23 May 2024 09:27:33 +1000
 Subject: [PATCH] include: Add C++ support for IUnknown
 
-Not complete, requires Proxy functions as well.
 ---
- include/unknwn.idl | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ include/unknwn.idl | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
 diff --git a/include/unknwn.idl b/include/unknwn.idl
-index 7856a7f5047..3890dc82a2c 100644
+index 7856a7f5047..1a910b6b21e 100644
 --- a/include/unknwn.idl
 +++ b/include/unknwn.idl
-@@ -39,12 +39,34 @@ interface IUnknown
+@@ -39,12 +39,35 @@ interface IUnknown
  {
    typedef [unique] IUnknown *LPUNKNOWN;
  
 +cpp_quote("#if defined(__cplusplus) && !defined(CINTERFACE)")
++cpp_quote("EXTERN_C const IID IID_IUnknown;")
 +cpp_quote("extern \"C++\"")
 +cpp_quote("{")
-+cpp_quote("MIDL_INTERFACE(\"00000000-0000-0000-c000-000000000046\")")
-+cpp_quote("IUnknown")
-+cpp_quote("{")
-+cpp_quote("public:")
-+cpp_quote("BEGIN_INTERFACE")
-+cpp_quote("   virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) = 0;")
-+cpp_quote("   virtual ULONG STDMETHODCALLTYPE AddRef(void) = 0;")
-+cpp_quote("   virtual ULONG STDMETHODCALLTYPE Release(void) = 0;")
++cpp_quote("    MIDL_INTERFACE(\"00000000-0000-0000-c000-000000000046\")")
++cpp_quote("    IUnknown")
++cpp_quote("    {")
++cpp_quote("    public:")
++cpp_quote("        BEGIN_INTERFACE")
++cpp_quote("        virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) = 0;")
++cpp_quote("        virtual ULONG STDMETHODCALLTYPE AddRef(void) = 0;")
++cpp_quote("        virtual ULONG STDMETHODCALLTYPE Release(void) = 0;")
 +
-+cpp_quote("   template<class iface>")
-+cpp_quote("   HRESULT STDMETHODCALLTYPE QueryInterface(_COM_Outptr_ iface** pp)")
-+cpp_quote("   {")
-+cpp_quote("       return E_NOINTERFACE;//QueryInterface(__uuidof(iface), (void **)pp);")
-+cpp_quote("   }")
-+cpp_quote("END_INTERFACE")
-+cpp_quote("};")
++cpp_quote("        template<class iface>")
++cpp_quote("        HRESULT STDMETHODCALLTYPE QueryInterface(iface** pp)")
++cpp_quote("        {")
++cpp_quote("           return QueryInterface(__uuidof(iface), (void **)pp);")
++cpp_quote("        }")
++cpp_quote("        END_INTERFACE")
++cpp_quote("    };")
 +cpp_quote("}")
 +cpp_quote("#else")
    HRESULT QueryInterface(
