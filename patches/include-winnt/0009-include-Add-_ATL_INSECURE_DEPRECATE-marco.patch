@@ -1,17 +1,20 @@
-From 22c43bb47da554305e1ba046a411358493cc7789 Mon Sep 17 00:00:00 2001
+From e1ffc51c41627d1add5a2d6f094d7ea352dfc0c4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 May 2024 07:00:00 +1000
-Subject: [PATCH] include: Add _ATL_INSECURE_DEPRECATE marco
+Subject: include: Add _ATL_INSECURE_DEPRECATE marco
 
----
- include/atldef.h | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
 
 diff --git a/include/atldef.h b/include/atldef.h
-index 700aded1137..86a1f876050 100644
+index 700aded1137..86ef8405d20 100644
 --- a/include/atldef.h
 +++ b/include/atldef.h
-@@ -60,6 +60,42 @@
+@@ -56,10 +56,60 @@
+ #define ATLAPI HRESULT __stdcall
+ #define ATLAPI_(x) x __stdcall
+ #define ATLINLINE inline
++#define ATL_NO_VTABLE
++#define _ATL_NEW		new
+ 
  /* Belongs elsewhere */
  #define ATLTRACE(...)
  
@@ -50,10 +53,39 @@ index 700aded1137..86a1f876050 100644
 +#define ATLENSURE(expr) ATLENSURE_THROW(expr, E_FAIL)
 +#endif
 +
++#ifndef ATLENSURE_RETURN_VAL
++#define ATLENSURE_RETURN_VAL(expr, val) \
++do {                                           \
++        bool istrue = !!(expr);                \
++        ATLASSERT(istrue);                  \
++        if(!(istrue)) return val;           \
++} while (0)
++#endif
++
++#define ATLENSURE_RETURN_HR(expr, hr) ATLENSURE_RETURN_VAL(expr, hr)
++#define ATLENSURE_RETURN(expr) ATLENSURE_RETURN_HR(expr, E_FAIL)
++
 +
  #define ATL_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
  #define ATL_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
  #ifndef RC_INVOKED
--- 
-2.43.0
-
+@@ -101,8 +151,19 @@
+ #endif
+ #endif
+ 
++ATLAPI AtlSetErrorInfo(
++        _In_ const CLSID& clsid,
++        _In_z_ LPCOLESTR lpszDesc,
++        _In_ DWORD dwHelpID,
++        _In_opt_z_ LPCOLESTR lpszHelpFile,
++        _In_ const IID& iid,
++        _In_ HRESULT hRes,
++        _In_opt_ HINSTANCE hInst);
++
+ #ifdef __cplusplus
+ 
++#define _ATLCATCHALL() catch( ... )
++
+ template < typename T >
+ inline T* SAL_Assume_bytecap_for_opt_(T* buf, size_t dwLen)
+ {

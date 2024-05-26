@@ -1,0 +1,140 @@
+From 5ef10d498cf6fdad8eba24b371e07f8b1a26f684 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 27 May 2024 07:09:43 +1000
+Subject: atlbase: Use defined class
+
+
+diff --git a/include/atlbase.h b/include/atlbase.h
+index bb74ec531a6..bcbbd2c8be6 100644
+--- a/include/atlbase.h
++++ b/include/atlbase.h
+@@ -45,8 +45,37 @@ typedef LPCWSTR (WINAPI _ATL_DESCRIPTIONFUNCW)(void);
+ typedef const struct _ATL_CATMAP_ENTRY* (_ATL_CATMAPFUNC)(void);
+ typedef void (WINAPI _ATL_TERMFUNC)(DWORD_PTR dw);
+ 
++#ifndef __cplusplus
+ typedef CRITICAL_SECTION CComCriticalSection;
+ 
++#else
++
++namespace ATL
++{
++class CComSingleThreadModel
++{
++public:
++        static ULONG WINAPI Increment(_Inout_ LPLONG p) throw()
++        {
++                return ++(*p);
++        }
++        static ULONG WINAPI Decrement(_Inout_ LPLONG p) throw()
++        {
++                return --(*p);
++        }
++        typedef CComFakeCriticalSection AutoCriticalSection;
++        typedef CComFakeCriticalSection AutoDeleteCriticalSection;
++        typedef CComFakeCriticalSection CriticalSection;
++        typedef CComSingleThreadModel ThreadModelNoCS;
++};
++
++typedef CComSingleThreadModel CComObjectThreadModel;
++}
++
++//typedef CComObjectRootEx<CComObjectThreadModel> CComObjectRoot;
++
++#endif
++
+ typedef struct _ATL_OBJMAP_ENTRYA_V1_TAG
+ {
+     const CLSID* pclsid;
+@@ -181,12 +210,14 @@ typedef struct _ATL_MODULEW_TAG
+     _ATL_TERMFUNC_ELEM* m_pTermFuncs;
+ } _ATL_MODULEW;
+ 
++#ifndef __cplusplus
+ typedef struct
+ {
+     void *m_aT;
+     int m_nSize;
+     int m_nAllocSize;
+ } CSimpleArray;
++#endif
+ 
+ typedef struct _ATL_MODULE70
+ {
+@@ -201,7 +232,11 @@ typedef struct _ATL_WIN_MODULE70
+     UINT cbSize;
+     CComCriticalSection m_csWindowCreate;
+     _AtlCreateWndData *m_pCreateWndList;
+-    CSimpleArray /* <ATOM> */ m_rgWindowClassAtoms;
++#ifndef __cplusplus
++    CSimpleArray /*<ATOM> */ m_rgWindowClassAtoms;
++#else
++    CSimpleArray<ATOM>  m_rgWindowClassAtoms;
++#endif
+ } _ATL_WIN_MODULE70;
+ 
+ #if _ATL_VER >= _ATL_VER_110
+diff --git a/include/atldef.h b/include/atldef.h
+index 86ef8405d20..ed38a407727 100644
+--- a/include/atldef.h
++++ b/include/atldef.h
+@@ -21,6 +21,7 @@
+ 
+ #include "sal.h"
+ 
++
+ #ifndef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
+ #define _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
+ #endif
+@@ -57,7 +58,7 @@
+ #define ATLAPI_(x) x __stdcall
+ #define ATLINLINE inline
+ #define ATL_NO_VTABLE
+-#define _ATL_NEW		new
++#define _ATL_NEW new
+ 
+ /* Belongs elsewhere */
+ #define ATLTRACE(...)
+@@ -109,6 +110,9 @@ do {                                           \
+ #define ATLENSURE_RETURN_HR(expr, hr) ATLENSURE_RETURN_VAL(expr, hr)
+ #define ATLENSURE_RETURN(expr) ATLENSURE_RETURN_HR(expr, E_FAIL)
+ 
++#define ATLENSURE_RETURN_HR(expr, hr) ATLENSURE_RETURN_VAL(expr, hr)
++#define ATLENSURE_RETURN(expr) ATLENSURE_RETURN_HR(expr, E_FAIL)
++
+ 
+ #define ATL_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
+ #define ATL_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
+@@ -151,6 +155,14 @@ do {                                           \
+ #endif
+ #endif
+ 
++#ifdef __cplusplus
++
++#define _ATLCATCHALL() catch( ... )
++
++#define __nullptr nullptr
++
++
++
+ ATLAPI AtlSetErrorInfo(
+         _In_ const CLSID& clsid,
+         _In_z_ LPCOLESTR lpszDesc,
+@@ -160,7 +172,7 @@ ATLAPI AtlSetErrorInfo(
+         _In_ HRESULT hRes,
+         _In_opt_ HINSTANCE hInst);
+ 
+-#ifdef __cplusplus
++
+ 
+ #define _ATLCATCHALL() catch( ... )
+ 
+@@ -185,6 +197,8 @@ namespace ATL
+     ATL_NOINLINE DECLSPEC_NORETURN inline void WINAPI AtlThrowLastWin32();
+ }
+ 
++
++
+ #endif
+ 
+ #endif /* __ATLDEF_H__ */

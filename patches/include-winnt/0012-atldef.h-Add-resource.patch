@@ -1,0 +1,21 @@
+From 88dc3d77457dfaa98ad754c298a45ac9a35928c6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 27 May 2024 09:44:21 +1000
+Subject: atldef.h: Add resource
+
+
+diff --git a/include/atldef.h b/include/atldef.h
+index 63322f0db14..a610647d7f0 100644
+--- a/include/atldef.h
++++ b/include/atldef.h
+@@ -22,6 +22,10 @@
+ #include "sal.h"
+ 
+ 
++#ifdef __cplusplus
++#include <atlrc.h>
++#endif
++
+ #ifndef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
+ #define _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
+ #endif

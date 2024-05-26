@@ -1,0 +1,55 @@
+From 9469d9b78bd01fd359970b163e706d6ede3a2a8a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 27 May 2024 08:04:07 +1000
+Subject: [PATCH] include: Remove operator override
+
+---
+ include/d3d10.idl | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/include/d3d10.idl b/include/d3d10.idl
+index fb2fa91ef4f..7958ee628f4 100644
+--- a/include/d3d10.idl
++++ b/include/d3d10.idl
+@@ -494,9 +494,9 @@ cpp_quote("        CPUAccessFlags = cpuaccessFlags;")
+ cpp_quote("        MiscFlags = miscFlags;")
+ cpp_quote("    }")
+ cpp_quote("    ~CD3D10_BUFFER_DESC() {}")
+-cpp_quote("    operator const D3D10_BUFFER_DESC&() const {")
+-cpp_quote("        return *this;")
+-cpp_quote("    }")
++//cpp_quote("    operator const D3D10_BUFFER_DESC&() const {")
++//cpp_quote("        return *this;")
++//cpp_quote("    }")
+ cpp_quote("};")
+ cpp_quote("#endif")
+ 
+@@ -536,9 +536,9 @@ cpp_quote("        CPUAccessFlags = cpuaccessFlags;")
+ cpp_quote("        MiscFlags = miscFlags;")
+ cpp_quote("    }")
+ cpp_quote("    ~CD3D10_TEXTURE1D_DESC() {}")
+-cpp_quote("    operator const D3D10_TEXTURE1D_DESC&() const {")
+-cpp_quote("        return *this;")
+-cpp_quote("    }")
++//cpp_quote("    operator const D3D10_TEXTURE1D_DESC&() const {")
++//cpp_quote("        return *this;")
++//cpp_quote("    }")
+ cpp_quote("};")
+ cpp_quote("#endif")
+ 
+@@ -581,9 +581,9 @@ cpp_quote("        CPUAccessFlags = cpuaccessFlags;" )
+ cpp_quote("        MiscFlags = miscFlags;" )
+ cpp_quote("    }")
+ cpp_quote("    ~CD3D10_TEXTURE2D_DESC() {}")
+-cpp_quote("    operator const D3D10_TEXTURE2D_DESC&() const {")
+-cpp_quote("        return *this;")
+-cpp_quote("    }")
++//cpp_quote("    operator const D3D10_TEXTURE2D_DESC&() const {")
++//cpp_quote("        return *this;")
++//cpp_quote("    }")
+ cpp_quote("};")
+ cpp_quote("#endif")
+ 
+-- 
+2.43.0
+
