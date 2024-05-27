@@ -1,14 +1,14 @@
-From 7ecf7f02e75663597a0558adfc8a41e7622b193e Mon Sep 17 00:00:00 2001
+From a3df8e2641529d29e48147dca229d716cfb3e445 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 1 May 2024 15:31:59 +1000
 Subject: [PATCH] include: More sal.h defines
 
 ---
- include/sal.h | 1 +
- 1 file changed, 1 insertion(+)
+ include/sal.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/include/sal.h b/include/sal.h
-index d49f6308327..91a2b290780 100644
+index d49f6308327..81a21b62aea 100644
 --- a/include/sal.h
 +++ b/include/sal.h
 @@ -21,6 +21,7 @@
@@ -19,6 +19,14 @@ index d49f6308327..91a2b290780 100644
  #define _Analysis_noreturn_
  
  #define _At_(a, b)
+@@ -219,6 +220,7 @@
+ #define _Ret_opt_z_cap_(count)
+ #define _Ret_range_(exp,exp2)
+ #define _Ret_writes_bytes_maybenull_(count)
++#define _Ret_writes_maybenull_(count)
+ #define _Ret_writes_z_(count)
+ #define _Ret_z_
+ 
 -- 
 2.43.0
 
