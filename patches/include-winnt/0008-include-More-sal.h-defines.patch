@@ -1,25 +1,38 @@
-From 931fa3a43e03bb47d6775573ac66d78288b9964d Mon Sep 17 00:00:00 2001
+From cef017bfc964179facb19db9b759731b200c9408 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 1 May 2024 15:31:59 +1000
 Subject: [PATCH] include: More sal.h defines
 
 ---
- include/sal.h | 3 +++
- 1 file changed, 3 insertions(+)
+ include/sal.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/include/sal.h b/include/sal.h
-index d49f6308327..39be9289d4d 100644
+index d49f6308327..bf2ea3d5a88 100644
 --- a/include/sal.h
 +++ b/include/sal.h
-@@ -21,6 +21,7 @@
+@@ -19,8 +19,11 @@
+ #ifndef __WINE_SAL_H__
+ #define __WINE_SAL_H__
  
++#define _Acquires_lock_(cs)
++
  #define _Always_(exp)
  
 +#define _Analysis_assume_(x)
  #define _Analysis_noreturn_
  
  #define _At_(a, b)
-@@ -145,6 +146,7 @@
+@@ -111,6 +114,8 @@
+ #define _Null_
+ #define _Null_terminated_
+ 
++#define _On_failure_(d)
++
+ #define _Out_
+ #define _Outptr_
+ #define _Out_bytecap_(count)
+@@ -145,6 +150,7 @@
  #define _Out_opt_z_cap_x_(count)
  #define _Out_opt_z_cap_post_count_(count1, count2)
  #define _Out_ptrdiff_cap_(count)
@@ -27,7 +40,7 @@ index d49f6308327..39be9289d4d 100644
  #define _Out_writes_(count)
  #define _Out_writes_all_(count)
  #define _Out_writes_bytes_(count)
-@@ -219,6 +221,7 @@
+@@ -219,6 +225,7 @@
  #define _Ret_opt_z_cap_(count)
  #define _Ret_range_(exp,exp2)
  #define _Ret_writes_bytes_maybenull_(count)
