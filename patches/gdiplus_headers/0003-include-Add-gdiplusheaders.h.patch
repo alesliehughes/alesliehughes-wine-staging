@@ -1,0 +1,220 @@
+From 6d7339b817efd5775b1ec93ac982135fb6ab979d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 28 May 2024 10:26:48 +1000
+Subject: [PATCH 3/3] include: Add gdiplusheaders.h
+
+---
+ include/Makefile.in      |   1 +
+ include/gdiplus.h        |   1 +
+ include/gdiplusheaders.h | 175 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 177 insertions(+)
+ create mode 100644 include/gdiplusheaders.h
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index d35522c283a..1d96e49911c 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -336,6 +336,7 @@ SOURCES = \
+ 	gdiplusenums.h \
+ 	gdiplusflat.h \
+ 	gdiplusgpstubs.h \
++	gdiplusheaders.h \
+ 	gdiplusimaging.h \
+ 	gdiplusinit.h \
+ 	gdiplusmem.h \
+diff --git a/include/gdiplus.h b/include/gdiplus.h
+index e85343b7c17..122bb977939 100644
+--- a/include/gdiplus.h
++++ b/include/gdiplus.h
+@@ -37,6 +37,7 @@ namespace Gdiplus
+ #include "gdipluscolor.h"
+ #include "gdipluscolormatrix.h"
+ #include "gdiplusgpstubs.h"
++#include "gdiplusheaders.h"
+ #include "gdipluseffects.h"
+ 
+     namespace DllExports
+diff --git a/include/gdiplusheaders.h b/include/gdiplusheaders.h
+new file mode 100644
+index 00000000000..d88e865daf9
+--- /dev/null
++++ b/include/gdiplusheaders.h
+@@ -0,0 +1,175 @@
++/*
++ * Copyright (C) 2024 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef _GDIPLUSHEADERS_H
++#define _GDIPLUSHEADERS_H
++
++class Image : public GdiplusBase
++{
++public:
++    friend class Brush;
++    friend class TextureBrush;
++    friend class Graphics;
++
++    Image(const WCHAR* filename, BOOL embedded = FALSE);
++    Image(IStream *stream, BOOL embedded = FALSE);
++
++    static Image* FromFile(const WCHAR *filename, BOOL embedded = FALSE);
++    static Image* FromStream(IStream *stream, BOOL embedded = FALSE );
++
++    virtual ~Image();
++    virtual Image* Clone();
++
++    Status Save(const WCHAR *filename, const CLSID *encoder, const EncoderParameters *params = NULL);
++    Status Save(IStream *stream, const CLSID *encoder,const EncoderParameters *params = NULL);
++    Status SaveAdd(const EncoderParameters *params);
++    Status SaveAdd(Image *image, const EncoderParameters *params);
++
++    ImageType GetType() const;
++    Status GetPhysicalDimension(SizeF *size);
++    Status GetBounds(RectF *rect, OUT Unit *unit);
++
++    UINT GetWidth();
++    UINT GetHeight();
++    REAL GetHorizontalResolution();
++    REAL GetVerticalResolution();
++    UINT GetFlags();
++    Status GetRawFormat(OUT GUID *format);
++    PixelFormat GetPixelFormat();
++
++    INT GetPaletteSize();
++    Status GetPalette(OUT ColorPalette* palette, INT size);
++    Status SetPalette(const ColorPalette* palette);
++
++    Image* GetThumbnailImage(UINT thumbWidth, UINT thumbHeight, GetThumbnailImageAbort callback = NULL, void* callbackData = NULL);
++    UINT GetFrameDimensionsCount();
++    Status GetFrameDimensionsList(GUID* dimension, UINT count);
++    UINT GetFrameCount(const GUID* dimensionID);
++    Status SelectActiveFrame(const GUID* dimensionID, UINT frameIndex);
++    Status RotateFlip(RotateFlipType rotateFlipType);
++    UINT GetPropertyCount();
++    Status GetPropertyIdList(UINT numOfProperty, PROPID* list);
++    UINT GetPropertyItemSize(PROPID propId);
++    Status GetPropertyItem(PROPID propId, UINT propSize, PropertyItem* buffer);
++    Status GetPropertySize(UINT* totalBufferSize, UINT* numProperties);
++    Status GetAllPropertyItems(UINT totalBufferSize, UINT numProperties, PropertyItem *items);
++    Status RemovePropertyItem(PROPID propId);
++    Status SetPropertyItem(const PropertyItem* item);
++    UINT GetEncoderParameterListSize(const CLSID *encoder);
++    Status GetEncoderParameterList(const CLSID *encoder, UINT size, EncoderParameters *buffer);
++    Status FindFirstItem(ImageItemData *item);
++    Status FindNextItem(ImageItemData *item);
++    Status GetItemData(ImageItemData *item);
++    Status SetAbort(GdiplusAbort *pIAbort);
++
++    Status GetLastStatus() const;
++
++protected:
++
++    Image() { }
++
++    Image(GpImage *nativeImage, Status status);
++
++    VOID SetNativeImage(GpImage* nativeImage);
++
++    Status SetStatus(Status status) const
++    {
++        if (status != Ok)
++            return (lastResult = status);
++        else
++            return status;
++    }
++
++    GpImage* nativeImage;
++    mutable Status lastResult;
++    mutable Status loadStatus;
++
++private:
++    Image(const Image& C);
++    Image& operator=(const Image& C);
++};
++
++struct IDirectDrawSurface7;
++
++class Bitmap : public Image
++{
++public:
++    friend class Image;
++    friend class CachedBitmap;
++
++    Bitmap(const WCHAR *filename, BOOL embedded = FALSE);
++    Bitmap(IStream *stream, BOOL embedded = FALSE);
++
++    static Bitmap* FromFile(const WCHAR *filename, BOOL embedded = FALSE);
++    static Bitmap* FromStream(IStream *stream, BOOL embedded = FALSE);
++
++    Bitmap(INT width, INT height, INT stride, PixelFormat format, BYTE* scan);
++    Bitmap(INT width, INT height, PixelFormat format = PixelFormat32bppARGB);
++    Bitmap(INT width, INT height, Graphics* target);
++
++    Bitmap* Clone(const Rect& rect, PixelFormat format);
++    Bitmap* Clone(INT x, INT y, INT width, INT height, PixelFormat format);
++    Bitmap* Clone(const RectF& rect, PixelFormat format);
++    Bitmap* Clone(REAL x, REAL y, REAL width, REAL height, PixelFormat format);
++
++    Status LockBits(const Rect* rect, UINT flags, PixelFormat format, BitmapData* lockedBitmapData);
++    Status UnlockBits(BitmapData *data);
++    Status GetPixel(INT x, INT y, OUT Color *color);
++    Status SetPixel(INT x, INT y, const Color &color);
++
++    Status ConvertFormat( PixelFormat format, DitherType dithertype, PaletteType palettetype,
++        ColorPalette *palette, REAL alphaThresholdPercent);
++
++    static Status InitializePalette(ColorPalette *palette, PaletteType palettetype,
++        INT optimalColors, BOOL useTransparentColor, Bitmap *bitmap);
++
++    Status ApplyEffect(Effect *effect, RECT *ROI);
++
++    static Status ApplyEffect( Bitmap **inputs, INT numInputs, Effect *effect, RECT *ROI,
++        RECT *outputRect, Bitmap **output);
++
++    Status GetHistogram(HistogramFormat format, UINT NumberOfEntries, UINT *channel0,
++        UINT *channel1, UINT *channel2, UINT *channel3);
++
++    static Status GetHistogramSize(HistogramFormat format, UINT *entries);
++
++    Status SetResolution(REAL xdpi, REAL ydpi);
++
++    Bitmap(IDirectDrawSurface7* surface);
++    Bitmap(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData);
++    Bitmap(HBITMAP hbm, HPALETTE hpal);
++    Bitmap(HICON hicon);
++    Bitmap(HINSTANCE instance, const WCHAR *name);
++
++    static Bitmap* FromDirectDrawSurface7(IDirectDrawSurface7* surface);
++    static Bitmap* FromBITMAPINFO(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData);
++    static Bitmap* FromHBITMAP(HBITMAP hbm, HPALETTE hpal);
++    static Bitmap* FromHICON(HICON hicon);
++    static Bitmap* FromResource(HINSTANCE hInstance, const WCHAR *name);
++
++    Status GetHBITMAP(const Color& color, HBITMAP *bitmap);
++    Status GetHICON(HICON *hicon);
++
++private:
++    Bitmap(const Bitmap &);
++    Bitmap& operator=(const Bitmap &);
++
++protected:
++    Bitmap(GpBitmap *nativeBitmap);
++};
++
++#endif
+-- 
+2.43.0
+

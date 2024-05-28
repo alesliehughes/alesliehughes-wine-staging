@@ -1,0 +1,69 @@
+From 23134b83c066ff769a097eca5016fd2df725b263 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 28 May 2024 10:26:19 +1000
+Subject: [PATCH 2/3] include: Add GDIPlus class SizeF
+
+---
+ include/gdiplustypes.h | 46 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+
+diff --git a/include/gdiplustypes.h b/include/gdiplustypes.h
+index 80d5955ffb2..8350ec45782 100644
+--- a/include/gdiplustypes.h
++++ b/include/gdiplustypes.h
+@@ -227,6 +227,52 @@ public:
+     INT Length;
+ };
+ 
++class SizeF
++{
++public:
++    SizeF()
++    : Width(0.0f),
++      Height(0.0f)
++    {
++    }
++
++    SizeF(const SizeF& rhs)
++    {
++        Width = rhs.Width;
++        Height = rhs.Height;
++    }
++
++    SizeF(REAL width, REAL height)
++    {
++        Width = width;
++        Height = height;
++    }
++
++    SizeF operator+(const SizeF& sz) const
++    {
++        return SizeF(Width + sz.Width, Height + sz.Height);
++    }
++
++    SizeF operator-(IN const SizeF& sz) const
++    {
++        return SizeF(Width - sz.Width, Height - sz.Height);
++    }
++
++    BOOL Equals(IN const SizeF& sz) const
++    {
++        return (Width == sz.Width) && (Height == sz.Height);
++    }
++
++    BOOL Empty() const
++    {
++        return (Width == 0.0f && Height == 0.0f);
++    }
++
++public:
++    REAL Width;
++    REAL Height;
++};
++
+ #else /* end of c++ typedefs */
+ 
+ typedef struct Point
+-- 
+2.43.0
+
