@@ -1,0 +1,58 @@
+From 3bb52bba9b2a72723158ff4fa594c78d7b6596aa Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 14 Jun 2024 13:26:34 +1000
+Subject: [PATCH] odbccp32: Add basic resource
+
+---
+ dlls/odbccp32/Makefile.in |  3 ++-
+ dlls/odbccp32/odbccp32.rc | 27 +++++++++++++++++++++++++++
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/odbccp32/odbccp32.rc
+
+diff --git a/dlls/odbccp32/Makefile.in b/dlls/odbccp32/Makefile.in
+index 233d85cf53a..f82bb54bfdc 100644
+--- a/dlls/odbccp32/Makefile.in
++++ b/dlls/odbccp32/Makefile.in
+@@ -3,4 +3,5 @@ IMPORTLIB = odbccp32
+ IMPORTS   = uuid advapi32
+ 
+ SOURCES = \
+-	odbccp32.c
++	odbccp32.c \
++	odbccp32.rc
+diff --git a/dlls/odbccp32/odbccp32.rc b/dlls/odbccp32/odbccp32.rc
+new file mode 100644
+index 00000000000..b3eaa3c3a54
+--- /dev/null
++++ b/dlls/odbccp32/odbccp32.rc
+@@ -0,0 +1,27 @@
++/*
++ * Copyright 2024 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#pragma makedep po
++
++#define WINE_FILEDESCRIPTION_STR "Wine odbccp32"
++#define WINE_FILENAME_STR "odbccp32.dll"
++#define WINE_FILEVERSION 10,0,1904,1
++#define WINE_FILEVERSION_STR "10.0.1904.1"
++#define WINE_PRODUCTVERSION 10,0,1904,1
++#define WINE_PRODUCTVERSION_STR "10.0.1904.1"
++
++#include "wine/wine_common_ver.rc"
+-- 
+2.43.0
+

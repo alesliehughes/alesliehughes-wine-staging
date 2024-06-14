@@ -1,0 +1,58 @@
+From 31a592478f61be7f800f26e0214c57495977f453 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 14 Jun 2024 13:17:24 +1000
+Subject: [PATCH] odbccp32: Correct ODBCCPlApplet parameters to match other
+ CPlApplet functions
+
+ODBCCPlApplet isn't in the windows SDK 10.0.22000.0 (at least).
+---
+ dlls/odbccp32/odbccp32.c    | 4 ++--
+ dlls/odbccp32/odbccp32.spec | 2 +-
+ include/odbcinst.h          | 1 -
+ 3 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index 470bc170618..db79613ef39 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -104,10 +104,10 @@ static inline WCHAR *strdupAtoW(const char *str)
+ }
+ 
+ 
+-BOOL WINAPI ODBCCPlApplet( LONG i, LONG j, LONG * p1, LONG * p2)
++BOOL WINAPI ODBCCPlApplet(HWND hWnd, UINT command, LPARAM lParam1, LPARAM lParam2)
+ {
+     clear_errors();
+-    FIXME( "( %ld %ld %p %p) : stub!\n", i, j, p1, p2);
++    FIXME("(%p, %u, 0x%Ix, 0x%Ix)\n", hWnd, command, lParam1, lParam2);
+     return FALSE;
+ }
+ 
+diff --git a/dlls/odbccp32/odbccp32.spec b/dlls/odbccp32/odbccp32.spec
+index 2717d2202d3..1d59421489f 100644
+--- a/dlls/odbccp32/odbccp32.spec
++++ b/dlls/odbccp32/odbccp32.spec
+@@ -27,7 +27,7 @@
+ 28 stdcall SQLSetConfigMode(long)
+ 29 stdcall SQLInstallTranslatorEx(str str ptr long ptr long ptr)
+ 30 stub SQLCreateDataSourceEx
+-101 stdcall ODBCCPlApplet( long long ptr ptr)
++101 stdcall ODBCCPlApplet( long long long long)
+ 112 stub SelectTransDlg
+ 202 stdcall SQLInstallDriverW(wstr wstr wstr long ptr)
+ 203 stdcall SQLInstallDriverManagerW(ptr long ptr)
+diff --git a/include/odbcinst.h b/include/odbcinst.h
+index 7395cb510e8..9c4588aa5a5 100644
+--- a/include/odbcinst.h
++++ b/include/odbcinst.h
+@@ -72,7 +72,6 @@ extern "C" {
+ #define ODBC_ERROR_OUTPUT_STRING_TRUNCATED	22
+ 
+ 
+-BOOL WINAPI ODBCCPlApplet(LONG,LONG,LONG*,LONG*);
+ BOOL WINAPI SQLConfigDataSource(HWND,WORD,LPCSTR,LPCSTR);
+ BOOL WINAPI SQLConfigDataSourceW(HWND,WORD,LPCWSTR,LPCWSTR);
+ BOOL WINAPI SQLConfigDriver(HWND,WORD,LPCSTR,LPCSTR,LPSTR,WORD,WORD*);
+-- 
+2.43.0
+

@@ -1,0 +1,334 @@
+From 18d701509a4306b76a6dbe03ecc304cc4e1b9b17 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 14 Jun 2024 14:06:05 +1000
+Subject: [PATCH] odbccp32: Add ODBC Data Source Administrator dialog.
+
+Contains third basic tabs.
+- User DSN.
+- System DSN.
+- Drivers.
+---
+ dlls/odbccp32/Makefile.in |   2 +-
+ dlls/odbccp32/odbccp32.c  | 159 ++++++++++++++++++++++++++++++++++++++
+ dlls/odbccp32/odbccp32.rc |  48 ++++++++++++
+ dlls/odbccp32/resource.h  |  29 +++++++
+ 4 files changed, 237 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/odbccp32/resource.h
+
+diff --git a/dlls/odbccp32/Makefile.in b/dlls/odbccp32/Makefile.in
+index f82bb54bfdc..37578242e67 100644
+--- a/dlls/odbccp32/Makefile.in
++++ b/dlls/odbccp32/Makefile.in
+@@ -1,6 +1,6 @@
+ MODULE    = odbccp32.dll
+ IMPORTLIB = odbccp32
+-IMPORTS   = uuid advapi32
++IMPORTS   = uuid advapi32 user32 comctl32
+ 
+ SOURCES = \
+ 	odbccp32.c \
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index db79613ef39..baae7d56329 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -25,17 +25,24 @@
+ 
+ #define COBJMACROS
+ 
++#include "windows.h"
+ #include "windef.h"
+ #include "winbase.h"
+ #include "winreg.h"
+ #include "winnls.h"
+ #include "sqlext.h"
++#include "commctrl.h"
++#include "cpl.h"
+ #include "wine/debug.h"
+ 
++#include "resource.h"
++
+ #include "odbcinst.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
+ 
++static HINSTANCE instance;
++
+ /* Registry key names */
+ static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\','O','D','B','C',' ','D','r','i','v','e','r','s',0};
+ static const WCHAR odbcW[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C',0};
+@@ -103,11 +110,147 @@ static inline WCHAR *strdupAtoW(const char *str)
+     return ret;
+ }
+ 
++static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
++{
++    TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
++
++    switch (msg)
++    {
++        case WM_INITDIALOG:
++        {
++            TRACE("WM_INITDIALOG");
++            break;
++        }
++        case WM_DESTROY:
++        {
++            TRACE("WM_DESTROY");
++            break;
++        }
++        case WM_NOTIFY:
++        {
++            TRACE("WM_NOTIFY");
++            break;
++        }
++        case WM_COMMAND:
++        {
++            TRACE("WM_COMMAND");
++            break;
++        }
++        default:
++            break;
++    }
++    return 0;
++}
++
++static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
++{
++    TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
++
++    switch (msg)
++    {
++        case WM_INITDIALOG:
++        {
++            TRACE("WM_INITDIALOG");
++            break;
++        }
++        case WM_DESTROY:
++        {
++            TRACE("WM_DESTROY");
++            break;
++        }
++        case WM_NOTIFY:
++        {
++            TRACE("WM_NOTIFY");
++            break;
++        }
++        case WM_COMMAND:
++        {
++            TRACE("WM_COMMAND");
++            break;
++        }
++        default:
++            break;
++    }
++    return 0;
++}
++
++static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
++{
++    TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
++
++    switch (msg)
++    {
++        case WM_INITDIALOG:
++        {
++            TRACE("WM_INITDIALOG");
++            break;
++        }
++        case WM_DESTROY:
++        {
++            TRACE("WM_DESTROY");
++            break;
++        }
++        case WM_NOTIFY:
++        {
++            TRACE("WM_NOTIFY");
++            break;
++        }
++        case WM_COMMAND:
++        {
++            TRACE("WM_COMMAND");
++            break;
++        }
++        default:
++            break;
++    }
++    return 0;
++}
++
++static BOOL create_connection_propershee(HWND hwnd)
++{
++    PROPSHEETHEADERW hdr;
++    PROPSHEETPAGEW pages[3];
++    INT_PTR ret;
++
++    memset(&pages, 0, sizeof(pages));
++
++    pages[0].dwSize = sizeof(PROPSHEETPAGEW);
++    pages[0].hInstance = instance;
++    pages[0].pszTemplate = MAKEINTRESOURCEW(IDD_USER_SOURCES);
++    pages[0].pfnDlgProc = user_dsn_dlg_proc;
++
++    pages[1].dwSize = sizeof(PROPSHEETPAGEW);
++    pages[1].hInstance = instance;
++    pages[1].pszTemplate = MAKEINTRESOURCEW(IDD_SYS_SOURCES);
++    pages[1].pfnDlgProc = system_dsn_dlg_proc;
++
++    pages[2].dwSize = sizeof(PROPSHEETPAGEW);
++    pages[2].hInstance = instance;
++    pages[2].pszTemplate = MAKEINTRESOURCEW(IDD_DRIVERS);
++    pages[2].pfnDlgProc = drivers_dlg_proc;
++
++    memset(&hdr, 0, sizeof(hdr));
++    hdr.dwSize = sizeof(hdr);
++    hdr.hwndParent = hwnd ? hwnd : GetDesktopWindow();
++    hdr.dwFlags = PSH_PROPSHEETPAGE;
++    hdr.hInstance = instance;
++    hdr.pszCaption = MAKEINTRESOURCEW(IDS_USER_SRC_TITLE);
++    hdr.ppsp = pages;
++    hdr.nPages = ARRAY_SIZE(pages);
++    ret = PropertySheetW(&hdr);
++    FIXME("PropertySheetW return %d\n", ret);
++
++     return ret == 1;
++}
+ 
+ BOOL WINAPI ODBCCPlApplet(HWND hWnd, UINT command, LPARAM lParam1, LPARAM lParam2)
+ {
+     clear_errors();
+     FIXME("(%p, %u, 0x%Ix, 0x%Ix)\n", hWnd, command, lParam1, lParam2);
++
++    if(create_connection_propershee(hWnd))
++        return TRUE;
++
+     return FALSE;
+ }
+ 
+@@ -1413,6 +1556,10 @@ BOOL WINAPI SQLManageDataSources(HWND hwnd)
+     clear_errors();
+     FIXME("%p\n", hwnd);
+     SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
++
++    if(create_connection_propershee(hwnd))
++        return TRUE;
++
+     return FALSE;
+ }
+ 
+@@ -1897,3 +2044,15 @@ BOOL WINAPI SQLWritePrivateProfileString(LPCSTR lpszSection, LPCSTR lpszEntry,
+ 
+     return ret;
+ }
++
++BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID lpv)
++{
++    switch(reason)
++    {
++    case DLL_PROCESS_ATTACH:
++        instance = hinst;
++        DisableThreadLibraryCalls(hinst);
++        break;
++    }
++    return TRUE;
++}
+diff --git a/dlls/odbccp32/odbccp32.rc b/dlls/odbccp32/odbccp32.rc
+index b3eaa3c3a54..635694b7f8c 100644
+--- a/dlls/odbccp32/odbccp32.rc
++++ b/dlls/odbccp32/odbccp32.rc
+@@ -17,6 +17,8 @@
+  */
+ #pragma makedep po
+ 
++#include "resource.h"
++
+ #define WINE_FILEDESCRIPTION_STR "Wine odbccp32"
+ #define WINE_FILENAME_STR "odbccp32.dll"
+ #define WINE_FILEVERSION 10,0,1904,1
+@@ -25,3 +27,49 @@
+ #define WINE_PRODUCTVERSION_STR "10.0.1904.1"
+ 
+ #include "wine/wine_common_ver.rc"
++
++LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
++
++STRINGTABLE
++{
++    IDS_USER_SRC_TITLE "ODBC Data Source Administrator"
++}
++
++IDD_USER_SOURCES DIALOGEX 0, 0, 381, 197
++STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP
++CAPTION "User DSN"
++FONT 8, "MS Shell Dlg"
++BEGIN
++    LTEXT           "&User Data Sources:", -1, 7, 7, 265, 8
++    CONTROL         "List1",IDC_CONNECTIONS_LIST,"SysListView32", LVS_LIST | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7, 18, 265, 120
++    PUSHBUTTON      "A&dd...", IDC_CONNECTION_ADD, 279, 18, 95, 18
++    PUSHBUTTON      "&Remove", IDC_CONNECTION_REMOVE, 279, 40, 95, 18
++    PUSHBUTTON      "&Configure...", IDC_CONNECTION_CONFIG, 279, 62, 95, 18
++    GROUPBOX        "", -1, 7, 140, 367, 50
++    LTEXT           "An ODBC User data source stores information about how to connect to the indicated data provider.  A User data source is only visible to you, and can only be used on the current machine.", -1, 12, 152, 353, 34
++END
++
++IDD_SYS_SOURCES DIALOGEX 0, 0, 381, 197
++STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
++CAPTION "System DSN"
++FONT 8, "MS Shell Dlg", 0, 0, 0x0
++BEGIN
++    LTEXT           "&System Data Sources:", -1, 7, 7, 265, 8
++    CONTROL         "List1", IDC_CONNECTIONS_LIST, "SysListView32", LVS_LIST | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7,18,265,120
++    PUSHBUTTON      "A&dd...",IDC_CONNECTION_ADD, 279, 18, 95, 18
++    PUSHBUTTON      "&Remove", IDC_CONNECTION_REMOVE, 279, 40, 95, 18
++    PUSHBUTTON      "&Configure...", IDC_CONNECTION_CONFIG, 279, 62, 95, 18
++    GROUPBOX        "", -1, 7, 140, 367, 50
++    LTEXT           "An ODBC System data source stores information about how to connect to the indicated data provider.  A System data source is visible to all users on this machine, including NT services.", -1, 12, 152, 353, 34
++END
++
++IDD_DRIVERS DIALOGEX 0, 0, 381, 197
++STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP
++CAPTION "Drivers"
++FONT 8, "MS Shell Dlg", 0, 0, 0x0
++BEGIN
++    LTEXT           "&ODBC Drivers that are installed on your system:",-1, 7, 7, 367, 8
++    CONTROL         "List1", IDC_DRIVER_LIST, "SysListView32",LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7, 18, 367, 120
++    GROUPBOX        "", -1, 7, 140, 367, 50
++    LTEXT           "An ODBC driver allows ODBC-enabled programs to get information from ODBC data sources.  To install new drivers, use the driver's setup program.", -1, 12, 152, 353, 34
++END
+diff --git a/dlls/odbccp32/resource.h b/dlls/odbccp32/resource.h
+new file mode 100644
+index 00000000000..b26a38dcaa7
+--- /dev/null
++++ b/dlls/odbccp32/resource.h
+@@ -0,0 +1,29 @@
++/*
++ * Copyright 2024 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define IDD_USER_SOURCES     100
++#define IDD_SYS_SOURCES      101
++#define IDD_DRIVERS          102
++
++#define IDC_CONNECTIONS_LIST  1000
++#define IDC_CONNECTION_ADD    1001
++#define IDC_CONNECTION_REMOVE 1002
++#define IDC_CONNECTION_CONFIG 1003
++#define IDC_DRIVER_LIST       1004
++
++#define IDS_USER_SRC_TITLE   10000
+-- 
+2.43.0
+
