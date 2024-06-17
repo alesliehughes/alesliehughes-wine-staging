@@ -1,0 +1,35 @@
+From f9d6f18c00b226384262425ce6a2d0ee925f5586 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 17 Jun 2024 14:06:04 +1000
+Subject: [PATCH] odbccp32: SQLConfigDataSource/W fix crash with passed NULL
+ attribute parameter.
+
+---
+ dlls/odbccp32/odbccp32.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index 782ff578f25..19d9d6c9802 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -786,7 +786,7 @@ BOOL WINAPI SQLConfigDataSourceW(HWND hwnd, WORD request, LPCWSTR driver, LPCWST
+     WORD mapped_request;
+ 
+     TRACE("%p, %d, %s, %s\n", hwnd, request, debugstr_w(driver), debugstr_w(attributes));
+-    if (TRACE_ON(odbc))
++    if (TRACE_ON(odbc) && attributes)
+     {
+         const WCHAR *p;
+         for (p = attributes; *p; p += lstrlenW(p) + 1)
+@@ -831,7 +831,7 @@ BOOL WINAPI SQLConfigDataSource(HWND hwnd, WORD request, LPCSTR driver, LPCSTR a
+ 
+     TRACE("%p, %d, %s, %s\n", hwnd, request, debugstr_a(driver), debugstr_a(attributes));
+ 
+-    if (TRACE_ON(odbc))
++    if (TRACE_ON(odbc) && attributes)
+     {
+         const char *p;
+         for (p = attributes; *p; p += lstrlenA(p) + 1)
+-- 
+2.43.0
+

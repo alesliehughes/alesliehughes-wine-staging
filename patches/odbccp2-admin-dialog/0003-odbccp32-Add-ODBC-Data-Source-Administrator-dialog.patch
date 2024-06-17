@@ -1,4 +1,4 @@
-From 18d701509a4306b76a6dbe03ecc304cc4e1b9b17 Mon Sep 17 00:00:00 2001
+From 3a920f9f7b5340aa9caf6ab4fe6889f9e9278bb2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 14:06:05 +1000
 Subject: [PATCH] odbccp32: Add ODBC Data Source Administrator dialog.

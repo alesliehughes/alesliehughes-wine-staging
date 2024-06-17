@@ -1,20 +1,20 @@
-From 7902abef4712c60023aeec42cbf3a0489f24a5f2 Mon Sep 17 00:00:00 2001
+From 53ebfabf43cb14f71d740d7a8916431b522e38b3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 16:31:02 +1000
 Subject: [PATCH] odbccp32: Implement Drivers Tab
 
 TODO: Rest of the columns.
 ---
- dlls/odbccp32/odbccp32.c  | 100 ++++++++++++++++++++++++++++++++++++--
+ dlls/odbccp32/odbccp32.c  | 128 ++++++++++++++++++++++++++++++++++++--
  dlls/odbccp32/odbccp32.rc |   8 ++-
  dlls/odbccp32/resource.h  |   5 ++
- 3 files changed, 108 insertions(+), 5 deletions(-)
+ 3 files changed, 136 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index baae7d56329..c3c9ca409ae 100644
+index baae7d56329..6967eae6507 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -174,6 +174,95 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -174,6 +174,123 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
      return 0;
  }
  
@@ -92,6 +92,34 @@ index baae7d56329..c3c9ca409ae 100644
 +            item.pszText = value;
 +
 +            SendMessageW(listview, LVM_INSERTITEMW, 0, (LPARAM)&item);
++            {
++                LONG res2;
++                HKEY driver;
++                WCHAR driverPath[256];
++                WCHAR buffer[MAX_PATH];
++                DWORD size;
++
++                wcscpy(driverPath, odbcini);
++                wcscat(driverPath, value);
++
++                res2 =  RegOpenKeyExW(HKEY_LOCAL_MACHINE, driverPath, 0, KEY_QUERY_VALUE, &driver);
++                if (res2)
++                    continue;
++
++                size = ARRAY_SIZE(buffer);
++                res2 = RegGetValueW(driver, NULL, L"Driver", RRF_RT_REG_SZ, NULL, buffer, &size);
++                if (res2)
++                    continue;
++
++                item.mask = LVIF_TEXT | LVCF_SUBITEM;
++                item.iSubItem = 3;
++                item.pszText = buffer;
++
++                SendMessageW(listview, LVM_SETITEMW, 0, (LPARAM)&item);
++
++
++                RegCloseKey(driver);
++            }
 +        }
 +        else if (res == ERROR_NO_MORE_ITEMS)
 +            break;
@@ -110,7 +138,7 @@ index baae7d56329..c3c9ca409ae 100644
  static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
-@@ -182,22 +271,25 @@ static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
+@@ -182,22 +299,25 @@ static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
      {
          case WM_INITDIALOG:
          {

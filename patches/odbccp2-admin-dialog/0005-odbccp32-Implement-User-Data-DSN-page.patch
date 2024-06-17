@@ -1,0 +1,238 @@
+From d8ab714ad0ac728757442cd32eaceb795e415ee2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 17 Jun 2024 11:00:28 +1000
+Subject: [PATCH] odbccp32: Implement User Data DSN page
+
+---
+ dlls/odbccp32/odbccp32.c  | 161 ++++++++++++++++++++++++++++++++++++--
+ dlls/odbccp32/odbccp32.rc |   4 +-
+ dlls/odbccp32/resource.h  |   2 +
+ 3 files changed, 161 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index 6967eae6507..eef48484fe5 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -110,30 +110,181 @@ static inline WCHAR *strdupAtoW(const char *str)
+     return ret;
+ }
+ 
++static void create_dsn_columns(HWND lv)
++{
++    WCHAR buf[256];
++    LVCOLUMNW column;
++
++    LoadStringW(instance, IDS_DRIVER_COL_NAME, buf, ARRAY_SIZE(buf));
++    column.mask = LVCF_WIDTH | LVCF_TEXT;
++    column.cx = 150;
++    column.pszText = buf;
++    SendMessageW(lv, LVM_INSERTCOLUMNW, 0, (LPARAM)&column);
++
++    LoadStringW(instance, IDS_DSN_COL_PLATFORM, buf, ARRAY_SIZE(buf));
++    column.mask = LVCF_WIDTH | LVCF_TEXT;
++    column.cx = 75;
++    column.pszText = buf;
++    SendMessageW(lv, LVM_INSERTCOLUMNW, 1, (LPARAM)&column);
++
++    LoadStringW(instance, IDS_DSN_COL_DRIVER, buf, ARRAY_SIZE(buf));
++    column.mask = LVCF_WIDTH | LVCF_TEXT;
++    column.cx = 200;
++    column.pszText = buf;
++    SendMessageW(lv, LVM_INSERTCOLUMNW, 2, (LPARAM)&column);
++}
++
++static void dsn_config_btn_toggle(HWND hwnd)
++{
++    HWND hwnd_remove = GetDlgItem(hwnd, IDC_CONNECTION_REMOVE);
++    HWND hwnd_config = GetDlgItem(hwnd, IDC_CONNECTION_CONFIG);
++    HWND lv = GetDlgItem(hwnd, IDC_CONNECTIONS_LIST);
++
++    BOOL enable = SendMessageW(lv, LVM_GETSELECTEDCOUNT, 0, 0) > 0;
++
++    EnableWindow(hwnd_remove, enable);
++    EnableWindow(hwnd_config, enable);
++}
++
++static void populate_dsn_list_view(HWND lv, BOOL dsn_user)
++{
++    HKEY hkeyodbc, hkey = HKEY_LOCAL_MACHINE;
++
++    if (dsn_user)
++        hkey = HKEY_CURRENT_USER;
++
++    if (RegOpenKeyW(hkey, L"Software\\ODBC\\ODBC.INI\\ODBC Data Sources", &hkeyodbc) == ERROR_SUCCESS)
++    {
++        DWORD valuelen, index = 0, len, res;
++        WCHAR *value;
++        LVITEMW item;
++
++        valuelen = 256;
++        value = malloc(valuelen * sizeof(WCHAR));
++
++        while (1)
++        {
++            len = valuelen;
++            res = RegEnumValueW(hkeyodbc, index, value, &len, NULL, NULL, NULL, NULL);
++            while (res == ERROR_MORE_DATA)
++            {
++                value = realloc(value, ++len * sizeof(WCHAR));
++                res = RegEnumValueW(hkeyodbc, index, value, &len, NULL, NULL, NULL, NULL);
++            }
++
++            if (res != ERROR_SUCCESS)
++                break;
++
++            FIXME("Value %s\n", debugstr_w(value));
++
++            item.mask = LVIF_TEXT;
++            item.iItem = index;
++            item.iSubItem = 0;
++            item.pszText = value;
++
++            SendMessageW(lv, LVM_INSERTITEMW, 0, (LPARAM)&item);
++
++            index++;
++        }
++        free(value);
++        RegCloseKey(hkeyodbc);
++    }
++}
++
++static void call_driver_configure(HWND hwnd, WORD request)
++{
++    HWND lv = GetDlgItem(hwnd, IDC_CONNECTIONS_LIST);
++    LVITEMW item;
++
++    int selection = SendMessageW(lv, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
++    if (selection >= 0)
++    {
++        WCHAR value[256];
++
++        item.mask = LVIF_TEXT;
++        item.iItem = selection;
++        item.iSubItem = 0;
++        item.pszText = value;
++        item.cchTextMax = 256;
++        if (SendMessageW(lv, LVM_GETITEMW, 0, (LPARAM)&item))
++        {
++            HKEY key;
++
++            if (RegOpenKeyW(HKEY_CURRENT_USER, L"Software\\ODBC\\ODBC.INI\\ODBC Data Sources", &key) == ERROR_SUCCESS)
++            {
++                WCHAR driverlocation[256];
++                DWORD size = sizeof(driverlocation);
++                WCHAR *attributes = NULL;
++                RegGetValueW(key, NULL, item.pszText, RRF_RT_REG_SZ, NULL, driverlocation, &size);
++
++                if(request == ODBC_CONFIG_DSN || request == ODBC_REMOVE_DSN)
++                {
++                    /* MUST pass through at least the DSN for ADD/Remove */
++                    attributes = malloc( size + ARRAY_SIZE(L"DSN=;"));
++                    wcscpy(attributes, L"DSN=");
++                    wcscat(attributes, value);
++                }
++
++                SQLConfigDataSourceW(hwnd, request, driverlocation, attributes);
++                free(attributes);
++            }
++        }
++    }
++}
++
+ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+ {
+-    TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
++    /*TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
+ 
+     switch (msg)
+     {
+         case WM_INITDIALOG:
+         {
+-            TRACE("WM_INITDIALOG");
++            HWND lv = GetDlgItem(hwnd, IDC_CONNECTIONS_LIST);
++
++            create_dsn_columns(lv);
++
++            populate_dsn_list_view(lv, TRUE);
++            dsn_config_btn_toggle(hwnd);
+             break;
+         }
+         case WM_DESTROY:
+         {
+-            TRACE("WM_DESTROY");
++            TRACE("WM_DESTROY\n");
+             break;
+         }
+         case WM_NOTIFY:
+         {
+-            TRACE("WM_NOTIFY");
++            NMLISTVIEW *nm;
++
++            nm = (NMLISTVIEW *) lp;
++            switch(nm->hdr.code)
++            {
++                case LVN_ITEMCHANGED:
++                    if ((nm->uNewState & LVIS_SELECTED) == LVIS_SELECTED)
++                        dsn_config_btn_toggle(hwnd);
++            }
+             break;
+         }
+         case WM_COMMAND:
+         {
+-            TRACE("WM_COMMAND");
++            TRACE("WM_COMMAND\n");
++            switch (LOWORD(wp))
++            {
++                case IDC_CONNECTION_ADD:
++                    MessageBoxA(NULL, "A", "B", MB_OK);
++                    break;
++                case IDC_CONNECTION_REMOVE:
++                    call_driver_configure(hwnd, ODBC_REMOVE_DSN);
++                    break;
++                case IDC_CONNECTION_CONFIG:
++                {
++                    call_driver_configure(hwnd, ODBC_CONFIG_DSN);
++                    break;
++                }
++                default:
++                    /* Fall through */
++            }
+             break;
+         }
+         default:
+diff --git a/dlls/odbccp32/odbccp32.rc b/dlls/odbccp32/odbccp32.rc
+index 3a72c086000..341c7465bfc 100644
+--- a/dlls/odbccp32/odbccp32.rc
++++ b/dlls/odbccp32/odbccp32.rc
+@@ -39,6 +39,8 @@ STRINGTABLE
+     IDS_DRIVER_COL_COMPANY "Company"
+     IDS_DRIVER_COL_FILE "File"
+     IDS_DRIVER_COL_DATE "Date"
++    IDS_DSN_COL_PLATFORM "Platform"
++    IDS_DSN_COL_DRIVER   "Driver"
+ }
+ 
+ IDD_USER_SOURCES DIALOGEX 0, 0, 381, 197
+@@ -47,7 +49,7 @@ CAPTION "User DSN"
+ FONT 8, "MS Shell Dlg"
+ BEGIN
+     LTEXT           "&User Data Sources:", -1, 7, 7, 265, 8
+-    CONTROL         "List1",IDC_CONNECTIONS_LIST,"SysListView32", LVS_LIST | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7, 18, 265, 120
++    CONTROL         "List1",IDC_CONNECTIONS_LIST,"SysListView32", LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7, 18, 265, 120
+     PUSHBUTTON      "A&dd...", IDC_CONNECTION_ADD, 279, 18, 95, 18
+     PUSHBUTTON      "&Remove", IDC_CONNECTION_REMOVE, 279, 40, 95, 18
+     PUSHBUTTON      "&Configure...", IDC_CONNECTION_CONFIG, 279, 62, 95, 18
+diff --git a/dlls/odbccp32/resource.h b/dlls/odbccp32/resource.h
+index 482acdff3cd..428ea7bbe2b 100644
+--- a/dlls/odbccp32/resource.h
++++ b/dlls/odbccp32/resource.h
+@@ -32,3 +32,5 @@
+ #define IDS_DRIVER_COL_COMPANY 10003
+ #define IDS_DRIVER_COL_FILE    10004
+ #define IDS_DRIVER_COL_DATE    10005
++#define IDS_DSN_COL_PLATFORM   10006
++#define IDS_DSN_COL_DRIVER     10007
+\ No newline at end of file
+-- 
+2.43.0
+

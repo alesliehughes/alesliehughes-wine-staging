@@ -1,4 +1,4 @@
-From 31a592478f61be7f800f26e0214c57495977f453 Mon Sep 17 00:00:00 2001
+From 32297ad5bed0d57f75764a3ee2d635653debe02a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 13:17:24 +1000
 Subject: [PATCH] odbccp32: Correct ODBCCPlApplet parameters to match other

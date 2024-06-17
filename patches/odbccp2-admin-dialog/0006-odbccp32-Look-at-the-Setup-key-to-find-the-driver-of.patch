@@ -1,0 +1,42 @@
+From b7985aa93f0322ee5bb01d4d390ef29dacbdcce3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 17 Jun 2024 12:15:17 +1000
+Subject: [PATCH] odbccp32: Look at the Setup key to find the driver of ODBC
+
+---
+ dlls/odbccp32/odbccp32.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index eef48484fe5..782ff578f25 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -637,7 +637,6 @@ static BOOL SQLInstall_narrow(int mode, LPSTR buffer, LPCWSTR str, WORD str_leng
+ 
+ static HMODULE load_config_driver(const WCHAR *driver)
+ {
+-    static WCHAR reg_driver[] = {'d','r','i','v','e','r',0};
+     long ret;
+     HMODULE hmod;
+     WCHAR *filename = NULL;
+@@ -650,7 +649,7 @@ static HMODULE load_config_driver(const WCHAR *driver)
+ 
+         if ((ret = RegOpenKeyW(hkey, driver, &hkeydriver)) == ERROR_SUCCESS)
+         {
+-            ret = RegGetValueW(hkeydriver, NULL, reg_driver, RRF_RT_REG_SZ, &type, NULL, &size);
++            ret = RegGetValueW(hkeydriver, NULL, L"Setup", RRF_RT_REG_SZ, &type, NULL, &size);
+             if(ret != ERROR_SUCCESS || type != REG_SZ)
+             {
+                 RegCloseKey(hkeydriver);
+@@ -669,7 +668,7 @@ static HMODULE load_config_driver(const WCHAR *driver)
+ 
+                 return NULL;
+             }
+-            ret = RegGetValueW(hkeydriver, NULL, reg_driver, RRF_RT_REG_SZ, &type, filename, &size);
++            ret = RegGetValueW(hkeydriver, NULL, L"Setup", RRF_RT_REG_SZ, &type, filename, &size);
+ 
+             RegCloseKey(hkeydriver);
+         }
+-- 
+2.43.0
+
