@@ -1,17 +1,12 @@
-From bb56f1403bae3fa6b815980a7b7fadf964749a15 Mon Sep 17 00:00:00 2001
+From 8820d1e559de7341433e7e500fed2501d7ec104d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 20 Sep 2023 13:42:34 +1000
-Subject: [PATCH] msado15: Implement _Recordset Find
+Subject: msado15: Implement _Recordset Find
 
 Recordset::Find only supports one Column filter.
----
- dlls/msado15/recordset.c       | 287 ++++++++++++++++++++++++++++++++-
- dlls/msado15/tests/Makefile.in |   2 +-
- dlls/msado15/tests/msado15.c   | 188 ++++++++++++++++++++-
- 3 files changed, 473 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
-index 2519635fb93..0baab8c2ee1 100644
+index f6acaff1c54..e8a0ee27d3b 100644
 --- a/dlls/msado15/recordset.c
 +++ b/dlls/msado15/recordset.c
 @@ -32,6 +32,23 @@
@@ -38,16 +33,16 @@ index 2519635fb93..0baab8c2ee1 100644
  struct fields;
  struct recordset
  {
-@@ -51,6 +68,8 @@ struct recordset
-     IRowset           *row_set;
-     EditModeEnum      editmode;
+@@ -53,6 +70,8 @@ struct recordset
+     LONG               cache_size;
+     ADO_LONGPTR        max_records;
      VARIANT            filter;
 +    BSTR              criteria;
 +    struct column_filter *criteria_col;
  
      DBTYPE            *columntypes;
      HACCESSOR         *haccessors;
-@@ -1230,6 +1249,13 @@ static void close_recordset( struct recordset *recordset )
+@@ -1236,6 +1255,13 @@ static void close_recordset( struct recordset *recordset )
      if ( recordset->row_set ) IRowset_Release( recordset->row_set );
      recordset->row_set = NULL;
  
@@ -61,7 +56,7 @@ index 2519635fb93..0baab8c2ee1 100644
      VariantClear( &recordset->filter );
  
      if (!recordset->fields) return;
-@@ -2370,12 +2396,267 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
+@@ -2388,12 +2414,267 @@ static HRESULT WINAPI recordset_put_MarshalOptions( _Recordset *iface, MarshalOp
      return E_NOTIMPL;
  }
  
@@ -331,7 +326,7 @@ index 2519635fb93..0baab8c2ee1 100644
  }
  
  static HRESULT WINAPI recordset_Cancel( _Recordset *iface )
-@@ -2791,6 +3072,8 @@ HRESULT Recordset_create( void **obj )
+@@ -2811,6 +3092,8 @@ HRESULT Recordset_create( void **obj )
      VariantInit( &recordset->filter );
      recordset->columntypes = NULL;
      recordset->haccessors = NULL;
@@ -352,7 +347,7 @@ index 6af5852c224..a6c162d5b3f 100644
  SOURCES = \
  	msado15.c
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 9c9afbc120f..6bc3ad99f1b 100644
+index b6c1c391e71..331b85cc66b 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
 @@ -19,8 +19,11 @@
@@ -376,7 +371,7 @@ index 9c9afbc120f..6bc3ad99f1b 100644
      HRESULT hr;
      VARIANT bookmark, filter, active;
      EditModeEnum editmode;
-@@ -143,6 +146,12 @@ static void test_Recordset(void)
+@@ -174,6 +177,12 @@ static void test_Recordset(void)
      hr = _Recordset_put_Filter( recordset, filter );
      ok( hr == S_OK, "got %08lx\n", hr );
  
@@ -389,7 +384,7 @@ index 9c9afbc120f..6bc3ad99f1b 100644
      VariantInit( &missing );
      hr = _Recordset_AddNew( recordset, missing, missing );
      ok( hr == MAKE_ADO_HRESULT( adErrObjectClosed ), "got %08lx\n", hr );
-@@ -1364,6 +1373,182 @@ static void test_Command(void)
+@@ -1395,6 +1404,182 @@ static void test_Command(void)
      _Command_Release( command );
  }
  
@@ -572,7 +567,7 @@ index 9c9afbc120f..6bc3ad99f1b 100644
  struct conn_event {
      ConnectionEventsVt conn_event_sink;
      LONG refs;
-@@ -1583,6 +1768,7 @@ START_TEST(msado15)
+@@ -1614,6 +1799,7 @@ START_TEST(msado15)
      test_ConnectionPoint();
      test_Fields();
      test_Recordset();
@@ -580,6 +575,3 @@ index 9c9afbc120f..6bc3ad99f1b 100644
      test_Stream();
      test_Command();
      CoUninitialize();
--- 
-2.42.0
-
