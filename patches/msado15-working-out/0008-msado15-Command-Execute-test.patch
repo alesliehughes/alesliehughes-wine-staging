@@ -1,0 +1,111 @@
+From 7abea1dce8aec7d7a5e4bc20d64abb12c7483302 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 1 Jul 2024 09:41:55 +1000
+Subject: [PATCH] msado15: Command Execute test
+
+---
+ dlls/msado15/tests/msado15.c | 45 +++++++++++++++++++++++++++---------
+ 1 file changed, 34 insertions(+), 11 deletions(-)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index e552ad91005..51a7321d18b 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -1623,6 +1623,11 @@ static void test_recordset_Find(void)
+         Field *field;
+         VARIANT missing;
+         IDispatch *dispatch;
++        _Command *command;
++
++        hr = CoCreateInstance( &CLSID_Command, NULL, CLSCTX_INPROC_SERVER, &IID__Command, (void **)&command );
++        ok( hr == S_OK, "got %08lx\n", hr );
++        ok( 0, "got %08lx\n", hr );
+ 
+         V_VT( &missing ) = VT_ERROR;
+         V_ERROR( &missing ) = DISP_E_PARAMNOTFOUND;
+@@ -1640,7 +1645,24 @@ static void test_recordset_Find(void)
+         V_VT( &active ) = VT_DISPATCH;
+         V_DISPATCH( &active ) = dispatch;
+ 
+-        ok(0, "Before _Recordset_Open\n");
++        //SysAllocString(L"Hello");
++
++        {
++            VARIANT affected, parameters;
++            _Recordset *rec2 = NULL;
++
++            hr = _Command_put_CommandText(command, V_BSTR(&source));
++            ok( hr == S_OK, "got %08lx\n", hr );
++
++            _Command_put_ActiveConnection(command, active);
++
++            VariantInit(&affected);
++            VariantInit(&parameters);
++            hr = _Command_Execute(command, &affected, NULL, 1, &rec2);
++            ok( hr == S_OK, "got %08lx\n", hr );
++        }
++
++        /*ok(0, "Before _Recordset_Open\n");
+         hr = _Recordset_Open(recordset, source, active, adOpenDynamic, adLockOptimistic, 0);
+         ok(0, "After _Recordset_Open\n");
+         ok( hr == S_OK, "got %08lx\n", hr );
+@@ -1654,9 +1676,9 @@ static void test_recordset_Find(void)
+ 
+         hr = _Recordset_get_Fields( recordset, &fields );
+         ok( hr == S_OK, "got %08lx\n", hr );
+-
++*/
+         /* Col1  - int */
+-        V_VT( &index ) = VT_I4;
++/*        V_VT( &index ) = VT_I4;
+         V_I4( &index ) = 0;
+         hr = Fields_get_Item( fields, index, &field );
+         ok( hr == S_OK, "got %08lx\n", hr );
+@@ -1666,9 +1688,9 @@ static void test_recordset_Find(void)
+         hr = Field_put_Value( field, val );
+         ok( hr == S_OK, "got %08lx\n", hr );
+         Field_Release(field);
+-
++*/
+         /* Col2 - String */
+-        V_VT( &index ) = VT_I4;
++/*        V_VT( &index ) = VT_I4;
+         V_I4( &index ) = 1;
+         hr = Fields_get_Item( fields, index, &field );
+         ok( hr == S_OK, "got %08lx\n", hr );
+@@ -1680,11 +1702,12 @@ static void test_recordset_Find(void)
+         Field_Release(field);
+ 
+         Fields_Release(fields);
+-
+-        ok(0, "Before _Recordset_Update\n");
++*/
++/*        ok(0, "Before _Recordset_Update\n");
+         hr = _Recordset_Update(recordset, missing, missing);
+         ok(0, "After _Recordset_Update\n");
+         ok( hr == S_OK, "got %08lx\n", hr );
++        */
+     }
+ 
+     _Recordset_Release( recordset );
+@@ -1909,13 +1932,13 @@ static void test_ConnectionPoint(void)
+ START_TEST(msado15)
+ {
+     CoInitialize( NULL );
+-    test_Connection();
++    /*test_Connection();
+     test_ADORecordsetConstruction();
+     test_ConnectionPoint();
+     test_Fields();
+-    test_Recordset();
++    test_Recordset();*/
+     test_recordset_Find();
+-    test_Stream();
+-    test_Command();
++    /*test_Stream();
++    test_Command();*/
+     CoUninitialize();
+ }
+-- 
+2.43.0
+
