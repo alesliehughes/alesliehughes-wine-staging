@@ -1,41 +1,14 @@
-From 4822ccf3e350bea1ac88f366ffb1f139c14d4e0a Mon Sep 17 00:00:00 2001
+From ed600de97948a98e9b07e4858e3a7e801789892c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 19 Nov 2021 11:20:42 +1100
-Subject: [PATCH] Testing ColumnTypes from mySQL
+Subject: Testing ColumnTypes from mySQL
 
----
- dlls/msado15/connection.c     |  5 ++-
- dlls/msdasql/session.c        | 12 +++++++
- dlls/msdasql/tests/provider.c | 65 ++++++++++++++++++++++++++++++++---
- 3 files changed, 77 insertions(+), 5 deletions(-)
 
-diff --git a/dlls/msado15/connection.c b/dlls/msado15/connection.c
-index 762277843e8..6244c172afb 100644
---- a/dlls/msado15/connection.c
-+++ b/dlls/msado15/connection.c
-@@ -384,13 +384,16 @@ static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BST
-                                 (void **)&datainit )) != S_OK) return hr;
-     if ((hr = IDataInitialize_GetDataSource( datainit, NULL, CLSCTX_INPROC_SERVER, connect_str, &IID_IDBInitialize,
-                                              (IUnknown **)&dbinit )) != S_OK) goto done;
--    if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBProperties, (void **)&props )) != S_OK) goto done;
-+    //if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBProperties, (void **)&props )) != S_OK) goto done;
- 
-     /* TODO - Update username/password if required. */
-     if ((userid && *userid) || (password && *password))
-         FIXME("Username/password parameters currently not supported\n");
- 
-+//    hr = IDBInitialize_Initialize( dbinit );
-+//FIXME("1. IDBInitialize_Initialize 0x%08lx\n", hr);
-     if ((hr = IDBInitialize_Initialize( dbinit )) != S_OK) goto done;
-+FIXME("2. IDBInitialize_Initialize 0x%08lx\n", hr);
-     if ((hr = IDBInitialize_QueryInterface( dbinit, &IID_IDBCreateSession, (void **)&session )) != S_OK) goto done;
-     if ((hr = IDBCreateSession_CreateSession( session, NULL, &IID_IUnknown, &connection->session )) == S_OK)
-     {
 diff --git a/dlls/msdasql/session.c b/dlls/msdasql/session.c
-index d38f1064396..338f7219f13 100644
+index e949a5f99bf..a9b9a7d4d8b 100644
 --- a/dlls/msdasql/session.c
 +++ b/dlls/msdasql/session.c
-@@ -928,6 +928,18 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
+@@ -927,6 +927,18 @@ static HRESULT WINAPI msdasql_rowset_GetData(IRowset *iface, HROW row, HACCESSOR
              continue;
          }
  
@@ -55,7 +28,7 @@ index d38f1064396..338f7219f13 100644
          pDst         = dwPart & DBPART_VALUE ? ((BYTE *)data + rowset->bindings[i].obValue) : NULL;
          pulDstLength = dwPart & DBPART_LENGTH ? (DBLENGTH *) ((BYTE*)data + rowset->bindings[i].obLength) : NULL;
 diff --git a/dlls/msdasql/tests/provider.c b/dlls/msdasql/tests/provider.c
-index 00fa9194459..e2ee60280c2 100644
+index 0e407b725e8..ec3c62c9dbc 100644
 --- a/dlls/msdasql/tests/provider.c
 +++ b/dlls/msdasql/tests/provider.c
 @@ -38,7 +38,7 @@ DEFINE_GUID(DBPROPSET_ROWSET,    0xc8b522be, 0x5cf3, 0x11ce, 0xad, 0xe5, 0x00, 0
@@ -67,7 +40,7 @@ index 00fa9194459..e2ee60280c2 100644
  static char mdbpath[MAX_PATH];
  
  static const VARTYPE intptr_vartype = (sizeof(void *) == 8 ? VT_I8 : VT_I4);
-@@ -342,7 +342,7 @@ static void test_command_interfaces(IUnknown *cmd)
+@@ -399,7 +399,7 @@ static void test_command_interfaces(IUnknown *cmd)
  
      hr = IUnknown_QueryInterface(cmd, &IID_ICommandProperties, (void**)&commandProp);
      ok(hr == S_OK, "got 0x%08lx\n", hr);
@@ -76,7 +49,7 @@ index 00fa9194459..e2ee60280c2 100644
      ICommandProperties_Release(commandProp);
  
      hr = IUnknown_QueryInterface(cmd, &IID_ICommandWithParameters, (void**)&cmdwithparams);
-@@ -449,6 +449,37 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
+@@ -506,6 +506,37 @@ static void test_command_dbsession(IUnknown *cmd, IUnknown *session)
      ICommandText_Release(command_text);
  }
  
@@ -114,7 +87,7 @@ index 00fa9194459..e2ee60280c2 100644
  static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
  {
      IRowsetInfo *info;
-@@ -476,6 +507,32 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
+@@ -533,6 +564,32 @@ static void test_rowset_interfaces(IRowset *rowset, ICommandText *commandtext)
  
      hr = IRowset_QueryInterface(rowset, &IID_IColumnsInfo, (void**)&col_info);
      ok(hr == S_OK, "got 0x%08lx\n", hr);
@@ -147,7 +120,7 @@ index 00fa9194459..e2ee60280c2 100644
      IColumnsInfo_Release(col_info);
  
      hr = IRowset_QueryInterface(rowset, &IID_IAccessor, (void**)&accessor);
-@@ -846,7 +903,7 @@ START_TEST(provider)
+@@ -978,7 +1035,7 @@ START_TEST(provider)
  {
      CoInitialize(0);
  
@@ -156,7 +129,7 @@ index 00fa9194459..e2ee60280c2 100644
  
      test_msdasql();
      test_Properties();
-@@ -854,7 +911,7 @@ START_TEST(provider)
+@@ -986,7 +1043,7 @@ START_TEST(provider)
  
      test_enumeration();
  
@@ -165,6 +138,3 @@ index 00fa9194459..e2ee60280c2 100644
  
      CoUninitialize();
  }
--- 
-2.34.1
-
