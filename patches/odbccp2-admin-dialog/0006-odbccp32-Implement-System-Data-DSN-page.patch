@@ -1,0 +1,105 @@
+From 4993eca9dce4be9976c7c242b17ed76f647dcd80 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 26 Jul 2024 08:08:37 +1000
+Subject: [PATCH] odbccp32: Implement System Data DSN page
+
+---
+ dlls/odbccp32/odbccp32.c  | 43 +++++++++++++++++++++++++++++++++------
+ dlls/odbccp32/odbccp32.rc |  2 +-
+ 2 files changed, 38 insertions(+), 7 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index fc438a42050..1de945fe667 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -208,16 +208,20 @@ static void call_driver_configure(HWND hwnd, WORD request)
+         item.cchTextMax = 256;
+         if (SendMessageW(lv, LVM_GETITEMW, 0, (LPARAM)&item))
+         {
+-            HKEY key;
++            HKEY key, hkeyroot = HKEY_LOCAL_MACHINE;
+ 
+-            if (RegOpenKeyW(HKEY_CURRENT_USER, L"Software\\ODBC\\ODBC.INI\\ODBC Data Sources", &key) == ERROR_SUCCESS)
++            if (request == ODBC_CONFIG_DSN || request == ODBC_REMOVE_DSN)
++                hkeyroot = HKEY_CURRENT_USER;
++
++            if (RegOpenKeyW(hkeyroot, L"Software\\ODBC\\ODBC.INI\\ODBC Data Sources", &key) == ERROR_SUCCESS)
+             {
+                 WCHAR driverlocation[256];
+                 DWORD size = sizeof(driverlocation);
+                 WCHAR *attributes = NULL;
+                 RegGetValueW(key, NULL, item.pszText, RRF_RT_REG_SZ, NULL, driverlocation, &size);
+ 
+-                if(request == ODBC_CONFIG_DSN || request == ODBC_REMOVE_DSN)
++                if(request == ODBC_CONFIG_DSN || request == ODBC_REMOVE_DSN ||
++                    request == ODBC_CONFIG_SYS_DSN || request == ODBC_REMOVE_SYS_DSN)
+                 {
+                     /* MUST pass through at least the DSN for ADD/Remove */
+                     attributes = malloc( size + ARRAY_SIZE(L"DSN=;"));
+@@ -299,7 +303,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+     {
+         case WM_INITDIALOG:
+         {
+-            TRACE("WM_INITDIALOG");
++            HWND lv = GetDlgItem(hwnd, IDC_CONNECTIONS_LIST);
++
++            create_dsn_columns(lv);
++
++            populate_dsn_list_view(lv, FALSE);
++            dsn_config_btn_toggle(hwnd);
+             break;
+         }
+         case WM_DESTROY:
+@@ -309,12 +318,34 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+         }
+         case WM_NOTIFY:
+         {
+-            TRACE("WM_NOTIFY");
++            NMLISTVIEW *nm;
++
++            nm = (NMLISTVIEW *) lp;
++            switch(nm->hdr.code)
++            {
++                case LVN_ITEMCHANGED:
++                    if ((nm->uNewState & LVIS_SELECTED) == LVIS_SELECTED)
++                        dsn_config_btn_toggle(hwnd);
++            }
+             break;
+         }
+         case WM_COMMAND:
+         {
+-            TRACE("WM_COMMAND");
++            TRACE("WM_COMMAND\n");
++            switch (LOWORD(wp))
++            {
++                case IDC_CONNECTION_ADD:
++                    MessageBoxA(hwnd, "Currently Not implemented", "Unimplemented", MB_OK);
++                    break;
++                case IDC_CONNECTION_REMOVE:
++                    call_driver_configure(hwnd, ODBC_REMOVE_SYS_DSN);
++                    break;
++                case IDC_CONNECTION_CONFIG:
++                    call_driver_configure(hwnd, ODBC_CONFIG_SYS_DSN);
++                    break;
++                default:
++                    /* Fall through */
++            }
+             break;
+         }
+         default:
+diff --git a/dlls/odbccp32/odbccp32.rc b/dlls/odbccp32/odbccp32.rc
+index 341c7465bfc..5915a08cc3f 100644
+--- a/dlls/odbccp32/odbccp32.rc
++++ b/dlls/odbccp32/odbccp32.rc
+@@ -63,7 +63,7 @@ CAPTION "System DSN"
+ FONT 8, "MS Shell Dlg", 0, 0, 0x0
+ BEGIN
+     LTEXT           "&System Data Sources:", -1, 7, 7, 265, 8
+-    CONTROL         "List1", IDC_CONNECTIONS_LIST, "SysListView32", LVS_LIST | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7,18,265,120
++    CONTROL         "List1", IDC_CONNECTIONS_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7,18,265,120
+     PUSHBUTTON      "A&dd...",IDC_CONNECTION_ADD, 279, 18, 95, 18
+     PUSHBUTTON      "&Remove", IDC_CONNECTION_REMOVE, 279, 40, 95, 18
+     PUSHBUTTON      "&Configure...", IDC_CONNECTION_CONFIG, 279, 62, 95, 18
+-- 
+2.43.0
+

@@ -1,19 +1,19 @@
-From d8ab714ad0ac728757442cd32eaceb795e415ee2 Mon Sep 17 00:00:00 2001
+From 767fbba1238edf54c139212f51c80b1dd63b1edd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Jun 2024 11:00:28 +1000
 Subject: [PATCH] odbccp32: Implement User Data DSN page
 
 ---
- dlls/odbccp32/odbccp32.c  | 161 ++++++++++++++++++++++++++++++++++++--
+ dlls/odbccp32/odbccp32.c  | 159 ++++++++++++++++++++++++++++++++++++--
  dlls/odbccp32/odbccp32.rc |   4 +-
  dlls/odbccp32/resource.h  |   2 +
- 3 files changed, 161 insertions(+), 6 deletions(-)
+ 3 files changed, 159 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 6967eae6507..eef48484fe5 100644
+index bfdc8cf81af..fc438a42050 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -110,30 +110,181 @@ static inline WCHAR *strdupAtoW(const char *str)
+@@ -110,30 +110,179 @@ static inline WCHAR *strdupAtoW(const char *str)
      return ret;
  }
  
@@ -184,16 +184,14 @@ index 6967eae6507..eef48484fe5 100644
 +            switch (LOWORD(wp))
 +            {
 +                case IDC_CONNECTION_ADD:
-+                    MessageBoxA(NULL, "A", "B", MB_OK);
++                    MessageBoxA(hwnd, "Currently Not implemented", "Unimplemented", MB_OK);
 +                    break;
 +                case IDC_CONNECTION_REMOVE:
 +                    call_driver_configure(hwnd, ODBC_REMOVE_DSN);
 +                    break;
 +                case IDC_CONNECTION_CONFIG:
-+                {
 +                    call_driver_configure(hwnd, ODBC_CONFIG_DSN);
 +                    break;
-+                }
 +                default:
 +                    /* Fall through */
 +            }
