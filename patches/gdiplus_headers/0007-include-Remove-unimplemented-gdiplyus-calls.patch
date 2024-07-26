@@ -1,0 +1,261 @@
+From 63aa32e14ea0a3d1527a876a8e8a2fad3fc6068c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 26 Jul 2024 12:27:58 +1000
+Subject: [PATCH] include: Remove unimplemented gdiplyus calls
+
+---
+ include/gdiplusmatrix.h | 105 ++++++++++++++--------------------------
+ 1 file changed, 36 insertions(+), 69 deletions(-)
+
+diff --git a/include/gdiplusmatrix.h b/include/gdiplusmatrix.h
+index c8062cf6acb..c99dfd4e26c 100644
+--- a/include/gdiplusmatrix.h
++++ b/include/gdiplusmatrix.h
+@@ -39,7 +39,7 @@ public:
+     {
+         GpMatrix *matrix = NULL;
+ 
+-        lastResult = DllExports::GdipCreateMatrix(&matrix);
++        //lastResult = DllExports::GdipCreateMatrix(&matrix);
+ 
+         SetNativeMatrix(matrix);
+     }
+@@ -53,8 +53,8 @@ public:
+     {
+         GpMatrix *matrix = NULL;
+ 
+-        lastResult = DllExports::GdipCreateMatrix2(m11, m12, m21, m22,
+-                                                      dx, dy, &matrix);
++        //lastResult = DllExports::GdipCreateMatrix2(m11, m12, m21, m22,
++          //                                            dx, dy, &matrix);
+ 
+         SetNativeMatrix(matrix);
+     }
+@@ -64,9 +64,9 @@ public:
+     {
+         GpMatrix *matrix = NULL;
+ 
+-        lastResult = DllExports::GdipCreateMatrix3(&rect,
+-                                                   dstplg,
+-                                                   &matrix);
++        //lastResult = DllExports::GdipCreateMatrix3(&rect,
++          //                                         dstplg,
++            //                                       &matrix);
+ 
+         SetNativeMatrix(matrix);
+     }
+@@ -76,24 +76,24 @@ public:
+     {
+         GpMatrix *matrix = NULL;
+ 
+-        lastResult = DllExports::GdipCreateMatrix3I(&rect,
+-                                                    dstplg,
+-                                                    &matrix);
++        //lastResult = DllExports::GdipCreateMatrix3I(&rect,
++          //                                          dstplg,
++            //                                        &matrix);
+ 
+         SetNativeMatrix(matrix);
+     }
+ 
+     ~Matrix()
+     {
+-        DllExports::GdipDeleteMatrix(nativeMatrix);
++        //DllExports::GdipDeleteMatrix(nativeMatrix);
+     }
+ 
+     Matrix *Clone() const
+     {
+         GpMatrix *cloneMatrix = NULL;
+ 
+-        SetStatus(DllExports::GdipCloneMatrix(nativeMatrix,
+-                                                  &cloneMatrix));
++        //SetStatus(DllExports::GdipCloneMatrix(nativeMatrix,
++          //                                        &cloneMatrix));
+ 
+         if (lastResult != Ok)
+             return NULL;
+@@ -103,7 +103,7 @@ public:
+ 
+     Status GetElements(OUT REAL *m) const
+     {
+-        return SetStatus(DllExports::GdipGetMatrixElements(nativeMatrix, m));
++        return 0;//SetStatus(DllExports::GdipGetMatrixElements(nativeMatrix, m));
+     }
+ 
+     Status SetElements(IN REAL m11,
+@@ -113,8 +113,8 @@ public:
+                        IN REAL dx,
+                        IN REAL dy)
+     {
+-        return SetStatus(DllExports::GdipSetMatrixElements(nativeMatrix,
+-                            m11, m12, m21, m22, dx, dy));
++        return 0;//SetStatus(DllExports::GdipSetMatrixElements(nativeMatrix,
++//                            m11, m12, m21, m22, dx, dy));
+     }
+ 
+     REAL OffsetX() const
+@@ -140,121 +140,88 @@ public:
+     Status Reset()
+     {
+         // set identity matrix elements
+-        return SetStatus(DllExports::GdipSetMatrixElements(nativeMatrix,
+-                                             1.0, 0.0, 0.0, 1.0, 0.0, 0.0));
++        return 0;//SetStatus(DllExports::GdipSetMatrixElements(nativeMatrix,
++                  //                           1.0, 0.0, 0.0, 1.0, 0.0, 0.0));
+     }
+ 
+     Status Multiply(IN const Matrix *matrix,
+                     IN MatrixOrder order = MatrixOrderPrepend)
+     {
+-        return SetStatus(DllExports::GdipMultiplyMatrix(nativeMatrix,
+-                                          matrix->nativeMatrix,
+-                                          order));
++        return 0;//SetStatus(DllExports::GdipMultiplyMatrix(nativeMatrix,
++                    //                      matrix->nativeMatrix,
++                      //                    order));
+     }
+ 
+     Status Translate(IN REAL offsetX,
+                      IN REAL offsetY,
+                      IN MatrixOrder order = MatrixOrderPrepend)
+     {
+-        return SetStatus(DllExports::GdipTranslateMatrix(nativeMatrix, offsetX,
+-                                                         offsetY, order));
++        return 0;//SetStatus(DllExports::GdipTranslateMatrix(nativeMatrix, offsetX,
++                   //                                      offsetY, order));
+     }
+ 
+     Status Scale(IN REAL scaleX,
+                  IN REAL scaleY,
+                  IN MatrixOrder order = MatrixOrderPrepend)
+     {
+-        return SetStatus(DllExports::GdipScaleMatrix(nativeMatrix, scaleX,
+-                                                     scaleY, order));
++        return 0;
+     }
+ 
+     Status Rotate(IN REAL angle,
+                   IN MatrixOrder order = MatrixOrderPrepend)
+     {
+-        return SetStatus(DllExports::GdipRotateMatrix(nativeMatrix, angle,
+-                                                      order));
++        return 0;
+     }
+ 
+     Status RotateAt(IN REAL angle,
+                     IN const PointF& center,
+                     IN MatrixOrder order = MatrixOrderPrepend)
+     {
+-        if(order == MatrixOrderPrepend)
+-        {
+-            SetStatus(DllExports::GdipTranslateMatrix(nativeMatrix, center.X,
+-                                                      center.Y, order));
+-            SetStatus(DllExports::GdipRotateMatrix(nativeMatrix, angle,
+-                                                   order));
+-            return SetStatus(DllExports::GdipTranslateMatrix(nativeMatrix,
+-                                                             -center.X,
+-                                                             -center.Y,
+-                                                             order));
+-        }
+-        else
+-        {
+-            SetStatus(DllExports::GdipTranslateMatrix(nativeMatrix,
+-                                                      - center.X,
+-                                                      - center.Y,
+-                                                      order));
+-            SetStatus(DllExports::GdipRotateMatrix(nativeMatrix, angle,
+-                                                   order));
+-            return SetStatus(DllExports::GdipTranslateMatrix(nativeMatrix,
+-                                                             center.X,
+-                                                             center.Y,
+-                                                             order));
+-        }
++        return 0;
+     }
+ 
+     Status Shear(IN REAL shearX,
+                  IN REAL shearY,
+                  IN MatrixOrder order = MatrixOrderPrepend)
+     {
+-        return SetStatus(DllExports::GdipShearMatrix(nativeMatrix, shearX,
+-                                                     shearY, order));
++        return 0;
+     }
+ 
+     Status Invert()
+     {
+-        return SetStatus(DllExports::GdipInvertMatrix(nativeMatrix));
++        return 0;
+     }
+ 
+     // float version
+     Status TransformPoints(IN OUT PointF* pts,
+                            IN INT count = 1) const
+     {
+-        return SetStatus(DllExports::GdipTransformMatrixPoints(nativeMatrix,
+-                                                               pts, count));
++        return 0;
+     }
+ 
+     Status TransformPoints(IN OUT Point* pts,
+                            IN INT count = 1) const
+     {
+-        return SetStatus(DllExports::GdipTransformMatrixPointsI(nativeMatrix,
+-                                                                pts,
+-                                                                count));
++        return 0;
+     }
+ 
+     Status TransformVectors(IN OUT PointF* pts,
+                             IN INT count = 1) const
+     {
+-        return SetStatus(DllExports::GdipVectorTransformMatrixPoints(
+-                                        nativeMatrix, pts, count));
++        return 0;
+     }
+ 
+     Status TransformVectors(IN OUT Point* pts,
+                             IN INT count = 1) const
+     {
+-       return SetStatus(DllExports::GdipVectorTransformMatrixPointsI(
+-                                        nativeMatrix,
+-                                        pts,
+-                                        count));
++       return 0;
+     }
+ 
+     BOOL IsInvertible() const
+     {
+         BOOL result = FALSE;
+ 
+-        SetStatus(DllExports::GdipIsMatrixInvertible(nativeMatrix, &result));
++        //SetStatus(DllExports::GdipIsMatrixInvertible(nativeMatrix, &result));
+ 
+         return result;
+     }
+@@ -263,7 +230,7 @@ public:
+     {
+        BOOL result = FALSE;
+ 
+-       SetStatus(DllExports::GdipIsMatrixIdentity(nativeMatrix, &result));
++       //SetStatus(DllExports::GdipIsMatrixIdentity(nativeMatrix, &result));
+ 
+        return result;
+     }
+@@ -272,9 +239,9 @@ public:
+     {
+        BOOL result = FALSE;
+ 
+-       SetStatus(DllExports::GdipIsMatrixEqual(nativeMatrix,
+-                                               matrix->nativeMatrix,
+-                                               &result));
++      //SetStatus(DllExports::GdipIsMatrixEqual(nativeMatrix,
++       //                                        matrix->nativeMatrix,
++         //                                      &result));
+ 
+        return result;
+     }
+-- 
+2.43.0
+
