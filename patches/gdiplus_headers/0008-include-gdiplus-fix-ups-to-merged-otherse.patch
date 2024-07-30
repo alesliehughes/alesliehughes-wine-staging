@@ -1,0 +1,75 @@
+From c6c1892786336cadeab471ad0c88686cdc59d470 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 30 Jul 2024 16:14:03 +1000
+Subject: [PATCH] include: gdiplus fix ups - to merged otherse
+
+---
+ include/gdiplus.h         |  2 +-
+ include/gdiplusgraphics.h | 15 ---------------
+ include/gdiplusmatrix.h   |  4 ----
+ 3 files changed, 1 insertion(+), 20 deletions(-)
+
+diff --git a/include/gdiplus.h b/include/gdiplus.h
+index 6df71e2cc03..4272c098171 100644
+--- a/include/gdiplus.h
++++ b/include/gdiplus.h
+@@ -37,7 +37,6 @@ namespace Gdiplus
+ #include "gdiplusimaging.h"
+ #include "gdipluscolor.h"
+ #include "gdipluscolormatrix.h"
+-#include "gdiplusgraphics.h"
+ #include "gdiplusgpstubs.h"
+ #include "gdiplusheaders.h"
+ #include "gdipluseffects.h"
+@@ -48,6 +47,7 @@ namespace Gdiplus
+     };
+ 
+ #include "gdiplusmatrix.h"
++#include "gdiplusgraphics.h"
+ };
+ 
+ #else /* end c++ includes */
+diff --git a/include/gdiplusgraphics.h b/include/gdiplusgraphics.h
+index dbe6a09efa5..43bbce8ba26 100644
+--- a/include/gdiplusgraphics.h
++++ b/include/gdiplusgraphics.h
+@@ -18,21 +18,6 @@
+ #ifndef _GDIPLUSGRAPHICS_H
+ #define _GDIPLUSGRAPHICS_H
+ 
+-class Brush;
+-class CachedBitmap;
+-class Graphics;
+-class GraphicsPath;
+-class Font;
+-class Image;
+-class ImageAttributes;
+-class Metafile;
+-class Pen;
+-class Region;
+-class StringFormat;
+-
+-typedef Graphics GpGraphics;
+-typedef Pen GpPen;
+-
+ class Graphics : public GdiplusBase
+ {
+ public:
+diff --git a/include/gdiplusmatrix.h b/include/gdiplusmatrix.h
+index c8062cf6acb..660d61ecf61 100644
+--- a/include/gdiplusmatrix.h
++++ b/include/gdiplusmatrix.h
+@@ -18,10 +18,6 @@
+ #ifndef _GDIPLUS_MATRIX
+ #define _GDIPLUS_MATRIX
+ 
+-class Matrix;
+-
+-typedef Matrix GpMatrix;
+-
+ class Matrix : public GdiplusBase
+ {
+ public:
+-- 
+2.43.0
+

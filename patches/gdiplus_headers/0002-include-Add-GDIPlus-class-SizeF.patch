@@ -1,7 +1,7 @@
-From 23134b83c066ff769a097eca5016fd2df725b263 Mon Sep 17 00:00:00 2001
+From cf1f55c276ef95ac0a3d84009ffc8a512a08010e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 28 May 2024 10:26:19 +1000
-Subject: [PATCH 2/3] include: Add GDIPlus class SizeF
+Subject: [PATCH] include: Add GDIPlus class SizeF
 
 ---
  include/gdiplustypes.h | 46 ++++++++++++++++++++++++++++++++++++++++++

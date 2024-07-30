@@ -1,8 +1,14 @@
-From 21ea16f7ca8a9840046efa64f6b3e8ed02a52934 Mon Sep 17 00:00:00 2001
+From bfaafddfbaf543c425c44f9852d3d1e4d5743169 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jul 2024 11:50:53 +1000
-Subject: include: Added gdiplusgraphics.h
+Subject: [PATCH] include: Added gdiplusgraphics.h
 
+---
+ include/Makefile.in       |    1 +
+ include/gdiplus.h         |    1 +
+ include/gdiplusgraphics.h | 2564 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 2566 insertions(+)
+ create mode 100644 include/gdiplusgraphics.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
 index ec3147d9821..3ba25765ed8 100644
@@ -2598,3 +2604,6 @@ index 00000000000..dbe6a09efa5
 +}
 +
 +#endif
+-- 
+2.43.0
+

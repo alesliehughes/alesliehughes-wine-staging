@@ -1,4 +1,4 @@
-From 4e5b0270d674039302526c0cc29337b96daf94a5 Mon Sep 17 00:00:00 2001
+From bea0ddbd104e90e4874cdc1a3ba77e4704fd116b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jul 2024 11:33:10 +1000
 Subject: [PATCH] include: Add gdiplusbase.h
@@ -11,7 +11,7 @@ Subject: [PATCH] include: Add gdiplusbase.h
  create mode 100644 include/gdiplusbase.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 24c6dd232a5..ec3147d9821 100644
+index 82cdf9250c0..5a2b7ae2429 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -331,6 +331,7 @@ SOURCES = \
@@ -23,7 +23,7 @@ index 24c6dd232a5..ec3147d9821 100644
  	gdipluscolormatrix.h \
  	gdipluseffects.h \
 diff --git a/include/gdiplus.h b/include/gdiplus.h
-index 122bb977939..9889555bfab 100644
+index e85343b7c17..afada3e2d22 100644
 --- a/include/gdiplus.h
 +++ b/include/gdiplus.h
 @@ -28,6 +28,7 @@ namespace Gdiplus

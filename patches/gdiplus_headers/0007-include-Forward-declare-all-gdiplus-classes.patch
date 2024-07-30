@@ -1,0 +1,45 @@
+From 0a5176eeb79f94c07367b34210766022d103370c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 30 Jul 2024 16:12:46 +1000
+Subject: [PATCH] include: Forward declare all gdiplus classes
+
+---
+ include/gdiplusgpstubs.h | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/include/gdiplusgpstubs.h b/include/gdiplusgpstubs.h
+index 67b6ac1e34e..ba99ccb67a9 100644
+--- a/include/gdiplusgpstubs.h
++++ b/include/gdiplusgpstubs.h
+@@ -21,6 +21,28 @@
+ 
+ #ifdef __cplusplus
+ 
++class Bitmap;
++class Brush;
++class CachedBitmap;
++class Font;
++class FontCollection;
++class FontFamily;
++class Graphics;
++class GraphicsPath;
++class HatchBrush;
++class Image;
++class ImageAttributes;
++class InstalledFontCollection;
++class LinearGradientBrush;
++class Matrix;
++class Metafile;
++class PathGradientBrush;
++class PathIterator;
++class Pen;
++class Region;
++class SolidBrush;
++class TextureBrush;
++
+ class GpGraphics {};
+ class GpPen {};
+ class GpBrush {};
+-- 
+2.43.0
+

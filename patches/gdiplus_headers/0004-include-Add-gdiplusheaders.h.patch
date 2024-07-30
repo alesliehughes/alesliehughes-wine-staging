@@ -1,7 +1,7 @@
-From 6d7339b817efd5775b1ec93ac982135fb6ab979d Mon Sep 17 00:00:00 2001
+From f6f5868f3d4ecbc93d4239c58522e0e369e791d0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 28 May 2024 10:26:48 +1000
-Subject: [PATCH 3/3] include: Add gdiplusheaders.h
+Subject: [PATCH] include: Add gdiplusheaders.h
 
 ---
  include/Makefile.in      |   1 +
@@ -11,10 +11,10 @@ Subject: [PATCH 3/3] include: Add gdiplusheaders.h
  create mode 100644 include/gdiplusheaders.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index d35522c283a..1d96e49911c 100644
+index 5a2b7ae2429..ec3147d9821 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -336,6 +336,7 @@ SOURCES = \
+@@ -338,6 +338,7 @@ SOURCES = \
  	gdiplusenums.h \
  	gdiplusflat.h \
  	gdiplusgpstubs.h \
@@ -23,10 +23,10 @@ index d35522c283a..1d96e49911c 100644
  	gdiplusinit.h \
  	gdiplusmem.h \
 diff --git a/include/gdiplus.h b/include/gdiplus.h
-index e85343b7c17..122bb977939 100644
+index afada3e2d22..9889555bfab 100644
 --- a/include/gdiplus.h
 +++ b/include/gdiplus.h
-@@ -37,6 +37,7 @@ namespace Gdiplus
+@@ -38,6 +38,7 @@ namespace Gdiplus
  #include "gdipluscolor.h"
  #include "gdipluscolormatrix.h"
  #include "gdiplusgpstubs.h"
