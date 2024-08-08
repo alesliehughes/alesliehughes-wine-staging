@@ -1,4 +1,4 @@
-From 32297ad5bed0d57f75764a3ee2d635653debe02a Mon Sep 17 00:00:00 2001
+From 213a42172d36fa3a756be08def678b72b84d2e70 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 13:17:24 +1000
 Subject: [PATCH] odbccp32: Correct ODBCCPlApplet parameters to match other
@@ -12,10 +12,10 @@ ODBCCPlApplet isn't in the windows SDK 10.0.22000.0 (at least).
  3 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 470bc170618..db79613ef39 100644
+index 5b38ba471cf..f0e4f10c759 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -104,10 +104,10 @@ static inline WCHAR *strdupAtoW(const char *str)
+@@ -103,10 +103,10 @@ static inline WCHAR *strdupAtoW(const char *str)
  }
  
  

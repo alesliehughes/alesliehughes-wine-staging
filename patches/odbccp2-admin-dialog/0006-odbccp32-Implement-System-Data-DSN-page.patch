@@ -1,4 +1,4 @@
-From 4993eca9dce4be9976c7c242b17ed76f647dcd80 Mon Sep 17 00:00:00 2001
+From c07ea5df965691e8dbfba625ea0b83b584de646f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jul 2024 08:08:37 +1000
 Subject: [PATCH] odbccp32: Implement System Data DSN page
@@ -9,10 +9,10 @@ Subject: [PATCH] odbccp32: Implement System Data DSN page
  2 files changed, 38 insertions(+), 7 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index fc438a42050..1de945fe667 100644
+index 9effc8e4003..c5b7661256f 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -208,16 +208,20 @@ static void call_driver_configure(HWND hwnd, WORD request)
+@@ -207,16 +207,20 @@ static void call_driver_configure(HWND hwnd, WORD request)
          item.cchTextMax = 256;
          if (SendMessageW(lv, LVM_GETITEMW, 0, (LPARAM)&item))
          {
@@ -36,7 +36,7 @@ index fc438a42050..1de945fe667 100644
                  {
                      /* MUST pass through at least the DSN for ADD/Remove */
                      attributes = malloc( size + ARRAY_SIZE(L"DSN=;"));
-@@ -299,7 +303,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -298,7 +302,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
      {
          case WM_INITDIALOG:
          {
@@ -50,7 +50,7 @@ index fc438a42050..1de945fe667 100644
              break;
          }
          case WM_DESTROY:
-@@ -309,12 +318,34 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -308,12 +317,34 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
          }
          case WM_NOTIFY:
          {

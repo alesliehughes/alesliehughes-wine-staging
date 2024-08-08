@@ -1,4 +1,4 @@
-From 9ef8bda54319eab5a9cef5516ddeeb1d1cad061a Mon Sep 17 00:00:00 2001
+From f0c21ceabf4ac4d7dbf346c48c1832bc4e81f2b4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 8 Aug 2024 13:30:09 +1000
 Subject: [PATCH] odbccp32: Supporting adding a NEW DSN
@@ -8,10 +8,10 @@ Subject: [PATCH] odbccp32: Supporting adding a NEW DSN
  1 file changed, 160 insertions(+), 94 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index cb2333bffab..b427613e52d 100644
+index 9aa43db6378..85d63983054 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -110,6 +110,89 @@ static inline WCHAR *strdupAtoW(const char *str)
+@@ -109,6 +109,89 @@ static inline WCHAR *strdupAtoW(const char *str)
      return ret;
  }
  
@@ -101,7 +101,7 @@ index cb2333bffab..b427613e52d 100644
  static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      /*FIXME("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
-@@ -118,12 +201,20 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+@@ -117,12 +200,20 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
      {
          case WM_INITDIALOG:
          {
@@ -125,7 +125,7 @@ index cb2333bffab..b427613e52d 100644
              return FALSE;
          }
          case WM_DESTROY:
-@@ -133,16 +224,32 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+@@ -132,16 +223,32 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
          }
          case WM_NOTIFY:
          {
@@ -163,7 +163,7 @@ index cb2333bffab..b427613e52d 100644
              break;
          }
          default:
-@@ -151,7 +258,7 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+@@ -150,7 +257,7 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
      return 0;
  }
  
@@ -172,7 +172,7 @@ index cb2333bffab..b427613e52d 100644
  {
      PROPSHEETHEADERW hdr;
      PROPSHEETPAGEW pages[1];
-@@ -167,12 +274,19 @@ static void create_driver_dialog(HWND hwnd)
+@@ -166,12 +273,19 @@ static void create_driver_dialog(HWND hwnd)
      memset(&hdr, 0, sizeof(hdr));
      hdr.dwSize = sizeof(hdr);
      hdr.hwndParent = hwnd;
@@ -193,7 +193,7 @@ index cb2333bffab..b427613e52d 100644
  }
  
  static void create_dsn_columns(HWND lv)
-@@ -301,6 +415,29 @@ static void call_driver_configure(HWND hwnd, WORD request)
+@@ -300,6 +414,29 @@ static void call_driver_configure(HWND hwnd, WORD request)
      }
  }
  
@@ -223,7 +223,7 @@ index cb2333bffab..b427613e52d 100644
  static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      /*TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
-@@ -341,8 +478,14 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
+@@ -340,8 +477,14 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
              switch (LOWORD(wp))
              {
                  case IDC_CONNECTION_ADD:
@@ -239,7 +239,7 @@ index cb2333bffab..b427613e52d 100644
                  case IDC_CONNECTION_REMOVE:
                      call_driver_configure(hwnd, ODBC_REMOVE_DSN);
                      break;
-@@ -400,8 +543,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -399,8 +542,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
              switch (LOWORD(wp))
              {
                  case IDC_CONNECTION_ADD:
@@ -254,7 +254,7 @@ index cb2333bffab..b427613e52d 100644
                  case IDC_CONNECTION_REMOVE:
                      call_driver_configure(hwnd, ODBC_REMOVE_SYS_DSN);
                      break;
-@@ -455,87 +602,6 @@ static void create_drivers_columns(HWND lv)
+@@ -454,87 +601,6 @@ static void create_drivers_columns(HWND lv)
      SendMessageW(lv, LVM_INSERTCOLUMNW, 4, (LPARAM)&column);
  }
  
