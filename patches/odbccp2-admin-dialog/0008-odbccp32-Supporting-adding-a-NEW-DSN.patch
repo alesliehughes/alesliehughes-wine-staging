@@ -1,0 +1,347 @@
+From 9ef8bda54319eab5a9cef5516ddeeb1d1cad061a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 8 Aug 2024 13:30:09 +1000
+Subject: [PATCH] odbccp32: Supporting adding a NEW DSN
+
+---
+ dlls/odbccp32/odbccp32.c | 254 ++++++++++++++++++++++++---------------
+ 1 file changed, 160 insertions(+), 94 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index cb2333bffab..b427613e52d 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -110,6 +110,89 @@ static inline WCHAR *strdupAtoW(const char *str)
+     return ret;
+ }
+ 
++static void create_driver_list(HWND listview)
++{
++    DWORD index = 0;
++    DWORD valuelen;
++    WCHAR *value;
++    HKEY drivers;
++    DWORD len;
++    LONG res;
++
++    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, drivers_key, 0, KEY_QUERY_VALUE, &drivers);
++    if (res)
++    {
++        ERR("No registry entry found\n");
++        return;
++    }
++
++    valuelen = 256;
++    value = malloc(valuelen * sizeof(WCHAR));
++
++    while (1)
++    {
++        len = valuelen;
++        res = RegEnumValueW(drivers, index, value, &len, NULL, NULL, NULL, NULL);
++        while (res == ERROR_MORE_DATA)
++        {
++            value = realloc(value, ++len * sizeof(WCHAR));
++            res = RegEnumValueW(drivers, index, value, &len, NULL, NULL, NULL, NULL);
++        }
++        if (res == ERROR_SUCCESS)
++        {
++            LVITEMW item;
++
++            item.mask = LVIF_TEXT;
++            item.iItem = SendMessageW(listview, LVM_GETITEMCOUNT, 0, 0);
++            item.iSubItem = 0;
++            item.pszText = value;
++
++            SendMessageW(listview, LVM_INSERTITEMW, 0, (LPARAM)&item);
++            {
++                LONG res2;
++                HKEY driver;
++                WCHAR driverPath[256];
++                WCHAR buffer[MAX_PATH];
++                DWORD size;
++
++                wcscpy(driverPath, odbcini);
++                wcscat(driverPath, value);
++
++                res2 =  RegOpenKeyExW(HKEY_LOCAL_MACHINE, driverPath, 0, KEY_QUERY_VALUE, &driver);
++                if (res2)
++                    continue;
++
++                size = ARRAY_SIZE(buffer);
++                res2 = RegGetValueW(driver, NULL, L"Driver", RRF_RT_REG_SZ, NULL, buffer, &size);
++                if (res2)
++                    continue;
++
++                item.mask = LVIF_TEXT | LVCF_SUBITEM;
++                item.iSubItem = 3;
++                item.pszText = buffer;
++
++                SendMessageW(listview, LVM_SETITEMW, 0, (LPARAM)&item);
++
++
++                RegCloseKey(driver);
++            }
++        }
++        else if (res == ERROR_NO_MORE_ITEMS)
++            break;
++        else
++        {
++            push_error(ODBC_ERROR_GENERAL_ERR, odbc_error_general_err);
++            break;
++        }
++        index++;
++    }
++
++    free(value);
++    RegCloseKey(drivers);
++}
++
++WCHAR buf_driver[256];
++
+ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+ {
+     /*FIXME("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
+@@ -118,12 +201,20 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+     {
+         case WM_INITDIALOG:
+         {
+-            /*HWND lv = GetDlgItem(hwnd, IDC_CONNECTIONS_LIST);
++            WCHAR buf[256];
++            LVCOLUMNW column;
++            HWND lv = GetDlgItem(hwnd, IDC_DRIVER_LIST);
+ 
+-            create_dsn_columns(lv);
++            LoadStringW(instance, IDS_DRIVER_COL_NAME, buf, ARRAY_SIZE(buf));
++            column.mask = LVCF_WIDTH | LVCF_TEXT;
++            column.cx = 150;
++            column.pszText = buf;
++            SendMessageW(lv, LVM_INSERTCOLUMNW, 0, (LPARAM)&column);
+ 
+-            populate_dsn_list_view(lv, TRUE);
++            buf_driver[0] = '\0';
++            /*populate_dsn_list_view(lv, TRUE);
+             dsn_config_btn_toggle(hwnd);*/
++            create_driver_list(lv);
+             return FALSE;
+         }
+         case WM_DESTROY:
+@@ -133,16 +224,32 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+         }
+         case WM_NOTIFY:
+         {
++            NMHDR *hdr = (NMHDR *)lp;
++            switch (hdr->code)
++            {
++                case PSN_WIZFINISH:
++                {
++                    HWND lv = GetDlgItem(hwnd, IDC_DRIVER_LIST);
++                    int selection = SendMessageW(lv, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
++                    if (selection >= 0)
++                    {
++                        LVITEMW item;
++
++                        item.mask = LVIF_TEXT;
++                        item.iItem = selection;
++                        item.iSubItem = 0;
++                        item.pszText = buf_driver;
++                        item.cchTextMax = 256;
++                        SendMessageW(lv, LVM_GETITEMW, 0, (LPARAM)&item);
++                    }
++                    break;
++                }
++            }
+             break;
+         }
+         case WM_COMMAND:
+         {
+             TRACE("WM_COMMAND\n");
+-            switch (LOWORD(wp))
+-            {
+-                default:
+-                    /* Fall through */
+-            }
+             break;
+         }
+         default:
+@@ -151,7 +258,7 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+     return 0;
+ }
+ 
+-static void create_driver_dialog(HWND hwnd)
++static INT_PTR create_driver_dialog(HWND hwnd)
+ {
+     PROPSHEETHEADERW hdr;
+     PROPSHEETPAGEW pages[1];
+@@ -167,12 +274,19 @@ static void create_driver_dialog(HWND hwnd)
+     memset(&hdr, 0, sizeof(hdr));
+     hdr.dwSize = sizeof(hdr);
+     hdr.hwndParent = hwnd;
+-    hdr.dwFlags = PSH_PROPSHEETPAGE | PSH_WIZARD;
++    hdr.dwFlags = PSH_PROPSHEETPAGE | PSH_WIZARD | PSH_WIZARDHASFINISH;
+     hdr.hInstance = instance;
+     hdr.pszCaption = MAKEINTRESOURCEW(IDS_CREATE_NEW_SRC);
+     hdr.ppsp = pages;
+     hdr.nPages = ARRAY_SIZE(pages);
+     ret = PropertySheetW(&hdr);
++
++    if (ret == IDOK)
++    {
++        /* Handle correctly - eg copy from dialog. */
++    }
++
++    return ret;
+ }
+ 
+ static void create_dsn_columns(HWND lv)
+@@ -301,6 +415,29 @@ static void call_driver_configure(HWND hwnd, WORD request)
+     }
+ }
+ 
++static void call_driver_configure2(HWND hwnd, WCHAR *driver, WORD request)
++{
++    HKEY key, key2;
++
++    if (RegOpenKeyW(HKEY_LOCAL_MACHINE, L"Software\\ODBC\\ODBCINST.INI", &key) == ERROR_SUCCESS)
++    {
++        if (RegOpenKeyW(key, driver, &key2) == ERROR_SUCCESS)
++        {
++            WCHAR driverlocation[256];
++            DWORD size = sizeof(driverlocation);
++            WCHAR *attributes = NULL;
++
++            RegGetValueW(key2, NULL, L"Setup", RRF_RT_REG_SZ, NULL, driverlocation, &size);
++
++            RegCloseKey(key2);
++
++            SQLConfigDataSourceW(hwnd, request, driver, attributes);
++            free(attributes);
++        }
++        RegCloseKey(key);
++    }
++}
++
+ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+ {
+     /*TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
+@@ -341,8 +478,14 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
+             switch (LOWORD(wp))
+             {
+                 case IDC_CONNECTION_ADD:
+-                    create_driver_dialog(hwnd);
++                {
++                    if (create_driver_dialog(hwnd) == IDOK)
++                    {
++                        //MessageBoxW(NULL, L"A", buf_driver, MB_OK);
++                        call_driver_configure2(hwnd, buf_driver, ODBC_ADD_DSN);
++                    }
+                     break;
++                }
+                 case IDC_CONNECTION_REMOVE:
+                     call_driver_configure(hwnd, ODBC_REMOVE_DSN);
+                     break;
+@@ -400,8 +543,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+             switch (LOWORD(wp))
+             {
+                 case IDC_CONNECTION_ADD:
+-                    create_driver_dialog(hwnd);
+-                    break;
++                {
++                    if (create_driver_dialog(hwnd) == IDOK)
++                    {
++                        call_driver_configure2(hwnd, buf_driver, ODBC_ADD_SYS_DSN);
++                    }
++                }
+                 case IDC_CONNECTION_REMOVE:
+                     call_driver_configure(hwnd, ODBC_REMOVE_SYS_DSN);
+                     break;
+@@ -455,87 +602,6 @@ static void create_drivers_columns(HWND lv)
+     SendMessageW(lv, LVM_INSERTCOLUMNW, 4, (LPARAM)&column);
+ }
+ 
+-static void create_driver_list(HWND listview)
+-{
+-    DWORD index = 0;
+-    DWORD valuelen;
+-    WCHAR *value;
+-    HKEY drivers;
+-    DWORD len;
+-    LONG res;
+-
+-    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, drivers_key, 0, KEY_QUERY_VALUE, &drivers);
+-    if (res)
+-    {
+-        ERR("No registry entry found\n");
+-        return;
+-    }
+-
+-    valuelen = 256;
+-    value = malloc(valuelen * sizeof(WCHAR));
+-
+-    while (1)
+-    {
+-        len = valuelen;
+-        res = RegEnumValueW(drivers, index, value, &len, NULL, NULL, NULL, NULL);
+-        while (res == ERROR_MORE_DATA)
+-        {
+-            value = realloc(value, ++len * sizeof(WCHAR));
+-            res = RegEnumValueW(drivers, index, value, &len, NULL, NULL, NULL, NULL);
+-        }
+-        if (res == ERROR_SUCCESS)
+-        {
+-            LVITEMW item;
+-
+-            item.mask = LVIF_TEXT;
+-            item.iItem = SendMessageW(listview, LVM_GETITEMCOUNT, 0, 0);
+-            item.iSubItem = 0;
+-            item.pszText = value;
+-
+-            SendMessageW(listview, LVM_INSERTITEMW, 0, (LPARAM)&item);
+-            {
+-                LONG res2;
+-                HKEY driver;
+-                WCHAR driverPath[256];
+-                WCHAR buffer[MAX_PATH];
+-                DWORD size;
+-
+-                wcscpy(driverPath, odbcini);
+-                wcscat(driverPath, value);
+-
+-                res2 =  RegOpenKeyExW(HKEY_LOCAL_MACHINE, driverPath, 0, KEY_QUERY_VALUE, &driver);
+-                if (res2)
+-                    continue;
+-
+-                size = ARRAY_SIZE(buffer);
+-                res2 = RegGetValueW(driver, NULL, L"Driver", RRF_RT_REG_SZ, NULL, buffer, &size);
+-                if (res2)
+-                    continue;
+-
+-                item.mask = LVIF_TEXT | LVCF_SUBITEM;
+-                item.iSubItem = 3;
+-                item.pszText = buffer;
+-
+-                SendMessageW(listview, LVM_SETITEMW, 0, (LPARAM)&item);
+-
+-
+-                RegCloseKey(driver);
+-            }
+-        }
+-        else if (res == ERROR_NO_MORE_ITEMS)
+-            break;
+-        else
+-        {
+-            push_error(ODBC_ERROR_GENERAL_ERR, odbc_error_general_err);
+-            break;
+-        }
+-        index++;
+-    }
+-
+-    free(value);
+-    RegCloseKey(drivers);
+-}
+-
+ static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+ {
+     TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
+-- 
+2.43.0
+
