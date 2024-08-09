@@ -1,4 +1,4 @@
-From 0da90fe2b652ed22365f4a3809649b23f8a9c910 Mon Sep 17 00:00:00 2001
+From 53ebfabf43cb14f71d740d7a8916431b522e38b3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 16:31:02 +1000
 Subject: [PATCH] odbccp32: Implement Drivers Tab
@@ -11,10 +11,10 @@ TODO: Rest of the columns.
  3 files changed, 136 insertions(+), 5 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 5db72c80f4e..be8d5e36376 100644
+index baae7d56329..6967eae6507 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -173,6 +173,123 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -174,6 +174,123 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
      return 0;
  }
  
@@ -138,7 +138,7 @@ index 5db72c80f4e..be8d5e36376 100644
  static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
-@@ -181,22 +298,25 @@ static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
+@@ -182,22 +299,25 @@ static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
      {
          case WM_INITDIALOG:
          {

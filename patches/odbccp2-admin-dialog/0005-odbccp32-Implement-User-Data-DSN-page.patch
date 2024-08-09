@@ -1,4 +1,4 @@
-From 92207e41de77d8e842b9f3786303d8c7d2c8f044 Mon Sep 17 00:00:00 2001
+From 767fbba1238edf54c139212f51c80b1dd63b1edd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 17 Jun 2024 11:00:28 +1000
 Subject: [PATCH] odbccp32: Implement User Data DSN page
@@ -10,10 +10,10 @@ Subject: [PATCH] odbccp32: Implement User Data DSN page
  3 files changed, 159 insertions(+), 6 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index be8d5e36376..9effc8e4003 100644
+index bfdc8cf81af..fc438a42050 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -109,30 +109,179 @@ static inline WCHAR *strdupAtoW(const char *str)
+@@ -110,30 +110,179 @@ static inline WCHAR *strdupAtoW(const char *str)
      return ret;
  }
  

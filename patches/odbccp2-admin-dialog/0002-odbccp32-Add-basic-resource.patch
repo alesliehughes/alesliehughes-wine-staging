@@ -1,4 +1,4 @@
-From f7369de35645c8e5b62e3da75a7c86d83d8d952b Mon Sep 17 00:00:00 2001
+From 82a6b1916a18b5fc6518717a115a3789d7aec57e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 13:26:34 +1000
 Subject: [PATCH] odbccp32: Add basic resource

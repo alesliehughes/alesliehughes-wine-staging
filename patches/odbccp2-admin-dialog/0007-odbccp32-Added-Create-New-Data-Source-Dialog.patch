@@ -1,4 +1,4 @@
-From fcc4b1a1ecd120da577e47aacd17dc55d56c248a Mon Sep 17 00:00:00 2001
+From c30b199e7176d91503b40c239ca1bc8a1959776c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 31 Jul 2024 13:46:02 +1000
 Subject: [PATCH] odbccp32: Added Create New Data Source Dialog
@@ -10,10 +10,10 @@ Subject: [PATCH] odbccp32: Added Create New Data Source Dialog
  3 files changed, 82 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index c5b7661256f..9aa43db6378 100644
+index 1de945fe667..cb2333bffab 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -109,6 +109,71 @@ static inline WCHAR *strdupAtoW(const char *str)
+@@ -110,6 +110,71 @@ static inline WCHAR *strdupAtoW(const char *str)
      return ret;
  }
  
@@ -85,7 +85,7 @@ index c5b7661256f..9aa43db6378 100644
  static void create_dsn_columns(HWND lv)
  {
      WCHAR buf[256];
-@@ -275,7 +340,7 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
+@@ -276,7 +341,7 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
              switch (LOWORD(wp))
              {
                  case IDC_CONNECTION_ADD:
@@ -94,7 +94,7 @@ index c5b7661256f..9aa43db6378 100644
                      break;
                  case IDC_CONNECTION_REMOVE:
                      call_driver_configure(hwnd, ODBC_REMOVE_DSN);
-@@ -334,7 +399,7 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -335,7 +400,7 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
              switch (LOWORD(wp))
              {
                  case IDC_CONNECTION_ADD:
