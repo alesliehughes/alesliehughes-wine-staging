@@ -63,7 +63,7 @@ index baae7d56329..6967eae6507 100644
 +    DWORD len;
 +    LONG res;
 +
-+    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, drivers_key, 0, KEY_QUERY_VALUE, &drivers);
++    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software\\ODBC\\ODBCINST.INI\\ODBC Drivers", 0, KEY_QUERY_VALUE, &drivers);
 +    if (res)
 +    {
 +        ERR("No registry entry found\n");
@@ -99,7 +99,7 @@ index baae7d56329..6967eae6507 100644
 +                WCHAR buffer[MAX_PATH];
 +                DWORD size;
 +
-+                wcscpy(driverPath, odbcini);
++                wcscpy(driverPath, L"Software\\ODBC\\ODBCINST.INI\\");
 +                wcscat(driverPath, value);
 +
 +                res2 =  RegOpenKeyExW(HKEY_LOCAL_MACHINE, driverPath, 0, KEY_QUERY_VALUE, &driver);
@@ -125,7 +125,7 @@ index baae7d56329..6967eae6507 100644
 +            break;
 +        else
 +        {
-+            push_error(ODBC_ERROR_GENERAL_ERR, odbc_error_general_err);
++            push_error(ODBC_ERROR_GENERAL_ERR, L"General error");
 +            break;
 +        }
 +        index++;
