@@ -1,4 +1,4 @@
-From 3a920f9f7b5340aa9caf6ab4fe6889f9e9278bb2 Mon Sep 17 00:00:00 2001
+From 5fdc661a521ce58a4dfd8c7b2434e88fb0a176bf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 14:06:05 +1000
 Subject: [PATCH] odbccp32: Add ODBC Data Source Administrator dialog.
@@ -28,7 +28,7 @@ index f82bb54bfdc..37578242e67 100644
  SOURCES = \
  	odbccp32.c \
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index db79613ef39..baae7d56329 100644
+index 48f3a811951..9235a536be8 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -25,17 +25,24 @@
@@ -53,10 +53,10 @@ index db79613ef39..baae7d56329 100644
  
 +static HINSTANCE instance;
 +
- /* Registry key names */
- static const WCHAR drivers_key[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C','\\','O','D','B','C','I','N','S','T','.','I','N','I','\\','O','D','B','C',' ','D','r','i','v','e','r','s',0};
- static const WCHAR odbcW[] = {'S','o','f','t','w','a','r','e','\\','O','D','B','C',0};
-@@ -103,11 +110,147 @@ static inline WCHAR *strdupAtoW(const char *str)
+ /* This config mode is known to be process-wide.
+  * MSDN documentation suggests that the value is hidden somewhere in the registry but I haven't found it yet.
+  * Although both the registry and the ODBC.ini files appear to be maintained together they are not maintained automatically through the registry's IniFileMapping.
+@@ -86,11 +93,147 @@ static inline WCHAR *strdupAtoW(const char *str)
      return ret;
  }
  
@@ -204,7 +204,7 @@ index db79613ef39..baae7d56329 100644
      return FALSE;
  }
  
-@@ -1413,6 +1556,10 @@ BOOL WINAPI SQLManageDataSources(HWND hwnd)
+@@ -1406,6 +1549,10 @@ BOOL WINAPI SQLManageDataSources(HWND hwnd)
      clear_errors();
      FIXME("%p\n", hwnd);
      SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
@@ -215,7 +215,7 @@ index db79613ef39..baae7d56329 100644
      return FALSE;
  }
  
-@@ -1897,3 +2044,15 @@ BOOL WINAPI SQLWritePrivateProfileString(LPCSTR lpszSection, LPCSTR lpszEntry,
+@@ -1870,3 +2017,15 @@ BOOL WINAPI SQLWritePrivateProfileString(LPCSTR lpszSection, LPCSTR lpszEntry,
  
      return ret;
  }

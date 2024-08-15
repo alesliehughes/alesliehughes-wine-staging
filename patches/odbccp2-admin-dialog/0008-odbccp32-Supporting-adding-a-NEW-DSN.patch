@@ -1,4 +1,4 @@
-From 9ef8bda54319eab5a9cef5516ddeeb1d1cad061a Mon Sep 17 00:00:00 2001
+From 0f0f145b3616112d9984af77b13b818acf0ae773 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 8 Aug 2024 13:30:09 +1000
 Subject: [PATCH] odbccp32: Supporting adding a NEW DSN
@@ -8,7 +8,7 @@ Subject: [PATCH] odbccp32: Supporting adding a NEW DSN
  1 file changed, 160 insertions(+), 94 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index cb2333bffab..b427613e52d 100644
+index 42f7ad99a2b..6c53fac6ba8 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -110,6 +110,89 @@ static inline WCHAR *strdupAtoW(const char *str)
@@ -24,7 +24,7 @@ index cb2333bffab..b427613e52d 100644
 +    DWORD len;
 +    LONG res;
 +
-+    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, drivers_key, 0, KEY_QUERY_VALUE, &drivers);
++    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software\\ODBC\\ODBCINST.INI\\ODBC Drivers", 0, KEY_QUERY_VALUE, &drivers);
 +    if (res)
 +    {
 +        ERR("No registry entry found\n");
@@ -60,7 +60,7 @@ index cb2333bffab..b427613e52d 100644
 +                WCHAR buffer[MAX_PATH];
 +                DWORD size;
 +
-+                wcscpy(driverPath, odbcini);
++                wcscpy(driverPath, L"Software\\ODBC\\ODBCINST.INI\\");
 +                wcscat(driverPath, value);
 +
 +                res2 =  RegOpenKeyExW(HKEY_LOCAL_MACHINE, driverPath, 0, KEY_QUERY_VALUE, &driver);
@@ -86,7 +86,7 @@ index cb2333bffab..b427613e52d 100644
 +            break;
 +        else
 +        {
-+            push_error(ODBC_ERROR_GENERAL_ERR, odbc_error_general_err);
++            push_error(ODBC_ERROR_GENERAL_ERR, L"General error");
 +            break;
 +        }
 +        index++;
@@ -267,7 +267,7 @@ index cb2333bffab..b427613e52d 100644
 -    DWORD len;
 -    LONG res;
 -
--    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, drivers_key, 0, KEY_QUERY_VALUE, &drivers);
+-    res = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software\\ODBC\\ODBCINST.INI\\ODBC Drivers", 0, KEY_QUERY_VALUE, &drivers);
 -    if (res)
 -    {
 -        ERR("No registry entry found\n");
@@ -303,7 +303,7 @@ index cb2333bffab..b427613e52d 100644
 -                WCHAR buffer[MAX_PATH];
 -                DWORD size;
 -
--                wcscpy(driverPath, odbcini);
+-                wcscpy(driverPath, L"Software\\ODBC\\ODBCINST.INI\\");
 -                wcscat(driverPath, value);
 -
 -                res2 =  RegOpenKeyExW(HKEY_LOCAL_MACHINE, driverPath, 0, KEY_QUERY_VALUE, &driver);
@@ -329,7 +329,7 @@ index cb2333bffab..b427613e52d 100644
 -            break;
 -        else
 -        {
--            push_error(ODBC_ERROR_GENERAL_ERR, odbc_error_general_err);
+-            push_error(ODBC_ERROR_GENERAL_ERR, L"General error");
 -            break;
 -        }
 -        index++;
