@@ -1,0 +1,41 @@
+From e9de350df936cb49a3ad134783cb6f9077addebc Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 16 Aug 2024 09:12:20 +1000
+Subject: [PATCH 1/2] odbccp32: SQLGet/WritePrivateProfileStringW support
+ driver config
+
+---
+ dlls/odbccp32/odbccp32.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index fa0979a1b65..e96742265ce 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -1308,7 +1308,10 @@ int WINAPI SQLGetPrivateProfileStringW(LPCWSTR section, LPCWSTR entry,
+     if (!defvalue || !buff)
+         return 0;
+ 
+-    if (config_mode == ODBC_USER_DSN)
++    /* odbcinit.ini is only for drivers, so default to local Machine */
++    if (!wcsicmp(filename, L"ODBCINST.INI"))
++        sectionkey = get_privateprofile_sectionkey(HKEY_LOCAL_MACHINE, section, filename);
++    else if (config_mode == ODBC_USER_DSN)
+         sectionkey = get_privateprofile_sectionkey(HKEY_CURRENT_USER, section, filename);
+     else if (config_mode == ODBC_SYSTEM_DSN)
+         sectionkey = get_privateprofile_sectionkey(HKEY_LOCAL_MACHINE, section, filename);
+@@ -2390,7 +2393,10 @@ BOOL WINAPI SQLWritePrivateProfileStringW(LPCWSTR lpszSection, LPCWSTR lpszEntry
+         return FALSE;
+     }
+ 
+-    if (config_mode == ODBC_USER_DSN)
++    /* odbcinit.ini is only for drivers, so default to local Machine */
++    if (!wcsicmp(lpszFilename, L"ODBCINST.INI"))
++        ret = RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\ODBC", &hkey);
++    else if (config_mode == ODBC_USER_DSN)
+         ret = RegCreateKeyW(HKEY_CURRENT_USER, L"Software\\ODBC", &hkey);
+     else if (config_mode == ODBC_SYSTEM_DSN)
+         ret = RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\ODBC", &hkey);
+-- 
+2.43.0
+
