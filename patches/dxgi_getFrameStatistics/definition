@@ -1,1 +1,0 @@
-Fixes: [53696] d3d11: Semi-stub IDXGISwapChain::GetFrameStatistics.
