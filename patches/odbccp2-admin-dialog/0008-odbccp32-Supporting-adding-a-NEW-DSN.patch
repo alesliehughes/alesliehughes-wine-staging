@@ -1,17 +1,30 @@
-From 0f0f145b3616112d9984af77b13b818acf0ae773 Mon Sep 17 00:00:00 2001
+From 18d3a444f6e7d785ce9f6a4b3e9fcc51b98b7655 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 8 Aug 2024 13:30:09 +1000
 Subject: [PATCH] odbccp32: Supporting adding a NEW DSN
 
 ---
- dlls/odbccp32/odbccp32.c | 254 ++++++++++++++++++++++++---------------
- 1 file changed, 160 insertions(+), 94 deletions(-)
+ dlls/odbccp32/odbccp32.c | 271 ++++++++++++++++++++++++---------------
+ 1 file changed, 171 insertions(+), 100 deletions(-)
 
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 42f7ad99a2b..6c53fac6ba8 100644
+index d2b0c38617e..2b813fb4ffb 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
-@@ -110,6 +110,89 @@ static inline WCHAR *strdupAtoW(const char *str)
+@@ -77,6 +77,12 @@ static void clear_errors(void)
+     num_errors = 0;
+ }
+ 
++static UWORD get_config_mode(WORD request)
++{
++    if (request == ODBC_ADD_DSN || request == ODBC_CONFIG_DSN || request == ODBC_REMOVE_DSN) return ODBC_USER_DSN;
++    return ODBC_SYSTEM_DSN;
++}
++
+ static inline WCHAR *strdupAtoW(const char *str)
+ {
+     LPWSTR ret = NULL;
+@@ -93,6 +99,89 @@ static inline WCHAR *strdupAtoW(const char *str)
      return ret;
  }
  
@@ -101,7 +114,7 @@ index 42f7ad99a2b..6c53fac6ba8 100644
  static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      /*FIXME("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
-@@ -118,12 +201,20 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+@@ -101,12 +190,20 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
      {
          case WM_INITDIALOG:
          {
@@ -125,7 +138,7 @@ index 42f7ad99a2b..6c53fac6ba8 100644
              return FALSE;
          }
          case WM_DESTROY:
-@@ -133,16 +224,32 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+@@ -116,16 +213,32 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
          }
          case WM_NOTIFY:
          {
@@ -163,7 +176,7 @@ index 42f7ad99a2b..6c53fac6ba8 100644
              break;
          }
          default:
-@@ -151,7 +258,7 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
+@@ -134,7 +247,7 @@ static INT_PTR CALLBACK new_data_src_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LP
      return 0;
  }
  
@@ -172,7 +185,7 @@ index 42f7ad99a2b..6c53fac6ba8 100644
  {
      PROPSHEETHEADERW hdr;
      PROPSHEETPAGEW pages[1];
-@@ -167,12 +274,19 @@ static void create_driver_dialog(HWND hwnd)
+@@ -150,12 +263,19 @@ static void create_driver_dialog(HWND hwnd)
      memset(&hdr, 0, sizeof(hdr));
      hdr.dwSize = sizeof(hdr);
      hdr.hwndParent = hwnd;
@@ -193,13 +206,16 @@ index 42f7ad99a2b..6c53fac6ba8 100644
  }
  
  static void create_dsn_columns(HWND lv)
-@@ -301,6 +415,29 @@ static void call_driver_configure(HWND hwnd, WORD request)
+@@ -284,6 +404,34 @@ static void call_driver_configure(HWND hwnd, WORD request)
      }
  }
  
 +static void call_driver_configure2(HWND hwnd, WCHAR *driver, WORD request)
 +{
 +    HKEY key, key2;
++    UWORD config_mode_prev = config_mode;
++
++    config_mode = get_config_mode(request);
 +
 +    if (RegOpenKeyW(HKEY_LOCAL_MACHINE, L"Software\\ODBC\\ODBCINST.INI", &key) == ERROR_SUCCESS)
 +    {
@@ -218,12 +234,14 @@ index 42f7ad99a2b..6c53fac6ba8 100644
 +        }
 +        RegCloseKey(key);
 +    }
++
++    config_mode = config_mode_prev;
 +}
 +
  static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      /*TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);*/
-@@ -341,8 +478,14 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
+@@ -324,8 +472,14 @@ static INT_PTR CALLBACK user_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM
              switch (LOWORD(wp))
              {
                  case IDC_CONNECTION_ADD:
@@ -239,7 +257,7 @@ index 42f7ad99a2b..6c53fac6ba8 100644
                  case IDC_CONNECTION_REMOVE:
                      call_driver_configure(hwnd, ODBC_REMOVE_DSN);
                      break;
-@@ -400,8 +543,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
+@@ -383,8 +537,12 @@ static INT_PTR CALLBACK system_dsn_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPAR
              switch (LOWORD(wp))
              {
                  case IDC_CONNECTION_ADD:
@@ -254,7 +272,7 @@ index 42f7ad99a2b..6c53fac6ba8 100644
                  case IDC_CONNECTION_REMOVE:
                      call_driver_configure(hwnd, ODBC_REMOVE_SYS_DSN);
                      break;
-@@ -455,87 +602,6 @@ static void create_drivers_columns(HWND lv)
+@@ -438,87 +596,6 @@ static void create_drivers_columns(HWND lv)
      SendMessageW(lv, LVM_INSERTCOLUMNW, 4, (LPARAM)&column);
  }
  
@@ -342,6 +360,19 @@ index 42f7ad99a2b..6c53fac6ba8 100644
  static INT_PTR CALLBACK drivers_dlg_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
  {
      TRACE("(%p, %08x, %08Ix, %08Ix)\n", hwnd, msg, wp, lp);
+@@ -881,12 +958,6 @@ static WORD map_request(WORD request)
+     }
+ }
+ 
+-static UWORD get_config_mode(WORD request)
+-{
+-    if (request == ODBC_ADD_DSN || request == ODBC_CONFIG_DSN || request == ODBC_REMOVE_DSN) return ODBC_USER_DSN;
+-    return ODBC_SYSTEM_DSN;
+-}
+-
+ BOOL WINAPI SQLConfigDataSourceW(HWND hwnd, WORD request, LPCWSTR driver, LPCWSTR attributes)
+ {
+     HMODULE mod;
 -- 
-2.43.0
+2.45.2
 
