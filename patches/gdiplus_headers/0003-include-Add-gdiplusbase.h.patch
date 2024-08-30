@@ -65,21 +65,21 @@ index 00000000000..ab75c0fb2a4
 +class GdiplusBase
 +{
 +public:
-+    void (operator delete)(void* in_pVoid)
++    void (operator delete)(void *p)
 +    {
-+       DllExports::GdipFree(in_pVoid);
++       DllExports::GdipFree(p);
 +    }
-+    void* (operator new)(size_t in_size)
++    void* (operator new)(size_t size)
 +    {
-+       return DllExports::GdipAlloc(in_size);
++       return DllExports::GdipAlloc(size);
 +    }
-+    void (operator delete[])(void* in_pVoid)
++    void (operator delete[])(void* p)
 +    {
-+       DllExports::GdipFree(in_pVoid);
++       DllExports::GdipFree(p);
 +    }
-+    void* (operator new[])(size_t in_size)
++    void* (operator new[])(size_t size)
 +    {
-+       return DllExports::GdipAlloc(in_size);
++       return DllExports::GdipAlloc(size);
 +    }
 +};
 +
