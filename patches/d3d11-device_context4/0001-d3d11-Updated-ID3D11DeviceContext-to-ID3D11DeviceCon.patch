@@ -1,4 +1,4 @@
-From 14f6e21f29bd2a8aba92cae5cbe80bd7d6b4d3ee Mon Sep 17 00:00:00 2001
+From c8f333c11ed348647670e3baee54aeec9f7c92c0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 4 Apr 2024 12:52:02 +1100
 Subject: [PATCH] d3d11: Updated ID3D11DeviceContext to ID3D11DeviceContext4
@@ -6,8 +6,8 @@ Subject: [PATCH] d3d11: Updated ID3D11DeviceContext to ID3D11DeviceContext4
 
 ---
  dlls/d3d11/d3d11_private.h |   2 +-
- dlls/d3d11/device.c        | 669 ++++++++++++++++++++++---------------
- 2 files changed, 409 insertions(+), 262 deletions(-)
+ dlls/d3d11/device.c        | 650 ++++++++++++++++++++++---------------
+ 2 files changed, 390 insertions(+), 262 deletions(-)
 
 diff --git a/dlls/d3d11/d3d11_private.h b/dlls/d3d11/d3d11_private.h
 index 20ed7c349fe..b599de1dc17 100644
@@ -23,7 +23,7 @@ index 20ed7c349fe..b599de1dc17 100644
      ID3DUserDefinedAnnotation ID3DUserDefinedAnnotation_iface;
      LONG refcount;
 diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
-index 061fd57fe09..c77e80ad904 100644
+index 061fd57fe09..145cc64b669 100644
 --- a/dlls/d3d11/device.c
 +++ b/dlls/d3d11/device.c
 @@ -461,24 +461,27 @@ static void d3d11_device_context_cleanup(struct d3d11_device_context *context)
@@ -1653,7 +1653,7 @@ index 061fd57fe09..c77e80ad904 100644
      struct d3d_device_context_state *state_impl, *prev_impl;
      struct d3d_device *device = context->device;
      struct wined3d_state *wined3d_state;
-@@ -2954,19 +2957,147 @@ static void STDMETHODCALLTYPE d3d11_device_context_SwapDeviceContextState(ID3D11
+@@ -2954,19 +2957,128 @@ static void STDMETHODCALLTYPE d3d11_device_context_SwapDeviceContextState(ID3D11
      wined3d_mutex_unlock();
  }
  
@@ -1672,8 +1672,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
 -static const struct ID3D11DeviceContext1Vtbl d3d11_device_context_vtbl =
-+static HRESULT STDMETHODCALLTYPE d3d11_device_context_UpdateTileMappings(
-+        ID3D11DeviceContext4 *iface,
++static HRESULT STDMETHODCALLTYPE d3d11_device_context_UpdateTileMappings(ID3D11DeviceContext4 *iface,
 +        ID3D11Resource *resource,
 +        UINT region_count,
 +        const D3D11_TILED_RESOURCE_COORDINATE *region_start_coordinates,
@@ -1683,120 +1682,102 @@ index 061fd57fe09..c77e80ad904 100644
 +        const UINT *range_flags,
 +        const UINT *pool_start_offsets,
 +        const UINT *range_tile_counts,
-+        UINT flags
-+    )
++        UINT flags)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, resource %p, region_count %u, region_start_coordinates %p, region_sizes %p, pool %p, "
++          "range_count %u, range_flags %p pool_start_offsets %p, range_tile_counts %p, flags %x stub!\n", iface,
++        resource, region_count, region_start_coordinates, region_sizes, pool, range_count,
++        range_flags, pool_start_offsets, range_tile_counts, flags);
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT STDMETHODCALLTYPE d3d11_device_CopyTileMappings(
-+        ID3D11DeviceContext4 *iface,
-+        ID3D11Resource *dst_resource,
-+        const D3D11_TILED_RESOURCE_COORDINATE *dst_start_coordinate,
-+        ID3D11Resource *src_resource,
-+        const D3D11_TILED_RESOURCE_COORDINATE *src_start_coordinate,
-+        const D3D11_TILE_REGION_SIZE *region_size,
-+        UINT flags
-+    )
++static HRESULT STDMETHODCALLTYPE d3d11_device_CopyTileMappings(ID3D11DeviceContext4 *iface, ID3D11Resource *dst_resource,
++        const D3D11_TILED_RESOURCE_COORDINATE *dst_start_coordinate, ID3D11Resource *src_resource,
++        const D3D11_TILED_RESOURCE_COORDINATE *src_start_coordinate, const D3D11_TILE_REGION_SIZE *region_size,
++        UINT flags)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, dst_resource %p, dst_start_coordinate %p, src_resource %p, "
++          "src_start_coordinate %p, region_size %p, flags %x stub!\n", iface, dst_resource,
++        dst_start_coordinate, src_resource, src_start_coordinate, region_size, flags);
 +    return E_NOTIMPL;
 +}
 +
-+static void STDMETHODCALLTYPE d3d11_device_context_CopyTiles(
-+        ID3D11DeviceContext4 *iface,
-+        ID3D11Resource *resource,
-+        const D3D11_TILED_RESOURCE_COORDINATE *start_coordinate,
-+        const D3D11_TILE_REGION_SIZE *size,
-+        ID3D11Buffer *buffer,
-+        UINT64 start_offset,
-+        UINT flags
-+    )
++static void STDMETHODCALLTYPE d3d11_device_context_CopyTiles(ID3D11DeviceContext4 *iface, ID3D11Resource *resource,
++        const D3D11_TILED_RESOURCE_COORDINATE *start_coordinate, const D3D11_TILE_REGION_SIZE *size,
++        ID3D11Buffer *buffer, UINT64 start_offset, UINT flags)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, resource %p, start_coordinate %p, size %p, buffer %p, start_offset %s, flags %x stub!\n",
++          iface, resource, start_coordinate, size, buffer, wine_dbgstr_longlong(start_offset), flags);
 +}
 +
-+static void STDMETHODCALLTYPE d3d11_device_context_UpdateTiles(
-+        ID3D11DeviceContext4 *iface,
-+        ID3D11Resource *dst_resource,
-+        const D3D11_TILED_RESOURCE_COORDINATE *dst_start_coordinate,
-+        const D3D11_TILE_REGION_SIZE *dst_region_size,
-+        const void *src_data,
-+        UINT flags
-+    )
++static void STDMETHODCALLTYPE d3d11_device_context_UpdateTiles(ID3D11DeviceContext4 *iface,
++        ID3D11Resource *dst_resource, const D3D11_TILED_RESOURCE_COORDINATE *dst_start_coordinate,
++        const D3D11_TILE_REGION_SIZE *dst_region_size, const void *src_data, UINT flags)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, dst_resource %p, dst_start_coordinate %p, dst_region_size %p, src_data %p, flags %x stub!\n",
++          iface, dst_resource, dst_start_coordinate, dst_region_size, src_data, flags);
 +}
 +
-+static HRESULT STDMETHODCALLTYPE d3d11_device_ResizeTilePool(
-+        ID3D11DeviceContext4 *iface,
-+        ID3D11Buffer *pool,
-+        UINT64 size
-+    )
++static HRESULT STDMETHODCALLTYPE d3d11_device_ResizeTilePool(ID3D11DeviceContext4 *iface,
++        ID3D11Buffer *pool, UINT64 size)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, pool %p, start_offset %s stub!\n", iface, pool, wine_dbgstr_longlong(size));
 +    return E_NOTIMPL;
 +}
 +
-+static void STDMETHODCALLTYPE d3d11_device_context_TiledResourceBarrier(
-+        ID3D11DeviceContext4 *iface,
-+        ID3D11DeviceChild *before_barrier,
-+        ID3D11DeviceChild *after_barrier
-+    )
++static void STDMETHODCALLTYPE d3d11_device_context_TiledResourceBarrier(ID3D11DeviceContext4 *iface,
++        ID3D11DeviceChild *before_barrier, ID3D11DeviceChild *after_barrier)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, before_barrier %p, after_barrier %p stub!\n", iface, before_barrier, after_barrier);
 +}
 +
 +static BOOL STDMETHODCALLTYPE d3d11_device_IsAnnotationEnabled(ID3D11DeviceContext4 *iface)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p stub!\n", iface);
 +    return FALSE;
 +}
 +
 +static void STDMETHODCALLTYPE d3d11_device_context_SetMarkerInt(ID3D11DeviceContext4 *iface, const WCHAR *label, int data)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, label %s, data %d stub!\n", iface, debugstr_w(label), data);
 +}
 +
 +static void STDMETHODCALLTYPE d3d11_device_context_BeginEventInt(ID3D11DeviceContext4 *iface, const WCHAR *label, int data)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, label %s, data %d stub!\n", iface, debugstr_w(label), data);
 +}
 +
 +static void STDMETHODCALLTYPE d3d11_device_context_EndEvent(ID3D11DeviceContext4 *iface)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p stub!\n", iface);
 +}
 +
 +/*** ID3D11DeviceContext3 methods ***/
 +static void STDMETHODCALLTYPE d3d11_device_context_Flush1(ID3D11DeviceContext4 *iface, D3D11_CONTEXT_TYPE type, HANDLE event)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, type %d, handle %p stub!\n", iface, type, event);
 +}
 +
-+static void STDMETHODCALLTYPE d3d11_device_context_SetHardwareProtectionState(ID3D11DeviceContext4 *This, BOOL enable)
++static void STDMETHODCALLTYPE d3d11_device_context_SetHardwareProtectionState(ID3D11DeviceContext4 *iface, BOOL enable)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, enable %d stub!\n", iface, enable);
 +}
 +
 +static void STDMETHODCALLTYPE d3d11_device_context_GetHardwareProtectionState(ID3D11DeviceContext4 *iface, BOOL *enable)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, enable %p stub!\n", iface, enable);
 +}
 +
 +/*** ID3D11DeviceContext4 methods ***/
 +static HRESULT STDMETHODCALLTYPE d3d11_device_context_Signal(ID3D11DeviceContext4 *iface, ID3D11Fence *fence, UINT64 value)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, fence %p, value %s stub!\n", iface, fence, wine_dbgstr_longlong(value));
 +    return E_NOTIMPL;
 +}
 +
-+static HRESULT STDMETHODCALLTYPE d3d11_device_context_Wait(ID3D11DeviceContext4 *iface,
-+    ID3D11Fence *fence,
-+    UINT64 value)
++static HRESULT STDMETHODCALLTYPE d3d11_device_context_Wait(ID3D11DeviceContext4 *iface, ID3D11Fence *fence, UINT64 value)
 +{
-+    FIXME("stub\n");
++    FIXME("iface %p, fence %p, value %s stub!\n", iface, fence, wine_dbgstr_longlong(value));
 +    return E_NOTIMPL;
 +}
 +
@@ -1804,11 +1785,11 @@ index 061fd57fe09..c77e80ad904 100644
  {
      /* IUnknown methods */
      d3d11_device_context_QueryInterface,
-@@ -3106,6 +3237,24 @@ static const struct ID3D11DeviceContext1Vtbl d3d11_device_context_vtbl =
+@@ -3106,6 +3218,24 @@ static const struct ID3D11DeviceContext1Vtbl d3d11_device_context_vtbl =
      d3d11_device_context_SwapDeviceContextState,
      d3d11_device_context_ClearView,
      d3d11_device_context_DiscardView1,
-+    /* ID3D11DeviceContext4 methods */
++    /* ID3D11DeviceContext2 methods */
 +    d3d11_device_context_UpdateTileMappings,
 +    d3d11_device_CopyTileMappings,
 +    d3d11_device_context_CopyTiles,
@@ -1829,7 +1810,7 @@ index 061fd57fe09..c77e80ad904 100644
  };
  
  /* ID3D11Multithread methods */
-@@ -3122,7 +3271,7 @@ static HRESULT STDMETHODCALLTYPE d3d11_multithread_QueryInterface(ID3D11Multithr
+@@ -3122,7 +3252,7 @@ static HRESULT STDMETHODCALLTYPE d3d11_multithread_QueryInterface(ID3D11Multithr
  
      TRACE("iface %p, iid %s, out %p.\n", iface, debugstr_guid(iid), out);
  
@@ -1838,7 +1819,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static ULONG STDMETHODCALLTYPE d3d11_multithread_AddRef(ID3D11Multithread *iface)
-@@ -3131,7 +3280,7 @@ static ULONG STDMETHODCALLTYPE d3d11_multithread_AddRef(ID3D11Multithread *iface
+@@ -3131,7 +3261,7 @@ static ULONG STDMETHODCALLTYPE d3d11_multithread_AddRef(ID3D11Multithread *iface
  
      TRACE("iface %p.\n", iface);
  
@@ -1847,7 +1828,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static ULONG STDMETHODCALLTYPE d3d11_multithread_Release(ID3D11Multithread *iface)
-@@ -3140,7 +3289,7 @@ static ULONG STDMETHODCALLTYPE d3d11_multithread_Release(ID3D11Multithread *ifac
+@@ -3140,7 +3270,7 @@ static ULONG STDMETHODCALLTYPE d3d11_multithread_Release(ID3D11Multithread *ifac
  
      TRACE("iface %p.\n", iface);
  
@@ -1856,7 +1837,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static void STDMETHODCALLTYPE d3d11_multithread_Enter(ID3D11Multithread *iface)
-@@ -3197,7 +3346,7 @@ static HRESULT STDMETHODCALLTYPE d3d11_user_defined_annotation_QueryInterface(ID
+@@ -3197,7 +3327,7 @@ static HRESULT STDMETHODCALLTYPE d3d11_user_defined_annotation_QueryInterface(ID
  
      TRACE("iface %p, iid %s, out %p.\n", iface, debugstr_guid(iid), out);
  
@@ -1865,7 +1846,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static ULONG STDMETHODCALLTYPE d3d11_user_defined_annotation_AddRef(ID3DUserDefinedAnnotation *iface)
-@@ -3206,7 +3355,7 @@ static ULONG STDMETHODCALLTYPE d3d11_user_defined_annotation_AddRef(ID3DUserDefi
+@@ -3206,7 +3336,7 @@ static ULONG STDMETHODCALLTYPE d3d11_user_defined_annotation_AddRef(ID3DUserDefi
  
      TRACE("iface %p.\n", iface);
  
@@ -1874,7 +1855,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static ULONG STDMETHODCALLTYPE d3d11_user_defined_annotation_Release(ID3DUserDefinedAnnotation *iface)
-@@ -3215,7 +3364,7 @@ static ULONG STDMETHODCALLTYPE d3d11_user_defined_annotation_Release(ID3DUserDef
+@@ -3215,7 +3345,7 @@ static ULONG STDMETHODCALLTYPE d3d11_user_defined_annotation_Release(ID3DUserDef
  
      TRACE("iface %p.\n", iface);
  
@@ -1883,7 +1864,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static int STDMETHODCALLTYPE d3d11_user_defined_annotation_BeginEvent(ID3DUserDefinedAnnotation *iface,
-@@ -3260,7 +3409,7 @@ static const struct ID3DUserDefinedAnnotationVtbl d3d11_user_defined_annotation_
+@@ -3260,7 +3390,7 @@ static const struct ID3DUserDefinedAnnotationVtbl d3d11_user_defined_annotation_
  static void d3d11_device_context_init(struct d3d11_device_context *context, struct d3d_device *device,
          D3D11_DEVICE_CONTEXT_TYPE type)
  {
@@ -1892,7 +1873,7 @@ index 061fd57fe09..c77e80ad904 100644
      context->ID3D11Multithread_iface.lpVtbl = &d3d11_multithread_vtbl;
      context->ID3DUserDefinedAnnotation_iface.lpVtbl = &d3d11_user_defined_annotation_vtbl;
      context->refcount = 1;
-@@ -3844,8 +3993,7 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CreateDeferredContext(ID3D11Device
+@@ -3844,8 +3974,7 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CreateDeferredContext(ID3D11Device
      if (FAILED(hr = d3d11_deferred_context_create(device, flags, &object)))
          return hr;
  
@@ -1902,7 +1883,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static HRESULT STDMETHODCALLTYPE d3d11_device_OpenSharedResource(ID3D11Device2 *iface, HANDLE resource, REFIID iid,
-@@ -4324,8 +4472,7 @@ static void STDMETHODCALLTYPE d3d11_device_GetImmediateContext(ID3D11Device2 *if
+@@ -4324,8 +4453,7 @@ static void STDMETHODCALLTYPE d3d11_device_GetImmediateContext(ID3D11Device2 *if
  
      TRACE("iface %p, immediate_context %p.\n", iface, immediate_context);
  
@@ -1912,7 +1893,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static HRESULT STDMETHODCALLTYPE d3d11_device_SetExceptionMode(ID3D11Device2 *iface, UINT flags)
-@@ -4349,8 +4496,7 @@ static void STDMETHODCALLTYPE d3d11_device_GetImmediateContext1(ID3D11Device2 *i
+@@ -4349,8 +4477,7 @@ static void STDMETHODCALLTYPE d3d11_device_GetImmediateContext1(ID3D11Device2 *i
  
      TRACE("iface %p, immediate_context %p.\n", iface, immediate_context);
  
@@ -1922,7 +1903,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static HRESULT STDMETHODCALLTYPE d3d11_device_CreateDeferredContext1(ID3D11Device2 *iface, UINT flags,
-@@ -4365,8 +4511,9 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CreateDeferredContext1(ID3D11Devic
+@@ -4365,8 +4492,9 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CreateDeferredContext1(ID3D11Devic
      if (FAILED(hr = d3d11_deferred_context_create(device, flags, &object)))
          return hr;
  
@@ -1934,7 +1915,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static HRESULT STDMETHODCALLTYPE d3d11_device_CreateRasterizerState1(ID3D11Device2 *iface,
-@@ -5072,7 +5219,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMSetBlendState(ID3D10Device1 *iface,
+@@ -5072,7 +5200,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMSetBlendState(ID3D10Device1 *iface,
              iface, blend_state, debug_float4(blend_factor), sample_mask);
  
      blend_state_object = unsafe_impl_from_ID3D10BlendState(blend_state);
@@ -1943,7 +1924,7 @@ index 061fd57fe09..c77e80ad904 100644
              blend_state_object ? (ID3D11BlendState *)&blend_state_object->ID3D11BlendState1_iface : NULL,
              blend_factor, sample_mask);
  }
-@@ -5087,7 +5234,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMSetDepthStencilState(ID3D10Device1
+@@ -5087,7 +5215,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMSetDepthStencilState(ID3D10Device1
              iface, depth_stencil_state, stencil_ref);
  
      ds_state_object = unsafe_impl_from_ID3D10DepthStencilState(depth_stencil_state);
@@ -1952,7 +1933,7 @@ index 061fd57fe09..c77e80ad904 100644
              ds_state_object ? &ds_state_object->ID3D11DepthStencilState_iface : NULL, stencil_ref);
  }
  
-@@ -5125,7 +5272,7 @@ static void STDMETHODCALLTYPE d3d10_device_RSSetState(ID3D10Device1 *iface, ID3D
+@@ -5125,7 +5253,7 @@ static void STDMETHODCALLTYPE d3d10_device_RSSetState(ID3D10Device1 *iface, ID3D
      TRACE("iface %p, rasterizer_state %p.\n", iface, rasterizer_state);
  
      rasterizer_state_object = unsafe_impl_from_ID3D10RasterizerState(rasterizer_state);
@@ -1961,7 +1942,7 @@ index 061fd57fe09..c77e80ad904 100644
              rasterizer_state_object ? (ID3D11RasterizerState *)&rasterizer_state_object->ID3D11RasterizerState1_iface : NULL);
  }
  
-@@ -5219,7 +5366,7 @@ static void STDMETHODCALLTYPE d3d10_device_UpdateSubresource(ID3D10Device1 *ifac
+@@ -5219,7 +5347,7 @@ static void STDMETHODCALLTYPE d3d10_device_UpdateSubresource(ID3D10Device1 *ifac
              iface, resource, subresource_idx, box, data, row_pitch, depth_pitch);
  
      ID3D10Resource_QueryInterface(resource, &IID_ID3D11Resource, (void **)&d3d11_resource);
@@ -1970,7 +1951,7 @@ index 061fd57fe09..c77e80ad904 100644
              d3d11_resource, subresource_idx, (const D3D11_BOX *)box, data, row_pitch, depth_pitch);
      ID3D11Resource_Release(d3d11_resource);
  }
-@@ -5744,7 +5891,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMGetBlendState(ID3D10Device1 *iface,
+@@ -5744,7 +5872,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMGetBlendState(ID3D10Device1 *iface,
      TRACE("iface %p, blend_state %p, blend_factor %p, sample_mask %p.\n",
              iface, blend_state, blend_factor, sample_mask);
  
@@ -1979,7 +1960,7 @@ index 061fd57fe09..c77e80ad904 100644
              &d3d11_blend_state, blend_factor, sample_mask);
  
      if (blend_state)
-@@ -5772,7 +5919,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMGetDepthStencilState(ID3D10Device1
+@@ -5772,7 +5900,7 @@ static void STDMETHODCALLTYPE d3d10_device_OMGetDepthStencilState(ID3D10Device1
      TRACE("iface %p, depth_stencil_state %p, stencil_ref %p.\n",
              iface, depth_stencil_state, stencil_ref);
  
@@ -1988,7 +1969,7 @@ index 061fd57fe09..c77e80ad904 100644
              &d3d11_iface, stencil_ref);
  
      if (depth_stencil_state)
-@@ -5964,7 +6111,7 @@ static void STDMETHODCALLTYPE d3d10_device_ClearState(ID3D10Device1 *iface)
+@@ -5964,7 +6092,7 @@ static void STDMETHODCALLTYPE d3d10_device_ClearState(ID3D10Device1 *iface)
  
      TRACE("iface %p.\n", iface);
  
@@ -1997,7 +1978,7 @@ index 061fd57fe09..c77e80ad904 100644
  }
  
  static void STDMETHODCALLTYPE d3d10_device_Flush(ID3D10Device1 *iface)
-@@ -6978,7 +7125,7 @@ void d3d_device_init(struct d3d_device *device, void *outer_unknown)
+@@ -6978,7 +7106,7 @@ void d3d_device_init(struct d3d_device *device, void *outer_unknown)
      device->state = NULL;
  
      d3d11_device_context_init(&device->immediate_context, device, D3D11_DEVICE_CONTEXT_IMMEDIATE);
@@ -2007,5 +1988,5 @@ index 061fd57fe09..c77e80ad904 100644
      wine_rb_init(&device->blend_states, d3d_blend_state_compare);
      wine_rb_init(&device->depthstencil_states, d3d_depthstencil_state_compare);
 -- 
-2.43.0
+2.45.2
 
