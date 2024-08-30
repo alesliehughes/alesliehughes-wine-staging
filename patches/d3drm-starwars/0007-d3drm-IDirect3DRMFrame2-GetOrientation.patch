@@ -1,17 +1,17 @@
-From ac33c379a218b68e7ddb3f21d356f3fb408faa0b Mon Sep 17 00:00:00 2001
+From 92465f0808020ded4857ff303476a4d65ad90d0a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 14:56:56 +1000
-Subject: [PATCH 15/17] d3drm: IDirect3DRMFrame2 GetOrientation
+Subject: [PATCH] d3drm: IDirect3DRMFrame2 GetOrientation
 
 ---
  dlls/d3drm/frame.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
-index ed47054e890..48af3b355ca 100644
+index f908ea8dfdf..2044ba8a2cb 100644
 --- a/dlls/d3drm/frame.c
 +++ b/dlls/d3drm/frame.c
-@@ -1671,7 +1671,7 @@ static HRESULT WINAPI d3drm_frame2_GetOrientation(IDirect3DRMFrame2 *iface,
+@@ -1680,7 +1680,7 @@ static HRESULT WINAPI d3drm_frame2_GetOrientation(IDirect3DRMFrame2 *iface,
  {
      FIXME("iface %p, reference %p, dir %p, up %p stub!\n", iface, reference, dir, up);
  
@@ -21,5 +21,5 @@ index ed47054e890..48af3b355ca 100644
  
  static HRESULT WINAPI d3drm_frame1_GetOrientation(IDirect3DRMFrame *iface,
 -- 
-2.35.1
+2.45.2
 

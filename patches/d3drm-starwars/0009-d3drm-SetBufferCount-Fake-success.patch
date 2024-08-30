@@ -1,4 +1,4 @@
-From 467887cb35cd5cda1364973421978712e085e0f4 Mon Sep 17 00:00:00 2001
+From eed9eef5f7dda1c86dd59aa284f158ba33008480 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 4 Jun 2022 14:48:54 +1000
 Subject: [PATCH] d3drm: SetBufferCount Fake success
@@ -10,7 +10,7 @@ Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/d3drm/device.c b/dlls/d3drm/device.c
-index 970b171c656..2fc83b4159c 100644
+index 1a433746224..fe85784ee63 100644
 --- a/dlls/d3drm/device.c
 +++ b/dlls/d3drm/device.c
 @@ -783,7 +783,7 @@ static HRESULT WINAPI d3drm_device3_SetBufferCount(IDirect3DRMDevice3 *iface, DW
@@ -23,5 +23,5 @@ index 970b171c656..2fc83b4159c 100644
  
  static HRESULT WINAPI d3drm_device2_SetBufferCount(IDirect3DRMDevice2 *iface, DWORD count)
 -- 
-2.35.1
+2.45.2
 

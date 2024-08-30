@@ -1,4 +1,4 @@
-From 93d5b1e9aad094448101a4c7e07eb5539556f1e2 Mon Sep 17 00:00:00 2001
+From 3e1521e42f9ba77074be3caa8041f9844ca8dc71 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 15 Sep 2023 15:14:28 +1000
 Subject: [PATCH] d3drm: IDirect3DRMMesh SetGroupMapping fake success.
@@ -21,5 +21,5 @@ index 1befe032c70..ec2615a016d 100644
  
  static HRESULT WINAPI d3drm_mesh_SetGroupQuality(IDirect3DRMMesh *iface, D3DRMGROUPINDEX id, D3DRMRENDERQUALITY value)
 -- 
-2.40.1
+2.45.2
 

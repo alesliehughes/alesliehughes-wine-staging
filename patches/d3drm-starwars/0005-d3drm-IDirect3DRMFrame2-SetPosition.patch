@@ -1,4 +1,4 @@
-From ed45fe7c7985f7bbb913681151ef7a5c518c5497 Mon Sep 17 00:00:00 2001
+From c210f81d3e30136dd970e9c99e6d42225743f35e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 14:19:14 +1000
 Subject: [PATCH] d3drm: IDirect3DRMFrame2 SetPosition
@@ -8,7 +8,7 @@ Subject: [PATCH] d3drm: IDirect3DRMFrame2 SetPosition
  1 file changed, 20 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/d3drm/frame.c b/dlls/d3drm/frame.c
-index 5cc3ad585d4..f3805c9bb24 100644
+index 7a5bd18cd33..80d47ce7896 100644
 --- a/dlls/d3drm/frame.c
 +++ b/dlls/d3drm/frame.c
 @@ -1452,28 +1452,37 @@ static HRESULT WINAPI d3drm_frame1_GetParent(IDirect3DRMFrame *iface, IDirect3DR
@@ -77,5 +77,5 @@ index 5cc3ad585d4..f3805c9bb24 100644
  
  static HRESULT WINAPI d3drm_frame1_SetPosition(IDirect3DRMFrame *iface,
 -- 
-2.35.1
+2.45.2
 

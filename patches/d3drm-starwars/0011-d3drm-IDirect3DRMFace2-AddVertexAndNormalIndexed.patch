@@ -1,4 +1,4 @@
-From 99628eb16ad718c1276036fb6556cddb71554d3e Mon Sep 17 00:00:00 2001
+From ca13260b9498991535cb5544cd75716055ef3c8d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 17:53:37 +1000
 Subject: [PATCH] d3drm: IDirect3DRMFace2 AddVertexAndNormalIndexed
@@ -8,7 +8,7 @@ Subject: [PATCH] d3drm: IDirect3DRMFace2 AddVertexAndNormalIndexed
  1 file changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/d3drm/face.c b/dlls/d3drm/face.c
-index 3214c56cb33..9f0ef761464 100644
+index 34810894e13..ce75c68bb59 100644
 --- a/dlls/d3drm/face.c
 +++ b/dlls/d3drm/face.c
 @@ -206,9 +206,11 @@ static HRESULT WINAPI d3drm_face1_AddVertex(IDirect3DRMFace *iface, D3DVALUE x,
@@ -35,5 +35,5 @@ index 3214c56cb33..9f0ef761464 100644
  
  static HRESULT WINAPI d3drm_face2_SetTexture(IDirect3DRMFace2 *iface, IDirect3DRMTexture3 *texture)
 -- 
-2.35.1
+2.45.2
 

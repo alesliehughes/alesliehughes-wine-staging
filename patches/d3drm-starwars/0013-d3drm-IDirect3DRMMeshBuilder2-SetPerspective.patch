@@ -1,4 +1,4 @@
-From 106a492e4c9cb9b8515985b24d5146b6eab953e6 Mon Sep 17 00:00:00 2001
+From bcf0490e2858412f0635564c9401525c808fca11 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 18:00:42 +1000
 Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder2 SetPerspective
@@ -8,7 +8,7 @@ Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder2 SetPerspective
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index 5205df6c159..f7b1abe9645 100644
+index 70ab332359c..1b9edab8559 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
 @@ -761,9 +761,10 @@ static HRESULT WINAPI d3drm_mesh_builder2_SetQuality(IDirect3DRMMeshBuilder2 *if
@@ -34,5 +34,5 @@ index 5205df6c159..f7b1abe9645 100644
  
  static HRESULT WINAPI d3drm_mesh_builder3_SetVertex(IDirect3DRMMeshBuilder3 *iface,
 -- 
-2.35.1
+2.45.2
 

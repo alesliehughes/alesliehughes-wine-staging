@@ -1,4 +1,4 @@
-From b31fe4c8d7eccd5deca8e457330cd48f164af5e0 Mon Sep 17 00:00:00 2001
+From d5853bbfca7e77f2218382dcd5ebe34367584e3c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 18:05:39 +1000
 Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder2 GenerateNormals
@@ -8,7 +8,7 @@ Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder2 GenerateNormals
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index f7b1abe9645..0b765dbe2ef 100644
+index 1b9edab8559..1befe032c70 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
 @@ -631,9 +631,10 @@ static HRESULT WINAPI d3drm_mesh_builder2_GetBox(IDirect3DRMMeshBuilder2 *iface,
@@ -34,5 +34,5 @@ index f7b1abe9645..0b765dbe2ef 100644
  
  static D3DRMCOLORSOURCE WINAPI d3drm_mesh_builder3_GetColorSource(IDirect3DRMMeshBuilder3 *iface)
 -- 
-2.35.1
+2.45.2
 

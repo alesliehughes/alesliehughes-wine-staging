@@ -1,4 +1,4 @@
-From 27b217085495c3d6c45c116ad70b82b1e5e13472 Mon Sep 17 00:00:00 2001
+From 4abe3ab87631c7bb6144437ff2e1473030d033cb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 12:13:11 +1000
 Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder2 Clone stub
@@ -8,7 +8,7 @@ Subject: [PATCH] d3drm: IDirect3DRMMeshBuilder2 Clone stub
  1 file changed, 83 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index 1f783baf1fe..479032b0363 100644
+index 27e76c1cf25..0c765d77281 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
 @@ -402,9 +402,90 @@ static ULONG WINAPI d3drm_mesh_builder2_Release(IDirect3DRMMeshBuilder2 *iface)
@@ -105,5 +105,5 @@ index 1f783baf1fe..479032b0363 100644
  
  static HRESULT WINAPI d3drm_mesh_builder2_AddDestroyCallback(IDirect3DRMMeshBuilder2 *iface,
 -- 
-2.35.1
+2.45.2
 

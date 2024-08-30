@@ -1,4 +1,4 @@
-From 0ae9ee954ccfe5b4882933e8ad6a463e810efb5a Mon Sep 17 00:00:00 2001
+From d1beb46198beef65617571b6d4cebf7cf8618188 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 13 May 2022 12:56:26 +1000
 Subject: [PATCH] d3drm: IDirect3DRMMesh GetBox stubs
@@ -9,7 +9,7 @@ Subject: [PATCH] d3drm: IDirect3DRMMesh GetBox stubs
  2 files changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
-index 2b3750d9ece..b7393d448e2 100644
+index abad81c51ae..2f0fe1df7ba 100644
 --- a/dlls/d3drm/meshbuilder.c
 +++ b/dlls/d3drm/meshbuilder.c
 @@ -626,7 +626,7 @@ static HRESULT WINAPI d3drm_mesh_builder2_GetBox(IDirect3DRMMeshBuilder2 *iface,
@@ -21,7 +21,7 @@ index 2b3750d9ece..b7393d448e2 100644
  }
  
  static HRESULT WINAPI d3drm_mesh_builder2_GenerateNormals(IDirect3DRMMeshBuilder2 *iface)
-@@ -2601,7 +2601,7 @@ static HRESULT WINAPI d3drm_mesh_GetBox(IDirect3DRMMesh *iface, D3DRMBOX *box)
+@@ -2594,7 +2594,7 @@ static HRESULT WINAPI d3drm_mesh_GetBox(IDirect3DRMMesh *iface, D3DRMBOX *box)
  {
      FIXME("iface %p, box %p stub!\n", iface, box);
  
@@ -31,10 +31,10 @@ index 2b3750d9ece..b7393d448e2 100644
  
  static HRESULT WINAPI d3drm_mesh_AddGroup(IDirect3DRMMesh *iface, unsigned vertex_count,
 diff --git a/dlls/d3drm/tests/d3drm.c b/dlls/d3drm/tests/d3drm.c
-index 5745fea4b09..178ab3d94eb 100644
+index 5d478f24b1a..72e07dde7a8 100644
 --- a/dlls/d3drm/tests/d3drm.c
 +++ b/dlls/d3drm/tests/d3drm.c
-@@ -452,6 +452,7 @@ static void test_MeshBuilder(void)
+@@ -449,6 +449,7 @@ static void test_MeshBuilder(void)
      DWORD size;
      D3DCOLOR color;
      IUnknown *unk;
@@ -42,7 +42,7 @@ index 5745fea4b09..178ab3d94eb 100644
  
      hr = Direct3DRMCreate(&d3drm);
      ok(hr == D3DRM_OK, "Cannot get IDirect3DRM interface, hr %#lx\n", hr);
-@@ -697,6 +698,13 @@ static void test_MeshBuilder(void)
+@@ -694,6 +695,13 @@ static void test_MeshBuilder(void)
          IDirect3DRMMesh_Release(mesh);
      }
  
@@ -57,5 +57,5 @@ index 5745fea4b09..178ab3d94eb 100644
      ok(hr == D3DRM_OK, "Scale failed returning hr %#lx.\n", hr);
  
 -- 
-2.35.1
+2.45.2
 

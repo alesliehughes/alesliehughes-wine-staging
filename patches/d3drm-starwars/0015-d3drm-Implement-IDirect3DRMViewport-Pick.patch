@@ -1,4 +1,4 @@
-From d60b9debcb236f2023a878ada433f224c6b14eb9 Mon Sep 17 00:00:00 2001
+From 4e64334180165d4a5fa44e9aa30bb301195a631f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 19:23:43 +1000
 Subject: [PATCH] d3drm: Implement IDirect3DRMViewport Pick
@@ -8,7 +8,7 @@ Subject: [PATCH] d3drm: Implement IDirect3DRMViewport Pick
  1 file changed, 127 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/d3drm/viewport.c b/dlls/d3drm/viewport.c
-index 36a80c95675..7261d6458bb 100644
+index 821eb1ff12c..f6d824b6488 100644
 --- a/dlls/d3drm/viewport.c
 +++ b/dlls/d3drm/viewport.c
 @@ -822,20 +822,145 @@ static HRESULT WINAPI d3drm_viewport1_GetPlane(IDirect3DRMViewport *iface,
@@ -160,5 +160,5 @@ index 36a80c95675..7261d6458bb 100644
  
  static BOOL WINAPI d3drm_viewport2_GetUniformScaling(IDirect3DRMViewport2 *iface)
 -- 
-2.35.1
+2.45.2
 

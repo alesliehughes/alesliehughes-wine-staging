@@ -1,4 +1,4 @@
-From be6b9413045f1a1709d4a068f118cc0d1703132c Mon Sep 17 00:00:00 2001
+From 61ed2e5563b365fb0bd4e581d03ca8300cd1b4ee Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 15 Sep 2023 15:33:13 +1000
 Subject: [PATCH] d3drm: IDirect3DRMMesh Clone semi-stub
@@ -35,5 +35,5 @@ index ec2615a016d..3e57fa99435 100644
  
  static HRESULT WINAPI d3drm_mesh_AddDestroyCallback(IDirect3DRMMesh *iface,
 -- 
-2.40.1
+2.45.2
 

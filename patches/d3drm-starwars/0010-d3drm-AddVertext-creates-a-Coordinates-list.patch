@@ -1,4 +1,4 @@
-From 7dddaef03abb131d8a5fce465691d5d7813c6e3b Mon Sep 17 00:00:00 2001
+From 5da19416de998bfc236534d0e333c2c0454fdace Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jun 2022 17:21:45 +1000
 Subject: [PATCH] d3drm: AddVertext creates a Coordinates list
@@ -47,10 +47,10 @@ index 8f9a3cb71a7..70ab332359c 100644
  }
  
 diff --git a/dlls/d3drm/tests/d3drm.c b/dlls/d3drm/tests/d3drm.c
-index 3a9db9214ff..b0b979d3c67 100644
+index 72e07dde7a8..778ab2546db 100644
 --- a/dlls/d3drm/tests/d3drm.c
 +++ b/dlls/d3drm/tests/d3drm.c
-@@ -854,6 +854,53 @@ static void test_Mesh(void)
+@@ -851,6 +851,53 @@ static void test_Mesh(void)
      IDirect3DRM_Release(d3drm);
  }
  
@@ -104,7 +104,7 @@ index 3a9db9214ff..b0b979d3c67 100644
  static void test_Face(void)
  {
      HRESULT hr;
-@@ -8208,6 +8255,7 @@ START_TEST(d3drm)
+@@ -8243,6 +8290,7 @@ START_TEST(d3drm)
      test_MeshBuilder();
      test_MeshBuilder3();
      test_Mesh();
@@ -113,5 +113,5 @@ index 3a9db9214ff..b0b979d3c67 100644
      test_Frame();
      test_Device();
 -- 
-2.40.1
+2.45.2
 
