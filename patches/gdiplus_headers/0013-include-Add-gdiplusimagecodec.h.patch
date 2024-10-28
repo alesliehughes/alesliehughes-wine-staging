@@ -1,0 +1,87 @@
+From 2dee574005056cab2264e66f8620f33f8b87ae40 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 25 Oct 2024 13:46:09 +1100
+Subject: [PATCH] include: Add gdiplusimagecodec.h
+
+---
+ include/Makefile.in         |  1 +
+ include/gdiplus.h           |  1 +
+ include/gdiplusimagecodec.h | 42 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+)
+ create mode 100644 include/gdiplusimagecodec.h
+
+diff --git a/include/Makefile.in b/include/Makefile.in
+index 9c354b9e27c..5ceabcfd1ae 100644
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -340,6 +340,7 @@ SOURCES = \
+ 	gdiplusgpstubs.h \
+ 	gdiplusgraphics.h \
+ 	gdiplusheaders.h \
++	gdiplusimagecodec.h \
+ 	gdiplusimaging.h \
+ 	gdiplusinit.h \
+ 	gdiplusmatrix.h \
+diff --git a/include/gdiplus.h b/include/gdiplus.h
+index b4e8cc7256d..ef3d70888ab 100644
+--- a/include/gdiplus.h
++++ b/include/gdiplus.h
+@@ -48,6 +48,7 @@ namespace Gdiplus
+ 
+ #include "gdiplusmatrix.h"
+ #include "gdiplusgraphics.h"
++#include "gdiplusimagecodec.h"
+ };
+ 
+ #else /* end c++ includes */
+diff --git a/include/gdiplusimagecodec.h b/include/gdiplusimagecodec.h
+new file mode 100644
+index 00000000000..1d14f2413ad
+--- /dev/null
++++ b/include/gdiplusimagecodec.h
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (C) 2024 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#ifndef _GDIPLUSIMAGECODEC_H
++#define _GDIPLUSIMAGECODEC_H
++
++inline Status GetImageDecodersSize(UINT *numDecoders, UINT *size)
++{
++    return DllExports::GdipGetImageDecodersSize(numDecoders, size);
++}
++
++inline Status GetImageDecoders(UINT numDecoders, UINT size, ImageCodecInfo *decoders)
++{
++    return DllExports::GdipGetImageDecoders(numDecoders, size, decoders);
++}
++
++inline Status GetImageEncodersSize(UINT *numEncoders, UINT *size)
++{
++    return DllExports::GdipGetImageEncodersSize(numEncoders, size);
++}
++
++inline Status GetImageEncoders(UINT numEncoders, UINT size, ImageCodecInfo *encoders)
++{
++    return DllExports::GdipGetImageEncoders(numEncoders, size, encoders);
++}
++
++#endif
++
+-- 
+2.45.2
+

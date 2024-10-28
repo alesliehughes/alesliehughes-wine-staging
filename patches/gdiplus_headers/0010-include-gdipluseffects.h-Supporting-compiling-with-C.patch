@@ -1,0 +1,33 @@
+From 49de9c93bb9eb1b814fff3b0f01c6e2a1aa13f8d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 25 Oct 2024 10:41:03 +1100
+Subject: [PATCH 3/4] include/gdipluseffects.h: Supporting compiling with C++.
+
+---
+ include/gdipluseffects.h | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/include/gdipluseffects.h b/include/gdipluseffects.h
+index a0743a440e9..b0b058df30d 100644
+--- a/include/gdipluseffects.h
++++ b/include/gdipluseffects.h
+@@ -118,11 +118,14 @@ struct ColorCurveParams
+ };
+ 
+ #ifdef __cplusplus
++
++class CGpEffect;
++
+ extern "C" {
+ #endif
+ 
+-GpStatus WINGDIPAPI GdipCreateEffect(const GUID guid, CGpEffect **effect);
+-GpStatus WINGDIPAPI GdipDeleteEffect(CGpEffect *effect);
++Status WINGDIPAPI GdipCreateEffect(const GUID guid, CGpEffect **effect);
++Status WINGDIPAPI GdipDeleteEffect(CGpEffect *effect);
+ 
+ #ifdef __cplusplus
+ }
+-- 
+2.45.2
+

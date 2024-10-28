@@ -1,0 +1,31 @@
+From b2d1ed1b8528942682307bc2aaf684c56cf2137e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 25 Oct 2024 08:15:54 +1100
+Subject: [PATCH] include: gdipus.h keep the same header order as SDK
+
+---
+ include/gdiplus.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/gdiplus.h b/include/gdiplus.h
+index e85343b7c17..b07e2beaaed 100644
+--- a/include/gdiplus.h
++++ b/include/gdiplus.h
+@@ -32,12 +32,12 @@ namespace Gdiplus
+ #include "gdiplustypes.h"
+ #include "gdiplusinit.h"
+ #include "gdipluspixelformats.h"
++#include "gdipluscolor.h"
+ #include "gdiplusmetaheader.h"
+ #include "gdiplusimaging.h"
+-#include "gdipluscolor.h"
+ #include "gdipluscolormatrix.h"
+-#include "gdiplusgpstubs.h"
+ #include "gdipluseffects.h"
++#include "gdiplusgpstubs.h"
+ 
+     namespace DllExports
+     {
+-- 
+2.45.2
+

@@ -1,17 +1,17 @@
-From bfaafddfbaf543c425c44f9852d3d1e4d5743169 Mon Sep 17 00:00:00 2001
+From 303ab7570603ca69481965f3c1e0573dcbc61432 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jul 2024 11:50:53 +1000
 Subject: [PATCH] include: Added gdiplusgraphics.h
 
 ---
  include/Makefile.in       |    1 +
- include/gdiplus.h         |    1 +
+ include/gdiplus.h         |    2 +
  include/gdiplusgraphics.h | 2564 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 2566 insertions(+)
+ 3 files changed, 2567 insertions(+)
  create mode 100644 include/gdiplusgraphics.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index ec3147d9821..3ba25765ed8 100644
+index feb9196e760..597caa39a17 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -338,6 +338,7 @@ SOURCES = \
@@ -23,17 +23,18 @@ index ec3147d9821..3ba25765ed8 100644
  	gdiplusimaging.h \
  	gdiplusinit.h \
 diff --git a/include/gdiplus.h b/include/gdiplus.h
-index 9889555bfab..1754c48f62a 100644
+index 086f72691e8..4a27c67c600 100644
 --- a/include/gdiplus.h
 +++ b/include/gdiplus.h
-@@ -37,6 +37,7 @@ namespace Gdiplus
- #include "gdiplusimaging.h"
- #include "gdipluscolor.h"
- #include "gdipluscolormatrix.h"
+@@ -45,6 +45,8 @@ namespace Gdiplus
+     {
+ #include "gdiplusflat.h"
+     };
++
 +#include "gdiplusgraphics.h"
- #include "gdiplusgpstubs.h"
- #include "gdiplusheaders.h"
- #include "gdipluseffects.h"
+ };
+ 
+ #else /* end c++ includes */
 diff --git a/include/gdiplusgraphics.h b/include/gdiplusgraphics.h
 new file mode 100644
 index 00000000000..dbe6a09efa5
@@ -2605,5 +2606,5 @@ index 00000000000..dbe6a09efa5
 +
 +#endif
 -- 
-2.43.0
+2.45.2
 

@@ -1,0 +1,34 @@
+From 8aaad94e5bff0d882efa4ae4de30a72b7fa2a456 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 25 Oct 2024 10:42:01 +1100
+Subject: [PATCH 4/4] include: Add basic gdiplus Effect class
+
+---
+ include/gdipluseffects.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/include/gdipluseffects.h b/include/gdipluseffects.h
+index b0b058df30d..5c15b26a38f 100644
+--- a/include/gdipluseffects.h
++++ b/include/gdipluseffects.h
+@@ -131,4 +131,17 @@ Status WINGDIPAPI GdipDeleteEffect(CGpEffect *effect);
+ }
+ #endif
+ 
++#ifdef __cplusplus
++
++/* TODO - methods */
++class Effect
++{
++public:
++    Effect() { };
++    virtual ~Effect() { };
++};
++
++
++#endif
++
+ #endif
+-- 
+2.45.2
+

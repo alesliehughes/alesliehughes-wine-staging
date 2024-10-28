@@ -1,34 +1,13 @@
-From c6c1892786336cadeab471ad0c88686cdc59d470 Mon Sep 17 00:00:00 2001
+From 6f9e7052c5e244e7af1e733b53eb1336428569d1 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 30 Jul 2024 16:14:03 +1000
 Subject: [PATCH] include: gdiplus fix ups - to merged otherse
 
 ---
- include/gdiplus.h         |  2 +-
  include/gdiplusgraphics.h | 15 ---------------
  include/gdiplusmatrix.h   |  4 ----
- 3 files changed, 1 insertion(+), 20 deletions(-)
+ 2 files changed, 19 deletions(-)
 
-diff --git a/include/gdiplus.h b/include/gdiplus.h
-index 6df71e2cc03..4272c098171 100644
---- a/include/gdiplus.h
-+++ b/include/gdiplus.h
-@@ -37,7 +37,6 @@ namespace Gdiplus
- #include "gdiplusimaging.h"
- #include "gdipluscolor.h"
- #include "gdipluscolormatrix.h"
--#include "gdiplusgraphics.h"
- #include "gdiplusgpstubs.h"
- #include "gdiplusheaders.h"
- #include "gdipluseffects.h"
-@@ -48,6 +47,7 @@ namespace Gdiplus
-     };
- 
- #include "gdiplusmatrix.h"
-+#include "gdiplusgraphics.h"
- };
- 
- #else /* end c++ includes */
 diff --git a/include/gdiplusgraphics.h b/include/gdiplusgraphics.h
 index dbe6a09efa5..43bbce8ba26 100644
 --- a/include/gdiplusgraphics.h
@@ -71,5 +50,5 @@ index c8062cf6acb..660d61ecf61 100644
  {
  public:
 -- 
-2.43.0
+2.45.2
 

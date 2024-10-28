@@ -1,17 +1,17 @@
-From 889ec7c0c17126300125a422ad965410e293e66e Mon Sep 17 00:00:00 2001
+From 63919dd0b27389fad578a5574e409345eecb5b72 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jul 2024 12:02:55 +1000
 Subject: [PATCH] include: Add gdiplusmatrix.h
 
 ---
  include/Makefile.in     |   1 +
- include/gdiplus.h       |   2 +
+ include/gdiplus.h       |   1 +
  include/gdiplusmatrix.h | 319 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 322 insertions(+)
+ 3 files changed, 321 insertions(+)
  create mode 100644 include/gdiplusmatrix.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 3ba25765ed8..b864bfc2fe3 100644
+index 597caa39a17..9c354b9e27c 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -342,6 +342,7 @@ SOURCES = \
@@ -23,18 +23,17 @@ index 3ba25765ed8..b864bfc2fe3 100644
  	gdiplusmetaheader.h \
  	gdipluspixelformats.h \
 diff --git a/include/gdiplus.h b/include/gdiplus.h
-index 1754c48f62a..6df71e2cc03 100644
+index 4a27c67c600..7b05cac1561 100644
 --- a/include/gdiplus.h
 +++ b/include/gdiplus.h
-@@ -46,6 +46,8 @@ namespace Gdiplus
-     {
+@@ -46,6 +46,7 @@ namespace Gdiplus
  #include "gdiplusflat.h"
      };
-+
+ 
 +#include "gdiplusmatrix.h"
+ #include "gdiplusgraphics.h"
  };
  
- #else /* end c++ includes */
 diff --git a/include/gdiplusmatrix.h b/include/gdiplusmatrix.h
 new file mode 100644
 index 00000000000..c8062cf6acb
@@ -361,5 +360,5 @@ index 00000000000..c8062cf6acb
 +
 +#endif
 -- 
-2.43.0
+2.45.2
 

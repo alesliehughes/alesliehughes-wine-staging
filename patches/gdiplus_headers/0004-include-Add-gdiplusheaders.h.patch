@@ -1,17 +1,11 @@
-From f6f5868f3d4ecbc93d4239c58522e0e369e791d0 Mon Sep 17 00:00:00 2001
+From 01c460bc629a51b0b29402e66307fac968c332c0 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 28 May 2024 10:26:48 +1000
-Subject: [PATCH] include: Add gdiplusheaders.h
+Subject: include: Add gdiplusheaders.h
 
----
- include/Makefile.in      |   1 +
- include/gdiplus.h        |   1 +
- include/gdiplusheaders.h | 175 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 177 insertions(+)
- create mode 100644 include/gdiplusheaders.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 5a2b7ae2429..ec3147d9821 100644
+index 35d618d9da7..feb9196e760 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
 @@ -338,6 +338,7 @@ SOURCES = \
@@ -23,17 +17,17 @@ index 5a2b7ae2429..ec3147d9821 100644
  	gdiplusinit.h \
  	gdiplusmem.h \
 diff --git a/include/gdiplus.h b/include/gdiplus.h
-index afada3e2d22..9889555bfab 100644
+index 8861eb2255f..7fb5629bb90 100644
 --- a/include/gdiplus.h
 +++ b/include/gdiplus.h
-@@ -38,6 +38,7 @@ namespace Gdiplus
- #include "gdipluscolor.h"
+@@ -39,6 +39,7 @@ namespace Gdiplus
  #include "gdipluscolormatrix.h"
+ #include "gdipluseffects.h"
  #include "gdiplusgpstubs.h"
 +#include "gdiplusheaders.h"
- #include "gdipluseffects.h"
  
      namespace DllExports
+     {
 diff --git a/include/gdiplusheaders.h b/include/gdiplusheaders.h
 new file mode 100644
 index 00000000000..d88e865daf9
@@ -215,6 +209,3 @@ index 00000000000..d88e865daf9
 +};
 +
 +#endif
--- 
-2.43.0
-
