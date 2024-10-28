@@ -1,25 +1,29 @@
-From 955a881fe019cfcdc8883075da463b3ff2790bdd Mon Sep 17 00:00:00 2001
+From 56d5a54e8466a5e72820a1ff0f44e1d135ada5d3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 27 May 2024 14:39:58 +1000
 Subject: [PATCH] include: Add IID_PPV_ARGS macro
 
 ---
- include/combaseapi.h | 2 ++
- 1 file changed, 2 insertions(+)
+ include/combaseapi.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/include/combaseapi.h b/include/combaseapi.h
-index 4b8cb457328..831b2a33053 100644
+index 4b8cb457328..c57e572bf09 100644
 --- a/include/combaseapi.h
 +++ b/include/combaseapi.h
-@@ -46,6 +46,8 @@ typedef struct tagServerInformation
- 
- HRESULT WINAPI CoDecodeProxy(DWORD client_pid, UINT64 proxy_addr, ServerInformation *server_info);
- 
-+#define IID_PPV_ARGS(type) __uuidof(**(type))
-+
- #ifdef __cplusplus
+@@ -50,4 +50,12 @@ HRESULT WINAPI CoDecodeProxy(DWORD client_pid, UINT64 proxy_addr, ServerInformat
  }
  #endif
+ 
++#ifdef __cplusplus
++
++template<typename T> void** IID_PPV_ARGS_Helper(T** pp);
++
++#define IID_PPV_ARGS(type) __uuidof(**(type)), IID_PPV_ARGS_Helper(type)
++
++#endif
++
+ #endif /* _COMBASEAPI_H_ */
 -- 
-2.43.0
+2.45.2
 
