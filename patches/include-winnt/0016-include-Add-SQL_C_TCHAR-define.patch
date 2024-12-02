@@ -1,0 +1,29 @@
+From f426bd4c4c3e6a67035cea772e1ad7126c1bc7ab Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 3 Dec 2024 12:47:30 +1100
+Subject: [PATCH] include: Add SQL_C_TCHAR define
+
+---
+ include/sqlucode.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/include/sqlucode.h b/include/sqlucode.h
+index 01e0458986a..929f7b605aa 100644
+--- a/include/sqlucode.h
++++ b/include/sqlucode.h
+@@ -32,6 +32,12 @@ extern "C" {
+ #define SQL_WVARCHAR          (-9)
+ #define SQL_WLONGVARCHAR      (-10)
+ 
++#ifdef UNICODE
++#define SQL_C_TCHAR           SQL_C_WCHAR
++#else
++#define SQL_C_TCHAR           SQL_C_CHAR
++#endif
++
+ SQLRETURN WINAPI SQLBrowseConnectW(SQLHDBC,SQLWCHAR*,SQLSMALLINT,SQLWCHAR*,SQLSMALLINT,SQLSMALLINT*);
+ 
+ SQLRETURN WINAPI SQLColAttributeW(SQLHSTMT,SQLUSMALLINT,SQLUSMALLINT,SQLPOINTER,SQLSMALLINT,SQLSMALLINT*,SQLLEN*);
+-- 
+2.45.2
+
