@@ -1,10 +1,9 @@
-From eb54dfe48a4237aead03977b45e9973ef94812f6 Mon Sep 17 00:00:00 2001
+From efbda687577a6b6e4046e02d5c2b50ecb6c5da54 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 15 Jan 2024 10:26:03 +1100
 Subject: [PATCH] d3dx9_*: D3DXMatrixMultiply Support SSE maths
 
 Wine-bug: https://bugs.winehq.org/show_bug.cgi?id=38284
-
 ---
  dlls/d3dx9_24/Makefile.in |  2 +-
  dlls/d3dx9_25/Makefile.in |  2 +-
@@ -160,7 +159,7 @@ index 5370b3e7e7a..798ac14bd53 100644
  IMPORTLIB = d3dx9
  IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
 diff --git a/dlls/d3dx9_36/math.c b/dlls/d3dx9_36/math.c
-index f018f499c43..f6fdcc7f2a7 100644
+index 92eb8f68f14..1a003e2f34f 100644
 --- a/dlls/d3dx9_36/math.c
 +++ b/dlls/d3dx9_36/math.c
 @@ -390,20 +390,53 @@ D3DXMATRIX * WINAPI D3DXMatrixLookAtRH(D3DXMATRIX *out, const D3DXVECTOR3 *eye,
@@ -281,15 +280,15 @@ index 5efa6cc00cd..1ed25d50cc7 100644
  IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
  PARENTSRC = ../d3dx9_36
 diff --git a/dlls/d3dx9_43/Makefile.in b/dlls/d3dx9_43/Makefile.in
-index e28429c5236..b9d578fc86e 100644
+index 1d661859876..ab54062218b 100644
 --- a/dlls/d3dx9_43/Makefile.in
 +++ b/dlls/d3dx9_43/Makefile.in
 @@ -1,4 +1,4 @@
 -EXTRADEFS = -DD3DX_SDK_VERSION=43
 +EXTRADEFS = -DD3DX_SDK_VERSION=43 -msse
  MODULE    = d3dx9_43.dll
+ IMPORTLIB = d3dx9_43
  IMPORTS   = d3d9 d3dcompiler dxguid d3dxof ole32 gdi32 user32
- PARENTSRC = ../d3dx9_36
 -- 
-2.43.0
+2.45.2
 
