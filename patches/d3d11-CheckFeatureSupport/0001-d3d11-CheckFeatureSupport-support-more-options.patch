@@ -1,18 +1,18 @@
-From aa12f64a8024392590210b78f3fb68916c5920c9 Mon Sep 17 00:00:00 2001
+From 2b47c9263373c19e2d602809ff77ec0740bfd8ee Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Oct 2022 16:20:19 +1100
-Subject: [PATCH] d3d11: CheckFeatureSupport support more options
+Subject: [PATCH] d3d11: CheckFeatureSupport support
+ D3D11_FEATURE_FORMAT_SUPPORT2 feature
 
-D3D11_FEATURE_FORMAT_SUPPORT2
 ---
- dlls/d3d11/device.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ dlls/d3d11/device.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
-index 061fd57fe09..9fe737dfead 100644
+index 2c6e4f4654c..41342c006ee 100644
 --- a/dlls/d3d11/device.c
 +++ b/dlls/d3d11/device.c
-@@ -4240,6 +4240,21 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CheckFeatureSupport(ID3D11Device2
+@@ -4783,6 +4783,18 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CheckFeatureSupport(ID3D11Device2
              return d3d11_device_CheckFormatSupport(iface, data->InFormat, &data->OutFormatSupport);
          }
  
@@ -21,19 +21,16 @@ index 061fd57fe09..9fe737dfead 100644
 +            D3D11_FEATURE_DATA_FORMAT_SUPPORT2 *data = feature_support_data;
 +            if (feature_support_data_size != sizeof(*data))
 +            {
-+                WARN("Invalid size %u for D3D11_FEATURE_FORMAT_SUPPORT.\n", feature_support_data_size);
++                WARN("Invalid size %u for D3D11_FEATURE_FORMAT_SUPPORT2.\n", feature_support_data_size);
 +                return E_INVALIDARG;
 +            }
 +
-+            data->OutFormatSupport2 = 0;
-+            return S_OK;
++            return d3d11_device_CheckFormatSupport(iface, data->InFormat, &data->OutFormatSupport2);
 +        }
-+
-+
 +
          default:
              FIXME("Unhandled feature %#x.\n", feature);
              return E_NOTIMPL;
 -- 
-2.43.0
+2.45.2
 
