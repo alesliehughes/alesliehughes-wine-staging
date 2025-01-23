@@ -1,4 +1,4 @@
-Fixes: [36208] - d3drm: Stops crash when Star Wars Revellion battles.
+Fixes: [36208] - d3drm: Stops crash when Star Wars Rebellion battles.
 Fixes: [40365] - d3drm: Stops multiples crashs when loading.
 Helps: [43180] - d3drm: Stops a crash in KnightOfKnights.
 Helps:         - d3drm: Stops a crash in Lego Islands.
@@ -12,6 +12,6 @@ Helps:         - d3drm: Stops a crash in Lego Islands.
 
 # Games
 #  Lego Islands
-#  Star Wars Revellion
+#  Star Wars Rebellion
 #  KnigtOfKnights
 #  Fighting Steel

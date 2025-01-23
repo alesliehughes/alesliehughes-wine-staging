@@ -1,4 +1,4 @@
-From bdfd20cd548730e58560331019ea39594e36c15b Mon Sep 17 00:00:00 2001
+From 1f61b6408a8aee03ecacef843c607d6d489090b8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Jun 2022 20:48:41 +1000
 Subject: [PATCH] d3drm: Fake HandlePaint Object draw
@@ -9,19 +9,19 @@ Subject: [PATCH] d3drm: Fake HandlePaint Object draw
  2 files changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/d3drm/Makefile.in b/dlls/d3drm/Makefile.in
-index 8daaa426c8f..d243ced546d 100644
+index 482302e60f4..757e58a3e75 100644
 --- a/dlls/d3drm/Makefile.in
 +++ b/dlls/d3drm/Makefile.in
 @@ -1,6 +1,6 @@
  MODULE    = d3drm.dll
  IMPORTLIB = d3drm
--IMPORTS   = d3dxof ddraw
-+IMPORTS   = d3dxof ddraw gdi32
+-IMPORTS   = d3dxof ddraw user32
++IMPORTS   = d3dxof ddraw user32 gdi32
  
  EXTRADLLFLAGS = -Wb,--prefer-native
  
 diff --git a/dlls/d3drm/device.c b/dlls/d3drm/device.c
-index 2fc83b4159c..c6d1e9c6f4d 100644
+index 330ea94bcf7..5a03282206a 100644
 --- a/dlls/d3drm/device.c
 +++ b/dlls/d3drm/device.c
 @@ -19,6 +19,7 @@
@@ -32,7 +32,7 @@ index 2fc83b4159c..c6d1e9c6f4d 100644
  
  WINE_DEFAULT_DEBUG_CHANNEL(d3drm);
  
-@@ -1617,6 +1618,8 @@ static HRESULT WINAPI d3drm_device_win_HandlePaint(IDirect3DRMWinDevice *iface,
+@@ -1715,6 +1716,8 @@ static HRESULT WINAPI d3drm_device_win_HandlePaint(IDirect3DRMWinDevice *iface,
  {
      FIXME("iface %p, dc %p stub!\n", iface, dc);
  
@@ -42,5 +42,5 @@ index 2fc83b4159c..c6d1e9c6f4d 100644
  }
  
 -- 
-2.35.1
+2.45.2
 
