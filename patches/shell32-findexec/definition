@@ -1,4 +1,0 @@
-Fixes 56471: ShellExecute fails to run unix binary.
-
-# Partial fix
-# MR: https://gitlab.winehq.org/wine/wine/-/merge_requests/6285
