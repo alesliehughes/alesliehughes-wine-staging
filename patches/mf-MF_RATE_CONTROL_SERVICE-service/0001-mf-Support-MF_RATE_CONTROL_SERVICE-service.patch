@@ -1,4 +1,4 @@
-From c8d3ec2425ad4240838a700c72e4e354857d1074 Mon Sep 17 00:00:00 2001
+From 4e2a422328e05e859a9b9082319338e185d4220d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 4 Nov 2020 10:08:50 +1100
 Subject: [PATCH] mf: Support MF_RATE_CONTROL_SERVICE service
@@ -123,20 +123,20 @@ index 84824f954dd..cb0f65c85f1 100644
      InitializeCriticalSection(&renderer->cs);
      renderer->buffer_ready_event = CreateEventW(NULL, FALSE, FALSE, NULL);
 diff --git a/dlls/mf/tests/mf.c b/dlls/mf/tests/mf.c
-index c9f8fe96f8b..c4ce0f23392 100644
+index 73526802b63..d0f1f1cf0a4 100644
 --- a/dlls/mf/tests/mf.c
 +++ b/dlls/mf/tests/mf.c
-@@ -5352,6 +5352,10 @@ if (SUCCEEDED(hr))
+@@ -4526,6 +4526,10 @@ if (SUCCEEDED(hr))
      ok(hr == S_OK, "Failed to get interface, hr %#lx.\n", hr);
      IUnknown_Release(unk);
  
 +    hr = MFGetService((IUnknown *)sink, &MF_RATE_CONTROL_SERVICE, &IID_IMFRateSupport, (void **)&unk);
-+    ok(hr == S_OK, "Failed to get interface, hr %#x.\n", hr);
++    ok(hr == S_OK, "Failed to get interface, hr %#lx.\n", hr);
 +    IUnknown_Release(unk);
 +
      /* Shutdown */
      EXPECT_REF(present_clock, 2);
      hr = IMFMediaSink_Shutdown(sink);
 -- 
-2.37.2
+2.45.2
 
