@@ -1,4 +1,4 @@
-From 2b47c9263373c19e2d602809ff77ec0740bfd8ee Mon Sep 17 00:00:00 2001
+From 495f300aa43e5e6488c12e95f9ffec67c1915d53 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 19 Oct 2022 16:20:19 +1100
 Subject: [PATCH] d3d11: CheckFeatureSupport support
@@ -9,11 +9,11 @@ Subject: [PATCH] d3d11: CheckFeatureSupport support
  1 file changed, 12 insertions(+)
 
 diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
-index 2c6e4f4654c..41342c006ee 100644
+index 5c819f4e983..e0d994d6be5 100644
 --- a/dlls/d3d11/device.c
 +++ b/dlls/d3d11/device.c
-@@ -4783,6 +4783,18 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CheckFeatureSupport(ID3D11Device2
-             return d3d11_device_CheckFormatSupport(iface, data->InFormat, &data->OutFormatSupport);
+@@ -4805,6 +4805,18 @@ static HRESULT STDMETHODCALLTYPE d3d11_device_CheckFeatureSupport(ID3D11Device2
+             return S_OK;
          }
  
 +        case D3D11_FEATURE_FORMAT_SUPPORT2:
@@ -32,5 +32,5 @@ index 2c6e4f4654c..41342c006ee 100644
              FIXME("Unhandled feature %#x.\n", feature);
              return E_NOTIMPL;
 -- 
-2.45.2
+2.47.2
 
