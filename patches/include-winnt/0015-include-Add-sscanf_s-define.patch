@@ -1,0 +1,24 @@
+From 003cae1b7b8df6b7354b5998e8b66fe00c0190bb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 4 Mar 2025 10:18:19 +1100
+Subject: [PATCH] include: Add sscanf_s define
+
+---
+ include/tchar.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/tchar.h b/include/tchar.h
+index bbf85973b41..f65b2b04e48 100644
+--- a/include/tchar.h
++++ b/include/tchar.h
+@@ -96,6 +96,7 @@ extern "C" {
+ #define _sntprintf    WINE_tchar_routine(snprintf,        snprintf,    _snwprintf)
+ #define _stprintf     WINE_tchar_routine(sprintf,         sprintf,     swprintf)
+ #define _stscanf      WINE_tchar_routine(sscanf,          sscanf,      swscanf)
++#define _stscanf_s    WINE_tchar_routine(sscanf_s,        sscanf_s,    swscanf_s)
+ #define _taccess      WINE_tchar_routine(access,          _access,     _waccess)
+ #define _tasctime     WINE_tchar_routine(asctime,         asctime,     _wasctime)
+ #define _tccpy        WINE_tchar_routine(WINE_tchar_tccpy,_mbccpy,     WINE_tchar_tccpy)
+-- 
+2.47.2
+
