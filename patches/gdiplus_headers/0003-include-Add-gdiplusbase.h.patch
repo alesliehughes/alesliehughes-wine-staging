@@ -1,4 +1,4 @@
-From bea0ddbd104e90e4874cdc1a3ba77e4704fd116b Mon Sep 17 00:00:00 2001
+From 4a3d913af71b6786e40af917ae5f698732b111e8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jul 2024 11:33:10 +1000
 Subject: [PATCH] include: Add gdiplusbase.h
@@ -6,15 +6,15 @@ Subject: [PATCH] include: Add gdiplusbase.h
 ---
  include/Makefile.in   |  1 +
  include/gdiplus.h     |  1 +
- include/gdiplusbase.h | 47 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 49 insertions(+)
+ include/gdiplusbase.h | 49 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 51 insertions(+)
  create mode 100644 include/gdiplusbase.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index 82cdf9250c0..5a2b7ae2429 100644
+index 4f6a7084366..5938a0b05ba 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -331,6 +331,7 @@ SOURCES = \
+@@ -334,6 +334,7 @@ SOURCES = \
  	gameux.idl \
  	gamingtcui.h \
  	gdiplus.h \
@@ -36,10 +36,10 @@ index e85343b7c17..afada3e2d22 100644
  #include "gdiplusinit.h"
 diff --git a/include/gdiplusbase.h b/include/gdiplusbase.h
 new file mode 100644
-index 00000000000..ab75c0fb2a4
+index 00000000000..5e13c41421a
 --- /dev/null
 +++ b/include/gdiplusbase.h
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,49 @@
 +/*
 + * Copyright (C) 2024 Alistair Leslie-Hughes
 + *
@@ -69,14 +69,17 @@ index 00000000000..ab75c0fb2a4
 +    {
 +       DllExports::GdipFree(p);
 +    }
++
 +    void* (operator new)(size_t size)
 +    {
 +       return DllExports::GdipAlloc(size);
 +    }
++
 +    void (operator delete[])(void* p)
 +    {
 +       DllExports::GdipFree(p);
 +    }
++
 +    void* (operator new[])(size_t size)
 +    {
 +       return DllExports::GdipAlloc(size);
@@ -85,8 +88,7 @@ index 00000000000..ab75c0fb2a4
 +
 +#endif
 +
-+
 +#endif
 -- 
-2.43.0
+2.47.2
 
