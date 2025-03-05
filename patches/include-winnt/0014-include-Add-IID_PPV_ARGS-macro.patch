@@ -1,23 +1,28 @@
-From 56d5a54e8466a5e72820a1ff0f44e1d135ada5d3 Mon Sep 17 00:00:00 2001
+From 20d13a1f6ea7e108cf87b958ff2c1487c0f34b67 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 27 May 2024 14:39:58 +1000
 Subject: [PATCH] include: Add IID_PPV_ARGS macro
 
 ---
- include/combaseapi.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/combaseapi.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/include/combaseapi.h b/include/combaseapi.h
-index 4b8cb457328..c57e572bf09 100644
+index 41461f22e98..d3aa4a08bd9 100644
 --- a/include/combaseapi.h
 +++ b/include/combaseapi.h
-@@ -50,4 +50,12 @@ HRESULT WINAPI CoDecodeProxy(DWORD client_pid, UINT64 proxy_addr, ServerInformat
+@@ -57,4 +57,17 @@ HRESULT WINAPI RoGetAgileReference(enum AgileReferenceOptions options, REFIID ri
  }
  #endif
  
 +#ifdef __cplusplus
 +
-+template<typename T> void** IID_PPV_ARGS_Helper(T** pp);
++extern "C++" template<typename T> void **IID_PPV_ARGS_Helper(T **obj)
++{
++    (void)static_cast<IUnknown *>(*obj);
++    return reinterpret_cast<void **>(obj);
++}
++
 +
 +#define IID_PPV_ARGS(type) __uuidof(**(type)), IID_PPV_ARGS_Helper(type)
 +
@@ -25,5 +30,5 @@ index 4b8cb457328..c57e572bf09 100644
 +
  #endif /* _COMBASEAPI_H_ */
 -- 
-2.45.2
+2.47.2
 
