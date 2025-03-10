@@ -1,0 +1,36 @@
+From b1fb31d5eb80a04827aa2fac94f92ec15df39cc6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 11 Mar 2025 09:41:30 +1100
+Subject: [PATCH] include: Add sprintf_s define
+
+---
+ include/tchar.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/tchar.h b/include/tchar.h
+index 678f5d7ff2c..e0436c51c6e 100644
+--- a/include/tchar.h
++++ b/include/tchar.h
+@@ -94,7 +94,9 @@ extern "C" {
+ #define _puttchar     WINE_tchar_routine(putchar,         putchar,     putwchar)
+ #define _putts        WINE_tchar_routine(puts,            puts,        putws)
+ #define _sntprintf    WINE_tchar_routine(snprintf,        snprintf,    _snwprintf)
++#define _sntprintf_s  WINE_tchar_routine(snprintf_s,      snprintf_s,  _snwprintf_s)
+ #define _stprintf     WINE_tchar_routine(sprintf,         sprintf,     swprintf)
++#define _stprintf_s   WINE_tchar_routine(sprintf_s,       sprintf-s,   swprintf_s)
+ #define _stscanf      WINE_tchar_routine(sscanf,          sscanf,      swscanf)
+ #define _stscanf_s    WINE_tchar_routine(sscanf_s,        sscanf_s,    swscanf_s)
+ #define _taccess      WINE_tchar_routine(access,          _access,     _waccess)
+@@ -230,7 +232,9 @@ extern "C" {
+ #define _ungettc      WINE_tchar_routine(ungetc,          ungetc,      ungetwc)
+ #define _vftprintf    WINE_tchar_routine(vfprintf,        vfprintf,    vfwprintf)
+ #define _vsntprintf   WINE_tchar_routine(vsnprintf,       _vsnprintf,  _vsnwprintf)
++#define _vsntprintf_s WINE_tchar_routine(vsnprintf_s      _vsnprintf_s,_vsnwprintf_s)
+ #define _vstprintf    WINE_tchar_routine(vsprintf,        vsprintf,    vswprintf)
++#define _vstprintf_s  WINE_tchar_routine(vsprintf_s,      vsprintf_s   vswprintf_s)
+ #define _vtprintf     WINE_tchar_routine(vprintf,         vprintf,     vwprintf)
+ #define _TEOF         WINE_tchar_routine(EOF,             EOF,         WEOF)
+ 
+-- 
+2.47.2
+
