@@ -1,0 +1,44 @@
+From 564d6d2a5e3895576642c13cb7222edb5ac6b687 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 17 Mar 2025 12:38:04 +1100
+Subject: [PATCH] include: Fix winnt.h asm define
+
+---
+ include/winnt.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/winnt.h b/include/winnt.h
+index 4bf90493605..805ac9a5525 100644
+--- a/include/winnt.h
++++ b/include/winnt.h
+@@ -7128,11 +7128,11 @@ static FORCEINLINE LONG64 ReadNoFence64( LONG64 const volatile *src )
+ {
+     LONG64 value;
+ #if defined(__i386__) && _MSC_VER < 1700
+-    __asm {
++/*    __asm {
+         mov   eax, src
+         fild  qword ptr [eax]
+         fistp value
+-    }
++    }*/
+ #else
+     value = __WINE_LOAD64_NO_FENCE( (__int64 const volatile *)src );
+ #endif
+@@ -7148,11 +7148,11 @@ static FORCEINLINE void WriteRelease( LONG volatile *dest, LONG value )
+ static FORCEINLINE void WriteRelease64( LONG64 volatile *dest, LONG64 value )
+ {
+ #if defined(__i386__) && _MSC_VER < 1700
+-    __asm {
++/*    __asm {
+         mov   eax, dest
+         fild  value
+         fistp qword ptr [eax]
+-    }
++    }*/
+ #else
+     __wine_memory_barrier_acq_rel();
+     __WINE_STORE64_NO_FENCE( (__int64 volatile *)dest, value );
+-- 
+2.47.2
+
