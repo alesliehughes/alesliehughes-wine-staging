@@ -1,0 +1,34 @@
+From b0757f176f23c0882072617a0da5754dc35d9b07 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 18 Mar 2025 13:41:47 +1100
+Subject: [PATCH] include: Add missing SHARD_* defines
+
+---
+ include/shlobj.h | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/include/shlobj.h b/include/shlobj.h
+index 327ab981648..43821146b19 100644
+--- a/include/shlobj.h
++++ b/include/shlobj.h
+@@ -864,9 +864,14 @@ DECLARE_INTERFACE_(IActiveDesktop, IUnknown)
+ /****************************************************************************
+ * SHAddToRecentDocs API
+ */
+-#define SHARD_PIDL      __MSABI_LONG(0x00000001)
+-#define SHARD_PATHA     __MSABI_LONG(0x00000002)
+-#define SHARD_PATHW     __MSABI_LONG(0x00000003)
++#define SHARD_PIDL            __MSABI_LONG(0x00000001)
++#define SHARD_PATHA           __MSABI_LONG(0x00000002)
++#define SHARD_PATHW           __MSABI_LONG(0x00000003)
++#define SHARD_APPIDINFO       __MSABI_LONG(0x00000004)
++#define SHARD_APPIDINFOIDLIST __MSABI_LONG(0x00000005)
++#define SHARD_LINK            __MSABI_LONG(0x00000006)
++#define SHARD_APPIDINFOLINK   __MSABI_LONG(0x00000007)
++#define SHARD_SHELLITEM       __MSABI_LONG(0x00000008)
+ #define SHARD_PATH WINELIB_NAME_AW(SHARD_PATH)
+ 
+ WINSHELLAPI void WINAPI SHAddToRecentDocs(UINT,LPCVOID);
+-- 
+2.47.2
+
