@@ -1,0 +1,25 @@
+From bd7929f9adbb61d34bff9592f14cfbca279baba7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 25 Mar 2025 12:09:31 +1100
+Subject: [PATCH] include: Add missing ENDSESSION_* defines
+
+---
+ include/winuser.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/winuser.h b/include/winuser.h
+index f9e2d49b528..0597df80d90 100644
+--- a/include/winuser.h
++++ b/include/winuser.h
+@@ -3221,6 +3221,8 @@ typedef struct
+ #define WINEVENT_SKIPOWNPROCESS 0x2
+ #define WINEVENT_INCONTEXT      0x4
+ 
++#define ENDSESSION_CLOSEAPP  0x00000001
++#define ENDSESSION_CRITICAL  0x40000000
+ #define ENDSESSION_LOGOFF    0x80000000
+ 
+ /* Object Id's */
+-- 
+2.47.2
+

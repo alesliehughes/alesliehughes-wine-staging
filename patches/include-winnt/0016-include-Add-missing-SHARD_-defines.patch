@@ -1,17 +1,17 @@
-From b0757f176f23c0882072617a0da5754dc35d9b07 Mon Sep 17 00:00:00 2001
+From 7328437b8f775b1f48758081227446efd2f09d18 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 18 Mar 2025 13:41:47 +1100
 Subject: [PATCH] include: Add missing SHARD_* defines
 
 ---
- include/shlobj.h | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ include/shlobj.h | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/include/shlobj.h b/include/shlobj.h
-index 327ab981648..43821146b19 100644
+index 327ab981648..0562c074df9 100644
 --- a/include/shlobj.h
 +++ b/include/shlobj.h
-@@ -864,9 +864,14 @@ DECLARE_INTERFACE_(IActiveDesktop, IUnknown)
+@@ -864,13 +864,30 @@ DECLARE_INTERFACE_(IActiveDesktop, IUnknown)
  /****************************************************************************
  * SHAddToRecentDocs API
  */
@@ -29,6 +29,22 @@ index 327ab981648..43821146b19 100644
  #define SHARD_PATH WINELIB_NAME_AW(SHARD_PATH)
  
  WINSHELLAPI void WINAPI SHAddToRecentDocs(UINT,LPCVOID);
+ 
++typedef struct SHARDAPPIDINFO
++{
++    IShellItem *psi;
++    PCWSTR      pszAppID;
++} SHARDAPPIDINFO;
++
++typedef struct SHARDAPPIDINFOIDLIST
++{
++    PCIDLIST_ABSOLUTE pidl;
++    PCWSTR pszAppID;
++} SHARDAPPIDINFOIDLIST;
++
+ /****************************************************************************
+  * SHBrowseForFolder API
+  */
 -- 
 2.47.2
 
