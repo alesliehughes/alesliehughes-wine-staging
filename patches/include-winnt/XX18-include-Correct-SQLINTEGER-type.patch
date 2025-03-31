@@ -1,0 +1,25 @@
+From 38d2e91f7ae1950ea641cbe5f5ba9aab6875c280 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 31 Mar 2025 14:43:37 +1100
+Subject: [PATCH] include: Correct SQLINTEGER type
+
+---
+ include/sqltypes.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/sqltypes.h b/include/sqltypes.h
+index 44c1d4f4efc..4160c29724d 100644
+--- a/include/sqltypes.h
++++ b/include/sqltypes.h
+@@ -48,7 +48,7 @@ typedef double          SQLDOUBLE;
+ typedef double          SQLFLOAT;
+ #endif
+ 
+-typedef int             SQLINTEGER;
++typedef long            SQLINTEGER;
+ 
+ #if (ODBCVER >= 0x0300)
+ typedef unsigned char   SQLNUMERIC;
+-- 
+2.47.2
+
