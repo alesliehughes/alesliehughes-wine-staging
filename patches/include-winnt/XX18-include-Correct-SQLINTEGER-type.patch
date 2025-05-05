@@ -1,12 +1,409 @@
-From 38d2e91f7ae1950ea641cbe5f5ba9aab6875c280 Mon Sep 17 00:00:00 2001
+From d348eea434bbb67ddfa2cde58c7148b8946ea9ba Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 31 Mar 2025 14:43:37 +1100
 Subject: [PATCH] include: Correct SQLINTEGER type
 
 ---
- include/sqltypes.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ dlls/odbc32/proxyodbc.c | 60 ++++++++++++++++++++---------------------
+ dlls/odbc32/unixlib.h   | 26 +++++++++---------
+ include/sqltypes.h      |  2 +-
+ 3 files changed, 44 insertions(+), 44 deletions(-)
 
+diff --git a/dlls/odbc32/proxyodbc.c b/dlls/odbc32/proxyodbc.c
+index 6d0c7824e98..4817a8f0da1 100644
+--- a/dlls/odbc32/proxyodbc.c
++++ b/dlls/odbc32/proxyodbc.c
+@@ -1326,7 +1326,7 @@ static SQLRETURN set_con_attr( struct connection *con, SQLINTEGER attr, SQLPOINT
+         case SQL_ATTR_CURRENT_CATALOG:
+         case SQL_ATTR_TRACEFILE:
+         case SQL_ATTR_TRANSLATE_LIB:
+-            ERR( "string attribute %u not handled\n", attr );
++            ERR( "string attribute %lu not handled\n", attr );
+             return SQL_ERROR;
+         default:
+             break;
+@@ -1782,7 +1782,7 @@ SQLRETURN WINAPI SQLError(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle, S
+     if (SUCCESS( ret ))
+     {
+         TRACE(" SqlState %s\n", debugstr_sqlstr(SqlState, 5));
+-        TRACE(" Error %d\n", *NativeError);
++        TRACE(" Error %ld\n", *NativeError);
+         TRACE(" MessageText %s\n", debugstr_sqlstr(MessageText, *TextLength));
+     }
+ 
+@@ -1824,7 +1824,7 @@ SQLRETURN WINAPI SQLExecDirect(SQLHSTMT StatementHandle, SQLCHAR *StatementText,
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
++    TRACE("(StatementHandle %p, StatementText %s, TextLength %ld)\n", StatementHandle,
+           debugstr_sqlstr(StatementText, TextLength), TextLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -2304,7 +2304,7 @@ SQLRETURN WINAPI SQLGetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribut
+     struct connection *con = (struct connection *)lock_object( ConnectionHandle, SQL_HANDLE_DBC );
+     SQLRETURN ret = SQL_SUCCESS;
+ 
+-    TRACE("(ConnectionHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
++    TRACE("(ConnectionHandle %p, Attribute %ld, Value %p, BufferLength %ld, StringLength %p)\n", ConnectionHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
+     if (!con) return SQL_INVALID_HANDLE;
+@@ -2330,7 +2330,7 @@ SQLRETURN WINAPI SQLGetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribut
+             break;
+ 
+         default:
+-            FIXME( "unhandled attribute %d\n", Attribute );
++            FIXME( "unhandled attribute %ld\n", Attribute );
+             ret = SQL_ERROR;
+             break;
+         }
+@@ -2583,7 +2583,7 @@ SQLRETURN WINAPI SQLGetDescField(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumbe
+     struct descriptor *desc = (struct descriptor *)lock_object( DescriptorHandle, SQL_HANDLE_DESC );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %d, StringLength %p)\n",
++    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %ld, StringLength %p)\n",
+           DescriptorHandle, RecNumber, FieldIdentifier, Value, BufferLength, StringLength);
+ 
+     if (!desc) return SQL_INVALID_HANDLE;
+@@ -2869,7 +2869,7 @@ SQLRETURN WINAPI SQLGetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute,
+     struct environment *env = (struct environment *)lock_object( EnvironmentHandle, SQL_HANDLE_ENV );
+     SQLRETURN ret = SQL_SUCCESS;
+ 
+-    TRACE("(EnvironmentHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n",
++    TRACE("(EnvironmentHandle %p, Attribute %ld, Value %p, BufferLength %ld, StringLength %p)\n",
+           EnvironmentHandle, Attribute, Value, BufferLength, StringLength);
+ 
+     if (!env) return SQL_INVALID_HANDLE;
+@@ -2895,7 +2895,7 @@ SQLRETURN WINAPI SQLGetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute,
+             break;
+ 
+         default:
+-            FIXME( "unhandled attribute %d\n", Attribute );
++            FIXME( "unhandled attribute %ld\n", Attribute );
+             ret = SQL_ERROR;
+             break;
+         }
+@@ -3114,7 +3114,7 @@ SQLRETURN WINAPI SQLGetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", StatementHandle,
++    TRACE("(StatementHandle %p, Attribute %ld, Value %p, BufferLength %ld, StringLength %p)\n", StatementHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -3351,7 +3351,7 @@ SQLRETURN WINAPI SQLPrepare(SQLHSTMT StatementHandle, SQLCHAR *StatementText, SQ
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
++    TRACE("(StatementHandle %p, StatementText %s, TextLength %ld)\n", StatementHandle,
+           debugstr_sqlstr(StatementText, TextLength), TextLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -3473,7 +3473,7 @@ static SQLRETURN set_connect_attr_win32_a( struct connection *con, SQLINTEGER at
+         case SQL_ATTR_CURRENT_CATALOG:
+         case SQL_ATTR_TRACEFILE:
+         case SQL_ATTR_TRANSLATE_LIB:
+-            FIXME( "string attribute %u not handled\n", attr );
++            FIXME( "string attribute %ld not handled\n", attr );
+             return SQL_ERROR;
+         default: break;
+         }
+@@ -3492,7 +3492,7 @@ SQLRETURN WINAPI SQLSetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribut
+     struct connection *con = (struct connection *)lock_object( ConnectionHandle, SQL_HANDLE_DBC );
+     SQLRETURN ret = SQL_SUCCESS;
+ 
+-    TRACE("(ConnectionHandle %p, Attribute %d, Value %p, StringLength %d)\n", ConnectionHandle, Attribute, Value,
++    TRACE("(ConnectionHandle %p, Attribute %ld, Value %p, StringLength %ld)\n", ConnectionHandle, Attribute, Value,
+           StringLength);
+ 
+     if (!con) return SQL_INVALID_HANDLE;
+@@ -3518,7 +3518,7 @@ SQLRETURN WINAPI SQLSetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribut
+             break;
+ 
+         default:
+-            FIXME( "unhandled attribute %d\n", Attribute );
++            FIXME( "unhandled attribute %ld\n", Attribute );
+             ret = SQL_ERROR;
+             break;
+         }
+@@ -3687,7 +3687,7 @@ SQLRETURN WINAPI SQLSetDescField(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumbe
+     struct descriptor *desc = (struct descriptor *)lock_object( DescriptorHandle, SQL_HANDLE_DESC );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %d)\n", DescriptorHandle,
++    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %ld)\n", DescriptorHandle,
+           RecNumber, FieldIdentifier, Value, BufferLength);
+ 
+     if (!desc) return SQL_INVALID_HANDLE;
+@@ -3786,7 +3786,7 @@ SQLRETURN WINAPI SQLSetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute,
+     struct environment *env = (struct environment *)lock_object( EnvironmentHandle, SQL_HANDLE_ENV );
+     SQLRETURN ret = SQL_SUCCESS;
+ 
+-    TRACE("(EnvironmentHandle %p, Attribute %d, Value %p, StringLength %d)\n", EnvironmentHandle, Attribute, Value,
++    TRACE("(EnvironmentHandle %p, Attribute %ld, Value %p, StringLength %ld)\n", EnvironmentHandle, Attribute, Value,
+           StringLength);
+ 
+     if (env->hdr.unix_handle)
+@@ -3810,7 +3810,7 @@ SQLRETURN WINAPI SQLSetEnvAttr(SQLHENV EnvironmentHandle, SQLINTEGER Attribute,
+             break;
+ 
+         default:
+-            FIXME( "unhandled attribute %d\n", Attribute );
++            FIXME( "unhandled attribute %ld\n", Attribute );
+             ret = SQL_ERROR;
+             break;
+         }
+@@ -3983,7 +3983,7 @@ SQLRETURN WINAPI SQLSetStmtAttr(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, Attribute %d, Value %p, StringLength %d)\n", StatementHandle, Attribute, Value,
++    TRACE("(StatementHandle %p, Attribute %ld, Value %p, StringLength %ld)\n", StatementHandle, Attribute, Value,
+           StringLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -5027,7 +5027,7 @@ SQLRETURN WINAPI SQLNativeSql(SQLHDBC ConnectionHandle, SQLCHAR *InStatementText
+     struct connection *con = (struct connection *)lock_object( ConnectionHandle, SQL_HANDLE_DBC );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(ConnectionHandle %p, InStatementText %s, TextLength1 %d, OutStatementText %p, BufferLength, %d, "
++    TRACE("(ConnectionHandle %p, InStatementText %s, TextLength1 %ld, OutStatementText %p, BufferLength, %ld, "
+           "TextLength2 %p)\n", ConnectionHandle, debugstr_sqlstr(InStatementText, TextLength1), TextLength1,
+           OutStatementText, BufferLength, TextLength2);
+ 
+@@ -6054,7 +6054,7 @@ SQLRETURN WINAPI SQLErrorW(SQLHENV EnvironmentHandle, SQLHDBC ConnectionHandle,
+     if (SUCCESS( ret ))
+     {
+         TRACE(" SqlState %s\n", debugstr_sqlwstr(SqlState, 5));
+-        TRACE(" Error %d\n", *NativeError);
++        TRACE(" Error %ld\n", *NativeError);
+         TRACE(" MessageText %s\n", debugstr_sqlwstr(MessageText, *TextLength));
+     }
+ 
+@@ -6087,7 +6087,7 @@ SQLRETURN WINAPI SQLExecDirectW(SQLHSTMT StatementHandle, SQLWCHAR *StatementTex
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
++    TRACE("(StatementHandle %p, StatementText %s, TextLength %ld)\n", StatementHandle,
+           debugstr_sqlwstr(StatementText, TextLength), TextLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -6172,7 +6172,7 @@ SQLRETURN WINAPI SQLPrepareW(SQLHSTMT StatementHandle, SQLWCHAR *StatementText,
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, StatementText %s, TextLength %d)\n", StatementHandle,
++    TRACE("(StatementHandle %p, StatementText %s, TextLength %ld)\n", StatementHandle,
+           debugstr_sqlwstr(StatementText, TextLength), TextLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -6392,7 +6392,7 @@ SQLRETURN WINAPI SQLGetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribu
+     struct connection *con = (struct connection *)lock_object( ConnectionHandle, SQL_HANDLE_DBC );
+     SQLRETURN ret = SQL_SUCCESS;
+ 
+-    TRACE("(ConnectionHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", ConnectionHandle,
++    TRACE("(ConnectionHandle %p, Attribute %ld, Value %p, BufferLength %ld, StringLength %p)\n", ConnectionHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
+     if (!con) return SQL_INVALID_HANDLE;
+@@ -6418,7 +6418,7 @@ SQLRETURN WINAPI SQLGetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribu
+             break;
+ 
+         default:
+-            FIXME( "unhandled attribute %d\n", Attribute );
++            FIXME( "unhandled attribute %ld\n", Attribute );
+             ret = SQL_ERROR;
+             break;
+         }
+@@ -6454,7 +6454,7 @@ SQLRETURN WINAPI SQLGetDescFieldW(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumb
+     struct descriptor *desc = (struct descriptor *)lock_object( DescriptorHandle, SQL_HANDLE_DESC );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %d, StringLength %p)\n",
++    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %ld, StringLength %p)\n",
+           DescriptorHandle, RecNumber, FieldIdentifier, Value, BufferLength, StringLength);
+ 
+     if (!desc) return SQL_INVALID_HANDLE;
+@@ -6690,7 +6690,7 @@ SQLRETURN WINAPI SQLGetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, Attribute %d, Value %p, BufferLength %d, StringLength %p)\n", StatementHandle,
++    TRACE("(StatementHandle %p, Attribute %ld, Value %p, BufferLength %ld, StringLength %p)\n", StatementHandle,
+           Attribute, Value, BufferLength, StringLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+@@ -6765,7 +6765,7 @@ SQLRETURN WINAPI SQLSetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribu
+     struct connection *con = (struct connection *)lock_object( ConnectionHandle, SQL_HANDLE_DBC );
+     SQLRETURN ret = SQL_SUCCESS;
+ 
+-    TRACE("(ConnectionHandle %p, Attribute %d, Value %p, StringLength %d)\n", ConnectionHandle, Attribute,
++    TRACE("(ConnectionHandle %p, Attribute %ld, Value %p, StringLength %ld)\n", ConnectionHandle, Attribute,
+           Value, StringLength);
+ 
+     if (!con) return SQL_INVALID_HANDLE;
+@@ -6791,7 +6791,7 @@ SQLRETURN WINAPI SQLSetConnectAttrW(SQLHDBC ConnectionHandle, SQLINTEGER Attribu
+             break;
+ 
+         default:
+-            FIXME( "unhandled attribute %d\n", Attribute );
++            FIXME( "unhandled attribute %ld\n", Attribute );
+             ret = SQL_ERROR;
+             break;
+         }
+@@ -7592,7 +7592,7 @@ SQLRETURN WINAPI SQLNativeSqlW(SQLHDBC ConnectionHandle, SQLWCHAR *InStatementTe
+     struct connection *con = (struct connection *)lock_object( ConnectionHandle, SQL_HANDLE_DBC );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(ConnectionHandle %p, InStatementText %s, TextLength1 %d, OutStatementText %p, BufferLength %d, "
++    TRACE("(ConnectionHandle %p, InStatementText %s, TextLength1 %ld, OutStatementText %p, BufferLength %ld, "
+           "TextLength2 %p)\n", ConnectionHandle, debugstr_sqlwstr(InStatementText, TextLength1), TextLength1,
+           OutStatementText, BufferLength, TextLength2);
+ 
+@@ -7898,7 +7898,7 @@ SQLRETURN WINAPI SQLSetDescFieldW(SQLHDESC DescriptorHandle, SQLSMALLINT RecNumb
+     struct descriptor *desc = (struct descriptor *)lock_object( DescriptorHandle, SQL_HANDLE_DESC );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %d)\n", DescriptorHandle,
++    TRACE("(DescriptorHandle %p, RecNumber %d, FieldIdentifier %d, Value %p, BufferLength %ld)\n", DescriptorHandle,
+           RecNumber, FieldIdentifier, Value, BufferLength);
+ 
+     if (!desc) return SQL_INVALID_HANDLE;
+@@ -7957,7 +7957,7 @@ SQLRETURN WINAPI SQLSetStmtAttrW(SQLHSTMT StatementHandle, SQLINTEGER Attribute,
+     struct statement *stmt = (struct statement *)lock_object( StatementHandle, SQL_HANDLE_STMT );
+     SQLRETURN ret = SQL_ERROR;
+ 
+-    TRACE("(StatementHandle %p, Attribute %d, Value %p, StringLength %d)\n", StatementHandle, Attribute,
++    TRACE("(StatementHandle %p, Attribute %ld, Value %p, StringLength %ld)\n", StatementHandle, Attribute,
+           Value, StringLength);
+ 
+     if (!stmt) return SQL_INVALID_HANDLE;
+diff --git a/dlls/odbc32/unixlib.h b/dlls/odbc32/unixlib.h
+index 4ff13a68add..bada5ebb862 100644
+--- a/dlls/odbc32/unixlib.h
++++ b/dlls/odbc32/unixlib.h
+@@ -508,7 +508,7 @@ struct SQLError_params
+     UINT64 ConnectionHandle;
+     UINT64 StatementHandle;
+     UCHAR *SqlState;
+-    INT32 *NativeError;
++    LONG  *NativeError;
+     UCHAR *MessageText;
+     INT16  BufferLength;
+     INT16 *TextLength;
+@@ -520,7 +520,7 @@ struct SQLErrorW_params
+     UINT64 ConnectionHandle;
+     UINT64 StatementHandle;
+     WCHAR *SqlState;
+-    INT32 *NativeError;
++    LONG  *NativeError;
+     WCHAR *MessageText;
+     INT16  BufferLength;
+     INT16 *TextLength;
+@@ -618,7 +618,7 @@ struct SQLGetConnectAttr_params
+     INT32  Attribute;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ };
+ 
+ struct SQLGetConnectAttrW_params
+@@ -627,7 +627,7 @@ struct SQLGetConnectAttrW_params
+     INT32  Attribute;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ };
+ 
+ struct SQLGetConnectOption_params
+@@ -677,7 +677,7 @@ struct SQLGetDescField_params
+     INT16  FieldIdentifier;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ }
+ ;
+ struct SQLGetDescFieldW_params
+@@ -687,7 +687,7 @@ struct SQLGetDescFieldW_params
+     INT16  FieldIdentifier;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ };
+ 
+ struct SQLGetDescRec_params
+@@ -748,7 +748,7 @@ struct SQLGetDiagRec_params
+     UINT64 Handle;
+     INT16  RecNumber;
+     UCHAR *SqlState;
+-    INT32 *NativeError;
++    LONG  *NativeError;
+     UCHAR *MessageText;
+     INT16  BufferLength;
+     INT16 *TextLength;
+@@ -760,7 +760,7 @@ struct SQLGetDiagRecW_params
+     UINT64 Handle;
+     INT16  RecNumber;
+     WCHAR *SqlState;
+-    INT32 *NativeError;
++    LONG  *NativeError;
+     WCHAR *MessageText;
+     INT16  BufferLength;
+     INT16 *TextLength;
+@@ -772,7 +772,7 @@ struct SQLGetEnvAttr_params
+     INT32  Attribute;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ };
+ 
+ struct SQLGetFunctions_params
+@@ -806,7 +806,7 @@ struct SQLGetStmtAttr_params
+     INT32  Attribute;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ };
+ 
+ struct SQLGetStmtAttrW_params
+@@ -815,7 +815,7 @@ struct SQLGetStmtAttrW_params
+     INT32  Attribute;
+     void  *Value;
+     INT32  BufferLength;
+-    INT32 *StringLength;
++    LONG  *StringLength;
+ };
+ 
+ struct SQLGetStmtOption_params
+@@ -849,7 +849,7 @@ struct SQLNativeSql_params
+     INT32  TextLength1;
+     UCHAR *OutStatementText;
+     INT32  BufferLength;
+-    INT32 *TextLength2;
++    LONG  *TextLength2;
+ };
+ 
+ struct SQLNativeSqlW_params
+@@ -859,7 +859,7 @@ struct SQLNativeSqlW_params
+     INT32  TextLength1;
+     WCHAR *OutStatementText;
+     INT32  BufferLength;
+-    INT32 *TextLength2;
++    LONG  *TextLength2;
+ };
+ 
+ struct SQLNumParams_params
 diff --git a/include/sqltypes.h b/include/sqltypes.h
 index 44c1d4f4efc..4160c29724d 100644
 --- a/include/sqltypes.h
