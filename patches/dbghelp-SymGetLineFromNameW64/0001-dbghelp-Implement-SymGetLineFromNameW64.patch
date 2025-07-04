@@ -1,4 +1,4 @@
-From aebe3e23378168c5850d19829b3fade2dc25ebc7 Mon Sep 17 00:00:00 2001
+From cc19a8ce5778eb17f4877952d24217b338a01a12 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 21 Jun 2019 12:00:58 +1000
 Subject: [PATCH] dbghelp: Implement SymGetLineFromNameW64.
@@ -9,19 +9,19 @@ WIP: Need to quuery actual module for filename.
  1 file changed, 19 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dbghelp/symbol.c b/dlls/dbghelp/symbol.c
-index 3689500fa0..1818a3fa3d 100644
+index 29a32ad7dcf..83743e3ea8f 100644
 --- a/dlls/dbghelp/symbol.c
 +++ b/dlls/dbghelp/symbol.c
-@@ -2241,9 +2241,26 @@ BOOL WINAPI SymGetLineFromName64(HANDLE hProcess, PCSTR ModuleName, PCSTR FileNa
+@@ -2742,9 +2742,26 @@ BOOL WINAPI SymGetLineFromName64(HANDLE hProcess, PCSTR ModuleName, PCSTR FileNa
  BOOL WINAPI SymGetLineFromNameW64(HANDLE hProcess, PCWSTR ModuleName, PCWSTR FileName,
                  DWORD dwLineNumber, PLONG plDisplacement, PIMAGEHLP_LINEW64 Line)
  {
--    FIXME("(%p) (%s, %s, %d %p %p): stub\n", hProcess, debugstr_w(ModuleName), debugstr_w(FileName),
 +    struct module_pair pair;
 +
-+    FIXME("(%p) (%s, %s, %d, %p, %p)\n", hProcess, debugstr_w(ModuleName), debugstr_w(FileName),
-                 dwLineNumber, plDisplacement, Line);
+     FIXME("(%p) (%s, %s, %ld %p %p): stub\n", hProcess, debugstr_w(ModuleName), debugstr_w(FileName),
+-                dwLineNumber, plDisplacement, Line);
 -    return FALSE;
++            dwLineNumber, plDisplacement, Line);
 +
 +    if (!(dbghelp_options & SYMOPT_LOAD_LINES)) return TRUE;
 +
@@ -42,5 +42,5 @@ index 3689500fa0..1818a3fa3d 100644
  
  /******************************************************************
 -- 
-2.17.1
+2.47.2
 
