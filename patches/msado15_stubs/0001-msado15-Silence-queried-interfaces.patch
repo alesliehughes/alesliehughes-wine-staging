@@ -1,0 +1,62 @@
+From ce7902e352603ffbb86a84c38bd436498d9d5eb7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 14 Jul 2025 07:43:25 +1000
+Subject: [PATCH] msado15: Silence queried interfaces
+
+---
+ dlls/msado15/recordset.c     | 10 ++++++++++
+ dlls/msado15/tests/msado15.c | 10 ++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 716836b8232..6c1cfb55e0f 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -1352,6 +1352,16 @@ static HRESULT WINAPI recordset_QueryInterface( _Recordset *iface, REFIID riid,
+         TRACE("IID_IRunnableObject not supported returning NULL\n");
+         return E_NOINTERFACE;
+     }
++    else if (IsEqualGUID( riid, &IID_IPersistStreamInit ))
++    {
++        TRACE("IID_IPersistStreamInit not supported returning NULL\n");
++        return E_NOINTERFACE;
++    }
++    else if (IsEqualGUID( riid, &IID_IPersistPropertyBag ))
++    {
++        TRACE("IID_IPersistPropertyBag not supported returning NULL\n");
++        return E_NOINTERFACE;
++    }
+     else
+     {
+         FIXME( "interface %s not implemented\n", debugstr_guid(riid) );
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 0cea52b4e98..f6e0fe41f4f 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -65,6 +65,8 @@ static void test_Recordset(void)
+     VARIANT bookmark, filter, active;
+     EditModeEnum editmode;
+     LONG cache_size;
++    IPersistStreamInit *persist = NULL;
++    IPersistPropertyBag *property_bag = NULL;
+ 
+     hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
+     ok( hr == S_OK, "got %08lx\n", hr );
+@@ -73,6 +75,14 @@ static void test_Recordset(void)
+     ok(hr == E_NOINTERFACE, "Unexpected IRunnableObject interface\n");
+     ok(runtime == NULL, "expected NULL\n");
+ 
++    hr = _Recordset_QueryInterface( recordset, &IID_IPersistStreamInit, (void**)&persist);
++    ok(hr == E_NOINTERFACE, "Unexpected IPersistStreamInit interface\n");
++    ok(persist == NULL, "expected NULL\n");
++
++    hr = _Recordset_QueryInterface( recordset, &IID_IPersistPropertyBag, (void**)&property_bag);
++    ok(hr == E_NOINTERFACE, "Unexpected IPersistStreamInit interface\n");
++    ok(property_bag == NULL, "expected NULL\n");
++
+     /* _Recordset object supports ISupportErrorInfo */
+     errorinfo = NULL;
+     hr = _Recordset_QueryInterface( recordset, &IID_ISupportErrorInfo, (void **)&errorinfo );
+-- 
+2.47.2
+

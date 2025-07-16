@@ -1,0 +1,342 @@
+From 11cd2eae85b80f33c67a477ee917d069e1597664 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 14 Jul 2025 19:57:13 +1000
+Subject: [PATCH] msado15/tests: _Recordset_put_ActiveConnection tests
+
+---
+ dlls/msado15/tests/msado15.c | 312 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 312 insertions(+)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index f6e0fe41f4f..d561083c9a6 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -804,6 +804,317 @@ static void test_ADORecordsetConstruction(void)
+     ok( !_Recordset_Release( recordset ), "_Recordset not released\n" );
+ }
+ 
++static ULONG WINAPI connection_AddRef( _Connection *iface )
++{
++    return 2;
++}
++
++static ULONG WINAPI connection_Release( _Connection *iface )
++{
++    return 1;
++}
++
++static HRESULT WINAPI connection_QueryInterface( _Connection *iface, REFIID riid, void **obj )
++{
++    trace("%p, %s/%s, %p\n", iface, debugstr_guid(riid), debugstr_guid(&IID__Connection), obj );
++
++    *obj = NULL;
++
++    if (IsEqualGUID( riid, &IID__Connection ) || IsEqualGUID( riid, &IID_IDispatch ) ||
++        IsEqualGUID( riid, &IID_IUnknown ))
++    {
++        *obj = iface;
++    }
++    else
++    {
++        ok(0, "interface %s not implemented\n", debugstr_guid(riid) );
++        return E_NOINTERFACE;
++    }
++
++    return S_OK;
++}
++
++static HRESULT WINAPI connection_GetTypeInfoCount( _Connection *iface, UINT *count )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_GetTypeInfo( _Connection *iface, UINT index, LCID lcid, ITypeInfo **info )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_GetIDsOfNames( _Connection *iface, REFIID riid, LPOLESTR *names, UINT count,
++                                                LCID lcid, DISPID *dispid )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_Invoke( _Connection *iface, DISPID member, REFIID riid, LCID lcid, WORD flags,
++                                         DISPPARAMS *params, VARIANT *result, EXCEPINFO *excep_info, UINT *arg_err )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_Properties( _Connection *iface, Properties **obj )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_ConnectionString( _Connection *iface, BSTR *str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_ConnectionString( _Connection *iface, BSTR str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_CommandTimeout( _Connection *iface, LONG *timeout )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_CommandTimeout( _Connection *iface, LONG timeout )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_ConnectionTimeout( _Connection *iface, LONG *timeout )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_ConnectionTimeout( _Connection *iface, LONG timeout )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_Version( _Connection *iface, BSTR *str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;;
++}
++
++static HRESULT WINAPI connection_Close( _Connection *iface )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_Execute( _Connection *iface, BSTR command, VARIANT *records_affected,
++                                          LONG options, _Recordset **record_set )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_BeginTrans( _Connection *iface, LONG *transaction_level )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_CommitTrans( _Connection *iface )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_RollbackTrans( _Connection *iface )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_Open( _Connection *iface, BSTR connect_str, BSTR userid, BSTR password,
++                                       LONG options )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_Errors( _Connection *iface, Errors **obj )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_DefaultDatabase( _Connection *iface, BSTR *str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_DefaultDatabase( _Connection *iface, BSTR str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_IsolationLevel( _Connection *iface, IsolationLevelEnum *level )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_IsolationLevel( _Connection *iface, IsolationLevelEnum level )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_Attributes( _Connection *iface, LONG *attr )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_Attributes( _Connection *iface, LONG attr )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_CursorLocation( _Connection *iface, CursorLocationEnum *cursor_loc )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_CursorLocation( _Connection *iface, CursorLocationEnum cursor_loc )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_Mode( _Connection *iface, ConnectModeEnum *mode )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_Mode( _Connection *iface, ConnectModeEnum mode )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_Provider( _Connection *iface, BSTR *str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_put_Provider( _Connection *iface, BSTR str )
++{
++    ok(0, "\n");
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_get_State( _Connection *iface, LONG *state )
++{
++    //struct connection *connection = impl_from_Connection( iface );
++    ok(0,  "%p, %p\n", iface, state );
++    //*state = connection->state;
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_OpenSchema( _Connection *iface, SchemaEnum schema, VARIANT restrictions,
++                                             VARIANT schema_id, _Recordset **record_set )
++{
++    ok(0,  "%p, %d, %s, %s, %p\n", iface, schema, debugstr_variant(&restrictions),
++           debugstr_variant(&schema_id), record_set );
++
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connection_Cancel( _Connection *iface )
++{
++    ok(0, "%p\n", iface );
++    return E_NOTIMPL;
++}
++
++static const struct _ConnectionVtbl connection_vtbl =
++{
++    connection_QueryInterface,
++    connection_AddRef,
++    connection_Release,
++    connection_GetTypeInfoCount,
++    connection_GetTypeInfo,
++    connection_GetIDsOfNames,
++    connection_Invoke,
++    connection_get_Properties,
++    connection_get_ConnectionString,
++    connection_put_ConnectionString,
++    connection_get_CommandTimeout,
++    connection_put_CommandTimeout,
++    connection_get_ConnectionTimeout,
++    connection_put_ConnectionTimeout,
++    connection_get_Version,
++    connection_Close,
++    connection_Execute,
++    connection_BeginTrans,
++    connection_CommitTrans,
++    connection_RollbackTrans,
++    connection_Open,
++    connection_get_Errors,
++    connection_get_DefaultDatabase,
++    connection_put_DefaultDatabase,
++    connection_get_IsolationLevel,
++    connection_put_IsolationLevel,
++    connection_get_Attributes,
++    connection_put_Attributes,
++    connection_get_CursorLocation,
++    connection_put_CursorLocation,
++    connection_get_Mode,
++    connection_put_Mode,
++    connection_get_Provider,
++    connection_put_Provider,
++    connection_get_State,
++    connection_OpenSchema,
++    connection_Cancel
++};
++
++static void test_Recordset_ActiveConnection(void)
++{
++    _Recordset *recordset;
++    _Connection *connection;
++    HRESULT hr;
++    VARIANT var;
++    _Connection connection_iface;
++
++    hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
++    ok( hr == S_OK, "got %08lx\n", hr );
++
++    hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
++    ok( hr == S_OK, "got %08lx\n", hr );
++
++    connection_iface.lpVtbl = &connection_vtbl;
++
++    V_VT(&var) = VT_DISPATCH;
++    V_DISPATCH(&var) = (IDispatch*)&connection_iface;
++    hr = _Recordset_put_ActiveConnection( recordset, var );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidConnection ), "got %08lx\n", hr );
++
++
++
++    _Recordset_Release(recordset);
++    _Connection_Release(connection);
++}
++
+ static void test_Fields(void)
+ {
+     _Recordset *recordset;
+@@ -1961,6 +2272,7 @@ START_TEST(msado15)
+     test_ConnectionPoint();
+     test_Fields();
+     test_Recordset();
++    test_Recordset_ActiveConnection();
+     test_recordset_Find();
+     test_Stream();
+     test_Command();
+-- 
+2.47.2
+

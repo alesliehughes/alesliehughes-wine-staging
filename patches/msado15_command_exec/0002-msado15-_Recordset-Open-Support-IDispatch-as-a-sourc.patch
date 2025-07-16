@@ -1,0 +1,88 @@
+From 3ddedfa2848193063b442cf5972e741f5188dc84 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 19 Jun 2024 14:16:08 +1000
+Subject: [PATCH 2/3] msado15: _Recordset::Open Support IDispatch as a source
+
+---
+ dlls/msado15/recordset.c | 43 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 40 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index b2539b917aa..c5cecc3d14c 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -2097,6 +2097,8 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+     HRESULT hr;
+     DBBINDING *bindings;
+     DBBYTEOFFSET datasize;
++    _Command *user_command = NULL;
++    BSTR bstr_command;
+ 
+     TRACE( "%p, %s, %s, %d, %d, %ld\n", recordset, debugstr_variant(&source), debugstr_variant(&active_connection),
+            cursor_type, lock_type, options );
+@@ -2109,7 +2111,31 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+         return S_OK;
+     }
+ 
+-    if (V_VT(&active_connection) != VT_DISPATCH)
++    if (V_VT(&source) == VT_DISPATCH)
++    {
++        _Connection *conn;
++
++        hr = IDispatch_QueryInterface(V_DISPATCH(&source), &IID__Command, (void**)&user_command);
++        if (FAILED(hr))
++            return hr;
++
++        V_VT(&active_connection) = VT_DISPATCH;
++        hr = _Command_get_ActiveConnection(user_command, &conn);
++        if (FAILED(hr))
++        {
++            _Command_Release(user_command);
++            return MAKE_ADO_HRESULT( adErrInvalidConnection );
++        }
++
++        hr = _Connection_QueryInterface(conn, &IID_IDispatch, (void**)&V_DISPATCH(&active_connection));
++        if (FAILED(hr))
++        {
++            _Command_Release(user_command);
++            return MAKE_ADO_HRESULT( adErrInvalidConnection );
++        }
++
++    }
++    else if (V_VT(&active_connection) != VT_DISPATCH)
+     {
+         FIXME("Unsupported Active connection type %d\n", V_VT(&active_connection));
+         return MAKE_ADO_HRESULT( adErrInvalidConnection );
+@@ -2126,16 +2152,27 @@ static HRESULT WINAPI recordset_Open( _Recordset *iface, VARIANT source, VARIANT
+ 
+     hr = VariantCopy(&recordset->active_connection, &active_connection);
+     if (FAILED(hr))
++    {
+         return E_FAIL;
++    }
+ 
+-    if (V_VT(&source) != VT_BSTR)
++    if (V_VT(&source) == VT_DISPATCH)
++    {
++        hr = _Command_get_CommandText(user_command, &bstr_command);
++    }
++    else if (V_VT(&source) != VT_BSTR)
+     {
+         FIXME("Unsupported source type!\n");
+         IUnknown_Release(session);
+         return E_FAIL;
+     }
++    else
++        bstr_command = SysAllocString(V_BSTR(&source));
++
++    if (user_command) _Command_Release(user_command);
+ 
+-    hr = create_command_text(session, V_BSTR(&source), &command_text);
++    hr = create_command_text(session, bstr_command, &command_text);
++    SysFreeString(bstr_command);
+     IUnknown_Release(session);
+     if (FAILED(hr))
+         return hr;
+-- 
+2.43.0
+

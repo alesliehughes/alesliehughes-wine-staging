@@ -1,0 +1,49 @@
+From e0826753ffa46f512c64f99c7f7ca3be87f52d60 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 19 Jun 2024 15:26:40 +1000
+Subject: [PATCH 3/3] msado15: Implement _Command::Excute
+
+WIP.  Currently doesn't work in all scenarios. Or more impoortant Recordset::Open doesn't.
+---
+ dlls/msado15/command.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/command.c b/dlls/msado15/command.c
+index 0aecf2a7c54..ee578c304e9 100644
+--- a/dlls/msado15/command.c
++++ b/dlls/msado15/command.c
+@@ -455,8 +455,30 @@ static HRESULT WINAPI command_put_Prepared( _Command *iface, VARIANT_BOOL prepar
+ static HRESULT WINAPI command_Execute( _Command *iface, VARIANT *affected, VARIANT *parameters,
+                                        LONG options, _Recordset **recordset )
+ {
++    struct command *command = impl_from_Command( iface );
++    _Recordset *results;
++    VARIANT source, active;
++    HRESULT hr;
++
+     FIXME( "%p, %p, %p, %ld, %p\n", iface, affected, parameters, options, recordset );
+-    return E_NOTIMPL;
++
++    if (!command->connection)
++        return MAKE_ADO_HRESULT( adErrInvalidConnection );
++
++    hr = Recordset_create( (void**)&results);
++
++    V_VT(&source) = VT_DISPATCH;
++    _Command_QueryInterface(&command->Command_iface, &IID_IDispatch, (void**)&V_DISPATCH(&source));
++
++    V_VT(&active) = VT_ERROR;
++    V_ERROR(&active) = DISP_E_PARAMNOTFOUND;
++
++    hr = _Recordset_Open(results, source, active, adOpenDynamic, adLockPessimistic, options);
++
++    *recordset = results;
++
++    FIXME("command_Execute %lx\n", hr);
++    return hr;
+ }
+ 
+ static HRESULT WINAPI parameter_QueryInterface(_Parameter *iface, REFIID riid, void **obj)
+-- 
+2.43.0
+

@@ -1,0 +1,79 @@
+From 45d9b0c2575c45215c06ff8f48c4d5a9040e8ea1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 15 Jul 2025 14:26:26 +1000
+Subject: [PATCH] msado15/tests: More tests
+
+---
+ dlls/msado15/tests/msado15.c | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
+index 55cf60c1220..cba3cabaa29 100644
+--- a/dlls/msado15/tests/msado15.c
++++ b/dlls/msado15/tests/msado15.c
+@@ -814,13 +814,18 @@ static ULONG WINAPI connection_Release( _Connection *iface )
+     return 1;
+ }
+ 
++DEFINE_GUID(CLSID__Connection2, 0x00001550, 0x0000, 0x0010, 0x80 ,0x00, 0x00,0xAA,0x00,0x6D,0x2E,0xA4);
++
+ static HRESULT WINAPI connection_QueryInterface( _Connection *iface, REFIID riid, void **obj )
+ {
+     trace("%p, %s/%s, %p\n", iface, debugstr_guid(riid), debugstr_guid(&IID__Connection), obj );
+ 
+     *obj = NULL;
+ 
+-    if (IsEqualGUID( riid, &IID__Connection ) || IsEqualGUID( riid, &IID_IDispatch ) ||
++    if (IsEqualGUID( riid, &IID__Connection ) ||
++    IsEqualGUID( riid, &CLSID__Connection2 ) ||
++
++ IsEqualGUID( riid, &IID_IDispatch ) ||
+         IsEqualGUID( riid, &IID_IUnknown ))
+     {
+         *obj = iface;
+@@ -1095,6 +1100,8 @@ static void test_Recordset_ActiveConnection(void)
+     HRESULT hr;
+     VARIANT var;
+     _Connection connection_iface;
++    ADOConnectionConstruction15 *construct;
++    BSTR str;
+ 
+     hr = CoCreateInstance( &CLSID_Recordset, NULL, CLSCTX_INPROC_SERVER, &IID__Recordset, (void **)&recordset );
+     ok( hr == S_OK, "got %08lx\n", hr );
+@@ -1102,12 +1109,32 @@ static void test_Recordset_ActiveConnection(void)
+     hr = CoCreateInstance(&CLSID_Connection, NULL, CLSCTX_INPROC_SERVER, &IID__Connection, (void**)&connection);
+     ok( hr == S_OK, "got %08lx\n", hr );
+ 
++    str = SysAllocString(L"Provider=MSDASQL.1;Persist Security Info=False;Data Source=wine_test");
++
++    hr = _Connection_put_CursorLocation( connection, adUseClient );
++    ok( hr == S_OK, "got %08lx\n", hr );
++
++    hr = _Connection_Open( connection, str, NULL, NULL, adConnectUnspecified );
++    ok( hr == S_OK, "got %08lx\n", hr );
++    SysFreeString( str );
++
++    hr = _Connection_QueryInterface(connection, &IID_ADOConnectionConstruction15, (void**)&construct);
++    ok(hr == S_OK, "Failed to get ADOConnectionConstruction15 interface %08lx\n", hr);
++    if (hr == S_OK)
++    {
++        hr = ADOConnectionConstruction15_WrapDSOandSession(construct, NULL, NULL);
++        ok( hr == S_OK, "got %08lx\n", hr );
++
++        ADOConnectionConstruction15_Release(construct);
++    }
++
+     connection_iface.lpVtbl = &connection_vtbl;
+ 
+     V_VT(&var) = VT_DISPATCH;
+     V_DISPATCH(&var) = (IDispatch*)&connection_iface;
+     hr = _Recordset_put_ActiveConnection( recordset, var );
+-    ok( hr == MAKE_ADO_HRESULT( adErrInvalidConnection ), "got %08lx\n", hr );
++    //ok( hr == MAKE_ADO_HRESULT( adErrInvalidConnection ), "got %08lx\n", hr );
++    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08lx\n", hr );
+ 
+ 
+ 
+-- 
+2.47.2
+
