@@ -1,8 +1,8 @@
-From 8db4c3f1a6e7b803a56810c5e78d18bdb28cd5f3 Mon Sep 17 00:00:00 2001
+From 066c4a137d974fec3aa6fcd86341092af626844d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 14 Jul 2025 10:15:14 +1000
-Subject: [PATCH 2/2] msado15: ADOConnectionConstruction15::WrapDSOandSession
- semi stub
+Subject: [PATCH] msado15: ADOConnectionConstruction15::WrapDSOandSession semi
+ stub
 
 ---
  dlls/msado15/connection.c | 18 +++++++++++++++++-
