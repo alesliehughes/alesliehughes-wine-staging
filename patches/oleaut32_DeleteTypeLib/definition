@@ -1,0 +1,6 @@
+Fixes: [31675] Access 2010 Runtime can't load trivial database without native oleaut32
+Fixes: Implement ICreateTypeLib2 DeleteTypeInfo (PR 3579)
+Fixes: Correct converting a Interface (PR 8622)
+
+With these patches, the Access database can be open but there is still other things going on which
+stop it from working correctly (at least there is no crash now).

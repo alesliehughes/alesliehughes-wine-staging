@@ -1,0 +1,114 @@
+From a3f87fb04f38dd42f1c1c9311a61d6ad7417c161 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 21 Jul 2025 20:35:01 +1000
+Subject: [PATCH] oleaut32/tests: Add CreateTypeInfo tests
+
+---
+ dlls/oleaut32/tests/typelib.c | 81 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+
+diff --git a/dlls/oleaut32/tests/typelib.c b/dlls/oleaut32/tests/typelib.c
+index 153964e17d5..83217acd16a 100644
+--- a/dlls/oleaut32/tests/typelib.c
++++ b/dlls/oleaut32/tests/typelib.c
+@@ -4167,6 +4167,85 @@ todo_wine {
+     winetest_pop_context();
+ }
+ 
++static void test_CreateTypeInfo_Dual(SYSKIND sys)
++{
++    static OLECHAR switchW[] = { 's','w','i','c','h',0 };
++    static const GUID guidLib =             {0xbf611abe,0x5b38,0x11df,{0x91,0x5c,0x08,0x02,0x79,0x79,0x94,0x69}};
++    static const GUID guidSwitchInterface = {0xbf611abe,0x5b38,0x11df,{0x91,0x5c,0x08,0x02,0x79,0x79,0x94,0x70}};
++    HRESULT hres;
++    ICreateTypeLib2 *createtl;
++    ICreateTypeInfo *ctli, *ctli2;
++    ITypeInfo *typeinfo;
++    char filename[MAX_PATH];
++    WCHAR filenameW[MAX_PATH];
++    //DWORD ptr_size, alignment;
++    HREFTYPE ref_type;
++
++    switch(sys)
++    {
++    case SYS_WIN32:
++        winetest_push_context( "win32" );
++        //ptr_size = 4;
++        //alignment = sizeof(void*);
++        break;
++    case SYS_WIN64:
++        winetest_push_context( "win64" );
++        //ptr_size = 8;
++        //alignment = 4;
++        break;
++    default:
++        return;
++    }
++
++    GetTempFileNameA(".", "tlb", 0, filename);
++    MultiByteToWideChar(CP_ACP, 0, filename, -1, filenameW, MAX_PATH);
++
++    hres = CreateTypeLib2(sys, filenameW, &createtl);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeLib2_SetName(createtl, filenameW);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeLib2_SetVersion(createtl, 1, 0);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeLib2_SetGuid(createtl, &guidLib);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeLib2_SetLibFlags(createtl, LIBFLAG_FHIDDEN);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeLib2_CreateTypeInfo(createtl, switchW, TKIND_INTERFACE, &ctli);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeInfo_QueryInterface(ctli, &IID_ICreateTypeInfo, (void**)&ctli2);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeInfo_SetGuid(ctli2, &guidSwitchInterface);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = ICreateTypeInfo_QueryInterface(ctli, &IID_ITypeInfo, (void**)&typeinfo);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    // 0134:trace:ole:ITypeInfo_fnGetRefTypeOfImplType (084BE740) index 0
++
++    hres = ITypeInfo_GetRefTypeOfImplType(typeinfo, 0, &ref_type);
++    ok(hres == TYPE_E_ELEMENTNOTFOUND, "got %08lx\n", hres);
++
++//    hres = ICreateTypeLib_SetTypeFlags(ctli, TYPEFLAG_FREVERSEBIND | TYPEFLAG_FOLEAUTOMATION | TYPEFLAG_FHIDDEN | TYPEFLAG_FDUAL);
++//    ok(hres == S_OK, "got %08lx\n", hres);
++
++//ICreateTypeInfo2_fnSetGuid 084BE740 {ad1fc7e2-bfb5-4f7a-9a71-3347c128bfe9}
++//0134:trace:ole:ICreateTypeInfo2_fnSetTypeFlags 084BE740 2150
++
++    ITypeInfo_Release(typeinfo);
++    ICreateTypeInfo_Release(ctli2);
++    ICreateTypeInfo_Release(ctli);
++
++    ICreateTypeLib2_Release(createtl);
++    DeleteFileA(filename);
++}
++
+ #if 0       /* use this to generate more tests */
+ 
+ #define OLE_CHECK(x) { HRESULT hr = x; if (FAILED(hr)) { printf(#x "failed - %x\n", hr); return; } }
+@@ -8779,9 +8858,11 @@ START_TEST(typelib)
+     test_QueryPathOfRegTypeLib(64);
+     test_CreateTypeLib(SYS_WIN64);
+     test_SetTypeDescAlias(SYS_WIN64);
++    test_CreateTypeInfo_Dual(SYS_WIN64);
+     test_dep(SYS_WIN64);
+     test_CreateTypeLib(SYS_WIN32);
+     test_SetTypeDescAlias(SYS_WIN32);
++    test_CreateTypeInfo_Dual(SYS_WIN32);
+     test_dep(SYS_WIN32);
+     test_inheritance();
+     test_SetVarHelpContext();
+-- 
+2.47.2
+

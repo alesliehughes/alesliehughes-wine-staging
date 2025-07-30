@@ -1,0 +1,113 @@
+From 0992b0b59a1ad80480f0190020b326766ecb2117 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 16 Aug 2023 13:50:23 +1000
+Subject: [PATCH] oleaut32: Implement ICreateTypeLib2 DeleteTypeInfo
+
+---
+ dlls/oleaut32/tests/typelib.c | 46 +++++++++++++++++++++++++++++++++++
+ dlls/oleaut32/typelib.c       | 25 +++++++++++++++++--
+ 2 files changed, 69 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/oleaut32/tests/typelib.c b/dlls/oleaut32/tests/typelib.c
+index 153964e17d5..037ede4e3ec 100644
+--- a/dlls/oleaut32/tests/typelib.c
++++ b/dlls/oleaut32/tests/typelib.c
+@@ -8589,6 +8589,51 @@ static void test_dep( SYSKIND sys )
+     winetest_pop_context();
+ }
+ 
++static void test_DeleteTypeInfo(void)
++{
++    static OLECHAR interface1W[] = L"interface1";
++    static OLECHAR interface2W[] = L"interface2";
++    ICreateTypeInfo *createti;
++    ICreateTypeLib2 *createtl;
++    ICreateTypeInfo2 *createti2;
++    WCHAR filenameW[MAX_PATH];
++    ITypeLib *stdole;
++    HRESULT hr;
++
++    hr = LoadTypeLib(L"stdole2.tlb", &stdole);
++    ok(hr == S_OK, "Failed to load stdole2, hr %#lx.\n", hr);
++
++    GetTempFileNameW(L".", L"tlb", 0, filenameW);
++
++    hr = CreateTypeLib2(SYS_WIN32, filenameW, &createtl);
++    ok(hr == S_OK, "Failed to create instance, hr %#lx.\n", hr);
++
++    hr = ICreateTypeLib2_CreateTypeInfo(createtl, interface1W, TKIND_INTERFACE, &createti);
++    ok(hr == S_OK, "Failed to create instance, hr %#lx.\n", hr);
++    hr = ICreateTypeInfo_QueryInterface(createti, &IID_ICreateTypeInfo2, (void **)&createti2);
++    ok(hr == S_OK, "Failed to get interface, hr %#lx.\n", hr);
++    ICreateTypeInfo_Release(createti);
++
++    /* Reference to ICreateTypeInfo still exists */
++    hr = ICreateTypeLib2_DeleteTypeInfo(createtl, interface1W);
++    ok(hr == E_FAIL, "got %08lx\n", hr);
++
++    ICreateTypeInfo2_Release(createti2);
++
++    hr = ICreateTypeLib2_DeleteTypeInfo(createtl, NULL);
++    ok(hr == E_INVALIDARG, "got %08lx\n", hr);
++
++    hr = ICreateTypeLib2_DeleteTypeInfo(createtl, interface2W);
++    ok(hr == TYPE_E_ELEMENTNOTFOUND, "got %08lx\n", hr);
++
++    hr = ICreateTypeLib2_DeleteTypeInfo(createtl, interface1W);
++    ok(hr == S_OK, "got %08lx\n", hr);
++
++    ITypeLib_Release(stdole);
++
++    DeleteFileW(filenameW);
++}
++
+ static void test_DeleteImplType(void)
+ {
+     static OLECHAR interface1W[] = L"interface1";
+@@ -8804,6 +8849,7 @@ START_TEST(typelib)
+     test_LoadRegTypeLib();
+     test_GetLibAttr();
+     test_stub();
++    test_DeleteTypeInfo();
+     test_DeleteImplType();
+     test_DeleteFuncDesc();
+ }
+diff --git a/dlls/oleaut32/typelib.c b/dlls/oleaut32/typelib.c
+index f90432cefb0..ba5e47b1557 100644
+--- a/dlls/oleaut32/typelib.c
++++ b/dlls/oleaut32/typelib.c
+@@ -10339,8 +10339,29 @@ static HRESULT WINAPI ICreateTypeLib2_fnDeleteTypeInfo(ICreateTypeLib2 *iface,
+         LPOLESTR name)
+ {
+     ITypeLibImpl *This = impl_from_ICreateTypeLib2(iface);
+-    FIXME("%p %s - stub\n", This, wine_dbgstr_w(name));
+-    return E_NOTIMPL;
++    int i;
++    TRACE("%p %s\n", This, wine_dbgstr_w(name));
++
++    if (!name)
++        return E_INVALIDARG;
++
++    for (i = 0; i < This->TypeInfoCount; ++i)
++    {
++        if (!lstrcmpiW(TLB_get_bstr(This->typeinfos[i]->Name), name))
++        {
++            if (This->typeinfos[i]->ref >= 1)
++                return E_FAIL;
++
++            ITypeInfoImpl_Destroy(This->typeinfos[i]);
++            This->TypeInfoCount--;
++            if (i < This->TypeInfoCount)
++                memmove(This->typeinfos + i, This->typeinfos + i + 1, (This->TypeInfoCount - i) *
++                    sizeof(*This->typeinfos));
++            return S_OK;
++        }
++    }
++
++    return TYPE_E_ELEMENTNOTFOUND;
+ }
+ 
+ static HRESULT WINAPI ICreateTypeLib2_fnSetCustData(ICreateTypeLib2 *iface,
+-- 
+2.47.2
+
