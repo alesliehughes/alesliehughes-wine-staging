@@ -1,0 +1,37 @@
+From d57a1be2f8a415f1d7fec4dff1c1776f04d9d829 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 21 Jul 2025 14:49:43 +1000
+Subject: [PATCH] wined3d: Add GPU information for AMD Radeon RX 6700 XT.
+
+---
+ dlls/wined3d/directx.c         | 1 +
+ dlls/wined3d/wined3d_private.h | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/dlls/wined3d/directx.c b/dlls/wined3d/directx.c
+index 96412b62e20..6f03ac81014 100644
+--- a/dlls/wined3d/directx.c
++++ b/dlls/wined3d/directx.c
+@@ -562,6 +562,7 @@ static const struct wined3d_gpu_description gpu_description_table[] =
+     {HW_VENDOR_AMD,        CARD_AMD_RADEON_R9_M395X,       "AMD Radeon R9 M395X",              DRIVER_AMD_RX,           4096},
+     {HW_VENDOR_AMD,        CARD_AMD_RADEON_RX_460,         "Radeon(TM) RX 460 Graphics",       DRIVER_AMD_RX,           4096},
+     {HW_VENDOR_AMD,        CARD_AMD_RADEON_RX_480,         "Radeon (TM) RX 480 Graphics",      DRIVER_AMD_RX,           4096},
++    {HW_VENDOR_AMD,        CARD_AMD_RADEON_RX_6700_XT,     "AMD Radeon RX 6700 XT",            DRIVER_AMD_RX,          12288},
+     {HW_VENDOR_AMD,        CARD_AMD_RADEON_RX_VEGA_10,     "Radeon RX Vega",                   DRIVER_AMD_RX,           8192},
+     {HW_VENDOR_AMD,        CARD_AMD_RADEON_RX_VEGA_12,     "Radeon Pro Vega 20",               DRIVER_AMD_RX,           4096},
+     {HW_VENDOR_AMD,        CARD_AMD_RADEON_RAVEN,          "AMD Radeon(TM) Vega 10 Mobile Graphics", DRIVER_AMD_RX,     1024},
+diff --git a/dlls/wined3d/wined3d_private.h b/dlls/wined3d/wined3d_private.h
+index bf75014fdf1..309aa6afe51 100644
+--- a/dlls/wined3d/wined3d_private.h
++++ b/dlls/wined3d/wined3d_private.h
+@@ -2161,6 +2161,7 @@ enum wined3d_pci_device
+     CARD_AMD_RADEON_RX_NAVI_21      = 0x73bf,
+     CARD_AMD_RADEON_PRO_V620        = 0x73a1,
+     CARD_AMD_RADEON_PRO_V620_VF     = 0x73ae,
++    CARD_AMD_RADEON_RX_6700_XT      = 0x73df,
+     CARD_AMD_VANGOGH                = 0x163f,
+     CARD_AMD_RAPHAEL                = 0x164e,
+ 
+-- 
+2.47.2
+
