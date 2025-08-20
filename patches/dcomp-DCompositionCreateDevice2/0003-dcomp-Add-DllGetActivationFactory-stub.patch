@@ -1,0 +1,73 @@
+From 91428561df92d77645ff38d83352f1862fc3d076 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 20 Aug 2025 10:56:18 +1000
+Subject: [PATCH] dcomp: Add DllGetActivationFactory stub
+
+---
+ dlls/dcomp/Makefile.in |  2 +-
+ dlls/dcomp/dcomp.spec  |  2 +-
+ dlls/dcomp/device.c    | 17 +++++++++++++++++
+ 3 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dcomp/Makefile.in b/dlls/dcomp/Makefile.in
+index bd9c7ffa41f..30b3ef39501 100644
+--- a/dlls/dcomp/Makefile.in
++++ b/dlls/dcomp/Makefile.in
+@@ -1,5 +1,5 @@
+ MODULE    = dcomp.dll
+-IMPORTS   = uuid
++IMPORTS   = uuid combase
+ EXTRADLLFLAGS = -Wb,--prefer-native
+ 
+ SOURCES = \
+diff --git a/dlls/dcomp/dcomp.spec b/dlls/dcomp/dcomp.spec
+index 2120ce8b6f6..a8c7c7da30e 100644
+--- a/dlls/dcomp/dcomp.spec
++++ b/dlls/dcomp/dcomp.spec
+@@ -19,7 +19,7 @@
+ @ stub DCompositionCreateSurfaceHandle
+ @ stub DeserializeEffectDescription
+ @ stdcall -private DllCanUnloadNow()
+-@ stub DllGetActivationFactory
++@ stdcall -private DllGetActivationFactory(ptr ptr)
+ @ stub DllGetClassObject
+ @ stub DwmEnableMMCSS
+ @ stub DwmFlush
+diff --git a/dlls/dcomp/device.c b/dlls/dcomp/device.c
+index e72c3ba25e3..65e397bdfa7 100644
+--- a/dlls/dcomp/device.c
++++ b/dlls/dcomp/device.c
+@@ -19,6 +19,8 @@
+ 
+ #include "windef.h"
+ #include "winbase.h"
++#include "winstring.h"
++#include "activation.h"
+ #include "objidl.h"
+ #include "dxgi.h"
+ #include "wine/debug.h"
+@@ -28,6 +30,21 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(dcomp);
+ 
++HRESULT WINAPI DllGetActivationFactory( HSTRING classid, IActivationFactory **factory )
++{
++    const WCHAR *buffer = WindowsGetStringRawBuffer( classid, NULL );
++
++    TRACE( "class %s, factory %p.\n", debugstr_hstring(classid), factory );
++
++    *factory = NULL;
++
++/*    if (!wcscmp( buffer, RuntimeClass_Windows_Graphics_Capture_GraphicsCaptureSession ))
++        IActivationFactory_QueryInterface( session_factory, &IID_IActivationFactory, (void **)factory );
++
++    if (*factory) return S_OK;*/
++    return CLASS_E_CLASSNOTAVAILABLE;
++}
++
+ HRESULT WINAPI DCompositionCreateDevice(IDXGIDevice *dxgi_device, REFIID iid, void **device)
+ {
+     FIXME("%p, %s, %p.\n", dxgi_device, debugstr_guid(iid), device);
+-- 
+2.50.1
+
