@@ -1,0 +1,32 @@
+From b2e1bcefcb021e9866300580f50301d051f4fc2c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 9 Sep 2025 09:30:07 +1000
+Subject: [PATCH 3/8] Configure tipsf
+
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index febdd047b37..49d1f087ce4 100755
+--- a/configure
++++ b/configure
+@@ -1453,6 +1453,7 @@ enable_tbs
+ enable_tdh
+ enable_tdi_sys
+ enable_threadpoolwinrt
++enable_tiptsf
+ enable_traffic
+ enable_twain_32
+ enable_twinapi_appcore
+@@ -22942,6 +22943,7 @@ wine_fn_config_makefile dlls/tdh enable_tdh
+ wine_fn_config_makefile dlls/tdi.sys enable_tdi_sys
+ wine_fn_config_makefile dlls/threadpoolwinrt enable_threadpoolwinrt
+ wine_fn_config_makefile dlls/threadpoolwinrt/tests enable_tests
++wine_fn_config_makefile dlls/tiptsf enable_tiptsf
+ wine_fn_config_makefile dlls/toolhelp.dll16 enable_win16
+ wine_fn_config_makefile dlls/traffic enable_traffic
+ wine_fn_config_makefile dlls/twain.dll16 enable_win16
+-- 
+2.51.0
+
