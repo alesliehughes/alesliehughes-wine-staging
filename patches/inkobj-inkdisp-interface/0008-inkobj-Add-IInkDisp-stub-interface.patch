@@ -1,7 +1,7 @@
-From 7a3ebb845f256d391eb4da81b7a0ff145752ef27 Mon Sep 17 00:00:00 2001
+From c11aeab2d68f87f9214b21220cee2d0cfba62de6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 16:21:40 +1000
-Subject: [PATCH 8/8] inkobj: Add IInkDisp stub interface
+Subject: [PATCH] inkobj: Add IInkDisp stub interface
 
 ---
  dlls/inkobj/Makefile.in       |   1 -

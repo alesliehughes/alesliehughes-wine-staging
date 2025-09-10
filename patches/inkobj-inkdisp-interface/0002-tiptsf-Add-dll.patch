@@ -1,7 +1,7 @@
-From 94341b54615d8efb592643853d397b16b33735df Mon Sep 17 00:00:00 2001
+From 413aea860eea4dd2bf77bfb1bfa15742f233f7be Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 09:10:34 +1000
-Subject: [PATCH 2/8] tiptsf: Add dll
+Subject: [PATCH] tiptsf: Add dll
 
 ---
  configure.ac              |  1 +
@@ -125,7 +125,7 @@ index 00000000000..137acf9630c
 +}
 \ No newline at end of file
 diff --git a/include/peninputpanel.idl b/include/peninputpanel.idl
-index d7ba0cc36e1..1007a866003 100644
+index 9172142706c..cc2f208ebb3 100644
 --- a/include/peninputpanel.idl
 +++ b/include/peninputpanel.idl
 @@ -194,6 +194,9 @@ interface ITextInputPanel : IUnknown

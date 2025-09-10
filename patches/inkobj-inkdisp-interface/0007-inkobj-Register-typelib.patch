@@ -1,13 +1,12 @@
-From d5d43c575873c228cc9b7af0426e901d8de43d35 Mon Sep 17 00:00:00 2001
+From a09cf4c256ac28668d348331842551db2f2aa66d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 14:43:47 +1000
-Subject: [PATCH 6/8] inkobj: Register interfaces
+Subject: [PATCH] inkobj: Register typelib.
 
-FIXME(?): Use msinkaut.idl?  Register the typelib?
 ---
  dlls/inkobj/Makefile.in |  4 +++-
- dlls/inkobj/inkobj.idl  | 31 +++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 1 deletion(-)
+ dlls/inkobj/inkobj.idl  | 21 +++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 1 deletion(-)
  create mode 100644 dlls/inkobj/inkobj.idl
 
 diff --git a/dlls/inkobj/Makefile.in b/dlls/inkobj/Makefile.in
@@ -26,10 +25,10 @@ index bc9f90577a5..f1f93f4973f 100644
 +	inkobj.idl
 diff --git a/dlls/inkobj/inkobj.idl b/dlls/inkobj/inkobj.idl
 new file mode 100644
-index 00000000000..3b2be21f3d9
+index 00000000000..8191e675f12
 --- /dev/null
 +++ b/dlls/inkobj/inkobj.idl
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,21 @@
 +/*
 + * Copyright 2025 Alistair Leslie-Hughes
 + *
@@ -48,19 +47,9 @@ index 00000000000..3b2be21f3d9
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
 +
-+#pragma makedep register
++#pragma makedep regtypelib
 +
-+[
-+    progid("msinkaut.InkObject.1"),
-+    vi_progid("msinkaut.InkObject"),
-+    threading(both),
-+    uuid(937c1a34-151d-4610-9ca6-a8cc9bdb5d83)
-+]
-+coclass InkDisp
-+{
-+    [default] interface IInkDisp;
-+}
-+
++#include "msinkaut.idl"
 -- 
 2.51.0
 

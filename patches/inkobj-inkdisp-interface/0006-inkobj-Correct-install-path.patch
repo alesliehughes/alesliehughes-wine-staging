@@ -1,7 +1,7 @@
-From 8d810fc6121e97932e4030c48c5f70c61a59826c Mon Sep 17 00:00:00 2001
+From a908e6d55ecea55d93e6792874cb6a07af48a762 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 15:14:35 +1000
-Subject: [PATCH 7/8] inkobj: Correct install path.
+Subject: [PATCH] inkobj: Correct install path.
 
 ---
  loader/wine.inf.in | 2 ++

@@ -1,7 +1,7 @@
-From b2e1bcefcb021e9866300580f50301d051f4fc2c Mon Sep 17 00:00:00 2001
+From 843bfe2fa99240d9652a18b50f08314525fb0ecb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 09:30:07 +1000
-Subject: [PATCH 3/8] Configure tipsf
+Subject: [PATCH] Configure tipsf
 
 ---
  configure | 2 ++

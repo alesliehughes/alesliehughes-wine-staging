@@ -1,7 +1,7 @@
-From f118f1ef6af668c263aa988959941c48a1298f50 Mon Sep 17 00:00:00 2001
+From 3a070b0a0a2b36e439bb7002e9b7f8c5ed9ad803 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 8 Sep 2025 20:40:26 +1000
-Subject: [PATCH 1/8] include: Add peninputpanel.idl
+Subject: [PATCH] include: Add peninputpanel.idl
 
 ---
  include/Makefile.in       |   1 +
@@ -23,7 +23,7 @@ index e86076d112d..0d355d2e1b3 100644
  	physicalmonitorenumerationapi.h \
 diff --git a/include/peninputpanel.idl b/include/peninputpanel.idl
 new file mode 100644
-index 00000000000..d7ba0cc36e1
+index 00000000000..9172142706c
 --- /dev/null
 +++ b/include/peninputpanel.idl
 @@ -0,0 +1,202 @@
