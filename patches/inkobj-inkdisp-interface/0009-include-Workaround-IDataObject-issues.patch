@@ -1,4 +1,4 @@
-From 87c65c4fe127157f5626fca0995641993035e5f0 Mon Sep 17 00:00:00 2001
+From 863bb97b6ea541925c6dd368c930e65373581984 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 10 Sep 2025 17:53:42 +1000
 Subject: [PATCH] include: Workaround IDataObject issues
@@ -9,10 +9,10 @@ Subject: [PATCH] include: Workaround IDataObject issues
  2 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/dlls/inkobj/inkobj.c b/dlls/inkobj/inkobj.c
-index c9cc8494d56..4412cd0db58 100644
+index dc30bdd9ea7..a9a93f3e1a8 100644
 --- a/dlls/inkobj/inkobj.c
 +++ b/dlls/inkobj/inkobj.c
-@@ -306,7 +306,7 @@ static HRESULT WINAPI inkdisp_CreateStroke(IInkDisp *iface, VARIANT PacketData,
+@@ -307,7 +307,7 @@ static HRESULT WINAPI inkdisp_CreateStroke(IInkDisp *iface, VARIANT data, VARIAN
  }
  
  static HRESULT WINAPI inkdisp_ClipboardCopyWithRectangle(IInkDisp *iface, IInkRectangle *Rectangle, InkClipboardFormats ClipboardFormats,
@@ -21,7 +21,7 @@ index c9cc8494d56..4412cd0db58 100644
  {
      struct ink_disp *ink_disp = impl_from_IInkDisp( iface );
  
-@@ -316,7 +316,7 @@ static HRESULT WINAPI inkdisp_ClipboardCopyWithRectangle(IInkDisp *iface, IInkRe
+@@ -317,7 +317,7 @@ static HRESULT WINAPI inkdisp_ClipboardCopyWithRectangle(IInkDisp *iface, IInkRe
  }
  
  static HRESULT WINAPI inkdisp_ClipboardCopy(IInkDisp *iface, IInkStrokes *strokes, InkClipboardFormats ClipboardFormats,
@@ -30,7 +30,7 @@ index c9cc8494d56..4412cd0db58 100644
  {
      struct ink_disp *ink_disp = impl_from_IInkDisp( iface );
  
-@@ -325,7 +325,7 @@ static HRESULT WINAPI inkdisp_ClipboardCopy(IInkDisp *iface, IInkStrokes *stroke
+@@ -326,7 +326,7 @@ static HRESULT WINAPI inkdisp_ClipboardCopy(IInkDisp *iface, IInkStrokes *stroke
      return E_NOTIMPL;
  }
  
@@ -39,7 +39,7 @@ index c9cc8494d56..4412cd0db58 100644
  {
      struct ink_disp *ink_disp = impl_from_IInkDisp( iface );
  
-@@ -334,7 +334,7 @@ static HRESULT WINAPI inkdisp_CanPaste(IInkDisp *iface, IDataObject *DataObject,
+@@ -335,7 +335,7 @@ static HRESULT WINAPI inkdisp_CanPaste(IInkDisp *iface, IDataObject *DataObject,
      return E_NOTIMPL;
  }
  
