@@ -1,0 +1,45 @@
+From 54ff27bd5a18f3aae5e05716fa503b71d0dbfcf8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 30 Jul 2020 20:38:25 +1000
+Subject: [PATCH v2] ws2_32: Use kernelbase directly
+
+Windows 10 links only to kernelbase but the functions reside in
+ws2_32.
+
+v2: Use -import
+
+Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+---
+ dlls/ws2_32/ws2_32.spec | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/ws2_32/ws2_32.spec b/dlls/ws2_32/ws2_32.spec
+index 87e0bdfa2f..f43939ea46 100644
+--- a/dlls/ws2_32/ws2_32.spec
++++ b/dlls/ws2_32/ws2_32.spec
+@@ -102,19 +102,19 @@
+ @ stdcall WSARecvDisconnect(long ptr)
+ @ stdcall WSARecvFrom(long ptr long ptr ptr ptr ptr ptr ptr ) 
+ @ stdcall WSARemoveServiceClass(ptr)
+-@ stdcall WSAResetEvent(long) kernel32.ResetEvent
++@ stdcall -import WSAResetEvent(long) kernelbase.ResetEvent
+ @ stdcall WSASend(long ptr long ptr long ptr ptr)
+ @ stdcall WSASendDisconnect(long ptr)
+ @ stdcall WSASendMsg(long ptr long ptr ptr ptr)
+ @ stdcall WSASendTo(long ptr long ptr long ptr long ptr ptr)
+-@ stdcall WSASetEvent(long) kernel32.SetEvent
++@ stdcall -import WSASetEvent(long) kernelbase.SetEvent
+ @ stdcall WSASetServiceA(ptr long long)
+ @ stdcall WSASetServiceW(ptr long long)
+ @ stdcall WSASocketA(long long long ptr long long)
+ @ stdcall WSASocketW(long long long ptr long long)
+ @ stdcall WSAStringToAddressA(str long ptr ptr ptr)
+ @ stdcall WSAStringToAddressW(wstr long ptr ptr ptr)
+-@ stdcall WSAWaitForMultipleEvents(long ptr long long long) kernel32.WaitForMultipleObjectsEx
++@ stdcall -import WSAWaitForMultipleEvents(long ptr long long long) kernelbase.WaitForMultipleObjectsEx
+ @ stdcall WSCDeinstallProvider(ptr ptr)
+ @ stdcall WSCEnableNSProvider(ptr long)
+ @ stdcall WSCEnumProtocols(ptr ptr ptr ptr)
+-- 
+2.28.0
+
