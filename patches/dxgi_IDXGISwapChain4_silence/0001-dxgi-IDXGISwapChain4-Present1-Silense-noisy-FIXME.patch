@@ -1,0 +1,36 @@
+From 0ff7912b228421edde62ac9367502eedafd87bf0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 May 2025 10:06:22 +1000
+Subject: [PATCH] dxgi: IDXGISwapChain4::Present1 Silense noisy FIXME.
+
+---
+ dlls/dxgi/swapchain.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dxgi/swapchain.c b/dlls/dxgi/swapchain.c
+index 6924ac49596..6c91bafe859 100644
+--- a/dlls/dxgi/swapchain.c
++++ b/dlls/dxgi/swapchain.c
+@@ -758,12 +758,18 @@ static HRESULT STDMETHODCALLTYPE d3d11_swapchain_Present1(IDXGISwapChain4 *iface
+         UINT sync_interval, UINT flags, const DXGI_PRESENT_PARAMETERS *present_parameters)
+ {
+     struct d3d11_swapchain *swapchain = d3d11_swapchain_from_IDXGISwapChain4(iface);
++    static BOOL once = FALSE;
+ 
+     TRACE("iface %p, sync_interval %u, flags %#x, present_parameters %p.\n",
+             iface, sync_interval, flags, present_parameters);
+ 
+     if (present_parameters)
+-        FIXME("Ignored present parameters %p.\n", present_parameters);
++    {
++        if (!once++)
++            FIXME("Ignored present parameters %p.\n", present_parameters);
++        else
++            TRACE("Ignored present parameters %p.\n", present_parameters);
++    }
+ 
+     return d3d11_swapchain_present(swapchain, sync_interval, flags);
+ }
+-- 
+2.47.2
+
