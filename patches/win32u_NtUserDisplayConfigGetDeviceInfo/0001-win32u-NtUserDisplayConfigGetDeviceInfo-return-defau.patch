@@ -1,0 +1,44 @@
+From 57ee8352e7b4ecc8e2e7a425cd9b700a5fff35a9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 May 2025 10:47:18 +1000
+Subject: [PATCH] win32u: NtUserDisplayConfigGetDeviceInfo return default value
+ for DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL
+
+---
+ dlls/win32u/sysparams.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/win32u/sysparams.c b/dlls/win32u/sysparams.c
+index 7c5fbf66486..7b048ea60af 100644
+--- a/dlls/win32u/sysparams.c
++++ b/dlls/win32u/sysparams.c
+@@ -7400,13 +7400,25 @@ NTSTATUS WINAPI NtUserDisplayConfigGetDeviceInfo( DISPLAYCONFIG_DEVICE_INFO_HEAD
+ 
+         return STATUS_NOT_SUPPORTED;
+     }
++    case DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL:
++    {
++        DISPLAYCONFIG_SDR_WHITE_LEVEL *sdr_level = (DISPLAYCONFIG_SDR_WHITE_LEVEL *)packet;
++
++        TRACE( "DISPLAYCONFIG_SDR_WHITE_LEVEL stub.\n" );
++
++        if (packet->size < sizeof(*sdr_level))
++            return STATUS_INVALID_PARAMETER;
++
++        sdr_level->SDRWhiteLevel = 1000;
++
++        return STATUS_SUCCESS;
++    }
+     case DISPLAYCONFIG_DEVICE_INFO_SET_TARGET_PERSISTENCE:
+     case DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_BASE_TYPE:
+     case DISPLAYCONFIG_DEVICE_INFO_GET_SUPPORT_VIRTUAL_RESOLUTION:
+     case DISPLAYCONFIG_DEVICE_INFO_SET_SUPPORT_VIRTUAL_RESOLUTION:
+     case DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO:
+     case DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE:
+-    case DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL:
+     default:
+         FIXME( "Unimplemented packet type %u.\n", packet->type );
+         return STATUS_INVALID_PARAMETER;
+-- 
+2.47.2
+
