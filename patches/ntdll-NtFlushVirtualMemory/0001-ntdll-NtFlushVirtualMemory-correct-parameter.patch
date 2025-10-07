@@ -1,0 +1,156 @@
+From 4146d3c469b6de7c7611305573338f300a3b7b40 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 8 Oct 2025 09:58:48 +1100
+Subject: [PATCH] ntdll: NtFlushVirtualMemory correct parameter
+
+msdn: ZwFlushVirtualMemory states the last parameter is PIO_STATUS_BLOCK.
+---
+ dlls/kernelbase/memory.c            | 2 +-
+ dlls/ntdll/ntdll.spec               | 4 ++--
+ dlls/ntdll/signal_arm64ec.c         | 2 +-
+ dlls/ntdll/unix/server.c            | 2 +-
+ dlls/ntdll/unix/virtual.c           | 2 +-
+ dlls/ntoskrnl.exe/ntoskrnl.exe.spec | 2 +-
+ dlls/wow64/virtual.c                | 5 +++--
+ include/ddk/wdm.h                   | 2 +-
+ include/winternl.h                  | 2 +-
+ 9 files changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/dlls/kernelbase/memory.c b/dlls/kernelbase/memory.c
+index 5eee84649e9..0fbfc67d966 100644
+--- a/dlls/kernelbase/memory.c
++++ b/dlls/kernelbase/memory.c
+@@ -123,7 +123,7 @@ DWORD WINAPI DECLSPEC_HOTPATCH DiscardVirtualMemory( void *addr, SIZE_T size )
+  */
+ BOOL WINAPI DECLSPEC_HOTPATCH FlushViewOfFile( const void *base, SIZE_T size )
+ {
+-    NTSTATUS status = NtFlushVirtualMemory( GetCurrentProcess(), &base, &size, 0 );
++    NTSTATUS status = NtFlushVirtualMemory( GetCurrentProcess(), &base, &size, NULL );
+ 
+     if (status == STATUS_NOT_MAPPED_DATA) status = STATUS_SUCCESS;
+     return set_ntstatus( status );
+diff --git a/dlls/ntdll/ntdll.spec b/dlls/ntdll/ntdll.spec
+index 64f35d0b54d..a1a4bf9daee 100644
+--- a/dlls/ntdll/ntdll.spec
++++ b/dlls/ntdll/ntdll.spec
+@@ -228,7 +228,7 @@
+ @ stdcall -syscall NtFlushInstructionCache(long ptr long)
+ @ stdcall -syscall NtFlushKey(long)
+ @ stdcall -syscall NtFlushProcessWriteBuffers()
+-@ stdcall -syscall NtFlushVirtualMemory(long ptr ptr long)
++@ stdcall -syscall NtFlushVirtualMemory(long ptr ptr ptr)
+ # @ stub NtFlushWriteBuffer
+ # @ stub NtFreeUserPhysicalPages
+ @ stdcall -syscall=0x001e NtFreeVirtualMemory(long ptr ptr long)
+@@ -1297,7 +1297,7 @@
+ @ stdcall -private ZwFlushInstructionCache(long ptr long) NtFlushInstructionCache
+ @ stdcall -private ZwFlushKey(long) NtFlushKey
+ @ stdcall -private ZwFlushProcessWriteBuffers() NtFlushProcessWriteBuffers
+-@ stdcall -private ZwFlushVirtualMemory(long ptr ptr long) NtFlushVirtualMemory
++@ stdcall -private ZwFlushVirtualMemory(long ptr ptr ptr) NtFlushVirtualMemory
+ # @ stub ZwFlushWriteBuffer
+ # @ stub ZwFreeUserPhysicalPages
+ @ stdcall -private ZwFreeVirtualMemory(long ptr ptr long) NtFreeVirtualMemory
+diff --git a/dlls/ntdll/signal_arm64ec.c b/dlls/ntdll/signal_arm64ec.c
+index a93aae89554..a4f38fefcd1 100644
+--- a/dlls/ntdll/signal_arm64ec.c
++++ b/dlls/ntdll/signal_arm64ec.c
+@@ -420,7 +420,7 @@ DEFINE_SYSCALL(NtFlushBuffersFileEx, (HANDLE handle, ULONG flags, void *params,
+ DEFINE_WRAPPED_SYSCALL(NtFlushInstructionCache, (HANDLE handle, const void *addr, SIZE_T size))
+ DEFINE_SYSCALL(NtFlushKey, (HANDLE key))
+ DEFINE_SYSCALL(NtFlushProcessWriteBuffers, (void))
+-DEFINE_SYSCALL(NtFlushVirtualMemory, (HANDLE process, LPCVOID *addr_ptr, SIZE_T *size_ptr, ULONG unknown))
++DEFINE_SYSCALL(NtFlushVirtualMemory, (HANDLE process, LPCVOID *addr_ptr, SIZE_T *size_ptr, IO_STATUS_BLOCK *io))
+ DEFINE_WRAPPED_SYSCALL(NtFreeVirtualMemory, (HANDLE process, PVOID *addr_ptr, SIZE_T *size_ptr, ULONG type))
+ DEFINE_SYSCALL(NtFsControlFile, (HANDLE handle, HANDLE event, PIO_APC_ROUTINE apc, void *apc_context, IO_STATUS_BLOCK *io, ULONG code, void *in_buffer, ULONG in_size, void *out_buffer, ULONG out_size))
+ DEFINE_WRAPPED_SYSCALL(NtGetContextThread, (HANDLE handle, ARM64_NT_CONTEXT *context))
+diff --git a/dlls/ntdll/unix/server.c b/dlls/ntdll/unix/server.c
+index 160ef8201b6..a722c1d60d3 100644
+--- a/dlls/ntdll/unix/server.c
++++ b/dlls/ntdll/unix/server.c
+@@ -566,7 +566,7 @@ static void invoke_system_apc( const union apc_call *call, union apc_result *res
+         if ((ULONG_PTR)addr == call->virtual_flush.addr && size == call->virtual_flush.size)
+         {
+             result->virtual_flush.status = NtFlushVirtualMemory( NtCurrentProcess(),
+-                                                                 (const void **)&addr, &size, 0 );
++                                                                 (const void **)&addr, &size, NULL );
+             result->virtual_flush.addr = wine_server_client_ptr( addr );
+             result->virtual_flush.size = size;
+         }
+diff --git a/dlls/ntdll/unix/virtual.c b/dlls/ntdll/unix/virtual.c
+index 52b3bba79fb..c16e612deca 100644
+--- a/dlls/ntdll/unix/virtual.c
++++ b/dlls/ntdll/unix/virtual.c
+@@ -6556,7 +6556,7 @@ NTSTATUS WINAPI NtQuerySection( HANDLE handle, SECTION_INFORMATION_CLASS class,
+  *             ZwFlushVirtualMemory   (NTDLL.@)
+  */
+ NTSTATUS WINAPI NtFlushVirtualMemory( HANDLE process, LPCVOID *addr_ptr,
+-                                      SIZE_T *size_ptr, ULONG unknown )
++                                      SIZE_T *size_ptr, IO_STATUS_BLOCK *io )
+ {
+     struct file_view *view;
+     unsigned int status = STATUS_SUCCESS;
+diff --git a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
+index 4426e5066e0..b7ca5390ec8 100644
+--- a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
++++ b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
+@@ -1440,7 +1440,7 @@
+ @ stdcall -private ZwFlushBuffersFile(long ptr) NtFlushBuffersFile
+ @ stdcall -private ZwFlushInstructionCache(long ptr long) NtFlushInstructionCache
+ @ stdcall -private ZwFlushKey(long) NtFlushKey
+-@ stdcall -private ZwFlushVirtualMemory(long ptr ptr long) NtFlushVirtualMemory
++@ stdcall -private ZwFlushVirtualMemory(long ptr ptr ptr) NtFlushVirtualMemory
+ @ stdcall -private ZwFreeVirtualMemory(long ptr ptr long) NtFreeVirtualMemory
+ @ stdcall -private ZwFsControlFile(long long ptr ptr ptr long ptr long ptr long) NtFsControlFile
+ @ stdcall -private ZwImpersonateAnonymousToken(long) NtImpersonateAnonymousToken
+diff --git a/dlls/wow64/virtual.c b/dlls/wow64/virtual.c
+index 207c13d4cd9..2316ce0a645 100644
+--- a/dlls/wow64/virtual.c
++++ b/dlls/wow64/virtual.c
+@@ -286,14 +286,15 @@ NTSTATUS WINAPI wow64_NtFlushVirtualMemory( UINT *args )
+     HANDLE process = get_handle( &args );
+     ULONG *addr32 = get_ptr( &args );
+     ULONG *size32 = get_ptr( &args );
+-    ULONG unknown = get_ulong( &args );
++    IO_STATUS_BLOCK32 *io32 = get_ptr( &args );
++    IO_STATUS_BLOCK io;
+ 
+     void *addr;
+     SIZE_T size;
+     NTSTATUS status;
+ 
+     status = NtFlushVirtualMemory( process, (const void **)addr_32to64( &addr, addr32 ),
+-                                   size_32to64( &size, size32 ), unknown );
++                                   size_32to64( &size, size32 ), iosb_32to64( &io, io32 ) );
+     if (!status)
+     {
+         put_addr( addr32, addr );
+diff --git a/include/ddk/wdm.h b/include/ddk/wdm.h
+index fcaf7b4a462..9fe4cc58df2 100644
+--- a/include/ddk/wdm.h
++++ b/include/ddk/wdm.h
+@@ -1942,7 +1942,7 @@ NTSTATUS  WINAPI ZwEnumerateKey(HANDLE,ULONG,KEY_INFORMATION_CLASS,void *,DWORD,
+ NTSTATUS  WINAPI ZwEnumerateValueKey(HANDLE,ULONG,KEY_VALUE_INFORMATION_CLASS,PVOID,ULONG,PULONG);
+ NTSTATUS  WINAPI ZwFlushInstructionCache(HANDLE,LPCVOID,SIZE_T);
+ NTSTATUS  WINAPI ZwFlushKey(HANDLE);
+-NTSTATUS  WINAPI ZwFlushVirtualMemory(HANDLE,LPCVOID*,SIZE_T*,ULONG);
++NTSTATUS  WINAPI ZwFlushVirtualMemory(HANDLE,LPCVOID*,SIZE_T*,IO_STATUS_BLOCK*);
+ NTSTATUS  WINAPI ZwFreeVirtualMemory(HANDLE,PVOID*,SIZE_T*,ULONG);
+ NTSTATUS  WINAPI ZwFsControlFile(HANDLE,HANDLE,PIO_APC_ROUTINE,PVOID,PIO_STATUS_BLOCK,ULONG,PVOID,ULONG,PVOID,ULONG);
+ NTSTATUS  WINAPI ZwInitiatePowerAction(POWER_ACTION,SYSTEM_POWER_STATE,ULONG,BOOLEAN);
+diff --git a/include/winternl.h b/include/winternl.h
+index 36c24b01e56..27ecb5c39b9 100644
+--- a/include/winternl.h
++++ b/include/winternl.h
+@@ -4580,7 +4580,7 @@ NTSYSAPI NTSTATUS  WINAPI NtFlushBuffersFileEx(HANDLE,ULONG,void*,ULONG,IO_STATU
+ NTSYSAPI NTSTATUS  WINAPI NtFlushInstructionCache(HANDLE,LPCVOID,SIZE_T);
+ NTSYSAPI NTSTATUS  WINAPI NtFlushKey(HANDLE);
+ NTSYSAPI NTSTATUS  WINAPI NtFlushProcessWriteBuffers(void);
+-NTSYSAPI NTSTATUS  WINAPI NtFlushVirtualMemory(HANDLE,LPCVOID*,SIZE_T*,ULONG);
++NTSYSAPI NTSTATUS  WINAPI NtFlushVirtualMemory(HANDLE,LPCVOID*,SIZE_T*,IO_STATUS_BLOCK*);
+ NTSYSAPI NTSTATUS  WINAPI NtFlushWriteBuffer(VOID);
+ NTSYSAPI NTSTATUS  WINAPI NtFreeVirtualMemory(HANDLE,PVOID*,SIZE_T*,ULONG);
+ NTSYSAPI NTSTATUS  WINAPI NtFsControlFile(HANDLE,HANDLE,PIO_APC_ROUTINE,PVOID,PIO_STATUS_BLOCK,ULONG,PVOID,ULONG,PVOID,ULONG);
+-- 
+2.51.0
+
