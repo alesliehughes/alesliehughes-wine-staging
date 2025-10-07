@@ -1,0 +1,121 @@
+From a64fa03c2bee59e931d6aed4c01f134aaf295d5b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 22 Jul 2025 10:48:02 +1000
+Subject: [PATCH] oleaut32: ITypeInfo support IConnectionPointContainer
+ interface
+
+---
+ dlls/oleaut32/typelib.c | 62 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
+
+diff --git a/dlls/oleaut32/typelib.c b/dlls/oleaut32/typelib.c
+index f90432cefb0..856e07c2811 100644
+--- a/dlls/oleaut32/typelib.c
++++ b/dlls/oleaut32/typelib.c
+@@ -65,6 +65,8 @@
+ 
+ #include "objbase.h"
+ #include "typelib.h"
++#include "ocidl.h"
++#include "olectl.h"
+ #include "wine/debug.h"
+ #include "variant.h"
+ #include "wine/asm.h"
+@@ -1218,6 +1220,7 @@ typedef struct tagITypeInfoImpl
+     ITypeInfo2 ITypeInfo2_iface;
+     ITypeComp ITypeComp_iface;
+     ICreateTypeInfo2 ICreateTypeInfo2_iface;
++    IConnectionPointContainer IConnectionPointContainer_iface;
+     LONG ref;
+     BOOL not_attached_to_typelib;
+     BOOL needs_layout;
+@@ -1272,6 +1275,11 @@ static inline ITypeInfoImpl *info_impl_from_ICreateTypeInfo2( ICreateTypeInfo2 *
+     return CONTAINING_RECORD(iface, ITypeInfoImpl, ICreateTypeInfo2_iface);
+ }
+ 
++static inline ITypeInfoImpl *info_impl_from_IConnectionPointContainer( IConnectionPointContainer *iface )
++{
++    return CONTAINING_RECORD(iface, ITypeInfoImpl, IConnectionPointContainer_iface);
++}
++
+ static const ITypeInfo2Vtbl tinfvt;
+ static const ITypeCompVtbl  tcompvt;
+ static const ICreateTypeInfo2Vtbl CreateTypeInfo2Vtbl;
+@@ -5596,6 +5604,57 @@ static const ITypeCompVtbl tlbtcvt =
+     ITypeLibComp_fnBindType
+ };
+ 
++static HRESULT WINAPI connpointcontainer_QueryInterface( IConnectionPointContainer *iface,
++        REFIID riid, void **obj )
++{
++    ITypeInfoImpl *This = info_impl_from_IConnectionPointContainer( iface );
++    return ITypeInfo2_QueryInterface( &This->ITypeInfo2_iface, riid, obj );
++}
++
++static ULONG WINAPI connpointcontainer_AddRef( IConnectionPointContainer *iface )
++{
++    ITypeInfoImpl *This = info_impl_from_IConnectionPointContainer( iface );
++    return ITypeInfo2_AddRef( &This->ITypeInfo2_iface );
++}
++
++static ULONG WINAPI connpointcontainer_Release( IConnectionPointContainer *iface )
++{
++    ITypeInfoImpl *This = info_impl_from_IConnectionPointContainer( iface );
++    return ITypeInfo2_Release( &This->ITypeInfo2_iface );
++}
++
++static HRESULT WINAPI connpointcontainer_EnumConnectionPoints( IConnectionPointContainer *iface,
++        IEnumConnectionPoints **points )
++{
++    ITypeInfoImpl *This = info_impl_from_IConnectionPointContainer( iface );
++    FIXME( "%p, %p\n", This, points );
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connpointcontainer_FindConnectionPoint( IConnectionPointContainer *iface,
++        REFIID riid, IConnectionPoint **point )
++{
++    ITypeInfoImpl *This = info_impl_from_IConnectionPointContainer( iface );
++
++    TRACE( "%p, %s %p\n", This, debugstr_guid( riid ), point );
++
++    if (!point) return E_POINTER;
++
++    /* TODO - Support ITypeChangeEvents */
++
++    FIXME( "unsupported connection point %s\n", debugstr_guid( riid ) );
++    return CONNECT_E_NOCONNECTION;
++}
++
++static const struct IConnectionPointContainerVtbl connpointcontainer_vtbl =
++{
++    connpointcontainer_QueryInterface,
++    connpointcontainer_AddRef,
++    connpointcontainer_Release,
++    connpointcontainer_EnumConnectionPoints,
++    connpointcontainer_FindConnectionPoint
++};
++
+ /*================== ITypeInfo(2) Methods ===================================*/
+ static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
+ {
+@@ -5607,6 +5666,7 @@ static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
+       pTypeInfoImpl->ITypeInfo2_iface.lpVtbl = &tinfvt;
+       pTypeInfoImpl->ITypeComp_iface.lpVtbl = &tcompvt;
+       pTypeInfoImpl->ICreateTypeInfo2_iface.lpVtbl = &CreateTypeInfo2Vtbl;
++      pTypeInfoImpl->IConnectionPointContainer_iface.lpVtbl = &connpointcontainer_vtbl;;
+       pTypeInfoImpl->ref = 0;
+       pTypeInfoImpl->hreftype = -1;
+       pTypeInfoImpl->typeattr.memidConstructor = MEMBERID_NIL;
+@@ -5639,6 +5699,8 @@ static HRESULT WINAPI ITypeInfo_fnQueryInterface(
+         *ppvObject = &This->ICreateTypeInfo2_iface;
+     else if(IsEqualIID(riid, &IID_ITypeComp))
+         *ppvObject = &This->ITypeComp_iface;
++    else if(IsEqualIID(riid, &IID_IConnectionPointContainer))
++        *ppvObject = &This->IConnectionPointContainer_iface;
+ 
+     if(*ppvObject){
+         IUnknown_AddRef((IUnknown*)*ppvObject);
+-- 
+2.47.2
+
