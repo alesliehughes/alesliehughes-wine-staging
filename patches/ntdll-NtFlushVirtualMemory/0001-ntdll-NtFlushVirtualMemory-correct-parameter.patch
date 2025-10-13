@@ -1,4 +1,4 @@
-From 4146d3c469b6de7c7611305573338f300a3b7b40 Mon Sep 17 00:00:00 2001
+From 715f1745b39b99dc014399fff8d993643f85638f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 8 Oct 2025 09:58:48 +1100
 Subject: [PATCH] ntdll: NtFlushVirtualMemory correct parameter
@@ -9,12 +9,12 @@ msdn: ZwFlushVirtualMemory states the last parameter is PIO_STATUS_BLOCK.
  dlls/ntdll/ntdll.spec               | 4 ++--
  dlls/ntdll/signal_arm64ec.c         | 2 +-
  dlls/ntdll/unix/server.c            | 2 +-
- dlls/ntdll/unix/virtual.c           | 2 +-
+ dlls/ntdll/unix/virtual.c           | 5 ++++-
  dlls/ntoskrnl.exe/ntoskrnl.exe.spec | 2 +-
  dlls/wow64/virtual.c                | 5 +++--
  include/ddk/wdm.h                   | 2 +-
  include/winternl.h                  | 2 +-
- 9 files changed, 12 insertions(+), 11 deletions(-)
+ 9 files changed, 15 insertions(+), 11 deletions(-)
 
 diff --git a/dlls/kernelbase/memory.c b/dlls/kernelbase/memory.c
 index 5eee84649e9..0fbfc67d966 100644
@@ -78,10 +78,10 @@ index 160ef8201b6..a722c1d60d3 100644
              result->virtual_flush.size = size;
          }
 diff --git a/dlls/ntdll/unix/virtual.c b/dlls/ntdll/unix/virtual.c
-index 52b3bba79fb..c16e612deca 100644
+index 32b7183649e..8a811923f39 100644
 --- a/dlls/ntdll/unix/virtual.c
 +++ b/dlls/ntdll/unix/virtual.c
-@@ -6556,7 +6556,7 @@ NTSTATUS WINAPI NtQuerySection( HANDLE handle, SECTION_INFORMATION_CLASS class,
+@@ -6562,13 +6562,16 @@ NTSTATUS WINAPI NtQuerySection( HANDLE handle, SECTION_INFORMATION_CLASS class,
   *             ZwFlushVirtualMemory   (NTDLL.@)
   */
  NTSTATUS WINAPI NtFlushVirtualMemory( HANDLE process, LPCVOID *addr_ptr,
@@ -90,6 +90,15 @@ index 52b3bba79fb..c16e612deca 100644
  {
      struct file_view *view;
      unsigned int status = STATUS_SUCCESS;
+     sigset_t sigset;
+     void *addr = ROUND_ADDR( *addr_ptr, page_mask );
+ 
++    if (io)
++        FIXME("Currently output io values not set.\n");
++
+     if (process != NtCurrentProcess())
+     {
+         union apc_call call;
 diff --git a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
 index 4426e5066e0..b7ca5390ec8 100644
 --- a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
