@@ -1,15 +1,46 @@
-From 8eea5d1e4120b8da5067f8c599d1f6206d0a023d Mon Sep 17 00:00:00 2001
+From 91e0a5d7046da4492666e1869c174cb441736392 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 22 Jul 2025 10:48:02 +1000
 Subject: [PATCH] oleaut32: ITypeInfo support IConnectionPointContainer
  interface
 
 ---
- dlls/oleaut32/typelib.c | 67 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ dlls/oleaut32/tests/typelib.c | 12 +++++++
+ dlls/oleaut32/typelib.c       | 62 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+)
 
+diff --git a/dlls/oleaut32/tests/typelib.c b/dlls/oleaut32/tests/typelib.c
+index 153964e17d5..419899668ad 100644
+--- a/dlls/oleaut32/tests/typelib.c
++++ b/dlls/oleaut32/tests/typelib.c
+@@ -2167,6 +2167,8 @@ static void test_CreateTypeLib(SYSKIND sys) {
+     ITypeInfo *tinfos[2];
+     ITypeInfo2 *ti2;
+     ITypeComp *tcomp, *tcomp2;
++    IConnectionPointContainer *container;
++    IConnectionPoint *conpoint;
+     MEMBERID memids[2];
+     FUNCDESC funcdesc, *pfuncdesc;
+     ELEMDESC elemdesc[5], *edesc;
+@@ -3996,6 +3998,16 @@ todo_wine {
+     hres = ITypeLib_GetTypeInfo(tl, 2, &ti);
+     ok(hres == S_OK, "got %08lx\n", hres);
+ 
++    hres = ITypeInfo_QueryInterface(ti, &IID_IConnectionPointContainer, (void**)&container);
++    ok(hres == S_OK, "got %08lx\n", hres);
++
++    hres = IConnectionPointContainer_FindConnectionPoint(container, &IID_ITypeChangeEvents, &conpoint);
++    todo_wine ok(hres == S_OK, "got %08lx\n", hres);
++    if (hres == S_OK)
++        IConnectionPoint_Release(conpoint);
++
++    IConnectionPointContainer_Release(container);
++
+     hres = ITypeInfo_QueryInterface(ti, &IID_ITypeInfo2, (void**)&ti2);
+     ok(hres == S_OK, "got %08lx\n", hres);
+ 
 diff --git a/dlls/oleaut32/typelib.c b/dlls/oleaut32/typelib.c
-index f90432cefb0..c94d0a47a87 100644
+index 54729f6da98..0f04cfd4d00 100644
 --- a/dlls/oleaut32/typelib.c
 +++ b/dlls/oleaut32/typelib.c
 @@ -65,6 +65,8 @@
@@ -41,7 +72,7 @@ index f90432cefb0..c94d0a47a87 100644
  static const ITypeInfo2Vtbl tinfvt;
  static const ITypeCompVtbl  tcompvt;
  static const ICreateTypeInfo2Vtbl CreateTypeInfo2Vtbl;
-@@ -5596,6 +5604,62 @@ static const ITypeCompVtbl tlbtcvt =
+@@ -5596,6 +5604,57 @@ static const ITypeCompVtbl tlbtcvt =
      ITypeLibComp_fnBindType
  };
  
@@ -81,12 +112,7 @@ index f90432cefb0..c94d0a47a87 100644
 +
 +    if (!point) return E_POINTER;
 +
-+    /*if (IsEqualIID( riid, connection->cp_connev.riid ))
-+    {
-+        *point = &connection->cp_connev.IConnectionPoint_iface;
-+        IConnectionPoint_AddRef( *point );
-+        return S_OK;
-+    }*/
++    /* TODO - ITypeChangeEvents 00020410-0000-0000-C000-000000000046 */
 +
 +    FIXME( "unsupported connection point %s\n", debugstr_guid( riid ) );
 +    return CONNECT_E_NOCONNECTION;
@@ -104,7 +130,7 @@ index f90432cefb0..c94d0a47a87 100644
  /*================== ITypeInfo(2) Methods ===================================*/
  static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
  {
-@@ -5607,6 +5671,7 @@ static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
+@@ -5607,6 +5666,7 @@ static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
        pTypeInfoImpl->ITypeInfo2_iface.lpVtbl = &tinfvt;
        pTypeInfoImpl->ITypeComp_iface.lpVtbl = &tcompvt;
        pTypeInfoImpl->ICreateTypeInfo2_iface.lpVtbl = &CreateTypeInfo2Vtbl;
@@ -112,7 +138,7 @@ index f90432cefb0..c94d0a47a87 100644
        pTypeInfoImpl->ref = 0;
        pTypeInfoImpl->hreftype = -1;
        pTypeInfoImpl->typeattr.memidConstructor = MEMBERID_NIL;
-@@ -5639,6 +5704,8 @@ static HRESULT WINAPI ITypeInfo_fnQueryInterface(
+@@ -5639,6 +5699,8 @@ static HRESULT WINAPI ITypeInfo_fnQueryInterface(
          *ppvObject = &This->ICreateTypeInfo2_iface;
      else if(IsEqualIID(riid, &IID_ITypeComp))
          *ppvObject = &This->ITypeComp_iface;
@@ -122,5 +148,5 @@ index f90432cefb0..c94d0a47a87 100644
      if(*ppvObject){
          IUnknown_AddRef((IUnknown*)*ppvObject);
 -- 
-2.47.2
+2.51.0
 
