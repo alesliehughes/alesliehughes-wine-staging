@@ -1,0 +1,217 @@
+From 796ee5c5b7123ba31b2e0e3ac9106223d189909f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 1 Dec 2025 10:36:57 +1100
+Subject: [PATCH] oleaut32: Add IConnectionPoint for ITypeChangeEvents.
+
+---
+ dlls/oleaut32/typelib.c | 159 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 158 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/typelib.c b/dlls/oleaut32/typelib.c
+index 0f04cfd4d00..543f2583e56 100644
+--- a/dlls/oleaut32/typelib.c
++++ b/dlls/oleaut32/typelib.c
+@@ -1214,6 +1214,17 @@ typedef struct tagTLBImplType
+     struct list custdata_list;
+ } TLBImplType;
+ 
++struct tagITypeInfoImpl;
++
++struct connection_point
++{
++    IConnectionPoint   IConnectionPoint_iface;
++    struct tagITypeInfoImpl *conn;
++    const IID         *riid;
++    IUnknown          **sinks;
++    ULONG              sinks_size;
++};
++
+ /* internal TypeInfo data */
+ typedef struct tagITypeInfoImpl
+ {
+@@ -1253,6 +1264,8 @@ typedef struct tagITypeInfoImpl
+ 
+     struct list *pcustdata_list;
+     struct list custdata_list;
++
++    struct connection_point cp_connev;
+ } ITypeInfoImpl;
+ 
+ static inline ITypeInfoImpl *info_impl_from_ITypeComp( ITypeComp *iface )
+@@ -1280,6 +1293,11 @@ static inline ITypeInfoImpl *info_impl_from_IConnectionPointContainer( IConnecti
+     return CONTAINING_RECORD(iface, ITypeInfoImpl, IConnectionPointContainer_iface);
+ }
+ 
++static inline struct connection_point *impl_from_IConnectionPoint( IConnectionPoint *iface )
++{
++    return CONTAINING_RECORD( iface, struct connection_point, IConnectionPoint_iface );
++}
++
+ static const ITypeInfo2Vtbl tinfvt;
+ static const ITypeCompVtbl  tcompvt;
+ static const ICreateTypeInfo2Vtbl CreateTypeInfo2Vtbl;
+@@ -5640,7 +5658,12 @@ static HRESULT WINAPI connpointcontainer_FindConnectionPoint( IConnectionPointCo
+ 
+     if (!point) return E_POINTER;
+ 
+-    /* TODO - ITypeChangeEvents 00020410-0000-0000-C000-000000000046 */
++    if (IsEqualIID( riid, This->cp_connev.riid ))
++    {
++        *point = &This->cp_connev.IConnectionPoint_iface;
++        IConnectionPoint_AddRef( *point );
++        return S_OK;
++    }
+ 
+     FIXME( "unsupported connection point %s\n", debugstr_guid( riid ) );
+     return CONNECT_E_NOCONNECTION;
+@@ -5655,6 +5678,134 @@ static const struct IConnectionPointContainerVtbl connpointcontainer_vtbl =
+     connpointcontainer_FindConnectionPoint
+ };
+ 
++static HRESULT WINAPI connpoint_QueryInterface( IConnectionPoint *iface, REFIID riid, void **obj )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++
++    if (IsEqualGUID( &IID_IUnknown, riid ) || IsEqualGUID( &IID_IConnectionPoint, riid ))
++    {
++        *obj = &connpoint->IConnectionPoint_iface;
++    }
++    else
++    {
++        FIXME( "interface %s not implemented\n", debugstr_guid( riid ) );
++        return E_NOINTERFACE;
++    }
++
++    //ITypeInfo2_AddRef( &This->ITypeInfo2_iface );
++    ITypeInfo2_AddRef( &connpoint->conn->ITypeInfo2_iface );
++    return S_OK;
++}
++
++static ULONG WINAPI connpoint_AddRef( IConnectionPoint *iface )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    return IConnectionPointContainer_AddRef( &connpoint->conn->IConnectionPointContainer_iface );
++}
++
++static ULONG WINAPI connpoint_Release( IConnectionPoint *iface )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    return IConnectionPointContainer_Release( &connpoint->conn->IConnectionPointContainer_iface );
++}
++
++static HRESULT WINAPI connpoint_GetConnectionInterface( IConnectionPoint *iface, IID *iid )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    FIXME( "%p, %p\n", connpoint, iid );
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connpoint_GetConnectionPointContainer( IConnectionPoint *iface,
++        IConnectionPointContainer **container )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    FIXME( "%p, %p\n", connpoint, container );
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI connpoint_Advise( IConnectionPoint *iface, IUnknown *unk_sink,
++        DWORD *cookie )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    IUnknown *sink, **tmp;
++    ULONG new_size;
++    HRESULT hr;
++    DWORD i;
++
++    TRACE( "%p, %p, %p\n", iface, unk_sink, cookie );
++
++    if (!unk_sink || !cookie) return E_FAIL;
++
++    if (FAILED(hr = IUnknown_QueryInterface( unk_sink, &IID_ITypeChangeEvents, (void**)&sink )))
++    {
++        *cookie = 0;
++        return E_FAIL;
++    }
++
++    if (connpoint->sinks)
++    {
++        for (i = 0; i < connpoint->sinks_size; ++i)
++        {
++            if (!connpoint->sinks[i])
++                break;
++        }
++
++        if (i == connpoint->sinks_size)
++        {
++            new_size = connpoint->sinks_size * 2;
++            if (!(tmp = realloc( connpoint->sinks, new_size * sizeof(*connpoint->sinks) )))
++                return E_OUTOFMEMORY;
++            memset( tmp + connpoint->sinks_size, 0, (new_size - connpoint->sinks_size) * sizeof(*connpoint->sinks) );
++            connpoint->sinks = tmp;
++            connpoint->sinks_size = new_size;
++        }
++    }
++    else
++    {
++        if (!(connpoint->sinks = calloc( 1, sizeof(*connpoint->sinks) ))) return E_OUTOFMEMORY;
++        connpoint->sinks_size = 1;
++        i = 0;
++    }
++
++    connpoint->sinks[i] = sink;
++    *cookie = i + 1;
++    return S_OK;
++}
++
++static HRESULT WINAPI connpoint_Unadvise( IConnectionPoint *iface, DWORD cookie )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    TRACE( "%p, %lu\n", connpoint, cookie );
++
++    if (!cookie || cookie > connpoint->sinks_size || !connpoint->sinks || !connpoint->sinks[cookie - 1])
++        return E_FAIL;
++
++    IUnknown_Release( connpoint->sinks[cookie - 1] );
++    connpoint->sinks[cookie - 1] = NULL;
++    return S_OK;
++}
++
++static HRESULT WINAPI connpoint_EnumConnections( IConnectionPoint *iface,
++        IEnumConnections **points )
++{
++    struct connection_point *connpoint = impl_from_IConnectionPoint( iface );
++    FIXME( "%p, %p\n", connpoint, points );
++    return E_NOTIMPL;
++}
++
++static const IConnectionPointVtbl connpoint_vtbl =
++{
++    connpoint_QueryInterface,
++    connpoint_AddRef,
++    connpoint_Release,
++    connpoint_GetConnectionInterface,
++    connpoint_GetConnectionPointContainer,
++    connpoint_Advise,
++    connpoint_Unadvise,
++    connpoint_EnumConnections
++};
++
+ /*================== ITypeInfo(2) Methods ===================================*/
+ static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
+ {
+@@ -5673,6 +5824,12 @@ static ITypeInfoImpl* ITypeInfoImpl_Constructor(void)
+       pTypeInfoImpl->typeattr.memidDestructor = MEMBERID_NIL;
+       pTypeInfoImpl->pcustdata_list = &pTypeInfoImpl->custdata_list;
+       list_init(pTypeInfoImpl->pcustdata_list);
++
++      pTypeInfoImpl->cp_connev.conn = pTypeInfoImpl;
++      pTypeInfoImpl->cp_connev.riid = &IID_ITypeChangeEvents;
++      pTypeInfoImpl->cp_connev.IConnectionPoint_iface.lpVtbl = &connpoint_vtbl;
++      pTypeInfoImpl->cp_connev.sinks = NULL;
++      pTypeInfoImpl->cp_connev.sinks_size = 0;
+     }
+     TRACE("(%p)\n", pTypeInfoImpl);
+     return pTypeInfoImpl;
+-- 
+2.51.0
+

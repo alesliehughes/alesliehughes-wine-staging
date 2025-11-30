@@ -1,0 +1,25 @@
+From 75b726a03a07ff9a1c17578f2e87b25f2cdd3658 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 27 Nov 2025 14:47:37 +1100
+Subject: [PATCH] oleaut32: Fake return from ICreateTypeInfo2_fnSetFuncCustData
+
+---
+ dlls/oleaut32/typelib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/typelib.c b/dlls/oleaut32/typelib.c
+index 58a643bd1be..54729f6da98 100644
+--- a/dlls/oleaut32/typelib.c
++++ b/dlls/oleaut32/typelib.c
+@@ -11319,7 +11319,7 @@ static HRESULT WINAPI ICreateTypeInfo2_fnSetFuncCustData(ICreateTypeInfo2 *iface
+ {
+     ITypeInfoImpl *This = info_impl_from_ICreateTypeInfo2(iface);
+     FIXME("%p %u %s %p - stub\n", This, index, debugstr_guid(guid), varVal);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI ICreateTypeInfo2_fnSetParamCustData(ICreateTypeInfo2 *iface,
+-- 
+2.51.0
+
