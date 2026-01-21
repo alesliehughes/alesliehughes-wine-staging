@@ -1,4 +1,4 @@
-From 5fdc661a521ce58a4dfd8c7b2434e88fb0a176bf Mon Sep 17 00:00:00 2001
+From 859c472032aa9c6adb43271a0ac85a0f81fc4f06 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 14 Jun 2024 14:06:05 +1000
 Subject: [PATCH] odbccp32: Add ODBC Data Source Administrator dialog.
@@ -7,13 +7,12 @@ Contains three basic tabs.
 - User DSN.
 - System DSN.
 - Drivers.
-
 ---
  dlls/odbccp32/Makefile.in |   2 +-
  dlls/odbccp32/odbccp32.c  | 159 ++++++++++++++++++++++++++++++++++++++
  dlls/odbccp32/odbccp32.rc |  48 ++++++++++++
- dlls/odbccp32/resource.h  |  29 +++++++
- 4 files changed, 237 insertions(+), 1 deletion(-)
+ dlls/odbccp32/resource.h  |  32 ++++++++
+ 4 files changed, 240 insertions(+), 1 deletion(-)
  create mode 100644 dlls/odbccp32/resource.h
 
 diff --git a/dlls/odbccp32/Makefile.in b/dlls/odbccp32/Makefile.in
@@ -29,7 +28,7 @@ index f82bb54bfdc..37578242e67 100644
  SOURCES = \
  	odbccp32.c \
 diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
-index 48f3a811951..9235a536be8 100644
+index fdb9f8d6359..ae9b534655e 100644
 --- a/dlls/odbccp32/odbccp32.c
 +++ b/dlls/odbccp32/odbccp32.c
 @@ -25,17 +25,24 @@
@@ -205,7 +204,7 @@ index 48f3a811951..9235a536be8 100644
      return FALSE;
  }
  
-@@ -1406,6 +1549,10 @@ BOOL WINAPI SQLManageDataSources(HWND hwnd)
+@@ -1455,6 +1598,10 @@ BOOL WINAPI SQLManageDataSources(HWND hwnd)
      clear_errors();
      FIXME("%p\n", hwnd);
      SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
@@ -216,7 +215,7 @@ index 48f3a811951..9235a536be8 100644
      return FALSE;
  }
  
-@@ -1870,3 +2017,15 @@ BOOL WINAPI SQLWritePrivateProfileString(LPCSTR lpszSection, LPCSTR lpszEntry,
+@@ -1977,3 +2124,15 @@ BOOL WINAPI SQLWritePrivateProfileString(LPCSTR lpszSection, LPCSTR lpszEntry,
  
      return ret;
  }
@@ -297,10 +296,10 @@ index b3eaa3c3a54..635694b7f8c 100644
 +END
 diff --git a/dlls/odbccp32/resource.h b/dlls/odbccp32/resource.h
 new file mode 100644
-index 00000000000..b26a38dcaa7
+index 00000000000..93afb5768fb
 --- /dev/null
 +++ b/dlls/odbccp32/resource.h
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,32 @@
 +/*
 + * Copyright 2024 Alistair Leslie-Hughes
 + *
@@ -318,6 +317,9 @@ index 00000000000..b26a38dcaa7
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 + */
++#include <windef.h>
++#include <winuser.h>
++#include <commctrl.h>
 +
 +#define IDD_USER_SOURCES     100
 +#define IDD_SYS_SOURCES      101
@@ -331,5 +333,5 @@ index 00000000000..b26a38dcaa7
 +
 +#define IDS_USER_SRC_TITLE   10000
 -- 
-2.43.0
+2.51.0
 
