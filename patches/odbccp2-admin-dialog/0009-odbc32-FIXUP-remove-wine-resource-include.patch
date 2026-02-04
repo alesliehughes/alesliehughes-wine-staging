@@ -1,0 +1,32 @@
+From dd35bd3758a687cae060a972c9fd32c88c74379d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 5 Feb 2026 09:40:43 +1100
+Subject: [PATCH] odbc32: FIXUP remove wine resource include
+
+---
+ dlls/odbccp32/odbccp32.rc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/odbccp32/odbccp32.rc b/dlls/odbccp32/odbccp32.rc
+index 67072aed6b5..5a8342698a1 100644
+--- a/dlls/odbccp32/odbccp32.rc
++++ b/dlls/odbccp32/odbccp32.rc
+@@ -26,7 +26,7 @@
+ #define WINE_PRODUCTVERSION 10,0,1904,1
+ #define WINE_PRODUCTVERSION_STR "10.0.1904.1"
+ 
+-#include "wine/wine_common_ver.rc"
++//#include "wine/wine_common_ver.rc"
+ 
+ LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
+ 
+@@ -91,4 +91,4 @@ BEGIN
+     LTEXT           "&Select a driver for which you want to set up a data source.",-1, 7, 7, 287, 8
+     CONTROL         "List1", IDC_DRIVER_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP, 7, 18, 280, 105
+     PUSHBUTTON      "&Advanced...", IDC_ADVACNED, 237, 133, 50, 14
+-END
+\ No newline at end of file
++END
+-- 
+2.51.0
+
