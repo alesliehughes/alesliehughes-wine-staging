@@ -1,4 +1,4 @@
-From 413aea860eea4dd2bf77bfb1bfa15742f233f7be Mon Sep 17 00:00:00 2001
+From d36616a0b1b578411172a3edae0a619f5029c1a6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 09:10:34 +1000
 Subject: [PATCH] tiptsf: Add dll
@@ -10,18 +10,18 @@ Subject: [PATCH] tiptsf: Add dll
  dlls/tiptsf/tiptsf.spec   | 11 +++++++++++
  dlls/tiptsf/tiptsf_main.c | 33 +++++++++++++++++++++++++++++++++
  include/peninputpanel.idl |  3 +++
- loader/wine.inf.in        |  2 ++
- 7 files changed, 76 insertions(+)
+ loader/wine.inf.in        |  5 +++++
+ 7 files changed, 79 insertions(+)
  create mode 100644 dlls/tiptsf/Makefile.in
  create mode 100644 dlls/tiptsf/tiptsf.idl
  create mode 100644 dlls/tiptsf/tiptsf.spec
  create mode 100644 dlls/tiptsf/tiptsf_main.c
 
 diff --git a/configure.ac b/configure.ac
-index 819b58f4206..95d6624e422 100644
+index 9cbe31c642d..f09e63c053a 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3194,6 +3194,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdh)
+@@ -3211,6 +3211,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdh/tests)
  WINE_CONFIG_MAKEFILE(dlls/tdi.sys)
  WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt)
  WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt/tests)
@@ -125,10 +125,10 @@ index 00000000000..137acf9630c
 +}
 \ No newline at end of file
 diff --git a/include/peninputpanel.idl b/include/peninputpanel.idl
-index 9172142706c..cc2f208ebb3 100644
+index 0d1188705d2..cfb179c09a6 100644
 --- a/include/peninputpanel.idl
 +++ b/include/peninputpanel.idl
-@@ -194,6 +194,9 @@ interface ITextInputPanel : IUnknown
+@@ -195,6 +195,9 @@ interface ITextInputPanel : IUnknown
  }
  
  [
@@ -139,22 +139,26 @@ index 9172142706c..cc2f208ebb3 100644
  ]
  coclass TextInputPanel
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index 68415d7977e..1e505bb9117 100644
+index 692f1f75302..0cbc0a67143 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -1025,6 +1025,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
- 16422,Internet Explorer,iexplore.exe
+@@ -1034,6 +1034,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
  16422,Windows Media Player,wmplayer.exe
  16422,Windows NT\Accessories,wordpad.exe
+ 16427,Microsoft Shared\Ink,inkobj.dll
 +16427,Microsoft Shared\Ink,tiptsf.dll
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
  16427,System\OLE DB,msdasql.dll
-@@ -1092,6 +1093,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
+@@ -1103,7 +1104,11 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
  16422,Windows Media Player,wmplayer.exe
  16422,Windows NT\Accessories,wordpad.exe
  16427,Microsoft Shared\TextConv,
++<<<<<<< HEAD
+ 16427,Microsoft Shared\Ink,inkobj.dll
++=======
 +16427,Microsoft Shared\Ink,tiptsf.dll
++>>>>>>> 7d0d4a12464 (tiptsf: Add dll)
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
  16427,System\OLE DB,msdasql.dll

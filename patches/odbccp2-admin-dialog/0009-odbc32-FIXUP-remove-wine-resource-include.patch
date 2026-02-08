@@ -1,7 +1,7 @@
 From dd35bd3758a687cae060a972c9fd32c88c74379d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 5 Feb 2026 09:40:43 +1100
-Subject: [PATCH] odbc32: FIXUP remove wine resource include
+Subject: [PATCH] odbccp32: FIXUP remove wine resource include
 
 ---
  dlls/odbccp32/odbccp32.rc | 4 ++--
