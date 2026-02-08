@@ -1,0 +1,45 @@
+From 9011ae5b6d856ffaf0fbb7c1e66c00140e9f363f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 9 Feb 2026 10:51:29 +1100
+Subject: [PATCH] odbcad32: Implement dialog via SQLManageDataSources
+
+---
+ programs/odbcad32/Makefile.in | 1 +
+ programs/odbcad32/main.c      | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/programs/odbcad32/Makefile.in b/programs/odbcad32/Makefile.in
+index 950f02b699f..b77789bf405 100644
+--- a/programs/odbcad32/Makefile.in
++++ b/programs/odbcad32/Makefile.in
+@@ -1,4 +1,5 @@
+ MODULE    = odbcad32.exe
++IMPORTS   = odbccp32
+ 
+ EXTRADLLFLAGS = -mwindows -municode
+ 
+diff --git a/programs/odbcad32/main.c b/programs/odbcad32/main.c
+index 9335ec2fef0..1f258a11fb8 100644
+--- a/programs/odbcad32/main.c
++++ b/programs/odbcad32/main.c
+@@ -19,12 +19,16 @@
+ #include <stdarg.h>
+ #include "windef.h"
+ #include "winbase.h"
++#include "odbcinst.h"
+ #include "wine/debug.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(odbc);
+ 
+ int WINAPI wWinMain(HINSTANCE hinst, HINSTANCE hprevinst, LPWSTR cmdline, int cmdshow)
+ {
+-    WINE_FIXME("stub\n");
++    WINE_TRACE("\n");
++
++    SQLManageDataSources(NULL);
++
+     return 0;
+ }
+-- 
+2.51.0
+
