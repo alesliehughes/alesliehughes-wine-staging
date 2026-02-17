@@ -1,0 +1,25 @@
+From 04f27ba2f333437104f05b9e210d26c9a7e9eaa8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 17 Feb 2026 15:42:01 +1100
+Subject: [PATCH] include: winnt.h workaround compile using gcc
+
+---
+ include/winnt.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/winnt.h b/include/winnt.h
+index 373fd7705a9..b823208e748 100644
+--- a/include/winnt.h
++++ b/include/winnt.h
+@@ -7233,7 +7233,7 @@ static FORCEINLINE void MemoryBarrier(void)
+  * release semantics.  We explicitly use ISO volatile semantics, manually
+  * placing barriers as appropriate.
+  */
+-#if _MSC_VER >= 1700
++#if _MSC_VER >= 2700
+ #pragma intrinsic(__iso_volatile_load32)
+ #pragma intrinsic(__iso_volatile_load64)
+ #pragma intrinsic(__iso_volatile_store32)
+-- 
+2.51.0
+

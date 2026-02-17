@@ -1,0 +1,27 @@
+From 9fa4adf80b92817fc3ea8f8b6c26be41c8a7185a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 17 Feb 2026 15:36:59 +1100
+Subject: [PATCH] include: iphlpapi.h avoid C++ keyword
+
+---
+ include/iphlpapi.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/iphlpapi.h b/include/iphlpapi.h
+index ca280a65806..7d5a7699fce 100644
+--- a/include/iphlpapi.h
++++ b/include/iphlpapi.h
+@@ -66,8 +66,8 @@ IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetIpStatistics(PMIB_IPSTATS pStats);
+ IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetIpStatisticsEx(PMIB_IPSTATS pStats, DWORD dwFamily);
+ IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetIcmpStatistics(PMIB_ICMP pStats);
+ IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetIcmpStatisticsEx(PMIB_ICMP_EX pStats, DWORD dwFamily);
+-IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetOwnerModuleFromTcp6Entry(PMIB_TCP6ROW_OWNER_MODULE entry, TCPIP_OWNER_MODULE_INFO_CLASS class, void *info, DWORD *size);
+-IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetOwnerModuleFromTcpEntry(PMIB_TCPROW_OWNER_MODULE entry, TCPIP_OWNER_MODULE_INFO_CLASS class, void *info, DWORD *size);
++IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetOwnerModuleFromTcp6Entry(PMIB_TCP6ROW_OWNER_MODULE entry, TCPIP_OWNER_MODULE_INFO_CLASS infoclass, void *info, DWORD *size);
++IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetOwnerModuleFromTcpEntry(PMIB_TCPROW_OWNER_MODULE entry, TCPIP_OWNER_MODULE_INFO_CLASS infoclass, void *info, DWORD *size);
+ IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetTcpStatistics(PMIB_TCPSTATS pStats);
+ IPHLPAPI_DLL_LINKAGE DWORD WINAPI GetTcpStatisticsEx(PMIB_TCPSTATS pStats, DWORD dwFamily);
+ IPHLPAPI_DLL_LINKAGE ULONG WINAPI GetPerTcpConnectionEStats(MIB_TCPROW *row, TCP_ESTATS_TYPE stats, UCHAR *rw, ULONG rw_version,
+-- 
+2.51.0
+
