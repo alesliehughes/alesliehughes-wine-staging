@@ -1,0 +1,47 @@
+From 0968651d3ccaaec7e749af94b8a9373a80d8c43a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 2 Mar 2026 06:48:28 +1100
+Subject: [PATCH] winhttp: Support Qyuery option WINHTTP_OPTION_SECURITY_INFO
+
+---
+ dlls/winhttp/session.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/dlls/winhttp/session.c b/dlls/winhttp/session.c
+index 1844ebc8571..e803d91f988 100644
+--- a/dlls/winhttp/session.c
++++ b/dlls/winhttp/session.c
+@@ -23,6 +23,7 @@
+ #include "winsock2.h"
+ #include "ws2ipdef.h"
+ #include "ws2tcpip.h"
++#include "schannel.h"
+ #include "winhttp.h"
+ #include "winreg.h"
+ #include "winternl.h"
+@@ -802,6 +803,22 @@ static BOOL request_query_option( struct object_header *hdr, DWORD option, void
+         *buflen = sizeof(flags);
+         return TRUE;
+     }
++    case WINHTTP_OPTION_SECURITY_INFO:
++    {
++        WINHTTP_SECURITY_INFO *info = (WINHTTP_SECURITY_INFO *)buffer;
++        SECURITY_STATUS res;
++
++        if (!validate_buffer( buffer, buflen, sizeof(WINHTTP_SECURITY_INFO) )) return FALSE;
++
++        if (!request->netconn->secure) return FALSE;
++        res = QueryContextAttributesW(&request->netconn->ssl_ctx, SECPKG_ATTR_CONNECTION_INFO, (void*)&info->ConnectionInfo);
++        if(res != SEC_E_OK)
++            WARN( "QueryContextAttributesW failed: %#lx\n", res );
++        res = QueryContextAttributesW(&request->netconn->ssl_ctx, SECPKG_ATTR_CIPHER_INFO, (void*)&info->CipherInfo);
++        if(res != SEC_E_OK)
++            WARN( "QueryContextAttributesW failed: %#lx\n", res );
++        return TRUE;
++    }
+     case WINHTTP_OPTION_SERVER_CERT_CONTEXT:
+     {
+         const CERT_CONTEXT *cert;
+-- 
+2.51.0
+
