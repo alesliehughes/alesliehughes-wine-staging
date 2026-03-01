@@ -1,0 +1,35 @@
+From aeec35b5699dced1e0bcc2ba453bebdf02e2e681 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 27 Feb 2026 14:59:37 +1100
+Subject: [PATCH 08/14] windows.ui.core.textinput: Register
+ CoreTextServicesManager
+
+---
+ dlls/windows.ui.core.textinput/classes.idl | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/windows.ui.core.textinput/classes.idl b/dlls/windows.ui.core.textinput/classes.idl
+index 71c1bf98634..51dc8c03d3a 100644
+--- a/dlls/windows.ui.core.textinput/classes.idl
++++ b/dlls/windows.ui.core.textinput/classes.idl
+@@ -22,7 +22,15 @@
+ #pragma winrt ns_prefix
+ 
+ import "windows.ui.viewmanagement.core.idl";
++import "windows.ui.text.core.idl";
+ 
+-namespace Windows.UI.ViewManagement.Core {
+-    runtimeclass CoreInputView;
++namespace Windows.UI {
++
++    namespace ViewManagement.Core {
++        runtimeclass CoreInputView;
++    }
++
++    namespace Text.Core {
++        runtimeclass CoreTextServicesManager;
++    }
+ }
+-- 
+2.51.0
+

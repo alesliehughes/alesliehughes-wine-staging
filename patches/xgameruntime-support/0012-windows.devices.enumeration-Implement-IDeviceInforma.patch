@@ -1,0 +1,101 @@
+From 963b450bfca66eb180fe902077b596e350a2339b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 1 Mar 2026 12:02:12 +1100
+Subject: [PATCH 12/14] windows.devices.enumeration: Implement
+ IDeviceInformationStatics2::CreateFromIdAsync
+
+From WineGDK.
+
+FIXME: NOT completely correct, corrects for compile but not correct ATM.
+---
+ dlls/windows.devices.enumeration/main.c | 63 +++++++++++++++++++++++--
+ 1 file changed, 60 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/windows.devices.enumeration/main.c b/dlls/windows.devices.enumeration/main.c
+index 081260da759..0a79b16f6fd 100644
+--- a/dlls/windows.devices.enumeration/main.c
++++ b/dlls/windows.devices.enumeration/main.c
+@@ -32,6 +32,16 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(enumeration);
+ 
++static HRESULT async( IUnknown *invoker, IUnknown *param, PROPVARIANT *result, BOOL called_async)
++{
++    TRACE( "invoker %p, param %p, result %p, called_async %d\n", invoker, param, result, called_async);
++
++    result->vt = VT_UNKNOWN;
++    result->punkVal = (IUnknown *)param;
++
++    return S_OK;
++}
++
+ struct devquery_params
+ {
+     IUnknown IUnknown_iface;
+@@ -887,13 +897,60 @@ static HRESULT WINAPI device_statics2_GetAqsFilterFromDeviceClass( IDeviceInform
+     return E_NOTIMPL;
+ }
+ 
++//DEFINE_ASYNC_COMPLETED_HANDLER( async_iinspectable_handler, IAsyncOperationCompletedHandler_IInspectable, IAsyncOperation_IInspectable );
++
+ static HRESULT WINAPI device_statics2_CreateFromIdAsync( IDeviceInformationStatics2 *iface, HSTRING device_id,
+                                                          IIterable_HSTRING *additional_properties, DeviceInformationKind kind,
+                                                          IAsyncOperation_DeviceInformation **async_operation )
+ {
+-    FIXME( "iface %p, device_id %s, additional_properties %p, kind %u, async_operation %p stub!\n",
+-            iface, debugstr_hstring( device_id ), additional_properties, kind, async_operation );
+-    return E_NOTIMPL;
++    const DEVPROPCOMPKEY device_iface_default_props[] = {
++        { DEVPKEY_DeviceInterface_Enabled, DEVPROP_STORE_SYSTEM, NULL },
++        { DEVPKEY_Device_InstanceId, DEVPROP_STORE_SYSTEM, NULL },
++    };
++    DEVPROPCOMPKEY *prop_keys = NULL;
++    struct aqs_expr *expr = NULL;
++    ULONG prop_keys_len = 0;
++    IUnknown *params;
++    HSTRING filter;
++    HRESULT hr;
++    //DWORD asyncRes;
++
++    IAsyncOperation_IInspectable *op = NULL;
++    IVectorView_DeviceInformation *vec = NULL;
++    IDeviceInformation *dev = NULL;
++
++    WindowsCreateString( L"", wcslen( L""), &filter );
++
++    TRACE( "iface %p, device_id %s, additional_properties %p, kind %d, async_operation %p\n", iface, debugstr_hstring(device_id), additional_properties, kind, async_operation );
++
++    if (FAILED(hr = devpropcompkeys_init( &prop_keys, &prop_keys_len, device_iface_default_props, ARRAY_SIZE( device_iface_default_props ) ))) goto failed;
++    if (additional_properties && FAILED(hr = devpropcompkeys_append_names( &prop_keys, &prop_keys_len, additional_properties ))) goto failed;
++    if (FAILED(hr = aqs_parse_query(WindowsGetStringRawBuffer( filter, NULL ), &expr, NULL ))) goto failed;
++    if (FAILED(hr = devquery_params_create( 8, expr, prop_keys, prop_keys_len, &params ))) goto failed;
++
++    hr = async_operation_inspectable_create( &IID_IAsyncOperation_DeviceInformationCollection, (IUnknown *)iface, params, find_all_async,
++                                            (IAsyncOperation_IInspectable **)&op );
++    IUnknown_Release( params );
++
++    //asyncRes = await_IAsyncOperation_IInspectable( op, INFINITE );
++    //if ( asyncRes )
++      //  return E_UNEXPECTED;
++
++    hr = IAsyncOperation_IInspectable_GetResults( op, (IInspectable **)&vec );
++    if (FAILED(hr)) return hr;
++
++    hr = IVectorView_DeviceInformation_GetAt( vec, 0, &dev );
++    if (FAILED(hr)) return hr;
++
++    hr = async_operation_inspectable_create( &IID_IAsyncOperation_DeviceInformation, (IUnknown *)iface, params, async,
++                                                (IAsyncOperation_IInspectable **)async_operation );
++
++    return hr;
++
++failed:
++    free( prop_keys );
++    free_aqs_expr( expr );
++    return hr;
+ }
+ 
+ static HRESULT WINAPI device_statics2_FindAllAsync( IDeviceInformationStatics2 *iface, HSTRING filter,
+-- 
+2.51.0
+

@@ -1,0 +1,31 @@
+From 315c219850c4608b020ebfb62de8bacd8e7930eb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 1 Mar 2026 12:16:55 +1100
+Subject: [PATCH 13/14] windows.devices.enumeration: Support DEVPROP_TYPE_EMPTY
+ type
+
+Not sure if this is right, tests are required.
+---
+ dlls/windows.devices.enumeration/information.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/dlls/windows.devices.enumeration/information.c b/dlls/windows.devices.enumeration/information.c
+index 0620975e4cb..7f0dec149d5 100644
+--- a/dlls/windows.devices.enumeration/information.c
++++ b/dlls/windows.devices.enumeration/information.c
+@@ -257,6 +257,12 @@ static HRESULT create_device_properties( const DEVPROPERTY *props, ULONG len, IM
+         case DEVPROP_TYPE_FILETIME:
+             hr = IPropertyValueStatics_CreateDateTime( propval_statics, *(DateTime *)prop->Buffer, &val );
+             break;
++        case DEVPROP_TYPE_EMPTY:
++        {
++            WindowsCreateStringReference(L"", 0, &hdr, &str);
++            hr = IPropertyValueStatics_CreateString( propval_statics, str, &val );
++            break;
++        }
+         case DEVPROP_TYPE_STRING:
+         {
+             WindowsCreateStringReference( prop->Buffer, wcslen( prop->Buffer ), &hdr, &str );
+-- 
+2.51.0
+

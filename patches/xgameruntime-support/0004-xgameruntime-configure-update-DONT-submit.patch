@@ -1,0 +1,36 @@
+From 19fa2ee6b5f82515504d05e97a976700d2925014 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 27 Feb 2026 13:52:08 +1100
+Subject: [PATCH 04/14] xgameruntime: configure update - DONT submit
+
+// Unresolved - Currently not sure what these should return.
+QueryApiImpl runtimeClassId {01acd177-91f9-4763-a38e-ccbb55ce32e0}, interfaceId {26f3c674-a2fe-44fa-b6c4-a323bc94ff53}, out 000000000010F9E0
+QueryApiImpl runtimeClassId {073b7dcb-1fcf-4030-94be-e3c9eb623428}, interfaceId {073b7dcb-1fcf-4030-94be-e3c9eb623428}, out 000000000010F600
+QueryApiImpl runtimeClassId {e349bd1a-fc20-4e40-b99c-4178cc6b409f}, interfaceId {dadc2895-34b0-4ef5-a83e-45114d629b80}, out 000000000010F668
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index 7ea1f52ad81..c5ebf314f2d 100755
+--- a/configure
++++ b/configure
+@@ -1637,6 +1637,7 @@ enable_xaudio2_6
+ enable_xaudio2_7
+ enable_xaudio2_8
+ enable_xaudio2_9
++enable_xgameruntime
+ enable_xinput1_1
+ enable_xinput1_2
+ enable_xinput1_3
+@@ -23384,6 +23385,7 @@ wine_fn_config_makefile dlls/xaudio2_7/tests enable_tests
+ wine_fn_config_makefile dlls/xaudio2_8 enable_xaudio2_8
+ wine_fn_config_makefile dlls/xaudio2_8/tests enable_tests
+ wine_fn_config_makefile dlls/xaudio2_9 enable_xaudio2_9
++wine_fn_config_makefile dlls/xgameruntime enable_xgameruntime
+ wine_fn_config_makefile dlls/xinput1_1 enable_xinput1_1
+ wine_fn_config_makefile dlls/xinput1_2 enable_xinput1_2
+ wine_fn_config_makefile dlls/xinput1_3 enable_xinput1_3
+-- 
+2.51.0
+

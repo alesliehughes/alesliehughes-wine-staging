@@ -1,0 +1,25 @@
+From 567539d4a4dec8290bdaec743a871d61aad12bcc Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 27 Feb 2026 21:47:49 +1100
+Subject: [PATCH 05/14] include: windows.ui.viewmanagement add
+ IReference<UIElementType> interface
+
+---
+ include/windows.ui.viewmanagement.idl | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/windows.ui.viewmanagement.idl b/include/windows.ui.viewmanagement.idl
+index a1976d46244..b52a6563bef 100644
+--- a/include/windows.ui.viewmanagement.idl
++++ b/include/windows.ui.viewmanagement.idl
+@@ -121,6 +121,7 @@ namespace Windows.UI.ViewManagement
+         interface Windows.Foundation.TypedEventHandler<Windows.UI.ViewManagement.UISettings *, Windows.UI.ViewManagement.UISettingsAutoHideScrollBarsChangedEventArgs *>;
+         interface Windows.Foundation.TypedEventHandler<Windows.UI.ViewManagement.UISettings *, Windows.UI.ViewManagement.UISettingsMessageDurationChangedEventArgs *>;
+         interface Windows.Foundation.TypedEventHandler<Windows.UI.ViewManagement.InputPane*, Windows.UI.ViewManagement.InputPaneVisibilityEventArgs*>;
++        interface Windows.Foundation.IReference<Windows.UI.ViewManagement.UIElementType>;
+     }
+ 
+     [
+-- 
+2.51.0
+

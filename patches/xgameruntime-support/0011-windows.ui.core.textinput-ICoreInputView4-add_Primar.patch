@@ -1,0 +1,26 @@
+From 011cc679f85a266915e3a1b7d083f6b11e164905 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 1 Mar 2026 11:36:33 +1100
+Subject: [PATCH 11/14] windows.ui.core.textinput:
+ ICoreInputView4::add_PrimaryViewHiding fake success
+
+---
+ dlls/windows.ui.core.textinput/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/windows.ui.core.textinput/main.c b/dlls/windows.ui.core.textinput/main.c
+index 49d4a02bf91..ca6241e4325 100644
+--- a/dlls/windows.ui.core.textinput/main.c
++++ b/dlls/windows.ui.core.textinput/main.c
+@@ -304,7 +304,7 @@ static HRESULT WINAPI core_input_view4_add_PrimaryViewHiding(ICoreInputView4 *if
+                                                              EventRegistrationToken *token)
+ {
+     FIXME("iface %p, handler %p, token %p stub!\n", iface, handler, token);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI core_input_view4_remove_PrimaryViewHiding(ICoreInputView4 *iface,
+-- 
+2.51.0
+

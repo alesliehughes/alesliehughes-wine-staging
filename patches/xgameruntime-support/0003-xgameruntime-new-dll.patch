@@ -1,0 +1,108 @@
+From 099647cbe46d4d71fc7275cf2ee494e7a23d45f6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 27 Feb 2026 13:49:24 +1100
+Subject: [PATCH 03/14] xgameruntime: new dll
+
+---
+ configure.ac                        |  1 +
+ dlls/xgameruntime/Makefile.in       |  4 +++
+ dlls/xgameruntime/main.c            | 49 +++++++++++++++++++++++++++++
+ dlls/xgameruntime/xgameruntime.spec |  7 +++++
+ 4 files changed, 61 insertions(+)
+ create mode 100644 dlls/xgameruntime/Makefile.in
+ create mode 100644 dlls/xgameruntime/main.c
+ create mode 100644 dlls/xgameruntime/xgameruntime.spec
+
+diff --git a/configure.ac b/configure.ac
+index 1835f30a6fb..b5ba20fadb3 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3479,6 +3479,7 @@ WINE_CONFIG_MAKEFILE(dlls/xaudio2_7/tests)
+ WINE_CONFIG_MAKEFILE(dlls/xaudio2_8)
+ WINE_CONFIG_MAKEFILE(dlls/xaudio2_8/tests)
+ WINE_CONFIG_MAKEFILE(dlls/xaudio2_9)
++WINE_CONFIG_MAKEFILE(dlls/xgameruntime)
+ WINE_CONFIG_MAKEFILE(dlls/xinput1_1)
+ WINE_CONFIG_MAKEFILE(dlls/xinput1_2)
+ WINE_CONFIG_MAKEFILE(dlls/xinput1_3)
+diff --git a/dlls/xgameruntime/Makefile.in b/dlls/xgameruntime/Makefile.in
+new file mode 100644
+index 00000000000..ff9cb21d5ae
+--- /dev/null
++++ b/dlls/xgameruntime/Makefile.in
+@@ -0,0 +1,4 @@
++MODULE    = xgameruntime.dll
++
++SOURCES = \
++	main.c
+diff --git a/dlls/xgameruntime/main.c b/dlls/xgameruntime/main.c
+new file mode 100644
+index 00000000000..cc5850ed7fd
+--- /dev/null
++++ b/dlls/xgameruntime/main.c
+@@ -0,0 +1,49 @@
++/*
++* Copyright 2026 Alsitair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#include <stdarg.h>
++
++#define COBJMACROS
++#include "windef.h"
++#include "winbase.h"
++#include "objbase.h"
++
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(xgameruntime);
++
++HRESULT WINAPI InitializeApiImplEx2( ULONG gdkVer, ULONG gsVer, CHAR mode, void *options )
++{
++    FIXME("gdkVer %ld, gsVer %ld, mode %d, options %p stub!\n", gdkVer, gsVer, mode, options);
++    return S_OK;
++}
++
++HRESULT WINAPI InitializeApiImplEx( ULONG gdkVer, ULONG gsVer, CHAR mode )
++{
++   return InitializeApiImplEx2( gdkVer, gsVer, mode, NULL );
++}
++
++HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
++{
++    return InitializeApiImplEx2( gdkVer, gsVer, 0, NULL );
++}
++
++HRESULT WINAPI QueryApiImpl( const GUID *runtimeClassId, REFIID interfaceId, void **out )
++{
++    TRACE("runtimeClassId %s, interfaceId %s, out %p\n", debugstr_guid(runtimeClassId), debugstr_guid(interfaceId), out);
++    return E_NOTIMPL;
++}
+diff --git a/dlls/xgameruntime/xgameruntime.spec b/dlls/xgameruntime/xgameruntime.spec
+new file mode 100644
+index 00000000000..6fac285c970
+--- /dev/null
++++ b/dlls/xgameruntime/xgameruntime.spec
+@@ -0,0 +1,7 @@
++@ stdcall -private DllCanUnloadNow()
++@ stdcall InitializeApiImpl(long long)
++@ stdcall InitializeApiImplEx(long long long)
++@ stdcall InitializeApiImplEx2(long long long ptr)
++@ stdcall QueryApiImpl(ptr long long)
++@ stub UninitializeApiImpl()
++@ stub XErrorReport(long ptr)
+-- 
+2.51.0
+
