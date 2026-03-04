@@ -1,0 +1,27 @@
+From e0312396e90b9ea21a71b50bc349ca5874d3d927 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 4 Mar 2026 14:33:26 +1100
+Subject: [PATCH] windows.ui.core.textinput: ICoreInputView::TryHidePrimaryView
+ return S_OK
+
+---
+ dlls/windows.ui.core.textinput/main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/windows.ui.core.textinput/main.c b/dlls/windows.ui.core.textinput/main.c
+index ca6241e4325..a48af5181f0 100644
+--- a/dlls/windows.ui.core.textinput/main.c
++++ b/dlls/windows.ui.core.textinput/main.c
+@@ -166,7 +166,8 @@ static HRESULT WINAPI core_input_view_TryShowPrimaryView(ICoreInputView *iface,
+ static HRESULT WINAPI core_input_view_TryHidePrimaryView(ICoreInputView *iface, boolean *result)
+ {
+     FIXME("iface %p, boolean %p stub!\n", iface, result);
+-    return E_NOTIMPL;
++    *result = TRUE;
++    return S_OK;
+ }
+ 
+ static const struct ICoreInputViewVtbl core_input_view_vtbl =
+-- 
+2.51.0
+
