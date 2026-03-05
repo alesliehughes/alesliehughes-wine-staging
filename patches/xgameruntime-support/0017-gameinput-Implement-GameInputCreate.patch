@@ -1,17 +1,14 @@
-From fe53341b8162ab96311226f3dc6cefbc912e84fa Mon Sep 17 00:00:00 2001
+From 10922ba39e36c8659840c7b995b824be07846761 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 3 Mar 2026 12:44:15 +1100
-Subject: [PATCH] gameinput: Implement GameInputCreate
+Subject: gameinput: Implement GameInputCreate
 
----
- dlls/gameinput/gameinput.c | 562 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 560 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/gameinput/gameinput.c b/dlls/gameinput/gameinput.c
-index c3923bf2efc..3cc90c47815 100644
+index c3923bf2efc..9548e620dad 100644
 --- a/dlls/gameinput/gameinput.c
 +++ b/dlls/gameinput/gameinput.c
-@@ -23,17 +23,575 @@
+@@ -23,17 +23,588 @@
  #include "windef.h"
  #include "winbase.h"
  
@@ -30,6 +27,9 @@ index c3923bf2efc..3cc90c47815 100644
 +
 +    LONG ref;
 +};
++
++/* Global */
++static struct game_input *gameinput = NULL;
 +
 +static inline struct game_input *impl_from_v0_IGameInput( v0_IGameInput *iface )
 +{
@@ -85,13 +85,18 @@ index c3923bf2efc..3cc90c47815 100644
 +    struct game_input *impl = impl_from_v0_IGameInput( iface );
 +    ULONG ref = InterlockedDecrement( &impl->ref );
 +    TRACE( "iface %p decreasing refcount to %lu.\n", iface, ref );
++    if (!ref)
++    {
++        gameinput = NULL;
++        free(impl);
++    }
 +    return ref;
 +}
 +
 +static uint64_t WINAPI game_input_GetCurrentTimestamp( v0_IGameInput *iface )
 +{
 +    FIXME( "iface %p, stub GetCurrentTimestamp.\n", iface );
-+    return (uint64_t)0;
++    return 0;
 +}
 +
 +static HRESULT WINAPI game_input_GetCurrentReading( v0_IGameInput *iface, GameInputKind kind,
@@ -286,7 +291,7 @@ index c3923bf2efc..3cc90c47815 100644
 +static uint64_t WINAPI game_input1_GetCurrentTimestamp( v1_IGameInput *iface )
 +{
 +    TRACE( "iface %p, stub GetCurrentTimestamp.\n", iface );
-+    return (uint64_t)0;
++    return 0;
 +}
 +
 +static HRESULT WINAPI game_input1_GetCurrentReading( v1_IGameInput *iface, GameInputKind kind,
@@ -300,13 +305,12 @@ index c3923bf2efc..3cc90c47815 100644
 +static HRESULT WINAPI game_input1_GetNextReading( v1_IGameInput *iface, v1_IGameInputReading *reference,
 +                                                 GameInputKind kind, v1_IGameInputDevice *device,
 +                                                 v1_IGameInputReading **reading )
- {
--    FIXME( "out %p, stub!\n", out );
++{
 +    FIXME( "iface %p GetNextReading reference=%p kind=%d device=%p reading=%p\n", iface, reference, kind, device, reading );
 +    if (reading) *reading = NULL;
-     return E_NOTIMPL;
- }
- 
++    return E_NOTIMPL;
++}
++
 +static HRESULT WINAPI game_input1_GetPreviousReading( v1_IGameInput *iface, v1_IGameInputReading *reference,
 +                                                     GameInputKind kind, v1_IGameInputDevice *device,
 +                                                     v1_IGameInputReading **reading )
@@ -350,13 +354,14 @@ index c3923bf2efc..3cc90c47815 100644
 +static HRESULT WINAPI game_input1_RegisterKeyboardLayoutCallback( v1_IGameInput *iface, v1_IGameInputDevice *device,
 +                                                                 void *context, v1_GameInputKeyboardLayoutCallback callback,
 +                                                                 GameInputCallbackToken *token )
-+{
+ {
+-    FIXME( "out %p, stub!\n", out );
 +    FIXME( "iface %p RegisterKeyboardLayoutCallback device=%p callback=%p token=%p\n",
 +           iface, device, callback, token );
 +    if (token) *token = (GameInputCallbackToken)0;
-+    return E_NOTIMPL;
-+}
-+
+     return E_NOTIMPL;
+ }
+ 
 +static void WINAPI game_input1_StopCallback( v1_IGameInput *iface, GameInputCallbackToken token )
 +{
 +    FIXME( "iface %p StopCallback token=%llu\n", iface, token );
@@ -438,7 +443,7 @@ index c3923bf2efc..3cc90c47815 100644
 +static uint64_t WINAPI game_input2_GetCurrentTimestamp( v2_IGameInput *iface )
 +{
 +    TRACE( "iface %p, stub GetCurrentTimestamp.\n", iface );
-+    return (uint64_t)0;
++    return 0;
 +}
 +
 +static HRESULT WINAPI game_input2_GetCurrentReading( v2_IGameInput *iface, GameInputKind kind,
@@ -567,21 +572,26 @@ index c3923bf2efc..3cc90c47815 100644
 +    game_input2_SetFocusPolicy
 +};
 +
-+
 +HRESULT WINAPI GameInputCreate( v0_IGameInput **out )
 +{
-+    struct game_input *input = NULL;
-+
 +    TRACE( "out %p\n", out );
 +
-+    if (!(input = calloc( 1, sizeof(*input) ))) return E_OUTOFMEMORY;
++    if (gameinput)
++    {
++        v0_IGameInput_AddRef( &gameinput->v0_IGameInput_iface );
++        *out = &gameinput->v0_IGameInput_iface;
++        return S_OK;
++    }
 +
-+    input->v0_IGameInput_iface.lpVtbl = &game_input_vtbl;
-+    input->v1_IGameInput_iface.lpVtbl = &game_input1_vtbl;
-+    input->v2_IGameInput_iface.lpVtbl = &game_input2_vtbl;
-+    input->ref = 1;
++    if (!(gameinput = calloc( 1, sizeof(*gameinput) )))
++        return E_OUTOFMEMORY;
 +
-+    *out = &input->v0_IGameInput_iface;
++    gameinput->v0_IGameInput_iface.lpVtbl = &game_input_vtbl;
++    gameinput->v1_IGameInput_iface.lpVtbl = &game_input1_vtbl;
++    gameinput->v2_IGameInput_iface.lpVtbl = &game_input2_vtbl;
++    gameinput->ref = 1;
++
++    *out = &gameinput->v0_IGameInput_iface;
 +
 +    return S_OK;
 +}
@@ -589,6 +599,3 @@ index c3923bf2efc..3cc90c47815 100644
  HRESULT WINAPI DllGetClassObject( REFCLSID clsid, REFIID riid, void **out )
  {
      FIXME( "clsid %s, riid %s, out %p stub!\n", debugstr_guid(clsid), debugstr_guid(riid), out );
--- 
-2.51.0
-

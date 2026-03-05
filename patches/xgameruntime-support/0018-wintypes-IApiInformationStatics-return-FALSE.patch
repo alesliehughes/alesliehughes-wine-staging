@@ -16,7 +16,7 @@ index 287e5992225..2ea34734517 100644
          return E_INVALIDARG;
  
 -    return E_NOTIMPL;
-+    /* Add interface IDataTransferManagerStatics2, then this becomes true */
++    /* Add interface IDataTransferManagerStatics2, then this can return TRUE */
 +    *value = FALSE;
 +    return S_OK;
  }

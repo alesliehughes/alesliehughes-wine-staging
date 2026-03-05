@@ -1,0 +1,24 @@
+From 4a8cd3860e8c22a95ee2b6f5470e9c751aca0b52 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 5 Mar 2026 10:36:18 +1100
+Subject: [PATCH 2/2] gameinput: Add tests configure - DONT Submit
+
+---
+ configure | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configure b/configure
+index deb1046c258..6c1979276a1 100755
+--- a/configure
++++ b/configure
+@@ -22680,6 +22680,7 @@ wine_fn_config_makefile dlls/fusion enable_fusion
+ wine_fn_config_makefile dlls/fusion/tests enable_tests
+ wine_fn_config_makefile dlls/fwpuclnt enable_fwpuclnt
+ wine_fn_config_makefile dlls/gameinput enable_gameinput
++wine_fn_config_makefile dlls/gameinput/tests enable_tests
+ wine_fn_config_makefile dlls/gameux enable_gameux
+ wine_fn_config_makefile dlls/gameux/tests enable_tests
+ wine_fn_config_makefile dlls/gamingtcui enable_gamingtcui
+-- 
+2.51.0
+
