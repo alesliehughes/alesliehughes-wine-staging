@@ -208,7 +208,7 @@ index 00000000000..048ef657cae
 +    struct data_transfer_manager_statics *impl = impl_from_IDataTransferManagerStatics( iface );
 +    ULONG ref = InterlockedDecrement( &impl->ref );
 +    TRACE( "iface %p decreasing refcount to %lu.\n", iface, ref );
-+    if (!ref) free( impl );
++
 +    return ref;
 +}
 +
