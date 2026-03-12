@@ -5,6 +5,8 @@ Subject: [PATCH 13/14] windows.devices.enumeration: Support DEVPROP_TYPE_EMPTY
  type
 
 Not sure if this is right, tests are required.
+
+This is wrong - Should return NULL and 0 size.
 ---
  dlls/windows.devices.enumeration/information.c | 6 ++++++
  1 file changed, 6 insertions(+)
