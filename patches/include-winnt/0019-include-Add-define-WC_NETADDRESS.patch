@@ -1,0 +1,25 @@
+From a0a70a7130b92f787e7dce2065bdd39478e80d3b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 16 Mar 2026 05:26:10 +1100
+Subject: [PATCH] include: Add define WC_NETADDRESS
+
+---
+ include/shellapi.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/shellapi.h b/include/shellapi.h
+index fc646820eba..107aff3d58b 100644
+--- a/include/shellapi.h
++++ b/include/shellapi.h
+@@ -521,6 +521,8 @@ typedef struct tagNC_ADDRESS
+    BYTE                     PrefixLength;
+ } NC_ADDRESS, *PNC_ADDRESS;
+ 
++#define WC_NETADDRESS       L"msctls_netaddress"
++
+ #define NCM_GETADDRESS      (WM_USER+1)
+ #define NCM_SETALLOWTYPE    (WM_USER+2)
+ #define NCM_GETALLOWTYPE    (WM_USER+3)
+-- 
+2.51.0
+

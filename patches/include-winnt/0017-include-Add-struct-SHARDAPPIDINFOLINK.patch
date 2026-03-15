@@ -1,0 +1,29 @@
+From 7b35bceaf48313c4161c6ee74ebfd88cd1c3d2e4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 16 Mar 2026 05:06:16 +1100
+Subject: [PATCH] include: Add struct SHARDAPPIDINFOLINK
+
+---
+ include/shlobj.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/include/shlobj.h b/include/shlobj.h
+index 058148ee82d..a2176046ac2 100644
+--- a/include/shlobj.h
++++ b/include/shlobj.h
+@@ -845,6 +845,12 @@ typedef struct SHARDAPPIDINFOIDLIST
+     PCWSTR pszAppID;
+ } SHARDAPPIDINFOIDLIST;
+ 
++typedef struct SHARDAPPIDINFOLINK
++{
++    IShellLinkW *psl;
++    PCWSTR pszAppID;
++} SHARDAPPIDINFOLINK;
++
+ /****************************************************************************
+  * SHBrowseForFolder API
+  */
+-- 
+2.51.0
+

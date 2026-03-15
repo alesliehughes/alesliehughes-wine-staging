@@ -1,0 +1,24 @@
+From 2967ae01fb00eb226a6140b77aa8543f0ab52170 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 16 Mar 2026 05:17:48 +1100
+Subject: [PATCH] include: Add JOB_STATUS_RESTART define
+
+---
+ include/winspool.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/winspool.h b/include/winspool.h
+index ef39104ea30..535ce3b8e9a 100644
+--- a/include/winspool.h
++++ b/include/winspool.h
+@@ -125,6 +125,7 @@ extern "C" {
+ #define JOB_STATUS_DELETED      0x0100
+ #define JOB_STATUS_BLOCKED_DEVQ 0x0200
+ #define JOB_STATUS_USER_INTERVENTION 0x0400
++#define JOB_STATUS_RESTART      0x0800
+ 
+ #define JOB_POSITION_UNSPECIFIED 1
+ 
+-- 
+2.51.0
+
