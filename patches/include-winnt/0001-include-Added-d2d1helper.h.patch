@@ -1,14 +1,19 @@
-From 26115864fe14e18bbf65d4be116a8e62ba47d35d Mon Sep 17 00:00:00 2001
+From b5a584a63f9a6d55527820da49b47f0853bfd357 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Jul 2019 13:40:01 +1000
-Subject: include: Added d2d1helper.h
+Subject: [PATCH] include: Added d2d1helper.h
 
+---
+ include/Makefile.in  |  1 +
+ include/d2d1helper.h | 69 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+)
+ create mode 100644 include/d2d1helper.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index a4d3c9f7501..8ead7cdccb4 100644
+index db9578e8baa..73b2043ff94 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -111,6 +111,7 @@ SOURCES = \
+@@ -120,6 +120,7 @@ SOURCES = \
  	d2d1effects.idl \
  	d2d1effects_1.idl \
  	d2d1effects_2.idl \
@@ -18,10 +23,10 @@ index a4d3c9f7501..8ead7cdccb4 100644
  	d3d.h \
 diff --git a/include/d2d1helper.h b/include/d2d1helper.h
 new file mode 100644
-index 00000000000..3430b5b04ee
+index 00000000000..c16af011fc8
 --- /dev/null
 +++ b/include/d2d1helper.h
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,69 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -47,8 +52,50 @@ index 00000000000..3430b5b04ee
 +
 +#ifndef D2D_USE_C_DEFINITIONS
 +
++// d2d1.h
++#ifndef D2D1FORCEINLINE
++#define D2D1FORCEINLINE FORCEINLINE
++#endif
++
 +/* TODO */
++namespace D2D1
++{
++    class Matrix3x2F : public D2D1_MATRIX_3X2_F
++    {
++        public:
++
++        static COM_DECLSPEC_NOTHROW D2D1FORCEINLINE Matrix3x2F Identity()
++        {
++            Matrix3x2F identity;
++
++            identity._11 = 1.f;
++            identity._12 = 0.f;
++            identity._21 = 0.f;
++            identity._22 = 1.f;
++            identity._31 = 0.f;
++            identity._32 = 0.f;
++
++            return identity;
++        }
++    };
++
++    /* Functions */
++    template<typename Type>
++    COM_DECLSPEC_NOTHROW D2D1FORCEINLINE typename TypeTraits<Type>::Size Size( Type width, Type height )
++    {
++        typename TypeTraits<Type>::Size size = { width, height };
++        return size;
++    }
++
++    COM_DECLSPEC_NOTHROW D2D1FORCEINLINE D2D1_SIZE_U SizeU(UINT32 width = 0, UINT32 height = 0)
++    {
++        return D2D1::Size<UINT32>(width, height);
++    }
++}
 +
 +#endif /* D2D_USE_C_DEFINITIONS */
 +
 +#endif /* _D2D1_HELPER_H_ */
+-- 
+2.51.0
+
