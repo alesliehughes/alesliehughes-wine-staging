@@ -1,18 +1,17 @@
-From 5109f89d29056d48ac367aabfc9108c25ba5c3fe Mon Sep 17 00:00:00 2001
+From 1f035f53b39dc16a0c6a8e19ccaeb2adcacc457f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 1 Mar 2026 20:04:17 +1100
 Subject: [PATCH] twinapi.appcore: Support
  Windows.ApplicationModel.DataTransfer.DataTransferManager
 
-Just a copy from WineGDK.
-- Appears the copyright name is wrong, just copied from another file.
 ---
  dlls/twinapi.appcore/Makefile.in     |   1 +
  dlls/twinapi.appcore/classes.idl     |   4 +
- dlls/twinapi.appcore/data_transfer.c | 279 +++++++++++++++++++++++++++
+ dlls/twinapi.appcore/data_transfer.c | 277 +++++++++++++++++++++++++++
  dlls/twinapi.appcore/main.c          |   2 +
  dlls/twinapi.appcore/private.h       |   4 +
- 5 files changed, 290 insertions(+)
+ dlls/twinapi.appcore/tests/twinapi.c |  33 ++++
+ 6 files changed, 321 insertions(+)
  create mode 100644 dlls/twinapi.appcore/data_transfer.c
 
 diff --git a/dlls/twinapi.appcore/Makefile.in b/dlls/twinapi.appcore/Makefile.in
@@ -46,12 +45,12 @@ index 83aba1c4133..48c076276e3 100644
 +}
 diff --git a/dlls/twinapi.appcore/data_transfer.c b/dlls/twinapi.appcore/data_transfer.c
 new file mode 100644
-index 00000000000..048ef657cae
+index 00000000000..f2897ac3c7e
 --- /dev/null
 +++ b/dlls/twinapi.appcore/data_transfer.c
-@@ -0,0 +1,279 @@
+@@ -0,0 +1,277 @@
 +/*
-+ * Copyright 2023 Rémi Bernon for CodeWeavers
++ * Copyright 2026 Alistair Leslie-Hughes
 + *
 + * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Lesser General Public
@@ -83,6 +82,16 @@ index 00000000000..048ef657cae
 +static inline struct data_transfer_manager_statics *impl_from_IActivationFactory( IActivationFactory *iface )
 +{
 +    return CONTAINING_RECORD( iface, struct data_transfer_manager_statics, IActivationFactory_iface );
++}
++
++static inline struct data_transfer_manager_statics *impl_from_IDataTransferManagerStatics( IDataTransferManagerStatics *iface )
++{
++    return CONTAINING_RECORD( iface, struct data_transfer_manager_statics, IDataTransferManagerStatics_iface );
++}
++
++static inline struct data_transfer_manager_statics *impl_from_IDataTransferManagerInterop( IDataTransferManagerInterop *iface )
++{
++    return CONTAINING_RECORD( iface, struct data_transfer_manager_statics, IDataTransferManagerInterop_iface );
 +}
 +
 +static HRESULT WINAPI factory_QueryInterface( IActivationFactory *iface, REFIID iid, void **out )
@@ -135,25 +144,25 @@ index 00000000000..048ef657cae
 +
 +static HRESULT WINAPI factory_GetIids( IActivationFactory *iface, ULONG *iid_count, IID **iids )
 +{
-+    FIXME( "iface %p, iid_count %p, iids %p stub!\n", iface, iid_count, iids );
++    FIXME( "iface %p, iid_count %p, iids %p\n", iface, iid_count, iids );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI factory_GetRuntimeClassName( IActivationFactory *iface, HSTRING *class_name )
 +{
-+    FIXME( "iface %p, class_name %p stub!\n", iface, class_name );
++    FIXME( "iface %p, class_name %p\n", iface, class_name );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI factory_GetTrustLevel( IActivationFactory *iface, TrustLevel *trust_level )
 +{
-+    FIXME( "iface %p, trust_level %p stub!\n", iface, trust_level );
++    FIXME( "iface %p, trust_level %p\n", iface, trust_level );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI factory_ActivateInstance( IActivationFactory *iface, IInspectable **instance )
 +{
-+    FIXME( "iface %p, instance %p stub!\n", iface, instance );
++    FIXME( "iface %p, instance %p\n", iface, instance );
 +    return E_NOTIMPL;
 +}
 +
@@ -169,11 +178,6 @@ index 00000000000..048ef657cae
 +    /* IActivationFactory methods */
 +    factory_ActivateInstance,
 +};
-+
-+static inline struct data_transfer_manager_statics *impl_from_IDataTransferManagerStatics( IDataTransferManagerStatics *iface )
-+{
-+    return CONTAINING_RECORD( iface, struct data_transfer_manager_statics, IDataTransferManagerStatics_iface );
-+}
 +
 +static HRESULT WINAPI data_transfer_manager_statics_QueryInterface( IDataTransferManagerStatics *iface,
 +                                                                REFIID iid, void **out )
@@ -208,37 +212,36 @@ index 00000000000..048ef657cae
 +    struct data_transfer_manager_statics *impl = impl_from_IDataTransferManagerStatics( iface );
 +    ULONG ref = InterlockedDecrement( &impl->ref );
 +    TRACE( "iface %p decreasing refcount to %lu.\n", iface, ref );
-+
 +    return ref;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_statics_GetIids( IDataTransferManagerStatics *iface, ULONG *iid_count, IID **iids )
 +{
-+    FIXME( "iface %p, iid_count %p, iids %p stub!\n", iface, iid_count, iids );
++    FIXME( "iface %p, iid_count %p, iids %p\n", iface, iid_count, iids );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_statics_GetRuntimeClassName( IDataTransferManagerStatics *iface, HSTRING *class_name )
 +{
-+    FIXME( "iface %p, class_name %p stub!\n", iface, class_name );
++    FIXME( "iface %p, class_name %p\n", iface, class_name );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_statics_GetTrustLevel( IDataTransferManagerStatics *iface, TrustLevel *trust_level )
 +{
-+    FIXME( "iface %p, trust_level %p stub!\n", iface, trust_level );
++    FIXME( "iface %p, trust_level %p\n", iface, trust_level );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_statics_ShowShareUI( IDataTransferManagerStatics *iface )
 +{
-+    FIXME( "iface %p stub!\n", iface );
++    FIXME( "iface %p\n", iface );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_statics_GetForCurrentView( IDataTransferManagerStatics *iface, IDataTransferManager **result )
 +{
-+    FIXME( "iface %p, result %p stub!\n", iface, result );
++    FIXME( "iface %p, result %p\n", iface, result );
 +    return E_NOTIMPL;
 +}
 +
@@ -255,11 +258,6 @@ index 00000000000..048ef657cae
 +    data_transfer_manager_statics_ShowShareUI,
 +    data_transfer_manager_statics_GetForCurrentView
 +};
-+
-+static inline struct data_transfer_manager_statics *impl_from_IDataTransferManagerInterop( IDataTransferManagerInterop *iface )
-+{
-+    return CONTAINING_RECORD( iface, struct data_transfer_manager_statics, IDataTransferManagerInterop_iface );
-+}
 +
 +static HRESULT WINAPI data_transfer_manager_interop_QueryInterface( IDataTransferManagerInterop *iface,
 +                                                                REFIID iid, void **out )
@@ -294,19 +292,18 @@ index 00000000000..048ef657cae
 +    struct data_transfer_manager_statics *impl = impl_from_IDataTransferManagerInterop( iface );
 +    ULONG ref = InterlockedDecrement( &impl->ref );
 +    TRACE( "iface %p decreasing refcount to %lu.\n", iface, ref );
-+    if (!ref) free( impl );
 +    return ref;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_interop_GetForWindow( IDataTransferManagerInterop *iface, HWND appWindow, REFIID iid, void **result )
 +{
-+    FIXME( "iface %p, appWindow %p, iid %s, result %p stub!\n", iface, appWindow, debugstr_guid( iid ), result );
++    FIXME( "iface %p, appWindow %p, iid %s, result %p\n", iface, appWindow, debugstr_guid( iid ), result );
 +    return E_NOTIMPL;
 +}
 +
 +static HRESULT WINAPI data_transfer_manager_interop_ShowShareUIForWindow( IDataTransferManagerInterop *iface, HWND appWindow )
 +{
-+    FIXME( "iface %p, appWindow %p stub!\n", iface, appWindow );
++    FIXME( "iface %p, appWindow %p\n", iface, appWindow );
 +    return E_NOTIMPL;
 +}
 +
@@ -371,6 +368,71 @@ index 8439c983cb5..bcc159349cf 100644
  
  #define DEFINE_IINSPECTABLE_( pfx, iface_type, impl_type, impl_from, iface_mem, expr )             \
      static inline impl_type *impl_from( iface_type *iface )                                        \
+diff --git a/dlls/twinapi.appcore/tests/twinapi.c b/dlls/twinapi.appcore/tests/twinapi.c
+index 5cd1fb60a09..61a03b3d9e1 100644
+--- a/dlls/twinapi.appcore/tests/twinapi.c
++++ b/dlls/twinapi.appcore/tests/twinapi.c
+@@ -27,6 +27,7 @@
+ #include "winstring.h"
+ #include "winternl.h"
+ #include "roapi.h"
++#include "shobjidl_core.h"
+ 
+ #define WIDL_using_Windows_Foundation
+ #define WIDL_using_Windows_Foundation_Collections
+@@ -41,6 +42,8 @@
+ #include "windows.ui.viewmanagement.h"
+ #define WIDL_using_Windows_ApplicationModel_Core
+ #include "windows.applicationmodel.core.h"
++#define WIDL_using_Windows_ApplicationModel_DataTransfer
++#include "windows.applicationmodel.datatransfer.h"
+ 
+ #include "wine/test.h"
+ 
+@@ -307,6 +310,35 @@ static void test_CoreApplication(void)
+     ok( ref == 1, "got ref %ld.\n", ref );
+ }
+ 
++static void test_DataTransferManager(void)
++{
++    static const WCHAR *class_name = RuntimeClass_Windows_ApplicationModel_DataTransfer_DataTransferManager;
++    IActivationFactory *factory;
++    HSTRING str;
++    HRESULT hr;
++
++    hr = WindowsCreateString( class_name, wcslen( class_name ), &str );
++    ok( hr == S_OK, "got hr %#lx.\n", hr );
++
++    hr = RoGetActivationFactory( str, &IID_IActivationFactory, (void **)&factory );
++    WindowsDeleteString( str );
++    ok( hr == S_OK || broken( hr == REGDB_E_CLASSNOTREG ), "got hr %#lx.\n", hr );
++    if (FAILED( hr ))
++    {
++        win_skip( "%s runtimeclass not registered, skipping tests.\n", wine_dbgstr_w( class_name ) );
++        return;
++    }
++
++    check_interface( factory, &IID_IUnknown, TRUE );
++    check_interface( factory, &IID_IInspectable, TRUE );
++    check_interface( factory, &IID_IAgileObject, FALSE );
++    check_interface( factory, &IID_IActivationFactory, TRUE );
++    check_interface( factory, &IID_IDataTransferManagerInterop, TRUE );
++    check_interface( factory, &IID_IDataTransferManagerStatics, TRUE );
++
++    IActivationFactory_Release( factory );
++}
++
+ START_TEST(twinapi)
+ {
+     HRESULT hr;
+@@ -319,6 +351,7 @@ START_TEST(twinapi)
+     test_AdvertisingManager();
+     test_ApplicationView();
+     test_CoreApplication();
++    test_DataTransferManager();
+ 
+     RoUninitialize();
+ }
 -- 
 2.51.0
 
