@@ -1,0 +1,40 @@
+From ce3870dafc2e50f79fc7eefe437abe8f021cc31a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 18 Mar 2026 16:23:25 +1100
+Subject: [PATCH 2/2] GamingServer - To NOT merge
+
+---
+ configure | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/configure b/configure
+index f4710ac854e..3403c9ee72d 100755
+--- a/configure
++++ b/configure
+@@ -1745,6 +1745,7 @@ enable_fc
+ enable_find
+ enable_findstr
+ enable_fsutil
++enable_gameinputsvc
+ enable_hh
+ enable_hostname
+ enable_icacls
+@@ -23351,6 +23352,7 @@ else
+ fi
+ 
+ enable_conhost=${enable_conhost:-$HOST_ARCH}
++enable_gameinput=${enable_gameinput:-$HOST_ARCH}
+ enable_plugplay=${enable_plugplay:-$HOST_ARCH}
+ enable_rpcss=${enable_rpcss:-$HOST_ARCH}
+ enable_services=${enable_services:-$HOST_ARCH}
+@@ -24526,6 +24528,7 @@ wine_fn_config_makefile programs/findstr enable_findstr
+ wine_fn_config_makefile programs/findstr/tests enable_tests
+ wine_fn_config_makefile programs/fsutil enable_fsutil
+ wine_fn_config_makefile programs/fsutil/tests enable_tests
++wine_fn_config_makefile programs/gameinputsvc enable_gameinputsvc
+ wine_fn_config_makefile programs/hh enable_hh
+ wine_fn_config_makefile programs/hostname enable_hostname
+ wine_fn_config_makefile programs/icacls enable_icacls
+-- 
+2.51.0
+

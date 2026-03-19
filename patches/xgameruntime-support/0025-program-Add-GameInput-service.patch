@@ -1,0 +1,215 @@
+From 1a3d857d272d7396f4e8e83b2d353cdd46c3420a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 18 Mar 2026 15:47:02 +1100
+Subject: [PATCH 1/2] program: Add GameInput service
+
+---
+ configure.ac                      |   2 +
+ loader/wine.inf.in                |  13 ++++
+ programs/gameinputsvc/Makefile.in |   7 +++
+ programs/gameinputsvc/main.c      | 100 ++++++++++++++++++++++++++++++
+ 4 files changed, 122 insertions(+)
+ create mode 100644 programs/gameinputsvc/Makefile.in
+ create mode 100644 programs/gameinputsvc/main.c
+
+diff --git a/configure.ac b/configure.ac
+index 5fbe506dce7..e763a55215d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2457,6 +2457,7 @@ fi
+ 
+ dnl Disable some programs for other PE archs
+ enable_conhost=${enable_conhost:-$HOST_ARCH}
++enable_gameinput=${enable_gameinput:-$HOST_ARCH}
+ enable_plugplay=${enable_plugplay:-$HOST_ARCH}
+ enable_rpcss=${enable_rpcss:-$HOST_ARCH}
+ enable_services=${enable_services:-$HOST_ARCH}
+@@ -3636,6 +3637,7 @@ WINE_CONFIG_MAKEFILE(programs/findstr)
+ WINE_CONFIG_MAKEFILE(programs/findstr/tests)
+ WINE_CONFIG_MAKEFILE(programs/fsutil)
+ WINE_CONFIG_MAKEFILE(programs/fsutil/tests)
++WINE_CONFIG_MAKEFILE(programs/gameinputsvc)
+ WINE_CONFIG_MAKEFILE(programs/hh)
+ WINE_CONFIG_MAKEFILE(programs/hostname)
+ WINE_CONFIG_MAKEFILE(programs/icacls)
+diff --git a/loader/wine.inf.in b/loader/wine.inf.in
+index 1647945b9b9..7566305635b 100644
+--- a/loader/wine.inf.in
++++ b/loader/wine.inf.in
+@@ -137,6 +137,7 @@ AddReg=\
+ [DefaultInstall.Services]
+ AddService=BITS,0,BITSService
+ AddService=EventLog,0x800,EventLogService
++AddService=GameInput,0,GameInputService
+ AddService=HTTP,0,HTTPService
+ AddService=MSIServer,0,MSIService
+ AddService=RpcSs,0,RpcSsService
+@@ -157,6 +158,7 @@ AddService=nsiproxy,0x800,NsiProxyService
+ [DefaultInstall.ntx86.Services]
+ AddService=BITS,0,BITSService
+ AddService=EventLog,0x800,EventLogService
++AddService=GameInput,0,GameInputService
+ AddService=HTTP,0,HTTPService
+ AddService=MSIServer,0,MSIService
+ AddService=RpcSs,0,RpcSsService
+@@ -177,6 +179,7 @@ AddService=nsiproxy,0x800,NsiProxyService
+ [DefaultInstall.ntamd64.Services]
+ AddService=BITS,0,BITSService
+ AddService=EventLog,0x800,EventLogService
++AddService=GameInput,0,GameInputService
+ AddService=HTTP,0,HTTPService
+ AddService=MSIServer,0,MSIService
+ AddService=RpcSs,0,RpcSsService
+@@ -197,6 +200,7 @@ AddService=nsiproxy,0x800,NsiProxyService
+ [DefaultInstall.ntarm64.Services]
+ AddService=BITS,0,BITSService
+ AddService=EventLog,0x800,EventLogService
++AddService=GameInput,0,GameInputService
+ AddService=HTTP,0,HTTPService
+ AddService=MSIServer,0,MSIService
+ AddService=RpcSs,0,RpcSsService
+@@ -1018,6 +1022,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
+ 11,,wminet_utils.dll,-
+ ; some programs are 64-bit only
+ 11,,conhost.exe,-
++11,,gameinputsvc.exe,-
+ 11,,plugplay.exe,-
+ 11,,rpcss.exe,-
+ 11,,services.exe,-
+@@ -1245,6 +1250,14 @@ StartType=3
+ ErrorControl=1
+ LoadOrderGroup="SpoolerGroup"
+ 
++[GameInputService]
++Description="Gaming input for Keyboard/Mouse/etc"
++DisplayName="Gaming Input"
++ServiceBinary="%11%\gameinputsvc.exe"
++ServiceType=32
++StartType=3
++ErrorControl=1
++
+ [SpoolerServiceKeys]
+ HKLM,"System\CurrentControlSet\Services\Spooler\Performance","Library",,"winspool.drv"
+ HKLM,"System\CurrentControlSet\Services\Spooler\Performance","Open",,"PerfOpen"
+diff --git a/programs/gameinputsvc/Makefile.in b/programs/gameinputsvc/Makefile.in
+new file mode 100644
+index 00000000000..9993cf756b3
+--- /dev/null
++++ b/programs/gameinputsvc/Makefile.in
+@@ -0,0 +1,7 @@
++MODULE    = gameinputsvc.exe
++IMPORTS   = advapi32
++
++EXTRADLLFLAGS = -mconsole -municode
++
++SOURCES = \
++	main.c
+diff --git a/programs/gameinputsvc/main.c b/programs/gameinputsvc/main.c
+new file mode 100644
+index 00000000000..ed30d1d1424
+--- /dev/null
++++ b/programs/gameinputsvc/main.c
+@@ -0,0 +1,100 @@
++/*
++ * Copyright 2016 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define WIN32_LEAN_AND_MEAN
++
++#include <windows.h>
++#include <winsvc.h>
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(gameinputsvc);
++
++static WCHAR gameinputW[] = L"GameInputSvc";
++
++static SERVICE_STATUS_HANDLE service_handle;
++static HANDLE stop_event;
++
++static DWORD WINAPI service_handler( DWORD ctrl, DWORD event_type, LPVOID event_data, LPVOID context )
++{
++    SERVICE_STATUS status;
++
++    status.dwServiceType             = SERVICE_WIN32;
++    status.dwControlsAccepted        = SERVICE_ACCEPT_STOP;
++    status.dwWin32ExitCode           = 0;
++    status.dwServiceSpecificExitCode = 0;
++    status.dwCheckPoint              = 0;
++    status.dwWaitHint                = 0;
++
++    switch(ctrl)
++    {
++    case SERVICE_CONTROL_STOP:
++    case SERVICE_CONTROL_SHUTDOWN:
++        WINE_TRACE( "shutting down\n" );
++        status.dwCurrentState     = SERVICE_STOP_PENDING;
++        status.dwControlsAccepted = 0;
++        SetServiceStatus( service_handle, &status );
++        SetEvent( stop_event );
++        return NO_ERROR;
++    default:
++        WINE_FIXME( "got service ctrl %lx\n", ctrl );
++        status.dwCurrentState = SERVICE_RUNNING;
++        SetServiceStatus( service_handle, &status );
++        return NO_ERROR;
++    }
++}
++
++static void WINAPI ServiceMain( DWORD argc, LPWSTR *argv )
++{
++    SERVICE_STATUS status;
++
++    WINE_TRACE( "starting service\n" );
++
++    stop_event = CreateEventW( NULL, TRUE, FALSE, NULL );
++
++    service_handle = RegisterServiceCtrlHandlerExW( gameinputW, service_handler, NULL );
++    if (!service_handle)
++        return;
++
++    status.dwServiceType             = SERVICE_WIN32;
++    status.dwCurrentState            = SERVICE_RUNNING;
++    status.dwControlsAccepted        = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN;
++    status.dwWin32ExitCode           = 0;
++    status.dwServiceSpecificExitCode = 0;
++    status.dwCheckPoint              = 0;
++    status.dwWaitHint                = 10000;
++    SetServiceStatus( service_handle, &status );
++
++    WaitForSingleObject( stop_event, INFINITE );
++
++    status.dwCurrentState     = SERVICE_STOPPED;
++    status.dwControlsAccepted = 0;
++    SetServiceStatus( service_handle, &status );
++    WINE_TRACE( "service stopped\n" );
++}
++
++int __cdecl wmain( int argc, WCHAR *argv[] )
++{
++    static const SERVICE_TABLE_ENTRYW service_table[] =
++    {
++        { gameinputW, ServiceMain },
++        { NULL, NULL }
++    };
++
++    StartServiceCtrlDispatcherW( service_table );
++    return 0;
++}
+-- 
+2.51.0
+
