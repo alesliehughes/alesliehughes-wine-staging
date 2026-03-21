@@ -1,4 +1,4 @@
-From b2ba3211adf527f50ac3e97573f1fcfd155da7c2 Mon Sep 17 00:00:00 2001
+From 1a4dd093097b6df941eb754024c33093b0c172d2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 22 Dec 2022 15:56:21 +1100
 Subject: [PATCH] dcomp: Semi-stub DCompositionCreateDevice2
@@ -9,7 +9,7 @@ Subject: [PATCH] dcomp: Semi-stub DCompositionCreateDevice2
  2 files changed, 285 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/dcomp/Makefile.in b/dlls/dcomp/Makefile.in
-index d48b901a4fb..bd9c7ffa41f 100644
+index 11187b52189..510be4f09d1 100644
 --- a/dlls/dcomp/Makefile.in
 +++ b/dlls/dcomp/Makefile.in
 @@ -1,5 +1,5 @@
@@ -18,7 +18,7 @@ index d48b901a4fb..bd9c7ffa41f 100644
 +IMPORTS   = uuid
  EXTRADLLFLAGS = -Wb,--prefer-native
  
- SOURCES = \
+ VER_PRODUCTVERSION = 10,0,14393,0
 diff --git a/dlls/dcomp/device.c b/dlls/dcomp/device.c
 index 2744d758e91..e72c3ba25e3 100644
 --- a/dlls/dcomp/device.c
@@ -326,5 +326,5 @@ index 2744d758e91..e72c3ba25e3 100644
  }
  
 -- 
-2.45.2
+2.53.0
 

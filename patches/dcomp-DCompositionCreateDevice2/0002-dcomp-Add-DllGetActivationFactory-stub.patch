@@ -1,4 +1,4 @@
-From 91428561df92d77645ff38d83352f1862fc3d076 Mon Sep 17 00:00:00 2001
+From c7d7bdba7cdd3608a6235fdcbcfe011fda147964 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 20 Aug 2025 10:56:18 +1000
 Subject: [PATCH] dcomp: Add DllGetActivationFactory stub
@@ -10,7 +10,7 @@ Subject: [PATCH] dcomp: Add DllGetActivationFactory stub
  3 files changed, 19 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dcomp/Makefile.in b/dlls/dcomp/Makefile.in
-index bd9c7ffa41f..30b3ef39501 100644
+index 510be4f09d1..790112e2ef4 100644
 --- a/dlls/dcomp/Makefile.in
 +++ b/dlls/dcomp/Makefile.in
 @@ -1,5 +1,5 @@
@@ -19,7 +19,7 @@ index bd9c7ffa41f..30b3ef39501 100644
 +IMPORTS   = uuid combase
  EXTRADLLFLAGS = -Wb,--prefer-native
  
- SOURCES = \
+ VER_PRODUCTVERSION = 10,0,14393,0
 diff --git a/dlls/dcomp/dcomp.spec b/dlls/dcomp/dcomp.spec
 index 2120ce8b6f6..a8c7c7da30e 100644
 --- a/dlls/dcomp/dcomp.spec
@@ -69,5 +69,5 @@ index e72c3ba25e3..65e397bdfa7 100644
  {
      FIXME("%p, %s, %p.\n", dxgi_device, debugstr_guid(iid), device);
 -- 
-2.50.1
+2.53.0
 
