@@ -1,15 +1,15 @@
-From f6698a8021003b4f76d28d3d96b121596b74ea99 Mon Sep 17 00:00:00 2001
+From aa3279a2057c5677d19d0f0bc8ea07d0c43b25d5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 2 Mar 2026 06:48:28 +1100
-Subject: [PATCH] winhttp: Support Qyuery option WINHTTP_OPTION_SECURITY_INFO
+Subject: [PATCH] winhttp: Support Query option WINHTTP_OPTION_SECURITY_INFO.
 
 ---
- dlls/winhttp/session.c       | 18 ++++++++++++++++++
- dlls/winhttp/tests/winhttp.c | 21 +++++++++++++++++++++
- 2 files changed, 39 insertions(+)
+ dlls/winhttp/session.c       | 19 +++++++++++++++++++
+ dlls/winhttp/tests/winhttp.c | 23 +++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
 
 diff --git a/dlls/winhttp/session.c b/dlls/winhttp/session.c
-index a3c8bb91010..4b85b18b81a 100644
+index 6348ec67b82..99c00af1634 100644
 --- a/dlls/winhttp/session.c
 +++ b/dlls/winhttp/session.c
 @@ -23,6 +23,7 @@
@@ -20,7 +20,7 @@ index a3c8bb91010..4b85b18b81a 100644
  #include "winhttp.h"
  #include "winreg.h"
  #include "winternl.h"
-@@ -821,6 +822,23 @@ static BOOL request_query_option( struct object_header *hdr, DWORD option, void
+@@ -821,6 +822,24 @@ static BOOL request_query_option( struct object_header *hdr, DWORD option, void
          *buflen = sizeof(flags);
          return TRUE;
      }
@@ -32,11 +32,12 @@ index a3c8bb91010..4b85b18b81a 100644
 +        if (!validate_buffer( buffer, buflen, sizeof(WINHTTP_SECURITY_INFO) )) return FALSE;
 +
 +        memset(info, 0 , sizeof(WINHTTP_SECURITY_INFO));
-+        if (!request->netconn->secure) return TRUE;
-+        res = QueryContextAttributesW(&request->netconn->ssl_ctx, SECPKG_ATTR_CONNECTION_INFO, (void*)&info->ConnectionInfo);
++        if (!request->netconn || !request->netconn->secure) return TRUE;
++        res = QueryContextAttributesW( &request->netconn->ssl_ctx, SECPKG_ATTR_CONNECTION_INFO,
++                                      (void*)&info->ConnectionInfo );
 +        if(res != SEC_E_OK)
 +            WARN( "QueryContextAttributesW failed: %#lx\n", res );
-+        res = QueryContextAttributesW(&request->netconn->ssl_ctx, SECPKG_ATTR_CIPHER_INFO, (void*)&info->CipherInfo);
++        res = QueryContextAttributesW( &request->netconn->ssl_ctx, SECPKG_ATTR_CIPHER_INFO, (void*)&info->CipherInfo );
 +        if(res != SEC_E_OK)
 +            WARN( "QueryContextAttributesW failed: %#lx\n", res );
 +        return TRUE;
@@ -45,7 +46,7 @@ index a3c8bb91010..4b85b18b81a 100644
      {
          const CERT_CONTEXT *cert;
 diff --git a/dlls/winhttp/tests/winhttp.c b/dlls/winhttp/tests/winhttp.c
-index b4ad4a67803..9b1f3a74026 100644
+index b4ad4a67803..863cd15ab5c 100644
 --- a/dlls/winhttp/tests/winhttp.c
 +++ b/dlls/winhttp/tests/winhttp.c
 @@ -24,6 +24,7 @@
@@ -64,11 +65,13 @@ index b4ad4a67803..9b1f3a74026 100644
  
      SetLastError(0xdeadbeef);
      session = WinHttpOpen(L"winetest", 0, 0, 0, 0);
-@@ -283,6 +285,15 @@ static void test_WinHttpQueryOption(void)
+@@ -283,6 +285,17 @@ static void test_WinHttpQueryOption(void)
      ok(!ret, "should fail to query option\n");
      ok( GetLastError() == ERROR_INVALID_PARAMETER, "expected ERROR_INVALID_PARAMETER, got %lu\n", GetLastError() );
  
 +    size = sizeof(info);
++    info.ConnectionInfo.dwProtocol = 0xdeadbeef;
++    info.ConnectionInfo.dwCipherStrength = 0xdeadbeef;
 +    ret = WinHttpQueryOption(request, WINHTTP_OPTION_SECURITY_INFO, &info, &size);
 +    ok(ret, "got %lu\n", GetLastError());
 +    if (ret)
@@ -80,7 +83,7 @@ index b4ad4a67803..9b1f3a74026 100644
      SetLastError(0xdeadbeef);
      ret = WinHttpCloseHandle(request);
      ok(ret, "WinHttpCloseHandle failed on closing request: %lu\n", GetLastError());
-@@ -1088,6 +1099,7 @@ static void test_secure_connection(void)
+@@ -1088,6 +1101,7 @@ static void test_secure_connection(void)
      BOOL ret;
      CERT_CONTEXT *cert;
      WINHTTP_CERTIFICATE_INFO info;
@@ -88,7 +91,7 @@ index b4ad4a67803..9b1f3a74026 100644
      char buffer[32];
  
      ses = WinHttpOpen(L"winetest", 0, NULL, NULL, 0);
-@@ -1213,6 +1225,15 @@ static void test_secure_connection(void)
+@@ -1213,6 +1227,15 @@ static void test_secure_connection(void)
          LocalFree( info.lpszIssuerInfo );
      }
  
@@ -105,5 +108,5 @@ index b4ad4a67803..9b1f3a74026 100644
      if (!ret && GetLastError() == ERROR_WINHTTP_CONNECTION_ERROR)
      {
 -- 
-2.51.0
+2.53.0
 
