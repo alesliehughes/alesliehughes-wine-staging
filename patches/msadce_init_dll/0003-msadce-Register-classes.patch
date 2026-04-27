@@ -1,0 +1,67 @@
+From 3126a57e695b2f44d3c01854cb022e9c9c734944 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 28 Apr 2026 07:56:58 +1000
+Subject: [PATCH] msadce: Register classes
+
+---
+ dlls/msadce/Makefile.in        |  1 +
+ dlls/msadce/msadce_classes.idl | 37 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
+ create mode 100644 dlls/msadce/msadce_classes.idl
+
+diff --git a/dlls/msadce/Makefile.in b/dlls/msadce/Makefile.in
+index b30ed196f63..05d52007f34 100644
+--- a/dlls/msadce/Makefile.in
++++ b/dlls/msadce/Makefile.in
+@@ -3,4 +3,5 @@ IMPORTS   = oleaut32 ole32
+ 
+ 
+ SOURCES = \
++	msadce_classes.idl \
+ 	msadce_main.c
+diff --git a/dlls/msadce/msadce_classes.idl b/dlls/msadce/msadce_classes.idl
+new file mode 100644
+index 00000000000..e03fcddc412
+--- /dev/null
++++ b/dlls/msadce/msadce_classes.idl
+@@ -0,0 +1,37 @@
++/*
++ * Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++ #pragma makedep register
++
++[
++    threading(both),
++    uuid(3ff292b6-b204-11cf-8d23-00aa005ffe58),
++    progid("FX.Rowset.1"),
++    vi_progid("FX.Rowset"),
++    version(1.0)
++]
++coclass IFxRowset { interface IRowset; }
++
++/* NOTE: This has the same progid/vi_progid on windows as well. */
++[
++    threading(both),
++    uuid(58ecee30-e715-11cf-b0e3-00aa003f000f),
++    progid("FX.Rowset.1"),
++    vi_progid("FX.Rowset"),
++    version(1.0)
++]
++coclass IFxRowset2 { interface IRowset; }
+-- 
+2.53.0
+

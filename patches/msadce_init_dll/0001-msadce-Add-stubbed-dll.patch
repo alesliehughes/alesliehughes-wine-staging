@@ -1,0 +1,115 @@
+From d54ed08bf85bd3d90ed95d91906f23d1cd8bb226 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 28 Apr 2026 06:33:32 +1000
+Subject: [PATCH] msadce: Add stubbed dll
+
+---
+ configure.ac              |  1 +
+ dlls/msadce/Makefile.in   |  6 ++++++
+ dlls/msadce/msadce.spec   |  4 ++++
+ dlls/msadce/msadce_main.c | 35 +++++++++++++++++++++++++++++++++++
+ loader/wine.inf.in        |  2 ++
+ 5 files changed, 48 insertions(+)
+ create mode 100644 dlls/msadce/Makefile.in
+ create mode 100644 dlls/msadce/msadce.spec
+ create mode 100644 dlls/msadce/msadce_main.c
+
+diff --git a/configure.ac b/configure.ac
+index 31b56bac541..0e09b506241 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2903,6 +2903,7 @@ WINE_CONFIG_MAKEFILE(dlls/msacm.dll16)
+ WINE_CONFIG_MAKEFILE(dlls/msacm32.drv)
+ WINE_CONFIG_MAKEFILE(dlls/msacm32)
+ WINE_CONFIG_MAKEFILE(dlls/msacm32/tests)
++WINE_CONFIG_MAKEFILE(dlls/msadce)
+ WINE_CONFIG_MAKEFILE(dlls/msado15)
+ WINE_CONFIG_MAKEFILE(dlls/msado15/tests)
+ WINE_CONFIG_MAKEFILE(dlls/msadp32.acm)
+diff --git a/dlls/msadce/Makefile.in b/dlls/msadce/Makefile.in
+new file mode 100644
+index 00000000000..b30ed196f63
+--- /dev/null
++++ b/dlls/msadce/Makefile.in
+@@ -0,0 +1,6 @@
++MODULE    = msadce.dll
++IMPORTS   = oleaut32 ole32
++
++
++SOURCES = \
++	msadce_main.c
+diff --git a/dlls/msadce/msadce.spec b/dlls/msadce/msadce.spec
+new file mode 100644
+index 00000000000..b16365d0c9f
+--- /dev/null
++++ b/dlls/msadce/msadce.spec
+@@ -0,0 +1,4 @@
++@ stdcall -private DllCanUnloadNow()
++@ stdcall -private DllGetClassObject(ptr ptr ptr)
++@ stdcall -private DllRegisterServer()
++@ stdcall -private DllUnregisterServer()
+diff --git a/dlls/msadce/msadce_main.c b/dlls/msadce/msadce_main.c
+new file mode 100644
+index 00000000000..a56b6da5cac
+--- /dev/null
++++ b/dlls/msadce/msadce_main.c
+@@ -0,0 +1,35 @@
++/*
++* Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#include <stdarg.h>
++#include "windef.h"
++#include "winbase.h"
++#define COBJMACROS
++#include "objbase.h"
++#include "rpcproxy.h"
++
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(msadce);
++
++HRESULT WINAPI DllGetClassObject( REFCLSID clsid, REFIID iid, void **obj )
++{
++    FIXME( "%s, %s, %p\n", debugstr_guid(clsid), debugstr_guid(iid), obj );
++
++    return CLASS_E_CLASSNOTAVAILABLE;
++}
+\ No newline at end of file
+diff --git a/loader/wine.inf.in b/loader/wine.inf.in
+index 7888c969cd2..0d639b67379 100644
+--- a/loader/wine.inf.in
++++ b/loader/wine.inf.in
+@@ -1043,6 +1043,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
+ 16427,System\OLE DB,msdaps.dll
+ 16427,System\OLE DB,msdasql.dll
+ 16427,System\ADO,msado15.dll
++16427,System\MSADC,msadce.dll
+ 55,,wineps.drv
+ 66000,3,wineps.drv
+ 55,,winprint.dll
+@@ -1114,6 +1115,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
+ 16427,System\OLE DB,msdaps.dll
+ 16427,System\OLE DB,msdasql.dll
+ 16427,System\ADO,msado15.dll
++16427,System\MSADC,msadce.dll
+ 55,,wineps.drv
+ 66000,3,wineps.drv
+ 55,,winprint.dll
+-- 
+2.53.0
+

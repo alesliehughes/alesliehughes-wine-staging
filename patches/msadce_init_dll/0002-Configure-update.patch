@@ -1,0 +1,32 @@
+From 27b077f90b51608fdf6d315f5bceeceb9b43724c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 28 Apr 2026 06:34:03 +1000
+Subject: [PATCH] Configure update
+
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index 226cafffb15..23e73e7ca9a 100755
+--- a/configure
++++ b/configure
+@@ -1285,6 +1285,7 @@ enable_mpr
+ enable_mprapi
+ enable_msacm32_drv
+ enable_msacm32
++enable_msadce
+ enable_msado15
+ enable_msadp32_acm
+ enable_msasn1
+@@ -23376,6 +23377,7 @@ wine_fn_config_makefile dlls/msacm.dll16 enable_win16
+ wine_fn_config_makefile dlls/msacm32.drv enable_msacm32_drv
+ wine_fn_config_makefile dlls/msacm32 enable_msacm32
+ wine_fn_config_makefile dlls/msacm32/tests enable_tests
++wine_fn_config_makefile dlls/msadce enable_msadce
+ wine_fn_config_makefile dlls/msado15 enable_msado15
+ wine_fn_config_makefile dlls/msado15/tests enable_tests
+ wine_fn_config_makefile dlls/msadp32.acm enable_msadp32_acm
+-- 
+2.53.0
+

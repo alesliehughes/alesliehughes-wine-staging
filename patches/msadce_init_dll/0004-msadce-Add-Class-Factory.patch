@@ -1,0 +1,162 @@
+From e5bd97cc70f89e81a005d34432a06db4da07565a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 28 Apr 2026 10:18:20 +1000
+Subject: [PATCH] msadce: Add Class Factory
+
+0024:trace:msadce:DllGetClassObject {3ff292b6-b204-11cf-8d23-00aa005ffe58}, {00000001-0000-0000-c000-000000000046}, 07CBE0C4
+0024:trace:msadce:msadcecf_CreateInstance 00000000, {eef35581-7b0a-11d0-ad6b-00a0c9055d8f}, 07CBE0C8
+0024:fixme:ole:CoCreateInstanceEx no instance created for interface {eef35581-7b0a-11d0-ad6b-00a0c9055d8f} of class {3ff292b6-b204-11cf-8d23-00aa005ffe58}, hr 0x80004005.
+
+{eef35581-7b0a-11d0-ad6b-00a0c9055d8f} = IID_IServiceProperties
+
+This interface isn't documented anywhere, so not much more we can do heading in this direction.
+---
+ dlls/msadce/msadce_classes.idl |  6 +--
+ dlls/msadce/msadce_main.c      | 94 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 95 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/msadce/msadce_classes.idl b/dlls/msadce/msadce_classes.idl
+index e03fcddc412..75795f232b0 100644
+--- a/dlls/msadce/msadce_classes.idl
++++ b/dlls/msadce/msadce_classes.idl
+@@ -15,7 +15,7 @@
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+  */
+- #pragma makedep register
++ #pragma makedep register header
+ 
+ [
+     threading(both),
+@@ -24,7 +24,7 @@
+     vi_progid("FX.Rowset"),
+     version(1.0)
+ ]
+-coclass IFxRowset { interface IRowset; }
++coclass IFxRowset1 { interface IRowset; }
+ 
+ /* NOTE: This has the same progid/vi_progid on windows as well. */
+ [
+@@ -34,4 +34,4 @@ coclass IFxRowset { interface IRowset; }
+     vi_progid("FX.Rowset"),
+     version(1.0)
+ ]
+-coclass IFxRowset2 { interface IRowset; }
++coclass IFxRowset { interface IRowset; }
+diff --git a/dlls/msadce/msadce_main.c b/dlls/msadce/msadce_main.c
+index a56b6da5cac..873ccc8d10a 100644
+--- a/dlls/msadce/msadce_main.c
++++ b/dlls/msadce/msadce_main.c
+@@ -20,16 +20,106 @@
+ #include "windef.h"
+ #include "winbase.h"
+ #define COBJMACROS
++#include "initguid.h"
+ #include "objbase.h"
+ #include "rpcproxy.h"
+ 
+ #include "wine/debug.h"
+ 
++#include "msadce_classes.h"
++
+ WINE_DEFAULT_DEBUG_CHANNEL(msadce);
+ 
++typedef HRESULT (*fnCreateInstance)( void **obj );
++
++struct msadocf
++{
++    IClassFactory    IClassFactory_iface;
++    fnCreateInstance pfnCreateInstance;
++};
++
++static inline struct msadocf *impl_from_IClassFactory( IClassFactory *iface )
++{
++    return CONTAINING_RECORD( iface, struct msadocf, IClassFactory_iface );
++}
++
++static HRESULT WINAPI msadcecf_QueryInterface( IClassFactory *iface, REFIID riid, void **obj )
++{
++    if (IsEqualGUID( riid, &IID_IUnknown ) || IsEqualGUID( riid, &IID_IClassFactory ))
++    {
++        IClassFactory_AddRef( iface );
++        *obj = iface;
++        return S_OK;
++    }
++    FIXME( "interface %s not implemented\n", debugstr_guid(riid) );
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI msadcecf_AddRef( IClassFactory *iface )
++{
++    return 2;
++}
++
++static ULONG WINAPI msadcecf_Release( IClassFactory *iface )
++{
++    return 1;
++}
++
++static HRESULT WINAPI msadcecf_CreateInstance( IClassFactory *iface, LPUNKNOWN outer, REFIID riid, void **obj )
++{
++    struct msadocf *cf = impl_from_IClassFactory( iface );
++    IUnknown *unknown;
++    HRESULT hr;
++
++    TRACE( "%p, %s, %p\n", outer, debugstr_guid(riid), obj );
++
++    *obj = NULL;
++    if (outer)
++        return CLASS_E_NOAGGREGATION;
++
++    hr = cf->pfnCreateInstance( (void **)&unknown );
++    if (FAILED(hr))
++        return hr;
++
++    hr = IUnknown_QueryInterface( unknown, riid, obj );
++    IUnknown_Release( unknown );
++    return hr;
++}
++
++static HRESULT WINAPI msadcecf_LockServer( IClassFactory *iface, BOOL dolock )
++{
++    FIXME( "%p, %d\n", iface, dolock );
++    return S_OK;
++}
++
++static const struct IClassFactoryVtbl msadcecf_vtbl =
++{
++    msadcecf_QueryInterface,
++    msadcecf_AddRef,
++    msadcecf_Release,
++    msadcecf_CreateInstance,
++    msadcecf_LockServer
++};
++
++HRESULT Rowset_create( void **obj )
++{
++    return E_FAIL;
++}
++
++static struct msadocf rowset_cf = { { &msadcecf_vtbl }, Rowset_create };
++
+ HRESULT WINAPI DllGetClassObject( REFCLSID clsid, REFIID iid, void **obj )
+ {
+-    FIXME( "%s, %s, %p\n", debugstr_guid(clsid), debugstr_guid(iid), obj );
++    IClassFactory *cf = NULL;
++
++    TRACE( "%s, %s, %p\n", debugstr_guid(clsid), debugstr_guid(iid), obj );
++
++    if (IsEqualGUID( clsid, &CLSID_IFxRowset1 ) ||
++        IsEqualGUID( clsid, &CLSID_IFxRowset ))
++    {
++        cf = &rowset_cf.IClassFactory_iface;
++    }
+ 
+-    return CLASS_E_CLASSNOTAVAILABLE;
++    if (!cf) return CLASS_E_CLASSNOTAVAILABLE;
++    return IClassFactory_QueryInterface( cf, iid, obj );
+ }
+\ No newline at end of file
+-- 
+2.53.0
+
