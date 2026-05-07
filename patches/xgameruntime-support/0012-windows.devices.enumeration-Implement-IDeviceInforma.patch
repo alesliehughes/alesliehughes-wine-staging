@@ -1,21 +1,44 @@
-From 548d1de1b5841de518356ec9a7ed634756bc5836 Mon Sep 17 00:00:00 2001
+From 80a228af4d4e0b5ee3e2d5e06c5887d761b5e526 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sun, 1 Mar 2026 12:02:12 +1100
-Subject: windows.devices.enumeration: Implement
+Subject: [PATCH] windows.devices.enumeration: Implement
  IDeviceInformationStatics2::CreateFromIdAsync
 
 From WineGDK.
 
 FIXME: NOT completely correct, corrects for compile but not correct ATM.
 
+CHANGED: Removed unrequired filter variable.
+---
+ dlls/windows.devices.enumeration/main.c    | 92 +++++++++++++++++-----
+ dlls/windows.devices.enumeration/private.h | 80 +++++++++++++++++++
+ 2 files changed, 152 insertions(+), 20 deletions(-)
+
 diff --git a/dlls/windows.devices.enumeration/main.c b/dlls/windows.devices.enumeration/main.c
-index 081260da759..ebd52de701e 100644
+index 081260da759..95444df601d 100644
 --- a/dlls/windows.devices.enumeration/main.c
 +++ b/dlls/windows.devices.enumeration/main.c
-@@ -32,6 +32,16 @@
+@@ -32,6 +32,33 @@
  
  WINE_DEFAULT_DEBUG_CHANNEL(enumeration);
  
++static const char *debugstr_DeviceInformationKind( DeviceInformationKind kind )
++{
++    static const char *str[] = {
++        "Unknown",
++        "DeviceInterface",
++        "DeviceContainer",
++        "Device",
++        "DeviceInterfaceClass",
++        "AssociationEndpoint",
++        "AssociationEndpointContainer",
++        "AssociationEndpointService",
++        "DevicePanel",
++    };
++    if (kind < ARRAY_SIZE( str )) return wine_dbg_sprintf( "DeviceInformationKind_%s", str[kind] );
++    return wine_dbg_sprintf( "(unknown %u)\n", kind );
++}
++
 +static HRESULT async( IUnknown *invoker, IUnknown *param, PROPVARIANT *result, BOOL called_async)
 +{
 +    TRACE( "invoker %p, param %p, result %p, called_async %d\n", invoker, param, result, called_async);
@@ -29,7 +52,7 @@ index 081260da759..ebd52de701e 100644
  struct devquery_params
  {
      IUnknown IUnknown_iface;
-@@ -887,13 +897,57 @@ static HRESULT WINAPI device_statics2_GetAqsFilterFromDeviceClass( IDeviceInform
+@@ -887,13 +914,55 @@ static HRESULT WINAPI device_statics2_GetAqsFilterFromDeviceClass( IDeviceInform
      return E_NOTIMPL;
  }
  
@@ -50,7 +73,6 @@ index 081260da759..ebd52de701e 100644
 +    struct aqs_expr *expr = NULL;
 +    ULONG prop_keys_len = 0;
 +    IUnknown *params;
-+    HSTRING filter;
 +    HRESULT hr;
 +    DWORD asyncRes;
 +
@@ -58,14 +80,13 @@ index 081260da759..ebd52de701e 100644
 +    IVectorView_DeviceInformation *vec = NULL;
 +    IDeviceInformation *dev = NULL;
 +
-+    WindowsCreateString( L"", wcslen( L""), &filter );
-+
-+    TRACE( "iface %p, device_id %s, additional_properties %p, kind %d, async_operation %p\n", iface, debugstr_hstring(device_id), additional_properties, kind, async_operation );
++    TRACE( "iface %p, device_id %s, additional_properties %p, kind %s, async_operation %p\n", iface, debugstr_hstring(device_id),
++                        additional_properties, debugstr_DeviceInformationKind( kind ), async_operation );
 +
 +    if (FAILED(hr = devpropcompkeys_init( &prop_keys, &prop_keys_len, device_iface_default_props, ARRAY_SIZE( device_iface_default_props ) ))) goto failed;
 +    if (additional_properties && FAILED(hr = devpropcompkeys_append_names( &prop_keys, &prop_keys_len, additional_properties ))) goto failed;
-+    if (FAILED(hr = aqs_parse_query(WindowsGetStringRawBuffer( filter, NULL ), &expr, NULL ))) goto failed;
-+    if (FAILED(hr = devquery_params_create( 8, expr, prop_keys, prop_keys_len, &params ))) goto failed;
++    if (FAILED(hr = aqs_parse_query(WindowsGetStringRawBuffer( NULL, NULL) , &expr, NULL ))) goto failed;
++    if (FAILED(hr = devquery_params_create( DevObjectTypeDeviceInterfaceDisplay, expr, prop_keys, prop_keys_len, &params ))) goto failed;
 +
 +    hr = async_operation_inspectable_create( &IID_IAsyncOperation_DeviceInformationCollection, (IUnknown *)iface, params, find_all_async,
 +                                            (IAsyncOperation_IInspectable **)&op );
@@ -90,6 +111,30 @@ index 081260da759..ebd52de701e 100644
  }
  
  static HRESULT WINAPI device_statics2_FindAllAsync( IDeviceInformationStatics2 *iface, HSTRING filter,
+@@ -905,23 +974,6 @@ static HRESULT WINAPI device_statics2_FindAllAsync( IDeviceInformationStatics2 *
+     return E_NOTIMPL;
+ }
+ 
+-static const char *debugstr_DeviceInformationKind( DeviceInformationKind kind )
+-{
+-    static const char *str[] = {
+-        "Unknown",
+-        "DeviceInterface",
+-        "DeviceContainer",
+-        "Device",
+-        "DeviceInterfaceClass",
+-        "AssociationEndpoint",
+-        "AssociationEndpointContainer",
+-        "AssociationEndpointService",
+-        "DevicePanel",
+-    };
+-    if (kind < ARRAY_SIZE( str )) return wine_dbg_sprintf( "DeviceInformationKind_%s", str[kind] );
+-    return wine_dbg_sprintf( "(unknown %u)\n", kind );
+-}
+-
+ static HRESULT WINAPI device_statics2_CreateWatcher( IDeviceInformationStatics2 *iface, HSTRING filter,
+                                                      IIterable_HSTRING *additional_properties, DeviceInformationKind kind,
+                                                      IDeviceWatcher **watcher )
 diff --git a/dlls/windows.devices.enumeration/private.h b/dlls/windows.devices.enumeration/private.h
 index 033e866b506..bf7d08a351f 100644
 --- a/dlls/windows.devices.enumeration/private.h
@@ -179,3 +224,6 @@ index 033e866b506..bf7d08a351f 100644
 +    }
 +
  #endif
+-- 
+2.53.0
+
