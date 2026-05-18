@@ -1,17 +1,18 @@
-From 62d9987cbcbff1776f38c785ce66d539b59e92fc Mon Sep 17 00:00:00 2001
+From 0f8f72d48abf360a1e8f1219a123398850ec9be8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 09:43:46 +1000
 Subject: [PATCH] hnetcfg: INetFwRules _NewEnum return empty collection
 
 ---
- dlls/hnetcfg/policy.c | 122 +++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 120 insertions(+), 2 deletions(-)
+ dlls/hnetcfg/policy.c       | 124 +++++++++++++++++++++++++++++++++++-
+ dlls/hnetcfg/tests/policy.c |  15 ++++-
+ 2 files changed, 135 insertions(+), 4 deletions(-)
 
 diff --git a/dlls/hnetcfg/policy.c b/dlls/hnetcfg/policy.c
-index 5031fdcdd92..6509fc32844 100644
+index 5031fdcdd92..88de6ed5404 100644
 --- a/dlls/hnetcfg/policy.c
 +++ b/dlls/hnetcfg/policy.c
-@@ -783,6 +783,125 @@ static HRESULT WINAPI netfw_rules_Item(
+@@ -783,18 +783,136 @@ static HRESULT WINAPI netfw_rules_Item(
      return E_NOTIMPL;
  }
  
@@ -137,8 +138,11 @@ index 5031fdcdd92..6509fc32844 100644
  static HRESULT WINAPI netfw_rules_get__NewEnum(
      INetFwRules *iface,
      IUnknown **newEnum)
-@@ -792,9 +911,8 @@ static HRESULT WINAPI netfw_rules_get__NewEnum(
-     FIXME("%p, %p\n", This, newEnum);
+ {
+     fw_rules *This = impl_from_INetFwRules( iface );
+ 
+-    FIXME("%p, %p\n", This, newEnum);
++    TRACE("%p, %p\n", This, newEnum);
  
      if (!newEnum) return E_POINTER;
 -    *newEnum = NULL;
@@ -148,6 +152,46 @@ index 5031fdcdd92..6509fc32844 100644
  }
  
  static const struct INetFwRulesVtbl fw_rules_vtbl =
+diff --git a/dlls/hnetcfg/tests/policy.c b/dlls/hnetcfg/tests/policy.c
+index 9140cfdf1fd..b3f7e1f7e7a 100644
+--- a/dlls/hnetcfg/tests/policy.c
++++ b/dlls/hnetcfg/tests/policy.c
+@@ -22,7 +22,6 @@
+ #include "ole2.h"
+ #include "oleauto.h"
+ #include "olectl.h"
+-#include "dispex.h"
+ 
+ #include "wine/test.h"
+ 
+@@ -40,6 +39,7 @@ static void test_policy2_rules(INetFwPolicy2 *policy2)
+     HRESULT hr;
+     INetFwRules *rules, *rules2;
+     INetFwServiceRestriction *restriction;
++    IUnknown *rulesenum;
+ 
+     hr = INetFwPolicy2_QueryInterface(policy2, &IID_INetFwRules, (void**)&rules);
+     ok(hr == E_NOINTERFACE, "got 0x%08lx\n", hr);
+@@ -69,6 +69,19 @@ static void test_policy2_rules(INetFwPolicy2 *policy2)
+     hr = INetFwRules_get__NewEnum(rules, NULL);
+     ok(hr == E_POINTER, "got %08lx\n", hr);
+ 
++    hr = INetFwRules_get__NewEnum(rules, &rulesenum);
++    ok(hr == S_OK, "got %08lx\n", hr);
++    if(rulesenum)
++    {
++        IEnumVARIANT *enumvar;
++
++        hr = IUnknown_QueryInterface(rulesenum, &IID_IEnumVARIANT, (void**)&enumvar);
++        ok(hr == S_OK, "got %08lx\n", hr);
++        IEnumVARIANT_Release(enumvar);
++
++        IUnknown_Release(rulesenum);
++    }
++
+     INetFwRules_Release(rules);
+     INetFwRules_Release(rules2);
+ }
 -- 
 2.53.0
 

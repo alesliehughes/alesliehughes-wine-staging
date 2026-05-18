@@ -1,4 +1,4 @@
-From ebde58b38be3d30e6c584aac1a76698a4f18ec23 Mon Sep 17 00:00:00 2001
+From ba4c2993664ec3d94eef71b36e10727bbe814ac5 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 10:01:53 +1000
 Subject: [PATCH] uiautomationcore: Add UiaDisconnectAllProviders stub
@@ -6,7 +6,8 @@ Subject: [PATCH] uiautomationcore: Add UiaDisconnectAllProviders stub
 ---
  dlls/uiautomationcore/uia_provider.c        | 7 +++++++
  dlls/uiautomationcore/uiautomationcore.spec | 2 +-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ include/uiautomationcoreapi.h               | 1 +
+ 3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/uiautomationcore/uia_provider.c b/dlls/uiautomationcore/uia_provider.c
 index 2e5f0e6c6ea..5a937f323cb 100644
@@ -36,6 +37,18 @@ index 69e1f0ba9f9..ebde5ea0c65 100644
  @ stdcall UiaDisconnectProvider(ptr)
  @ stdcall UiaEventAddWindow(ptr long)
  @ stdcall UiaEventRemoveWindow(ptr long)
+diff --git a/include/uiautomationcoreapi.h b/include/uiautomationcoreapi.h
+index fbfbc46b09c..3316aff8a54 100644
+--- a/include/uiautomationcoreapi.h
++++ b/include/uiautomationcoreapi.h
+@@ -560,6 +560,7 @@ HRESULT WINAPI UiaEventAddWindow(HUIAEVENT huiaevent, HWND hwnd);
+ HRESULT WINAPI UiaEventRemoveWindow(HUIAEVENT huiaevent, HWND hwnd);
+ BOOL WINAPI UiaHasServerSideProvider(HWND hwnd);
+ BOOL WINAPI UiaClientsAreListening(void);
++HRESULT WINAPI UiaDisconnectAllProviders(void);
+ 
+ #ifdef __cplusplus
+ }
 -- 
 2.53.0
 
