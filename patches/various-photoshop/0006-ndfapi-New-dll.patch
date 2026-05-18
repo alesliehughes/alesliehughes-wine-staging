@@ -1,0 +1,151 @@
+From 02a3ca3f25d90aab51c649be9ded8bb541d2456e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 10:15:24 +1000
+Subject: [PATCH] ndfapi: New dll
+
+---
+ configure.ac              |  1 +
+ dlls/ndfapi/Makefile.in   |  5 +++
+ dlls/ndfapi/ndfapi.spec   | 28 ++++++++++++++++
+ dlls/ndfapi/ndfapi_main.c | 69 +++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 103 insertions(+)
+ create mode 100755 dlls/ndfapi/Makefile.in
+ create mode 100755 dlls/ndfapi/ndfapi.spec
+ create mode 100755 dlls/ndfapi/ndfapi_main.c
+
+diff --git a/configure.ac b/configure.ac
+index 5f3a7b5b2d1..896f057680a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3026,6 +3026,7 @@ WINE_CONFIG_MAKEFILE(dlls/mtxdm)
+ WINE_CONFIG_MAKEFILE(dlls/ncrypt)
+ WINE_CONFIG_MAKEFILE(dlls/ncrypt/tests)
+ WINE_CONFIG_MAKEFILE(dlls/nddeapi)
++WINE_CONFIG_MAKEFILE(dlls/ndfapi)
+ WINE_CONFIG_MAKEFILE(dlls/ndis.sys)
+ WINE_CONFIG_MAKEFILE(dlls/ndis.sys/tests)
+ WINE_CONFIG_MAKEFILE(dlls/netapi32)
+diff --git a/dlls/ndfapi/Makefile.in b/dlls/ndfapi/Makefile.in
+new file mode 100755
+index 00000000000..67ad05d2e14
+--- /dev/null
++++ b/dlls/ndfapi/Makefile.in
+@@ -0,0 +1,5 @@
++MODULE    = ndfapi.dll
++#IMPORTS   = uuid ole32 oleaut32 user32 oleacc
++
++SOURCES = \
++	ndfapi_main.c
+diff --git a/dlls/ndfapi/ndfapi.spec b/dlls/ndfapi/ndfapi.spec
+new file mode 100755
+index 00000000000..6f1a0e31a6b
+--- /dev/null
++++ b/dlls/ndfapi/ndfapi.spec
+@@ -0,0 +1,28 @@
++@ stub NdfRunDllDiagnoseIncident
++@ stub NdfRunDllDiagnoseNetConnectionIncident
++@ stub NdfRunDllDiagnoseWithAnswerFile
++@ stub NdfRunDllDuplicateIPDefendingSystem
++@ stub NdfRunDllDuplicateIPOffendingSystem
++@ stub NdfRunDllHelpTopic
++@ stub DllCanUnloadNow
++@ stub DllGetClassObject
++@ stub DllRegisterServer
++@ stub DllUnregisterServer
++@ stub NdfCancelIncident
++@ stub NdfCloseIncident
++@ stub NdfCreateConnectivityIncident
++@ stub NdfCreateDNSIncident
++@ stub NdfCreateGroupingIncident
++@ stub NdfCreateInboundIncident
++@ stub NdfCreateIncident
++@ stub NdfCreateNetConnectionIncident
++@ stub NdfCreatePnrpIncident
++@ stub NdfCreateSharingIncident
++@ stub NdfCreateWebIncident
++@ stub NdfCreateWebIncidentEx
++@ stub NdfCreateWinSockIncident
++@ stub NdfDiagnoseIncident
++@ stub NdfExecuteDiagnosis
++@ stub NdfGetTraceFile
++@ stub NdfRepairIncident
++@ stub NdfRepairIncidentEx
+diff --git a/dlls/ndfapi/ndfapi_main.c b/dlls/ndfapi/ndfapi_main.c
+new file mode 100755
+index 00000000000..3e85c87aac0
+--- /dev/null
++++ b/dlls/ndfapi/ndfapi_main.c
+@@ -0,0 +1,69 @@
++/*
++* Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++
++#include "ndfapi.h"
++
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(ndfapi);
++
++STDAPI NdfCloseIncident(NDFHANDLE handle)
++{
++    FIXME("%p\n", handle);
++
++    return E_NOTIMPL;
++}
++
++STDAPI NdfCreateConnectivityIncident(NDFHANDLE *handle)
++{
++    FIXME("%p\n", handle);
++
++    return E_NOTIMPL;
++}
++
++STDAPI NdfCreateWebIncident(LPCWSTR url, NDFHANDLE *handle)
++{
++    FIXME("%s, %p\n", debugstr_w(url), handle);
++
++    return E_NOTIMPL;
++}
++
++STDAPI NdfCreateWinSockIncident(SOCKET sock, LPCWSTR host, USHORT port, LPCWSTR appId, SID *userId, NDFHANDLE *handle)
++{
++    FIXME("%Ix, %s, %s, %p, %p\n", sock, debugstr_w(host), debugstr_w(appId), userId, handle);
++
++    return E_NOTIMPL;
++}
++
++STDAPI NdfDiagnoseIncident(NDFHANDLE Handle, ULONG *RootCauseCount, RootCauseInfo **RootCauses, DWORD dwWait, DWORD dwFlags)
++{
++    FIXME("%p, %p, %p, %ld, %ld\n", Handle, RootCauseCount, RootCauses, dwWait, dwFlags);
++
++    return E_NOTIMPL;
++}
++
++STDAPI NdfExecuteDiagnosis(NDFHANDLE handle, HWND hwnd)
++{
++    FIXME("%p, %p\n", handle, hwnd);
++
++    return E_NOTIMPL;
++}
+\ No newline at end of file
+-- 
+2.53.0
+

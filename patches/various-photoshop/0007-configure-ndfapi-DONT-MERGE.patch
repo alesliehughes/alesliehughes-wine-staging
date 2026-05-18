@@ -1,0 +1,32 @@
+From 42262d961f16203cc4944d4a7c197fa39b8a1172 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 10:45:42 +1000
+Subject: [PATCH] configure ndfapi - DONT MERGE
+
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index 312a4aa2567..31ade5a7a75 100755
+--- a/configure
++++ b/configure
+@@ -1370,6 +1370,7 @@ enable_msxml6
+ enable_mtxdm
+ enable_ncrypt
+ enable_nddeapi
++enable_ndfapi
+ enable_ndis_sys
+ enable_netapi32
+ enable_netcfgx
+@@ -23526,6 +23527,7 @@ wine_fn_config_makefile dlls/mtxdm enable_mtxdm
+ wine_fn_config_makefile dlls/ncrypt enable_ncrypt
+ wine_fn_config_makefile dlls/ncrypt/tests enable_tests
+ wine_fn_config_makefile dlls/nddeapi enable_nddeapi
++wine_fn_config_makefile dlls/ndfapi enable_ndfapi
+ wine_fn_config_makefile dlls/ndis.sys enable_ndis_sys
+ wine_fn_config_makefile dlls/ndis.sys/tests enable_tests
+ wine_fn_config_makefile dlls/netapi32 enable_netapi32
+-- 
+2.53.0
+

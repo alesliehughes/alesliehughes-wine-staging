@@ -1,0 +1,41 @@
+From ebde58b38be3d30e6c584aac1a76698a4f18ec23 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 10:01:53 +1000
+Subject: [PATCH] uiautomationcore: Add UiaDisconnectAllProviders stub
+
+---
+ dlls/uiautomationcore/uia_provider.c        | 7 +++++++
+ dlls/uiautomationcore/uiautomationcore.spec | 2 +-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/uiautomationcore/uia_provider.c b/dlls/uiautomationcore/uia_provider.c
+index 2e5f0e6c6ea..5a937f323cb 100644
+--- a/dlls/uiautomationcore/uia_provider.c
++++ b/dlls/uiautomationcore/uia_provider.c
+@@ -2317,3 +2317,10 @@ HRESULT WINAPI UiaDisconnectProvider(IRawElementProviderSimple *elprov)
+ 
+     return S_OK;
+ }
++
++HRESULT WINAPI UiaDisconnectAllProviders()
++{
++    FIXME("stub\n");
++
++    return S_OK;
++}
+diff --git a/dlls/uiautomationcore/uiautomationcore.spec b/dlls/uiautomationcore/uiautomationcore.spec
+index 69e1f0ba9f9..ebde5ea0c65 100644
+--- a/dlls/uiautomationcore/uiautomationcore.spec
++++ b/dlls/uiautomationcore/uiautomationcore.spec
+@@ -55,7 +55,7 @@
+ @ stub TransformPattern_Rotate
+ @ stdcall UiaAddEvent(ptr long ptr long ptr long ptr ptr)
+ @ stdcall UiaClientsAreListening()
+-#@ stub UiaDisconnectAllProviders
++@ stdcall UiaDisconnectAllProviders()
+ @ stdcall UiaDisconnectProvider(ptr)
+ @ stdcall UiaEventAddWindow(ptr long)
+ @ stdcall UiaEventRemoveWindow(ptr long)
+-- 
+2.53.0
+

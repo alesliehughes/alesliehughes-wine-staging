@@ -1,0 +1,24 @@
+From 09b5f5f93b5cec247ff031ecae8bb8627be287de Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 18:03:47 +1000
+Subject: [PATCH] uuid: Add thumbcache.h
+
+---
+ libs/uuid/uuid.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libs/uuid/uuid.c b/libs/uuid/uuid.c
+index dd12c769922..94819e645df 100644
+--- a/libs/uuid/uuid.c
++++ b/libs/uuid/uuid.c
+@@ -101,6 +101,7 @@ DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
+ #include "directmanipulation.h"
+ #include "devguid.h"
+ #include "propkey.h"
++#include "thumbcache.h"
+ 
+ #define __WINE_INIT_NPI_MODULEID
+ #include "netiodef.h"
+-- 
+2.53.0
+

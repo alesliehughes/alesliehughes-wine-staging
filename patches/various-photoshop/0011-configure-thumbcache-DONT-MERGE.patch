@@ -1,0 +1,32 @@
+From 974b6c8d6068067d8bbba78092b85c9f6cd8f45b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 12:28:37 +1000
+Subject: [PATCH] configure: thumbcache - DONT MERGE
+
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index 634a72ae3df..7e03de18234 100755
+--- a/configure
++++ b/configure
+@@ -1489,6 +1489,7 @@ enable_tbs
+ enable_tdh
+ enable_tdi_sys
+ enable_threadpoolwinrt
++enable_thumbcache
+ enable_tiptsf
+ enable_traffic
+ enable_twain_32
+@@ -23723,6 +23724,7 @@ wine_fn_config_makefile dlls/tdh/tests enable_tests
+ wine_fn_config_makefile dlls/tdi.sys enable_tdi_sys
+ wine_fn_config_makefile dlls/threadpoolwinrt enable_threadpoolwinrt
+ wine_fn_config_makefile dlls/threadpoolwinrt/tests enable_tests
++wine_fn_config_makefile dlls/thumbcache enable_thumbcache
+ wine_fn_config_makefile dlls/tiptsf enable_tiptsf
+ wine_fn_config_makefile dlls/toolhelp.dll16 enable_win16
+ wine_fn_config_makefile dlls/traffic enable_traffic
+-- 
+2.53.0
+

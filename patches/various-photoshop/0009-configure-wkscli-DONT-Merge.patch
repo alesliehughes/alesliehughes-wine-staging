@@ -1,0 +1,32 @@
+From d90d216a8789881a63a1ed94a56ccf76c39cf70c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 11:49:18 +1000
+Subject: [PATCH] configure: wkscli - DONT Merge
+
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index 31ade5a7a75..634a72ae3df 100755
+--- a/configure
++++ b/configure
+@@ -1535,6 +1535,7 @@ enable_websocket
+ enable_wer
+ enable_wevtapi
+ enable_wevtsvc
++enable_wkscli
+ enable_wiaservc
+ enable_wimgapi
+ enable_win32k_sys
+@@ -23802,6 +23803,7 @@ wine_fn_config_makefile dlls/wer/tests enable_tests
+ wine_fn_config_makefile dlls/wevtapi enable_wevtapi
+ wine_fn_config_makefile dlls/wevtapi/tests enable_tests
+ wine_fn_config_makefile dlls/wevtsvc enable_wevtsvc
++wine_fn_config_makefile dlls/wkscli enable_wkscli
+ wine_fn_config_makefile dlls/wiaservc enable_wiaservc
+ wine_fn_config_makefile dlls/wiaservc/tests enable_tests
+ wine_fn_config_makefile dlls/wimgapi enable_wimgapi
+-- 
+2.53.0
+

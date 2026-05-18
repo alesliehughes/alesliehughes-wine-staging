@@ -1,0 +1,66 @@
+From 9bbda0cbb5c20b5dee8a281adbd160eb4885ad59 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 18 May 2026 10:45:42 +1000
+Subject: [PATCH] wkscli: Add new dll
+
+---
+ configure.ac            |  1 +
+ dlls/wkscli/Makefile.in |  2 ++
+ dlls/wkscli/wkscli.spec | 24 ++++++++++++++++++++++++
+ 3 files changed, 27 insertions(+)
+ create mode 100755 dlls/wkscli/Makefile.in
+ create mode 100755 dlls/wkscli/wkscli.spec
+
+diff --git a/configure.ac b/configure.ac
+index 896f057680a..9de736fcc3b 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3301,6 +3301,7 @@ WINE_CONFIG_MAKEFILE(dlls/wer/tests)
+ WINE_CONFIG_MAKEFILE(dlls/wevtapi)
+ WINE_CONFIG_MAKEFILE(dlls/wevtapi/tests)
+ WINE_CONFIG_MAKEFILE(dlls/wevtsvc)
++WINE_CONFIG_MAKEFILE(dlls/wkscli)
+ WINE_CONFIG_MAKEFILE(dlls/wiaservc)
+ WINE_CONFIG_MAKEFILE(dlls/wiaservc/tests)
+ WINE_CONFIG_MAKEFILE(dlls/wimgapi)
+diff --git a/dlls/wkscli/Makefile.in b/dlls/wkscli/Makefile.in
+new file mode 100755
+index 00000000000..77e2e2d5b91
+--- /dev/null
++++ b/dlls/wkscli/Makefile.in
+@@ -0,0 +1,2 @@
++MODULE    = wkscli.dll
++IMPORTS   = netapi32
+diff --git a/dlls/wkscli/wkscli.spec b/dlls/wkscli/wkscli.spec
+new file mode 100755
+index 00000000000..17d97ccf2aa
+--- /dev/null
++++ b/dlls/wkscli/wkscli.spec
+@@ -0,0 +1,24 @@
++@ stub NetAddAlternateComputerName
++@ stub NetEnumerateComputerNames
++@ stdcall NetGetJoinInformation( wstr ptr ptr ) netapi32.NetGetJoinInformation
++@ stub NetGetJoinableOUs
++@ stub NetJoinDomain
++@ stub NetRemoveAlternateComputerName
++@ stub NetRenameMachineInDomain
++@ stub NetSetPrimaryComputerName
++@ stub NetUnjoinDomain
++@ stdcall NetUseAdd( str long ptr ptr ) netapi32.NetUseAdd
++@ stdcall NetUseDel( str str long ) netapi32.NetUseDel
++@ stdcall NetUseEnum( str long ptr long ptr ptr ptr ) netapi32.NetUseEnum
++@ stdcall NetUseGetInfo( str str long ptr ) netapi32.NetUseGetInfo
++@ stub NetValidateName
++@ stdcall NetWkstaGetInfo( str long ptr ) netapi32.NetWkstaGetInfo
++@ stub NetWkstaSetInfo
++@ stub NetWkstaStatisticsGet
++@ stub NetWkstaTransportAdd
++@ stub NetWkstaTransportDel
++@ stdcall NetWkstaTransportEnum( str long ptr long ptr ptr ptr ) netapi32.NetWkstaTransportEnum
++@ stdcall NetWkstaUserEnum( str long ptr long ptr ptr ptr ) netapi32.NetWkstaUserEnum
++@ stdcall NetWkstaUserGetInfo( str long ptr ) netapi32.NetWkstaUserGetInfo
++@ stub NetWkstaUserSetInfo
++
+-- 
+2.53.0
+
