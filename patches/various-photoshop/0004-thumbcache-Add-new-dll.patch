@@ -1,4 +1,4 @@
-From 704cf2225dc98f3d1270b92e3aa633a4cceb1da0 Mon Sep 17 00:00:00 2001
+From c125386cdf22a5af31459e64d52145428af56070 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 12:27:32 +1000
 Subject: [PATCH] thumbcache: Add new dll
@@ -6,17 +6,17 @@ Subject: [PATCH] thumbcache: Add new dll
 ---
  configure.ac                       |  1 +
  dlls/thumbcache/Makefile.in        |  5 ++++
- dlls/thumbcache/thumbcache.c       | 38 +++++++++++++++++++++++++++
+ dlls/thumbcache/thumbcache.c       | 33 ++++++++++++++++++++++++
  dlls/thumbcache/thumbcache.spec    |  4 +++
- dlls/thumbcache/thumbcache_reg.idl | 42 ++++++++++++++++++++++++++++++
- 5 files changed, 90 insertions(+)
+ dlls/thumbcache/thumbcache_reg.idl | 41 ++++++++++++++++++++++++++++++
+ 5 files changed, 84 insertions(+)
  create mode 100644 dlls/thumbcache/Makefile.in
  create mode 100644 dlls/thumbcache/thumbcache.c
  create mode 100644 dlls/thumbcache/thumbcache.spec
  create mode 100644 dlls/thumbcache/thumbcache_reg.idl
 
 diff --git a/configure.ac b/configure.ac
-index 9de736fcc3b..10d6dbbe95f 100644
+index 3cfc4da4a4c..dce301af17f 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -3221,6 +3221,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdh/tests)
@@ -40,10 +40,10 @@ index 00000000000..124c49f34b7
 +	thumbcache_reg.idl
 diff --git a/dlls/thumbcache/thumbcache.c b/dlls/thumbcache/thumbcache.c
 new file mode 100644
-index 00000000000..f33675993ef
+index 00000000000..08a2b1b8c2f
 --- /dev/null
 +++ b/dlls/thumbcache/thumbcache.c
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,33 @@
 +/*
 +* Copyright 2026 Alistair Leslie-Hughes
 + *
@@ -64,11 +64,6 @@ index 00000000000..f33675993ef
 +#include <stdarg.h>
 +
 +#include "windef.h"
-+#include "winbase.h"
-+#include "wingdi.h"
-+#include "winuser.h"
-+#include "objbase.h"
-+#include "oleauto.h"
 +#include "oleidl.h"
 +#include "rpcproxy.h"
 +
@@ -94,10 +89,10 @@ index 00000000000..b16365d0c9f
 +@ stdcall -private DllUnregisterServer()
 diff --git a/dlls/thumbcache/thumbcache_reg.idl b/dlls/thumbcache/thumbcache_reg.idl
 new file mode 100644
-index 00000000000..d3792f284fd
+index 00000000000..4b2ba62261a
 --- /dev/null
 +++ b/dlls/thumbcache/thumbcache_reg.idl
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,41 @@
 +/*
 + * Copyright 2026 Alistair Leslie-Hughes
 + *
@@ -139,7 +134,6 @@ index 00000000000..d3792f284fd
 +{
 +    interface ISharedBitmap;
 +}
-+
 -- 
 2.53.0
 

@@ -1,12 +1,16 @@
-From 48e6a56d622b7653f289b9e0cf3ec05650542f05 Mon Sep 17 00:00:00 2001
+From 05c1ba8ed9c91f0bd418a3f58bab3c58ea5ad3ce Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 16:14:10 +1000
 Subject: [PATCH] thumbcache: Add LocalThumbnailCache stubbed interface
 
 ---
- dlls/thumbcache/Makefile.in  |   1 +
- dlls/thumbcache/thumbcache.c | 187 +++++++++++++++++++++++++++++++++--
- 2 files changed, 180 insertions(+), 8 deletions(-)
+ dlls/thumbcache/Makefile.in        |   1 +
+ dlls/thumbcache/tests/Makefile.in  |   4 +
+ dlls/thumbcache/tests/thumbcache.c |  49 ++++++++
+ dlls/thumbcache/thumbcache.c       | 182 ++++++++++++++++++++++++++++-
+ 4 files changed, 233 insertions(+), 3 deletions(-)
+ create mode 100644 dlls/thumbcache/tests/Makefile.in
+ create mode 100644 dlls/thumbcache/tests/thumbcache.c
 
 diff --git a/dlls/thumbcache/Makefile.in b/dlls/thumbcache/Makefile.in
 index 124c49f34b7..200c1d656f6 100644
@@ -18,22 +22,83 @@ index 124c49f34b7..200c1d656f6 100644
  
  SOURCES = \
  	thumbcache.c \
+diff --git a/dlls/thumbcache/tests/Makefile.in b/dlls/thumbcache/tests/Makefile.in
+new file mode 100644
+index 00000000000..5267ba675ea
+--- /dev/null
++++ b/dlls/thumbcache/tests/Makefile.in
+@@ -0,0 +1,4 @@
++TESTDLL   = thumbcache.dll
++IMPORTS   = uuid ole32
++
++SOURCES = thumbcache.c
+\ No newline at end of file
+diff --git a/dlls/thumbcache/tests/thumbcache.c b/dlls/thumbcache/tests/thumbcache.c
+new file mode 100644
+index 00000000000..24ff387410e
+--- /dev/null
++++ b/dlls/thumbcache/tests/thumbcache.c
+@@ -0,0 +1,49 @@
++/*
++* Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++#define COBJMACROS
++#define CONST_VTABLE
++
++#include "thumbcache.h"
++
++#include "wine/test.h"
++
++static void test_create_thumbnailcache(void)
++{
++    HRESULT hr;
++    IThumbnailCache *cache;
++
++    hr = CoCreateInstance( &CLSID_LocalThumbnailCache, NULL, CLSCTX_INPROC_SERVER, &IID_IThumbnailCache,
++                           (void **)&cache );
++    ok( hr == S_OK, "got 0x%lx\n", hr);
++
++    IThumbnailCache_Release(cache);
++}
++
++START_TEST(thumbcache)
++{
++    HRESULT hr;
++
++    hr = CoInitialize( NULL );
++    ok( hr == S_OK, "failed to init com\n");
++    if (hr != S_OK) return;
++
++    test_create_thumbnailcache();
++
++    CoUninitialize();
++}
 diff --git a/dlls/thumbcache/thumbcache.c b/dlls/thumbcache/thumbcache.c
-index f33675993ef..9e7870d90fd 100644
+index 08a2b1b8c2f..088ac471764 100644
 --- a/dlls/thumbcache/thumbcache.c
 +++ b/dlls/thumbcache/thumbcache.c
-@@ -17,22 +17,193 @@
+@@ -17,17 +17,193 @@
   */
  #include <stdarg.h>
  
 +#define COBJMACROS
 +
  #include "windef.h"
--#include "winbase.h"
--#include "wingdi.h"
--#include "winuser.h"
--#include "objbase.h"
--#include "oleauto.h"
  #include "oleidl.h"
  #include "rpcproxy.h"
 +#include "thumbcache.h"
@@ -99,7 +164,8 @@ index f33675993ef..9e7870d90fd 100644
 +
 +static HRESULT WINAPI thumbcache_GetThumbnail(IThumbnailCache *iface, IShellItem *pShellItem, UINT cxyRequestedThumbSize,
 +    WTS_FLAGS flags, ISharedBitmap **ppvThumb, WTS_CACHEFLAGS *pOutFlags, WTS_THUMBNAILID *pThumbnailID)
-+{
+ {
+-    FIXME("(%s,%s,%p)\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
 +    struct thumb_cache *This = impl_from_IThumbnailCache(iface);
 +
 +    FIXME("%p, %p, %d, %x, %p, %p, %p\n", This, pShellItem, cxyRequestedThumbSize, flags, ppvThumb, pOutFlags, pThumbnailID );
@@ -127,8 +193,7 @@ index f33675993ef..9e7870d90fd 100644
 +};
 +
 +static HRESULT thumbcache_create( IUnknown *outer, REFIID iid, void **obj )
- {
--    FIXME("(%s,%s,%p)\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
++ {
 +    struct thumb_cache *This = malloc( sizeof(*This) );
 +    HRESULT hr = E_FAIL;
 +

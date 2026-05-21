@@ -1,4 +1,4 @@
-From 974b6c8d6068067d8bbba78092b85c9f6cd8f45b Mon Sep 17 00:00:00 2001
+From 2f5985e12b1bac823be5c1dd8d38e66eccd81359 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 12:28:37 +1000
 Subject: [PATCH] configure: thumbcache - DONT MERGE
@@ -8,7 +8,7 @@ Subject: [PATCH] configure: thumbcache - DONT MERGE
  1 file changed, 2 insertions(+)
 
 diff --git a/configure b/configure
-index 634a72ae3df..7e03de18234 100755
+index 63f92f92aa5..298f35ff2a0 100755
 --- a/configure
 +++ b/configure
 @@ -1489,6 +1489,7 @@ enable_tbs

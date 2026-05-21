@@ -1,11 +1,10 @@
-From 12d90df4373c953ef167fe2ebd769207932075ad Mon Sep 17 00:00:00 2001
+From dab3310f4670bcc05f9175bff312202755eab807 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 09:29:07 +1000
 Subject: [PATCH] kernelbase: Semi-stub SetThreadpoolTimerEx
 
 Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=57980
 (bug has a more complete patch).
-
 ---
  dlls/kernelbase/kernelbase.spec | 2 +-
  dlls/kernelbase/thread.c        | 9 +++++++++

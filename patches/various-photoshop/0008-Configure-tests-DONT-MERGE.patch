@@ -1,0 +1,37 @@
+From cc821f86bc0b9d24426f4b61e07b6462870415e9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 May 2026 09:52:17 +1000
+Subject: [PATCH] Configure/tests - DONT MERGE
+
+---
+ configure    | 1 +
+ configure.ac | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index 298f35ff2a0..9ac555aab76 100755
+--- a/configure
++++ b/configure
+@@ -23725,6 +23725,7 @@ wine_fn_config_makefile dlls/tdi.sys enable_tdi_sys
+ wine_fn_config_makefile dlls/threadpoolwinrt enable_threadpoolwinrt
+ wine_fn_config_makefile dlls/threadpoolwinrt/tests enable_tests
+ wine_fn_config_makefile dlls/thumbcache enable_thumbcache
++wine_fn_config_makefile dlls/thumbcache/tests enable_tests
+ wine_fn_config_makefile dlls/tiptsf enable_tiptsf
+ wine_fn_config_makefile dlls/toolhelp.dll16 enable_win16
+ wine_fn_config_makefile dlls/traffic enable_traffic
+diff --git a/configure.ac b/configure.ac
+index dce301af17f..6237fe0c327 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3222,6 +3222,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdi.sys)
+ WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt)
+ WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt/tests)
+ WINE_CONFIG_MAKEFILE(dlls/thumbcache)
++WINE_CONFIG_MAKEFILE(dlls/thumbcache/tests)
+ WINE_CONFIG_MAKEFILE(dlls/tiptsf)
+ WINE_CONFIG_MAKEFILE(dlls/toolhelp.dll16)
+ WINE_CONFIG_MAKEFILE(dlls/traffic)
+-- 
+2.53.0
+

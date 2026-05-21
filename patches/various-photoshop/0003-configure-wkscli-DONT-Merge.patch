@@ -1,4 +1,4 @@
-From d90d216a8789881a63a1ed94a56ccf76c39cf70c Mon Sep 17 00:00:00 2001
+From 54fc5042d3af8ea80079a486db6bc03903d2f4b2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 11:49:18 +1000
 Subject: [PATCH] configure: wkscli - DONT Merge
@@ -8,7 +8,7 @@ Subject: [PATCH] configure: wkscli - DONT Merge
  1 file changed, 2 insertions(+)
 
 diff --git a/configure b/configure
-index 31ade5a7a75..634a72ae3df 100755
+index aba9afb26cc..63f92f92aa5 100755
 --- a/configure
 +++ b/configure
 @@ -1535,6 +1535,7 @@ enable_websocket
