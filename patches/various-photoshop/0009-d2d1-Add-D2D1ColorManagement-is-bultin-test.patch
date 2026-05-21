@@ -1,0 +1,24 @@
+From 6633f21632cd585a975cd6b23f3df449c4d5c5b1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 21 May 2026 13:00:22 +1000
+Subject: [PATCH] d2d1: Add D2D1ColorManagement is bultin test
+
+---
+ dlls/d2d1/tests/d2d1.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/d2d1/tests/d2d1.c b/dlls/d2d1/tests/d2d1.c
+index c01c6eefde4..96cdd1b94bf 100644
+--- a/dlls/d2d1/tests/d2d1.c
++++ b/dlls/d2d1/tests/d2d1.c
+@@ -11911,6 +11911,7 @@ static void test_builtin_effect(BOOL d3d11)
+         {&CLSID_D2D1GaussianBlur,            1, 1, 1, 1},
+         {&CLSID_D2D1PointSpecular,           1, 1, 1, 1},
+         {&CLSID_D2D1ArithmeticComposite,     1, 2, 2, 2},
++        {&CLSID_D2D1ColorManagement,         1, 1, 1, 1},
+     };
+ 
+     if (!init_test_context(&ctx, d3d11))
+-- 
+2.53.0
+

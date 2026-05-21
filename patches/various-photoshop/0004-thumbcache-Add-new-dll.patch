@@ -1,4 +1,4 @@
-From c125386cdf22a5af31459e64d52145428af56070 Mon Sep 17 00:00:00 2001
+From 2b95385798b7d3ad7af3a9f44d61e1192e7710f4 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 18 May 2026 12:27:32 +1000
 Subject: [PATCH] thumbcache: Add new dll
@@ -16,17 +16,17 @@ Subject: [PATCH] thumbcache: Add new dll
  create mode 100644 dlls/thumbcache/thumbcache_reg.idl
 
 diff --git a/configure.ac b/configure.ac
-index 3cfc4da4a4c..dce301af17f 100644
+index f963461b799..30c54b0e8df 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3221,6 +3221,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdh/tests)
+@@ -3217,6 +3217,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdh/tests)
  WINE_CONFIG_MAKEFILE(dlls/tdi.sys)
  WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt)
  WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt/tests)
 +WINE_CONFIG_MAKEFILE(dlls/thumbcache)
- WINE_CONFIG_MAKEFILE(dlls/tiptsf)
  WINE_CONFIG_MAKEFILE(dlls/toolhelp.dll16)
  WINE_CONFIG_MAKEFILE(dlls/traffic)
+ WINE_CONFIG_MAKEFILE(dlls/twain.dll16)
 diff --git a/dlls/thumbcache/Makefile.in b/dlls/thumbcache/Makefile.in
 new file mode 100644
 index 00000000000..124c49f34b7
