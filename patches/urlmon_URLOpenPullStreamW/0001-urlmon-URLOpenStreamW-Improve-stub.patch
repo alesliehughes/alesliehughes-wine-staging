@@ -1,7 +1,7 @@
 From a63896fb7c5743a486fee2b1e729141d3dee06ee Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 14 May 2026 10:58:57 +1000
-Subject: [PATCH] urlmon: URLOpenStreamW Improve stub
+Subject: [PATCH] urlmon: Implement URLOpenPullStreamW
 
 Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=50535
 ---
