@@ -1,26 +1,32 @@
-From 23c3b429df72a6f56e9a03c038f96ec0ecfaa901 Mon Sep 17 00:00:00 2001
+From 8f0739ce9bb22789d7fc255f55c0699436468183 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Tue, 9 Sep 2025 09:30:07 +1000
-Subject: Configure tipsf
+Date: Fri, 29 May 2026 09:01:00 +1000
+Subject: [PATCH] Configure tipsf - DONT MERGE
 
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/configure b/configure
-index 113a50199a8..017150b6e13 100755
+index 1d489289229..c3f33e6867e 100755
 --- a/configure
 +++ b/configure
-@@ -1458,6 +1458,7 @@ enable_tbs
- enable_tdh
+@@ -1474,6 +1474,7 @@ enable_tdh
  enable_tdi_sys
  enable_threadpoolwinrt
+ enable_thumbcache
 +enable_tiptsf
  enable_traffic
  enable_twain_32
  enable_twaindsm
-@@ -23081,6 +23082,7 @@ wine_fn_config_makefile dlls/tdh/tests enable_tests
- wine_fn_config_makefile dlls/tdi.sys enable_tdi_sys
- wine_fn_config_makefile dlls/threadpoolwinrt enable_threadpoolwinrt
+@@ -23578,6 +23579,7 @@ wine_fn_config_makefile dlls/threadpoolwinrt enable_threadpoolwinrt
  wine_fn_config_makefile dlls/threadpoolwinrt/tests enable_tests
+ wine_fn_config_makefile dlls/thumbcache enable_thumbcache
+ wine_fn_config_makefile dlls/thumbcache/tests enable_tests
 +wine_fn_config_makefile dlls/tiptsf enable_tiptsf
  wine_fn_config_makefile dlls/toolhelp.dll16 enable_win16
  wine_fn_config_makefile dlls/traffic enable_traffic
  wine_fn_config_makefile dlls/twain.dll16 enable_win16
+-- 
+2.53.0
+

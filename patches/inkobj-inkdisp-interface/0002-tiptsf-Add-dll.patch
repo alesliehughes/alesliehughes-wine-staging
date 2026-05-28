@@ -1,4 +1,4 @@
-From 1f3a00ac8108f86b005652452812ecd13af622f0 Mon Sep 17 00:00:00 2001
+From 4706d2a29c817dafe9cb049ba7c0b1c273077a60 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 9 Sep 2025 09:10:34 +1000
 Subject: [PATCH] tiptsf: Add dll
@@ -18,13 +18,13 @@ Subject: [PATCH] tiptsf: Add dll
  create mode 100644 dlls/tiptsf/tiptsf_main.c
 
 diff --git a/configure.ac b/configure.ac
-index 0dc80907084..7760b2d3c1b 100644
+index f3496b8eb15..acf5972368f 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3202,6 +3202,7 @@ WINE_CONFIG_MAKEFILE(dlls/tdh/tests)
- WINE_CONFIG_MAKEFILE(dlls/tdi.sys)
- WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt)
+@@ -3223,6 +3223,7 @@ WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt)
  WINE_CONFIG_MAKEFILE(dlls/threadpoolwinrt/tests)
+ WINE_CONFIG_MAKEFILE(dlls/thumbcache)
+ WINE_CONFIG_MAKEFILE(dlls/thumbcache/tests)
 +WINE_CONFIG_MAKEFILE(dlls/tiptsf)
  WINE_CONFIG_MAKEFILE(dlls/toolhelp.dll16)
  WINE_CONFIG_MAKEFILE(dlls/traffic)
@@ -139,10 +139,10 @@ index 0d1188705d2..cfb179c09a6 100644
  ]
  coclass TextInputPanel
 diff --git a/loader/wine.inf.in b/loader/wine.inf.in
-index 8c58fb781e4..62ba705617f 100644
+index 9c708d22cb7..6400c9addb0 100644
 --- a/loader/wine.inf.in
 +++ b/loader/wine.inf.in
-@@ -788,6 +788,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
+@@ -1039,6 +1039,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
  16422,Windows Media Player,wmplayer.exe
  16422,Windows NT\Accessories,wordpad.exe
  16427,Microsoft Shared\Ink,inkobj.dll
@@ -150,7 +150,7 @@ index 8c58fb781e4..62ba705617f 100644
  16427,System\OLE DB,oledb32.dll
  16427,System\OLE DB,msdaps.dll
  16427,System\OLE DB,msdasql.dll
-@@ -857,6 +858,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
+@@ -1109,6 +1110,7 @@ HKLM,SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86,"Version",2,"14.42.344
  16422,Windows NT\Accessories,wordpad.exe
  16427,Microsoft Shared\TextConv,
  16427,Microsoft Shared\Ink,inkobj.dll
@@ -159,5 +159,5 @@ index 8c58fb781e4..62ba705617f 100644
  16427,System\OLE DB,msdaps.dll
  16427,System\OLE DB,msdasql.dll
 -- 
-2.51.0
+2.53.0
 
