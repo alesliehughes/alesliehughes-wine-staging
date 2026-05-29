@@ -1,0 +1,32 @@
+From d73e0978cd9bbb3c6fe1fce5138e20b3084c572b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 29 May 2026 12:15:44 +1000
+Subject: [PATCH 2/3] rtscom configure - NOT MERGE
+
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure b/configure
+index c3f33e6867e..bfca2037a3e 100755
+--- a/configure
++++ b/configure
+@@ -1422,6 +1422,7 @@ enable_rpcrt4
+ enable_rsabase
+ enable_rsaenh
+ enable_rstrtmgr
++enable_rtscom
+ enable_rtutils
+ enable_rtworkq
+ enable_samlib
+@@ -23497,6 +23498,7 @@ wine_fn_config_makefile dlls/rsabase enable_rsabase
+ wine_fn_config_makefile dlls/rsaenh enable_rsaenh
+ wine_fn_config_makefile dlls/rsaenh/tests enable_tests
+ wine_fn_config_makefile dlls/rstrtmgr enable_rstrtmgr
++wine_fn_config_makefile dlls/rtscom enable_rtscom
+ wine_fn_config_makefile dlls/rtutils enable_rtutils
+ wine_fn_config_makefile dlls/rtworkq enable_rtworkq
+ wine_fn_config_makefile dlls/rtworkq/tests enable_tests
+-- 
+2.53.0
+
