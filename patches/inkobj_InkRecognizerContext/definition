@@ -1,0 +1,8 @@
+Fixes: [14550] inkobj: Add IInkRecognizerContext
+
+https://bugs.winehq.org/show_bug.cgi?id=14550
+
+Going through examples - Require interfaces.
+- InkRecognizerContext
+- InkRecognizers
+- InkCollector
