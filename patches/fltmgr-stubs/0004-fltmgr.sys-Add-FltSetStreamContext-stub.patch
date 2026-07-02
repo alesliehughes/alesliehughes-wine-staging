@@ -1,0 +1,68 @@
+From e0212a9ce28cb6bcfd63af68aab52730ad21a44b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 2 Jul 2026 16:14:09 +1000
+Subject: [PATCH] fltmgr.sys: Add FltSetStreamContext stub
+
+---
+ dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
+ dlls/fltmgr.sys/main.c          | 7 +++++++
+ include/ddk/fltkernel.h         | 8 ++++++++
+ 3 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
+index 80f650c917e..447196640de 100644
+--- a/dlls/fltmgr.sys/fltmgr.sys.spec
++++ b/dlls/fltmgr.sys/fltmgr.sys.spec
+@@ -146,7 +146,7 @@
+ @ stub FltSetInformationFile
+ @ stub FltSetInstanceContext
+ @ stub FltSetSecurityObject
+-@ stub FltSetStreamContext
++@ stdcall FltSetStreamContext(ptr ptr long ptr ptr)
+ @ stub FltSetStreamHandleContext
+ @ stub FltSetVolumeContext
+ @ stub FltSetVolumeInformation
+diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
+index 044ca026a1b..71d179a2427 100644
+--- a/dlls/fltmgr.sys/main.c
++++ b/dlls/fltmgr.sys/main.c
+@@ -166,3 +166,10 @@ NTSTATUS WINAPI FltGetStreamContext(PFLT_INSTANCE instance, PFILE_OBJECT  fileob
+     FIXME("%p, %p, %p\n", instance, fileobject, context);
+     return STATUS_NOT_SUPPORTED;
+ }
++
++NTSTATUS WINAPI FltSetStreamContext(PFLT_INSTANCE instance, PFILE_OBJECT fileobject, FLT_SET_CONTEXT_OPERATION operation,
++        PFLT_CONTEXT new_context, PFLT_CONTEXT *old_context)
++{
++    FIXME("%p, %p, %d, %p, %p\n", instance, fileobject, operation, new_context, old_context);
++    return STATUS_NOT_SUPPORTED;
++}
+diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
+index 31c26307084..cd0958cfec3 100644
+--- a/include/ddk/fltkernel.h
++++ b/include/ddk/fltkernel.h
+@@ -653,6 +653,13 @@ typedef struct _FLT_REGISTRATION
+     PFLT_SECTION_CONFLICT_NOTIFICATION_CALLBACK SectionNotificationCallback;
+ } FLT_REGISTRATION, *PFLT_REGISTRATION;
+ 
++typedef enum _FLT_SET_CONTEXT_OPERATION
++{
++    FLT_SET_CONTEXT_REPLACE_IF_EXISTS,
++    FLT_SET_CONTEXT_KEEP_IF_EXISTS
++} FLT_SET_CONTEXT_OPERATION, *PFLT_SET_CONTEXT_OPERATION;
++
++
+ NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER, FLT_CONTEXT_TYPE, SIZE_T, POOL_TYPE, PFLT_CONTEXT*);
+ NTSTATUS WINAPI FltBuildDefaultSecurityDescriptor(PSECURITY_DESCRIPTOR *, ACCESS_MASK);
+ void     WINAPI FltFreeSecurityDescriptor(PSECURITY_DESCRIPTOR);
+@@ -660,6 +667,7 @@ void*    WINAPI FltGetRoutineAddress(LPCSTR name);
+ NTSTATUS WINAPI FltGetStreamContext(PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);
+ NTSTATUS WINAPI FltRegisterFilter(PDRIVER_OBJECT, const FLT_REGISTRATION *, PFLT_FILTER *);
+ VOID     WINAPI FltReleaseContext(PFLT_CONTEXT);
++NTSTATUS WINAPI FltSetStreamContext(PFLT_INSTANCE, PFILE_OBJECT, FLT_SET_CONTEXT_OPERATION, PFLT_CONTEXT, PFLT_CONTEXT*);
+ NTSTATUS WINAPI FltStartFiltering(PFLT_FILTER);
+ void     WINAPI FltUnregisterFilter(PFLT_FILTER);
+ 
+-- 
+2.53.0
+

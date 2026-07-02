@@ -1,0 +1,39 @@
+From 7b0bec9af3c4c0df334c307c5f48390242fcea9d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 2 Jul 2026 13:08:50 +1000
+Subject: [PATCH] fltmgr.sys: Add FltAllocateContext stub
+
+---
+ dlls/fltmgr.sys/main.c  | 6 ++++++
+ include/ddk/fltkernel.h | 1 +
+ 2 files changed, 7 insertions(+)
+
+diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
+index 54ee2ce1e12..ded8b649bfe 100644
+--- a/dlls/fltmgr.sys/main.c
++++ b/dlls/fltmgr.sys/main.c
+@@ -149,3 +149,9 @@ void WINAPI FltFreeSecurityDescriptor(PSECURITY_DESCRIPTOR descriptor)
+ {
+     ExFreePool(descriptor);
+ }
++
++NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER filter, FLT_CONTEXT_TYPE context, SIZE_T size, POOL_TYPE type, PFLT_CONTEXT *out)
++{
++    FIXME("%p, %d, %Iu, %u, %p\n", filter, context, size, type, *out);
++    return STATUS_NOT_SUPPORTED;
++}
+diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
+index e5483d5a3fa..5c329cb45bd 100644
+--- a/include/ddk/fltkernel.h
++++ b/include/ddk/fltkernel.h
+@@ -653,6 +653,7 @@ typedef struct _FLT_REGISTRATION
+     PFLT_SECTION_CONFLICT_NOTIFICATION_CALLBACK SectionNotificationCallback;
+ } FLT_REGISTRATION, *PFLT_REGISTRATION;
+ 
++NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER, FLT_CONTEXT_TYPE, SIZE_T, POOL_TYPE, PFLT_CONTEXT*);
+ NTSTATUS WINAPI FltBuildDefaultSecurityDescriptor(PSECURITY_DESCRIPTOR *, ACCESS_MASK);
+ void     WINAPI FltFreeSecurityDescriptor(PSECURITY_DESCRIPTOR);
+ void*    WINAPI FltGetRoutineAddress(LPCSTR name);
+-- 
+2.53.0
+
