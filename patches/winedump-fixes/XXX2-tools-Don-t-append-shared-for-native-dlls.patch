@@ -1,0 +1,32 @@
+From d3b428c60189d8feb52d979bfecf9b4952884e0f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 3 Jul 2026 08:09:49 +1000
+Subject: [PATCH] tools: Don't append -shared for native dlls
+
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=51377
+---
+ tools/makedep.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/tools/makedep.c b/tools/makedep.c
+index 9b3eb0623d1..0e88d7ab133 100644
+--- a/tools/makedep.c
++++ b/tools/makedep.c
+@@ -3991,7 +3991,13 @@ static void output_module( struct makefile *make, unsigned int arch )
+     output( "\n" );
+     output_winegcc_command( make, link_arch );
+     if (arch) output_filename( "-Wl,--wine-builtin" );
+-    if (!make->is_exe) output_filename( "-shared" );
++
++    if (!make->is_exe)
++    {
++        if (!strendswith( make->module, ".sys" ) &&
++            !strarray_exists( make->extradllflags, "-Wl,--subsystem,native" ))
++            output_filename( "-shared" );
++    }
+     if (spec_file)
+     {
+         output_filename( spec_file );
+-- 
+2.53.0
+
