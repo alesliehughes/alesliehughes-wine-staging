@@ -1,14 +1,8 @@
-From 649597fbcb29361fe33e96becfb1c218665ea4ce Mon Sep 17 00:00:00 2001
+From f299d3cbbe8f5f7c3173187d72234ff23ba1460a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 15:57:33 +1000
-Subject: [PATCH] fltmgr.sys: Add FltReleaseContext stub
+Subject: fltmgr.sys: Add FltReleaseContext stub
 
----
- dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
- dlls/fltmgr.sys/main.c          | 5 +++++
- dlls/win32k.sys/win32k.sys.spec | 2 +-
- include/ddk/fltkernel.h         | 1 +
- 4 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
 index 8943b9f85cf..1e394b4418f 100644
@@ -36,19 +30,6 @@ index ded8b649bfe..6164dd9ff5d 100644
 +{
 +    FIXME("%p\n", context);
 +}
-diff --git a/dlls/win32k.sys/win32k.sys.spec b/dlls/win32k.sys/win32k.sys.spec
-index c79439151e4..987c001f58e 100644
---- a/dlls/win32k.sys/win32k.sys.spec
-+++ b/dlls/win32k.sys/win32k.sys.spec
-@@ -200,7 +200,7 @@
- @ stub RtlLookupFunctionEntry
- @ stdcall RtlMoveMemory(ptr ptr long) ntoskrnl.exe.RtlMoveMemory
- @ stdcall RtlMultiByteToUnicodeN(ptr long ptr ptr long) ntoskrnl.exe.RtlMultiByteToUnicodeN
--@ stub RtlPcToFileHeader
-+@ stdcall RtlPcToFileHeader(ptr ptr) ntdll.RtlPcToFileHeader
- @ stdcall -norelay RtlRaiseException(ptr) ntoskrnl.exe.RtlRaiseException
- @ stub RtlRestoreContext
- @ stdcall RtlUnicodeToMultiByteN(ptr long ptr ptr long) ntoskrnl.exe.RtlUnicodeToMultiByteN
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
 index 5c329cb45bd..c47b3ad646b 100644
 --- a/include/ddk/fltkernel.h
@@ -61,6 +42,3 @@ index 5c329cb45bd..c47b3ad646b 100644
  NTSTATUS WINAPI FltStartFiltering(PFLT_FILTER);
  void     WINAPI FltUnregisterFilter(PFLT_FILTER);
  
--- 
-2.53.0
-

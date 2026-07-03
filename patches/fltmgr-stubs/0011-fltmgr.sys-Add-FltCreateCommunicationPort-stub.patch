@@ -1,7 +1,7 @@
-From 1ce7087f6e78a26be31bbc1521b94d38f0ff8319 Mon Sep 17 00:00:00 2001
+From 9b89d50cad5dd0e9cccdc09be2bdcdcf92c3fe65 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 21:45:08 +1000
-Subject: [PATCH] fltmgr.sys: Add FltGetFileNameInformation stub
+Subject: [PATCH] fltmgr.sys: Add FltCreateCommunicationPort stub
 
 Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=56501
 ---
