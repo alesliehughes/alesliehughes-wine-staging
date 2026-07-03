@@ -1,0 +1,75 @@
+From 10ecfbe27749a7a2853d593a94a3e7f3c2a14f32 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 3 Jul 2026 10:29:24 +1000
+Subject: [PATCH] kernel32: GetBinaryTypeA set LastError when returning FALSE
+
+---
+ dlls/kernel32/module.c       |  6 +++++-
+ dlls/kernel32/tests/module.c | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/kernel32/module.c b/dlls/kernel32/module.c
+index ac880100d38..27a75168d82 100644
+--- a/dlls/kernel32/module.c
++++ b/dlls/kernel32/module.c
+@@ -188,7 +188,11 @@ BOOL WINAPI GetBinaryTypeW( LPCWSTR name, LPDWORD type )
+             status = NtQuerySection( mapping, SectionImageInformation, &info, sizeof(info), NULL );
+             CloseHandle( mapping );
+             if (status) return FALSE;
+-            if (info.ImageCharacteristics & IMAGE_FILE_DLL) return FALSE;
++            if (info.ImageCharacteristics & IMAGE_FILE_DLL)
++            {
++                SetLastError(ERROR_BAD_EXE_FORMAT);
++                return FALSE;
++            }
+             switch (info.Machine)
+             {
+             case IMAGE_FILE_MACHINE_I386:
+diff --git a/dlls/kernel32/tests/module.c b/dlls/kernel32/tests/module.c
+index f548fdec316..d71de00bd20 100644
+--- a/dlls/kernel32/tests/module.c
++++ b/dlls/kernel32/tests/module.c
+@@ -2076,6 +2076,34 @@ static void test_known_dlls_load(void)
+     DeleteFileA( dll );
+ }
+ 
++static void test_GetBinaryTypeA(void)
++{
++    CHAR path[MAX_PATH];
++    BOOL ret;
++    DWORD type = 0xdeadbeef;
++
++    GetSystemDirectoryA(path, MAX_PATH);
++    if (path[lstrlenA(path) - 1] != '\\')
++        lstrcatA(path, "\\");
++    lstrcatA(path, "drivers\\fltmgr.sys");
++
++    ret = GetBinaryTypeA(path, &type);
++    ok( ret == FALSE, "got TRUE\n" );
++    ok( GetLastError() == ERROR_BAD_EXE_FORMAT, "got %lx\n", GetLastError());
++    ok( type == 0xdeadbeef, "got %lx\n", type);
++
++    GetSystemDirectoryA(path, MAX_PATH);
++    if (path[lstrlenA(path) - 1] != '\\')
++        lstrcatA(path, "\\");
++    lstrcatA(path, "kernel32.dll");
++
++    type = 0xdeadbeef;
++    ret = GetBinaryTypeA(path, &type);
++    ok( ret == FALSE, "got TRUE\n" );
++    ok( GetLastError() == ERROR_BAD_EXE_FORMAT, "got %lx\n", GetLastError());
++    ok( type == 0xdeadbeef, "got %lx\n", type);
++}
++
+ START_TEST(module)
+ {
+     WCHAR filenameW[MAX_PATH];
+@@ -2117,4 +2145,5 @@ START_TEST(module)
+     test_hash_links();
+     test_dont_resolve_dll_references();
+     test_known_dlls_load();
++    test_GetBinaryTypeA();
+ }
+-- 
+2.53.0
+
