@@ -1,0 +1,8 @@
+Fixes: [47175] - services - Check the binary before setting WOSW64 entry.
+
+# ImagePath doesn't need to have a Full path
+# - already loads by looking up the relation path (%PATH%)
+# - Problem is the WOW64 in the service record.
+
+# When using win32 prefix, works as expected since the WOW64 flag isn't set
+#  and uses the 32bit service dll.
