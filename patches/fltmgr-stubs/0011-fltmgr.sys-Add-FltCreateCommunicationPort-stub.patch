@@ -1,14 +1,28 @@
-From 9b89d50cad5dd0e9cccdc09be2bdcdcf92c3fe65 Mon Sep 17 00:00:00 2001
+From 859e9d253dc3e4d2dc0d04b39412798289d4db6b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 21:45:08 +1000
 Subject: [PATCH] fltmgr.sys: Add FltCreateCommunicationPort stub
 
 Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=56501
 ---
- dlls/fltmgr.sys/main.c  | 9 +++++++++
- include/ddk/fltkernel.h | 7 +++++++
- 2 files changed, 16 insertions(+)
+ dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
+ dlls/fltmgr.sys/main.c          | 9 +++++++++
+ include/ddk/fltkernel.h         | 7 +++++++
+ 3 files changed, 17 insertions(+), 1 deletion(-)
 
+diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
+index 883fadc693e..960c1e50188 100644
+--- a/dlls/fltmgr.sys/fltmgr.sys.spec
++++ b/dlls/fltmgr.sys/fltmgr.sys.spec
+@@ -31,7 +31,7 @@
+ @ stub FltCompareInstanceAltitudes
+ @ stub FltCompletePendedPostOperation
+ @ stub FltCompletePendedPreOperation
+-@ stub FltCreateCommunicationPort
++@ stdcall FltCreateCommunicationPort(ptr ptr ptr ptr ptr ptr ptr long)
+ @ stub FltCreateFile
+ @ stub FltCreateFileEx
+ @ stub FltCreateSystemVolumeInformationFolder
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
 index ea2045e5cfb..27a04274930 100644
 --- a/dlls/fltmgr.sys/main.c
