@@ -1,0 +1,96 @@
+From 568256d3285ef3952fde6735f15558efdcbcaf6c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 6 Jul 2026 13:33:30 +1000
+Subject: [PATCH] ntdll: NtQuerySystemInformation SystemModuleInformation
+ semi-stub
+
+---
+ dlls/ntdll/unix/system.c | 67 ++++++++++++++++++++++++++--------------
+ 1 file changed, 44 insertions(+), 23 deletions(-)
+
+diff --git a/dlls/ntdll/unix/system.c b/dlls/ntdll/unix/system.c
+index 2d6e3184ac9..db128dff1de 100644
+--- a/dlls/ntdll/unix/system.c
++++ b/dlls/ntdll/unix/system.c
+@@ -3541,34 +3541,55 @@ NTSTATUS WINAPI NtQuerySystemInformation( SYSTEM_INFORMATION_CLASS class,
+ 
+     case SystemModuleInformation:  /* 11 */
+     {
+-        /* FIXME: return some fake info for now */
+-        static const char *fake_modules[] =
++        LIST_ENTRY *mark = &peb->LdrData->InLoadOrderModuleList;
++        LIST_ENTRY *entry;
++        ULONG count = 0;
++        ULONG total_size = sizeof(ULONG);
++        PRTL_PROCESS_MODULES modules;
++        PRTL_PROCESS_MODULE_INFORMATION mod_out;
++        ULONG idx = 0;
++
++        for (entry = mark->Flink; entry != mark; entry = entry->Flink)
+         {
+-            "\\SystemRoot\\system32\\ntoskrnl.exe",
+-            "\\SystemRoot\\system32\\hal.dll",
+-            "\\SystemRoot\\system32\\drivers\\mountmgr.sys"
+-        };
++            count++;
++            total_size += sizeof(RTL_PROCESS_MODULE_INFORMATION);
++        }
+ 
+-        ULONG i;
+-        RTL_PROCESS_MODULES *smi = info;
++        FIXME("Currerntly drivers aren't listed\n");
+ 
+-        len = offsetof( RTL_PROCESS_MODULES, Modules[ARRAY_SIZE(fake_modules)] );
+-        if (len <= size)
++        len = total_size;
++
++        if (size < total_size)
+         {
+-            memset( smi, 0, len );
+-            for (i = 0; i < ARRAY_SIZE(fake_modules); i++)
+-            {
+-                RTL_PROCESS_MODULE_INFORMATION *sm = &smi->Modules[i];
+-                sm->ImageBaseAddress = (char *)0x10000000 + 0x200000 * i;
+-                sm->ImageSize = 0x200000;
+-                sm->LoadOrderIndex = i;
+-                sm->LoadCount = 1;
+-                strcpy( (char *)sm->Name, fake_modules[i] );
+-                sm->NameOffset = strrchr( fake_modules[i], '\\' ) - fake_modules[i] + 1;
+-            }
+-            smi->ModulesCount = i;
++            ret = STATUS_INFO_LENGTH_MISMATCH;
++            break;
++        }
++        if (!info)
++        {
++            ret = STATUS_ACCESS_VIOLATION;
++            break;
++        }
++
++        modules = (PRTL_PROCESS_MODULES)info;
++        modules->ModulesCount = count;
++
++        mod_out = modules->Modules;
++
++        for (entry = mark->Flink; entry != mark; entry = entry->Flink)
++        {
++            LDR_DATA_TABLE_ENTRY *mod = CONTAINING_RECORD(entry, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
++
++            memset(&mod_out[idx], 0, sizeof(RTL_PROCESS_MODULE_INFORMATION));
++
++            mod_out[idx].ImageBaseAddress = mod->DllBase;
++            mod_out[idx].ImageSize = mod->SizeOfImage;
++            mod_out[idx].LoadCount = 1;
++
++            ntdll_wcstoumbs(mod->BaseDllName.Buffer, mod->BaseDllName.Length / sizeof(WCHAR),
++                            (char *)&mod_out[idx].Name, 256, FALSE);
++
++            idx++;
+         }
+-        else ret = STATUS_INFO_LENGTH_MISMATCH;
+ 
+         break;
+     }
+-- 
+2.53.0
+

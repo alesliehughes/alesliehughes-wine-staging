@@ -1,0 +1,3 @@
+Fixes: [50208] - ntdll: NtQuerySystemInformation SystemModuleInformation semi-stub
+
+# On returns loaded dll, not drivers atm 
