@@ -1,0 +1,57 @@
+From a9d587cb67d3214101f3aa65ca5a8fb7b1176221 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 7 Jul 2026 15:55:47 +1000
+Subject: [PATCH] ntoskrnl.exe: Implement IoGetDeviceObjectPointer
+
+Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=27668
+---
+ dlls/ntoskrnl.exe/ntoskrnl.c | 29 +++++++++++++++++++++--------
+ 1 file changed, 21 insertions(+), 8 deletions(-)
+
+diff --git a/dlls/ntoskrnl.exe/ntoskrnl.c b/dlls/ntoskrnl.exe/ntoskrnl.c
+index bf6554debe1..80b9c85fac8 100644
+--- a/dlls/ntoskrnl.exe/ntoskrnl.c
++++ b/dlls/ntoskrnl.exe/ntoskrnl.c
+@@ -1848,18 +1848,31 @@ NTSTATUS WINAPI IoGetDeviceInterfaces( const GUID *InterfaceClassGuid,
+  */
+ NTSTATUS  WINAPI IoGetDeviceObjectPointer( UNICODE_STRING *name, ACCESS_MASK access, PFILE_OBJECT *file, PDEVICE_OBJECT *device )
+ {
+-    static DEVICE_OBJECT stub_device;
+-    static DRIVER_OBJECT stub_driver;
++    OBJECT_ATTRIBUTES ObjectAttributes;
++    IO_STATUS_BLOCK iosb;
++    PFILE_OBJECT obj;
++    HANDLE handle;
++    NTSTATUS status;
++
++    TRACE( "%s %lx %p %p\n", debugstr_us(name), access, file, device );
++
++    InitializeObjectAttributes(&ObjectAttributes, name, OBJ_KERNEL_HANDLE, NULL, NULL);
++    status = NtOpenFile(&handle, access, &ObjectAttributes, &iosb, 0, FILE_NON_DIRECTORY_FILE);
++    if (status != STATUS_SUCCESS)
++        return status;
+ 
+-    FIXME( "stub: %s %lx %p %p\n", debugstr_us(name), access, file, device );
++    status = ObReferenceObjectByHandle(handle, 0, IoFileObjectType, KernelMode, (void**)&obj, NULL);
++    if (status == STATUS_SUCCESS)
++    {
++        *device = IoGetRelatedDeviceObject(obj);
++        *file = obj;
++    }
+ 
+-    stub_device.StackSize = 0x80; /* minimum value to appease SecuROM 5.x */
+-    stub_device.DriverObject = &stub_driver;
++    NtClose(handle);
+ 
+-    *file  = NULL;
+-    *device = &stub_device;
++    TRACE("Status 0x%08lx\n", status);
+ 
+-    return STATUS_SUCCESS;
++    return status;
+ }
+ 
+ /***********************************************************************
+-- 
+2.53.0
+
