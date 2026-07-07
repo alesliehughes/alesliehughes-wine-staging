@@ -1,0 +1,55 @@
+From 47d34493022ed362e110d234c0e474eb7a129b4c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 26 Jun 2026 21:29:36 +1000
+Subject: [PATCH] ntdll: NtQuerySystemInformationEx: return valid values for
+ SystemKernelDebuggerInformationEx/SystemKernelDebuggerFlags
+
+---
+ dlls/ntdll/unix/system.c | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+diff --git a/dlls/ntdll/unix/system.c b/dlls/ntdll/unix/system.c
+index cf2883f05ae..a248edf6817 100644
+--- a/dlls/ntdll/unix/system.c
++++ b/dlls/ntdll/unix/system.c
+@@ -4067,6 +4067,37 @@ NTSTATUS WINAPI NtQuerySystemInformationEx( SYSTEM_INFORMATION_CLASS class,
+         break;
+     }
+ 
++    case SystemKernelDebuggerInformationEx: /* 149 */
++    {
++        SYSTEM_KERNEL_DEBUGGER_INFORMATION_EX *debuginfo;
++
++        if (!query || query_len < sizeof(*debuginfo))
++        {
++            ret = STATUS_INVALID_PARAMETER;
++            break;
++        }
++
++        debuginfo = (SYSTEM_KERNEL_DEBUGGER_INFORMATION_EX *)query;
++        debuginfo->DebuggerAllowed = FALSE;
++        debuginfo->DebuggerEnabled = FALSE;
++        debuginfo->DebuggerPresent = FALSE;
++
++        ret = STATUS_SUCCESS;
++        break;
++    }
++
++    case SystemKernelDebuggerFlags: /* 163 */
++    {
++        if (!query || query_len < sizeof(BOOLEAN))
++        {
++            ret = STATUS_INVALID_PARAMETER;
++            break;
++        }
++        *(BOOLEAN *)query = 0;  /* Not Debugging. */
++        ret = STATUS_SUCCESS;
++        break;
++    }
++
+     case SystemCpuSetInformation:
+     {
+         unsigned int cpu_count = peb->NumberOfProcessors;
+-- 
+2.53.0
+
