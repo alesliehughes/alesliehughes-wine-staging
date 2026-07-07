@@ -1,0 +1,25 @@
+From 9ac695ae9c15f492a5ffcd3c5a4dbaf89755b465 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 7 Jul 2026 13:34:24 +1000
+Subject: [PATCH] fltmgr.sys: Fake FltCreateCommunicationPort success
+
+---
+ dlls/fltmgr.sys/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
+index 60fc46db9cb..d82ef378df6 100644
+--- a/dlls/fltmgr.sys/main.c
++++ b/dlls/fltmgr.sys/main.c
+@@ -219,7 +219,7 @@ NTSTATUS WINAPI FltCreateCommunicationPort(PFLT_FILTER filter, PFLT_PORT *port,
+ {
+     FIXME("%p, %p, %p, %p, %p, %p, %p, %ld\n", filter, port, attributes, cookie, connect_callback, disconnect_callback,
+                         message_callback, max_connections);
+-    return STATUS_NOT_SUPPORTED;
++    return STATUS_SUCCESS;
+ }
+ 
+ void WINAPI FltCloseCommunicationPort (PFLT_PORT ServerPort)
+-- 
+2.53.0
+

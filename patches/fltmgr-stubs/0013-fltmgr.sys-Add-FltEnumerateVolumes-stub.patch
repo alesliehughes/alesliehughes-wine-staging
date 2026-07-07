@@ -1,0 +1,64 @@
+From b793cc74c1fd32cf89e8406bf5699f807b19e130 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 7 Jul 2026 12:54:10 +1000
+Subject: [PATCH] fltmgr.sys: Add FltEnumerateVolumes stub
+
+---
+ dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
+ dlls/fltmgr.sys/main.c          | 9 +++++++++
+ include/ddk/fltkernel.h         | 2 ++
+ 3 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
+index 306eba6739c..f123a49dbb0 100644
+--- a/dlls/fltmgr.sys/fltmgr.sys.spec
++++ b/dlls/fltmgr.sys/fltmgr.sys.spec
+@@ -53,7 +53,7 @@
+ @ stub FltEnumerateInstanceInformationByVolume
+ @ stub FltEnumerateInstances
+ @ stub FltEnumerateVolumeInformation
+-@ stub FltEnumerateVolumes
++@ stdcall FltEnumerateVolumes(ptr ptr long ptr)
+ @ stub FltFlushBuffers
+ @ stub FltFreeCallbackData
+ @ stub FltFreeDeferredIoWorkItem
+diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
+index 88d701c7561..60fc46db9cb 100644
+--- a/dlls/fltmgr.sys/main.c
++++ b/dlls/fltmgr.sys/main.c
+@@ -226,3 +226,12 @@ void WINAPI FltCloseCommunicationPort (PFLT_PORT ServerPort)
+ {
+     FIXME("%p\n", ServerPort);
+ }
++
++NTSTATUS WINAPI FltEnumerateVolumes (PFLT_FILTER filter, PFLT_VOLUME *volumes, ULONG size, PULONG returned)
++{
++    FIXME("%p, %p, %lu, %p\n", filter, volumes, size, returned);
++
++    if (returned)
++        *returned = 0;
++    return STATUS_NOT_SUPPORTED;
++}
+diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
+index 14ad6645bc9..ce7f16e4ab8 100644
+--- a/include/ddk/fltkernel.h
++++ b/include/ddk/fltkernel.h
+@@ -26,6 +26,7 @@ extern "C" {
+ 
+ typedef struct _FLT_FILTER   *PFLT_FILTER;
+ typedef struct _FLT_INSTANCE *PFLT_INSTANCE;
++typedef struct _FLT_VOLUME   *PFLT_VOLUME;
+ typedef ULONG  FLT_CALLBACK_DATA_FLAGS;
+ typedef USHORT FLT_CONTEXT_REGISTRATION_FLAGS;
+ typedef USHORT FLT_CONTEXT_TYPE;
+@@ -699,6 +700,7 @@ NTSTATUS WINAPI FltBuildDefaultSecurityDescriptor(PSECURITY_DESCRIPTOR *, ACCESS
+ void     WINAPI FltCloseCommunicationPort (PFLT_PORT);
+ NTSTATUS WINAPI FltCreateCommunicationPort(PFLT_FILTER, PFLT_PORT*, POBJECT_ATTRIBUTES, PVOID, PFLT_CONNECT_NOTIFY,
+                                             PFLT_DISCONNECT_NOTIFY, PFLT_MESSAGE_NOTIFY, LONG);
++NTSTATUS WINAPI FltEnumerateVolumes (PFLT_FILTER, PFLT_VOLUME *, ULONG, PULONG);
+ void     WINAPI FltFreeSecurityDescriptor(PSECURITY_DESCRIPTOR);
+ NTSTATUS WINAPI FltGetFileNameInformation(PFLT_CALLBACK_DATA, FLT_FILE_NAME_OPTIONS, PFLT_FILE_NAME_INFORMATION *);
+ NTSTATUS WINAPI FltGetFileNameInformationUnsafe(PFILE_OBJECT, PFLT_INSTANCE, FLT_FILE_NAME_OPTIONS, PFLT_FILE_NAME_INFORMATION *);
+-- 
+2.53.0
+
