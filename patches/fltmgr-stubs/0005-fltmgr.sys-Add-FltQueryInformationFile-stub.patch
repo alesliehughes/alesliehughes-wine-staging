@@ -1,4 +1,4 @@
-From ef785a32feb5ea288538df813a6aa81b0b373329 Mon Sep 17 00:00:00 2001
+From 343e60047739ff73159c35e096fab15ebecf3247 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 17:33:22 +1000
 Subject: [PATCH] fltmgr.sys: Add FltQueryInformationFile stub
@@ -10,7 +10,7 @@ Subject: [PATCH] fltmgr.sys: Add FltQueryInformationFile stub
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index 447196640de..239d4bdf262 100644
+index e1d65212811..c444f4aa973 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -119,7 +119,7 @@

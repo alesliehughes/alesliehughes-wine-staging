@@ -1,4 +1,4 @@
-From 9255ea3c8a4e80dcbfc9333121b1f904d6d410ea Mon Sep 17 00:00:00 2001
+From e9dd43e55e6bf266beb8a4029afc4b68a9d6a673 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 19:00:43 +1000
 Subject: [PATCH] fltmgr.sys: Add FltGetFileNameInformation stub
@@ -10,7 +10,7 @@ Subject: [PATCH] fltmgr.sys: Add FltGetFileNameInformation stub
  3 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index f81a6260f11..883fadc693e 100644
+index 7867b56dd82..b1d09fcaf22 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -68,7 +68,7 @@

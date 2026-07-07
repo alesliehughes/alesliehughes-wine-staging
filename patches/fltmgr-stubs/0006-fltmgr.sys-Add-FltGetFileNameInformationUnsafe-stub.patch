@@ -1,4 +1,4 @@
-From 485541189f93981784973351ba5d71cdbe1ed828 Mon Sep 17 00:00:00 2001
+From 96574e318ffc71b64afdb578c55b01254cc71e65 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 18:05:35 +1000
 Subject: [PATCH] fltmgr.sys: Add FltGetFileNameInformationUnsafe stub
@@ -10,7 +10,7 @@ Subject: [PATCH] fltmgr.sys: Add FltGetFileNameInformationUnsafe stub
  3 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index 239d4bdf262..0cf0295d227 100644
+index c444f4aa973..daefd06c61a 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -69,7 +69,7 @@

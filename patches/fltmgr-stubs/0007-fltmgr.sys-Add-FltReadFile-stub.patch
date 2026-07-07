@@ -1,13 +1,27 @@
-From 5d5000dca7c676f6e21b5695a7493de01e57997a Mon Sep 17 00:00:00 2001
+From 00abd0b9edc55a52ba4447649409d5f1dee1db87 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 18:49:43 +1000
 Subject: [PATCH] fltmgr.sys: Add FltReadFile stub
 
 ---
- dlls/fltmgr.sys/main.c  |  8 ++++++++
- include/ddk/fltkernel.h | 11 +++++++++++
- 2 files changed, 19 insertions(+)
+ dlls/fltmgr.sys/fltmgr.sys.spec |  2 +-
+ dlls/fltmgr.sys/main.c          |  8 ++++++++
+ include/ddk/fltkernel.h         | 11 +++++++++++
+ 3 files changed, 20 insertions(+), 1 deletion(-)
 
+diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
+index daefd06c61a..9d03c83a6d4 100644
+--- a/dlls/fltmgr.sys/fltmgr.sys.spec
++++ b/dlls/fltmgr.sys/fltmgr.sys.spec
+@@ -125,7 +125,7 @@
+ @ stub FltQueryVolumeInformationFile
+ @ stub FltQueueDeferredIoWorkItem
+ @ stub FltQueueGenericWorkItem
+-@ stub FltReadFile
++@ stdcall FltReadFile(ptr ptr ptr long ptr long ptr ptr ptr)
+ @ stub FltReferenceContext
+ @ stub FltReferenceFileNameInformation
+ @ stdcall FltRegisterFilter(ptr ptr ptr)
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
 index 9adb9899e82..034222c9e0b 100644
 --- a/dlls/fltmgr.sys/main.c

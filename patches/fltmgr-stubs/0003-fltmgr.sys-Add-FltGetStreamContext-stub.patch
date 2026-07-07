@@ -1,4 +1,4 @@
-From bd31f0d766894c3351511bf0f8b6a81da02ecd60 Mon Sep 17 00:00:00 2001
+From 7d8757a2cfb12ae197203d880ccab5ac6eb71fa7 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 16:01:42 +1000
 Subject: [PATCH] fltmgr.sys: Add FltGetStreamContext stub
@@ -10,7 +10,7 @@ Subject: [PATCH] fltmgr.sys: Add FltGetStreamContext stub
  3 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index 1e394b4418f..80f650c917e 100644
+index daca3f92d58..39e3e94b327 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -80,7 +80,7 @@

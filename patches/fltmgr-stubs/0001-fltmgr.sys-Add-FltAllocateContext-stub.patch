@@ -1,13 +1,27 @@
-From 7b0bec9af3c4c0df334c307c5f48390242fcea9d Mon Sep 17 00:00:00 2001
+From 91bfa25009c7a35fe622f6232c24807b1c713e49 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 13:08:50 +1000
 Subject: [PATCH] fltmgr.sys: Add FltAllocateContext stub
 
 ---
- dlls/fltmgr.sys/main.c  | 6 ++++++
- include/ddk/fltkernel.h | 1 +
- 2 files changed, 7 insertions(+)
+ dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
+ dlls/fltmgr.sys/main.c          | 6 ++++++
+ include/ddk/fltkernel.h         | 1 +
+ 3 files changed, 8 insertions(+), 1 deletion(-)
 
+diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
+index 8943b9f85cf..f0e8bc36f5d 100644
+--- a/dlls/fltmgr.sys/fltmgr.sys.spec
++++ b/dlls/fltmgr.sys/fltmgr.sys.spec
+@@ -3,7 +3,7 @@
+ @ stub FltAcquireResourceExclusive
+ @ stub FltAcquireResourceShared
+ @ stub FltAllocateCallbackData
+-@ stub FltAllocateContext
++@ stdcall FltAllocateContext(ptr long long long ptr)
+ @ stub FltAllocateDeferredIoWorkItem
+ @ stub FltAllocateFileLock
+ @ stub FltAllocateGenericWorkItem
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
 index 54ee2ce1e12..ded8b649bfe 100644
 --- a/dlls/fltmgr.sys/main.c

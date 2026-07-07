@@ -1,4 +1,4 @@
-From c8c52a0080dd8c8214086f5f1af42fcb2b5130f3 Mon Sep 17 00:00:00 2001
+From c5ad34b9fa54ce6a296b56db3accf8816d4e2209 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 18:51:43 +1000
 Subject: [PATCH] fltmgr.sys: Add FltParseFileNameInformation stub
@@ -10,7 +10,7 @@ Subject: [PATCH] fltmgr.sys: Add FltParseFileNameInformation stub
  3 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index 0cf0295d227..1e60166022e 100644
+index 9d03c83a6d4..34a38e4ed90 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -113,7 +113,7 @@

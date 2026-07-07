@@ -1,4 +1,4 @@
-From 859e9d253dc3e4d2dc0d04b39412798289d4db6b Mon Sep 17 00:00:00 2001
+From e24213016f3b1b0ffbb84234fb3690b824fbfe5e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 21:45:08 +1000
 Subject: [PATCH] fltmgr.sys: Add FltCreateCommunicationPort stub
@@ -11,7 +11,7 @@ Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=56501
  3 files changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index 883fadc693e..960c1e50188 100644
+index b1d09fcaf22..a899f523d13 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -31,7 +31,7 @@

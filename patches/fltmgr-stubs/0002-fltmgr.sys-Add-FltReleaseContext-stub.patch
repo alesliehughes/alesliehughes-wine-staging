@@ -1,11 +1,16 @@
-From f299d3cbbe8f5f7c3173187d72234ff23ba1460a Mon Sep 17 00:00:00 2001
+From 5982f60607d9ee0592eb0a20b0f5e7a5a523ca09 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 2 Jul 2026 15:57:33 +1000
-Subject: fltmgr.sys: Add FltReleaseContext stub
+Subject: [PATCH] fltmgr.sys: Add FltReleaseContext stub
 
+---
+ dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
+ dlls/fltmgr.sys/main.c          | 5 +++++
+ include/ddk/fltkernel.h         | 1 +
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
-index 8943b9f85cf..1e394b4418f 100644
+index f0e8bc36f5d..daca3f92d58 100644
 --- a/dlls/fltmgr.sys/fltmgr.sys.spec
 +++ b/dlls/fltmgr.sys/fltmgr.sys.spec
 @@ -130,7 +130,7 @@
@@ -42,3 +47,6 @@ index 5c329cb45bd..c47b3ad646b 100644
  NTSTATUS WINAPI FltStartFiltering(PFLT_FILTER);
  void     WINAPI FltUnregisterFilter(PFLT_FILTER);
  
+-- 
+2.53.0
+
