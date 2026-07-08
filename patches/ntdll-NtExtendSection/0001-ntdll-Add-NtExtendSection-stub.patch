@@ -1,0 +1,41 @@
+From b001ae624d3f487b3d4551f558eb6762de23553c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 8 Jul 2026 09:29:20 +1000
+Subject: [PATCH] ntdll: Add NtExtendSection stub
+
+---
+ dlls/ntdll/misc.c     | 6 ++++++
+ dlls/ntdll/ntdll.spec | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/ntdll/misc.c b/dlls/ntdll/misc.c
+index 4da4ebf9a0d..6453cd32464 100644
+--- a/dlls/ntdll/misc.c
++++ b/dlls/ntdll/misc.c
+@@ -512,3 +512,9 @@ ULONG WINAPIV EtwTraceMessage( TRACEHANDLE handle, ULONG flags, LPGUID guid, /*U
+     va_end( valist );
+     return ret;
+ }
++
++NTSTATUS WINAPI NtExtendSection(HANDLE handle, PLARGE_INTEGER new_size)
++{
++    FIXME("(%p, %p): stub\n", handle, new_size);
++    return ERROR_CALL_NOT_IMPLEMENTED;
++}
+\ No newline at end of file
+diff --git a/dlls/ntdll/ntdll.spec b/dlls/ntdll/ntdll.spec
+index 53a508a2e5c..d7b8ed1afa1 100644
+--- a/dlls/ntdll/ntdll.spec
++++ b/dlls/ntdll/ntdll.spec
+@@ -231,7 +231,7 @@
+ @ stdcall -syscall=0x0032 NtEnumerateKey(long long long ptr long ptr)
+ # @ stub NtEnumerateSystemEnvironmentValuesEx
+ @ stdcall -syscall=0x0013 NtEnumerateValueKey(long long long ptr long ptr)
+-# @ stub NtExtendSection
++@ stdcall NtExtendSection(ptr ptr)
+ @ stdcall -syscall NtFilterToken(long long ptr ptr ptr ptr)
+ @ stdcall -syscall=0x0014 NtFindAtom(ptr long ptr)
+ @ stdcall -syscall=0x004b NtFlushBuffersFile(long ptr)
+-- 
+2.53.0
+
