@@ -1,0 +1,5 @@
+Fixes: [56501]: fltmgr: Add FltCreateCommunicationPort stub
+
+# https://supportportal.gemalto.com/csm?id=kb_article_view&sys_kb_id=979a4e21db92e78cfe0aff3dbf9619c6&sysparm_article=KB0018319
+#
+# Command line installer required.
