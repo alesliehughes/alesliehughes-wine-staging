@@ -1,4 +1,4 @@
-From f6c85f6e649af5fce37a51d018910c7273ddbd78 Mon Sep 17 00:00:00 2001
+From f31086c3f14704c43dd752d20f762d1ae1f67952 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 12:34:10 +1000
 Subject: [PATCH] fltmgr.sys: Add FltCloseClientPort stub

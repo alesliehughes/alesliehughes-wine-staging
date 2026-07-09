@@ -1,4 +1,4 @@
-From 75ac6d70796d71b8a0082333c52e69b99dbd2412 Mon Sep 17 00:00:00 2001
+From 957a30cfe5495ec06663a86d0f398ccb8232ccee Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 11:27:57 +1000
 Subject: [PATCH] include: Add DRIVER_REGKEY_TYPE

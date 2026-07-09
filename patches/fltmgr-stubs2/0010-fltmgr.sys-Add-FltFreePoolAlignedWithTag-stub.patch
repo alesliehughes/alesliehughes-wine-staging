@@ -1,4 +1,4 @@
-From 44da7be30711428ee9196bdef97766835d29a5ba Mon Sep 17 00:00:00 2001
+From a74eb0f0619059eb905370986b68f8cdc4b761ea Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:38:12 +1000
 Subject: [PATCH] fltmgr.sys: Add FltFreePoolAlignedWithTag stub

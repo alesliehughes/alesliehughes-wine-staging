@@ -1,4 +1,4 @@
-From 349d28f9ceeefcb37ec1b2b78f3b116557734ab6 Mon Sep 17 00:00:00 2001
+From a7bfdeb2e27dca71d341cdb54fd001da3c922e31 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 12:02:35 +1000
 Subject: [PATCH] include: wd.h - Add more defines.

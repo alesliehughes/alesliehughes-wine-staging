@@ -1,4 +1,4 @@
-From a8b0c7f7de7b1c4b5ea042629ae51b30346cef3e Mon Sep 17 00:00:00 2001
+From d30dcc99f4bbc6ffbea16060d6d1b48713500170 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 15:04:52 +1000
 Subject: [PATCH] fltmgr.sys: Add FltCancelFileOpen stub

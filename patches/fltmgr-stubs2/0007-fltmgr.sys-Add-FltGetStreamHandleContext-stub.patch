@@ -1,4 +1,4 @@
-From 1b2ef9c9c717fed9a9f15b79e29e8385a5335a22 Mon Sep 17 00:00:00 2001
+From 28f234dbc274c2e45bdda1ecc8ba438fc33ed17d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 12:43:21 +1000
 Subject: [PATCH] fltmgr.sys: Add FltGetStreamHandleContext stub

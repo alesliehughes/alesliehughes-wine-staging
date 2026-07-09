@@ -1,4 +1,4 @@
-From 304dcfd0b02b65adff291eada796eeb2491d943b Mon Sep 17 00:00:00 2001
+From 7a51821a0c97af5f3c32e25b8bfc237c6a316d9c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:20:19 +1000
 Subject: [PATCH] ntoskrnl.exe: Implment IoThreadToProcess

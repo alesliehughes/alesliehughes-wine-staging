@@ -1,4 +1,4 @@
-From eab4addb98f7d47570c3a287ccb815d0e5aef59f Mon Sep 17 00:00:00 2001
+From 993f7b0185d069e6fc90ecb2a103ad17ee9a24bd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:34:39 +1000
 Subject: [PATCH] fltmgr.sys: Add FltAllocatePoolAlignedWithTag stub

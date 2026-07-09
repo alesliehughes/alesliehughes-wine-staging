@@ -1,4 +1,4 @@
-From 358cd3e985d9acfaa6d4eda6b5cb767d7f4144ec Mon Sep 17 00:00:00 2001
+From 11b3800c76aad611e285e291b92e858b2a9a76c2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 16:01:33 +1000
 Subject: [PATCH] fltmgr.sys: Add FltObjectDereference stub

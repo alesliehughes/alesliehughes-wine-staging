@@ -1,0 +1,61 @@
+From a7099d07fd9fe56752a6a0a2cadd0433322f1780 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 10 Jul 2026 09:17:31 +1000
+Subject: [PATCH] fltlib: Add FilterGetMessage stub
+
+---
+ dlls/fltlib/fltlib.c    | 11 ++++++++++-
+ dlls/fltlib/fltlib.spec |  2 +-
+ include/fltuser.h       |  1 +
+ 3 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/fltlib/fltlib.c b/dlls/fltlib/fltlib.c
+index e6368e6878d..994ebef4bde 100644
+--- a/dlls/fltlib/fltlib.c
++++ b/dlls/fltlib/fltlib.c
+@@ -88,7 +88,16 @@ HRESULT WINAPI FilterUnload(LPCWSTR filtername)
+  */
+ HRESULT WINAPI FilterReplyMessage (HANDLE port, PFILTER_REPLY_HEADER buffer, DWORD length)
+ {
+-    FIXME("(%p,%p,%ld) stub\n", port, buffer, length);
++    FIXME("(%p,%p,%ld)\n", port, buffer, length);
+ 
+     return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+ }
++
++/**********************************************************************
++ *      FilterGetMessage            (FLTLIB.@)
++ */
++HRESULT WINAPI FilterGetMessage (HANDLE port, PFILTER_MESSAGE_HEADER buffer, DWORD length, LPOVERLAPPED overlapped)
++{
++    FIXME("(%p, %p, %ld, %p)\n", port, buffer, length, overlapped);
++    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
++}
+diff --git a/dlls/fltlib/fltlib.spec b/dlls/fltlib/fltlib.spec
+index becc1fd4958..60fa81fbc6b 100644
+--- a/dlls/fltlib/fltlib.spec
++++ b/dlls/fltlib/fltlib.spec
+@@ -9,7 +9,7 @@
+ @ stub FilterFindNext
+ @ stub FilterGetDosName
+ @ stub FilterGetInformation
+-@ stub FilterGetMessage
++@ stdcall FilterGetMessage(ptr ptr long ptr)
+ @ stub FilterInstanceClose
+ @ stub FilterInstanceCreate
+ @ stub FilterInstanceFindClose
+diff --git a/include/fltuser.h b/include/fltuser.h
+index 63bf1551f5f..5132c69a057 100644
+--- a/include/fltuser.h
++++ b/include/fltuser.h
+@@ -29,6 +29,7 @@ HRESULT WINAPI FilterConnectCommunicationPort(LPCWSTR, DWORD, LPVOID, DWORD, LPS
+ HRESULT WINAPI FilterLoad(LPCWSTR);
+ HRESULT WINAPI FilterFindClose(HANDLE);
+ HRESULT WINAPI FilterFindFirst(DWORD, LPVOID, DWORD, LPDWORD, LPHANDLE);
++HRESULT WINAPI FilterGetMessage (HANDLE, PFILTER_MESSAGE_HEADER, DWORD, LPOVERLAPPED);
+ HRESULT WINAPI FilterReplyMessage (HANDLE, PFILTER_REPLY_HEADER, DWORD);
+ HRESULT WINAPI FilterUnload(LPCWSTR);
+ 
+-- 
+2.53.0
+

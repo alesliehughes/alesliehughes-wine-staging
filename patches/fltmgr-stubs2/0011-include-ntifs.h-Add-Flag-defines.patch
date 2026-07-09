@@ -1,4 +1,4 @@
-From cdf1c8546d0a70d4e26df28ace1d205fcf6221ce Mon Sep 17 00:00:00 2001
+From fb8aa636d3b7bf4c7a06dffe53ed3d2f389f2c06 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:52:38 +1000
 Subject: [PATCH] include: ntifs.h Add Flag* defines

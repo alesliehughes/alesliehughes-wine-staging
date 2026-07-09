@@ -1,0 +1,66 @@
+From c98dce7fef50c66bc057e4103e1205a8ae4aa99f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 10 Jul 2026 09:07:35 +1000
+Subject: [PATCH] fltlib: Add FilterReplyMessage stub
+
+---
+ dlls/fltlib/fltlib.c    | 12 ++++++++++++
+ dlls/fltlib/fltlib.spec |  2 +-
+ include/fltuser.h       |  1 +
+ 3 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/fltlib/fltlib.c b/dlls/fltlib/fltlib.c
+index a6cf060b3d1..e6368e6878d 100644
+--- a/dlls/fltlib/fltlib.c
++++ b/dlls/fltlib/fltlib.c
+@@ -21,6 +21,8 @@
+ 
+ #include "windef.h"
+ #include "winbase.h"
++#include "winternl.h"
++#include "fltuser.h"
+ #include "wine/debug.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(fltlib);
+@@ -80,3 +82,13 @@ HRESULT WINAPI FilterUnload(LPCWSTR filtername)
+ 
+     return S_OK;
+ }
++
++/**********************************************************************
++ *      FilterReplyMessage            (FLTLIB.@)
++ */
++HRESULT WINAPI FilterReplyMessage (HANDLE port, PFILTER_REPLY_HEADER buffer, DWORD length)
++{
++    FIXME("(%p,%p,%ld) stub\n", port, buffer, length);
++
++    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
++}
+diff --git a/dlls/fltlib/fltlib.spec b/dlls/fltlib/fltlib.spec
+index 226a61519d1..becc1fd4958 100644
+--- a/dlls/fltlib/fltlib.spec
++++ b/dlls/fltlib/fltlib.spec
+@@ -17,7 +17,7 @@
+ @ stub FilterInstanceFindNext
+ @ stub FilterInstanceGetInformation
+ @ stdcall FilterLoad(wstr)
+-@ stub FilterReplyMessage
++@ stdcall FilterReplyMessage(ptr ptr long)
+ @ stub FilterSendMessage
+ @ stdcall FilterUnload(wstr)
+ @ stub FilterVolumeClose
+diff --git a/include/fltuser.h b/include/fltuser.h
+index 0dfcba5f5e6..63bf1551f5f 100644
+--- a/include/fltuser.h
++++ b/include/fltuser.h
+@@ -29,6 +29,7 @@ HRESULT WINAPI FilterConnectCommunicationPort(LPCWSTR, DWORD, LPVOID, DWORD, LPS
+ HRESULT WINAPI FilterLoad(LPCWSTR);
+ HRESULT WINAPI FilterFindClose(HANDLE);
+ HRESULT WINAPI FilterFindFirst(DWORD, LPVOID, DWORD, LPDWORD, LPHANDLE);
++HRESULT WINAPI FilterReplyMessage (HANDLE, PFILTER_REPLY_HEADER, DWORD);
+ HRESULT WINAPI FilterUnload(LPCWSTR);
+ 
+ #ifdef __cplusplus
+-- 
+2.53.0
+
