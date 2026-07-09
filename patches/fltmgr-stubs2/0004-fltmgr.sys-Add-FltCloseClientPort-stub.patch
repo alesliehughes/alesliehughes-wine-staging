@@ -1,0 +1,52 @@
+From f6c85f6e649af5fce37a51d018910c7273ddbd78 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 Jul 2026 12:34:10 +1000
+Subject: [PATCH] fltmgr.sys: Add FltCloseClientPort stub
+
+---
+ dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
+ dlls/fltmgr.sys/main.c          | 5 +++++
+ include/ddk/fltkernel.h         | 1 +
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
+index f123a49dbb0..183a48a9635 100644
+--- a/dlls/fltmgr.sys/fltmgr.sys.spec
++++ b/dlls/fltmgr.sys/fltmgr.sys.spec
+@@ -26,7 +26,7 @@
+ @ stub FltClearCallbackDataDirty
+ @ stub FltClearCancelCompletion
+ @ stub FltClose
+-@ stub FltCloseClientPort
++@ stdcall FltCloseClientPort(ptr ptr)
+ @ stdcall FltCloseCommunicationPort(ptr)
+ @ stub FltCompareInstanceAltitudes
+ @ stub FltCompletePendedPostOperation
+diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
+index d82ef378df6..422425b7f50 100644
+--- a/dlls/fltmgr.sys/main.c
++++ b/dlls/fltmgr.sys/main.c
+@@ -235,3 +235,8 @@ NTSTATUS WINAPI FltEnumerateVolumes (PFLT_FILTER filter, PFLT_VOLUME *volumes, U
+         *returned = 0;
+     return STATUS_NOT_SUPPORTED;
+ }
++
++void WINAPI FltCloseClientPort (PFLT_FILTER filter, PFLT_PORT *port)
++{
++    FIXME("%p, %p\n", filter, port);
++}
+diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
+index 426ce1309d2..47ce4cda258 100644
+--- a/include/ddk/fltkernel.h
++++ b/include/ddk/fltkernel.h
+@@ -753,6 +753,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
+ 
+ NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER, FLT_CONTEXT_TYPE, SIZE_T, POOL_TYPE, PFLT_CONTEXT*);
+ NTSTATUS WINAPI FltBuildDefaultSecurityDescriptor(PSECURITY_DESCRIPTOR *, ACCESS_MASK);
++void     WINAPI FltCloseClientPort (PFLT_FILTER, PFLT_PORT *);
+ void     WINAPI FltCloseCommunicationPort (PFLT_PORT);
+ NTSTATUS WINAPI FltCreateCommunicationPort(PFLT_FILTER, PFLT_PORT*, POBJECT_ATTRIBUTES, PVOID, PFLT_CONNECT_NOTIFY,
+                                             PFLT_DISCONNECT_NOTIFY, PFLT_MESSAGE_NOTIFY, LONG);
+-- 
+2.53.0
+

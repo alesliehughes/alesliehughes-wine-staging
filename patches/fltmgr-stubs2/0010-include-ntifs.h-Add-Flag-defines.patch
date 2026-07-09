@@ -1,0 +1,40 @@
+From cdf1c8546d0a70d4e26df28ace1d205fcf6221ce Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 Jul 2026 14:52:38 +1000
+Subject: [PATCH] include: ntifs.h Add Flag* defines
+
+---
+ include/ddk/ntifs.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/include/ddk/ntifs.h b/include/ddk/ntifs.h
+index 9b900df2a88..cf1eaa70f16 100644
+--- a/include/ddk/ntifs.h
++++ b/include/ddk/ntifs.h
+@@ -21,6 +21,23 @@
+ 
+ #include "ntddk.h"
+ 
++#ifndef FlagOn
++#define FlagOn(flag, setflaf)        (flag & setflaf)
++#endif
++
++#ifndef BooleanFlagOn
++#define BooleanFlagOn(flag,setflag)   ((BOOLEAN)((flag & setflag) != 0))
++#endif
++
++#ifndef SetFlag
++#define SetFlag(flag,setflag)       (flag |= setflag)
++#endif
++
++#ifndef ClearFlag
++#define ClearFlag(flag,setflag)     (flag &= ~setflag)
++#endif
++
++
+ #define PHCM_ERROR_INVALID_PARAMETER    ((char)-1)
+ #define PHCM_ERROR_NO_TEB               ((char)-2)
+ #define PHCM_ERROR_NO_PEB               ((char)-3)
+-- 
+2.53.0
+

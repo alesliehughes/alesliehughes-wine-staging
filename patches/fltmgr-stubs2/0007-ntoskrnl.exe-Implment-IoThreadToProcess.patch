@@ -1,0 +1,56 @@
+From 304dcfd0b02b65adff291eada796eeb2491d943b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 Jul 2026 14:20:19 +1000
+Subject: [PATCH] ntoskrnl.exe: Implment IoThreadToProcess
+
+---
+ dlls/ntoskrnl.exe/ntoskrnl.c        | 6 ++++++
+ dlls/ntoskrnl.exe/ntoskrnl.exe.spec | 2 +-
+ include/ddk/ntifs.h                 | 1 +
+ 3 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/ntoskrnl.exe/ntoskrnl.c b/dlls/ntoskrnl.exe/ntoskrnl.c
+index 80b9c85fac8..36c4bb14ad7 100644
+--- a/dlls/ntoskrnl.exe/ntoskrnl.c
++++ b/dlls/ntoskrnl.exe/ntoskrnl.c
+@@ -4817,6 +4817,12 @@ NTSTATUS WINAPI EtwUnregister(REGHANDLE handle)
+     return STATUS_SUCCESS;
+ }
+ 
++PEPROCESS WINAPI IoThreadToProcess(PETHREAD thread)
++{
++    TRACE("thread %p\n", thread);
++    return thread->kthread.process;
++}
++
+ /*****************************************************
+  *           DllMain
+  */
+diff --git a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
+index 85e530e5546..2829e97ddf9 100644
+--- a/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
++++ b/dlls/ntoskrnl.exe/ntoskrnl.exe.spec
+@@ -497,7 +497,7 @@
+ @ stdcall IoStopTimer(ptr)
+ @ stub IoSynchronousInvalidateDeviceRelations
+ @ stub IoSynchronousPageWrite
+-@ stub IoThreadToProcess
++@ stdcall IoThreadToProcess(ptr)
+ @ stdcall IoUnregisterFileSystem(ptr)
+ @ stub IoUnregisterFsRegistrationChange
+ @ stdcall IoUnregisterPlugPlayNotification(ptr)
+diff --git a/include/ddk/ntifs.h b/include/ddk/ntifs.h
+index 965715738d7..9b900df2a88 100644
+--- a/include/ddk/ntifs.h
++++ b/include/ddk/ntifs.h
+@@ -207,6 +207,7 @@ NTSTATUS WINAPI FsRtlGetFileSize(PFILE_OBJECT, PLARGE_INTEGER);
+ BOOLEAN WINAPI FsRtlIsNameInExpression(PUNICODE_STRING, PUNICODE_STRING, BOOLEAN, PWCH);
+ DEVICE_OBJECT * WINAPI IoGetAttachedDevice(DEVICE_OBJECT*);
+ PEPROCESS WINAPI IoGetRequestorProcess(IRP*);
++PEPROCESS WINAPI IoThreadToProcess(PETHREAD);
+ void WINAPI KeStackAttachProcess(KPROCESS*,KAPC_STATE*);
+ void WINAPI KeUnstackDetachProcess(KAPC_STATE*);
+ NTSTATUS WINAPI ObOpenObjectByPointer(void*,ULONG,PACCESS_STATE,ACCESS_MASK,POBJECT_TYPE,KPROCESSOR_MODE,HANDLE*);
+-- 
+2.53.0
+

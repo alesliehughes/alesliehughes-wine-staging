@@ -1,0 +1,28 @@
+From 75ac6d70796d71b8a0082333c52e69b99dbd2412 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 Jul 2026 11:27:57 +1000
+Subject: [PATCH] include: Add DRIVER_REGKEY_TYPE
+
+---
+ include/ddk/wdm.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/ddk/wdm.h b/include/ddk/wdm.h
+index 406870d8f06..aff4877d43e 100644
+--- a/include/ddk/wdm.h
++++ b/include/ddk/wdm.h
+@@ -800,6 +800,11 @@ typedef enum _INTERFACE_TYPE {
+   MaximumInterfaceType
+ } INTERFACE_TYPE, *PINTERFACE_TYPE;
+ 
++typedef enum _DRIVER_REGKEY_TYPE {
++  DriverRegKeyParameters,
++  DriverRegKeyPersistentState,
++} DRIVER_REGKEY_TYPE, *PDRIVER_REGKEY_TYPE;
++
+ typedef LARGE_INTEGER PHYSICAL_ADDRESS, *PPHYSICAL_ADDRESS;
+ 
+ #define IO_RESOURCE_PREFERRED             0x01
+-- 
+2.53.0
+

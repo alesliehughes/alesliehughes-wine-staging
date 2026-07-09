@@ -1,0 +1,77 @@
+From 349d28f9ceeefcb37ec1b2b78f3b116557734ab6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 9 Jul 2026 12:02:35 +1000
+Subject: [PATCH] include: wd.h - Add more defines.
+
+---
+ include/ddk/wdm.h | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/include/ddk/wdm.h b/include/ddk/wdm.h
+index aff4877d43e..7e30219b67f 100644
+--- a/include/ddk/wdm.h
++++ b/include/ddk/wdm.h
+@@ -300,6 +300,7 @@ typedef struct _VPB {
+ #define POOL_RAISE_IF_ALLOCATION_FAILURE 0x0010
+ #define POOL_COLD_ALLOCATION             0x0100
+ #define POOL_NX_ALLOCATION               0x0200
++#define POOL_ZERO_ALLOCATION             0x0400
+ 
+ typedef enum _POOL_TYPE {
+   NonPagedPool,
+@@ -365,6 +366,9 @@ typedef struct _WAIT_CONTEXT_BLOCK {
+ #ifndef DEVICE_TYPE
+ #define DEVICE_TYPE ULONG
+ #endif
++
++#define FILE_DEVICE_NETWORK_FILE_SYSTEM 0x00000014
++
+ #define IRP_MJ_MAXIMUM_FUNCTION           0x1b
+ #define IRP_MJ_CREATE                     0x00
+ #define IRP_MJ_CREATE_NAMED_PIPE          0x01
+@@ -1387,6 +1391,9 @@ typedef enum _MM_PAGE_PRIORITY {
+     HighPagePriority = 32
+ } MM_PAGE_PRIORITY;
+ 
++#define MdlMappingNoWrite   0x80000000
++#define MdlMappingNoExecute 0x40000000
++
+ typedef enum _MM_SYSTEM_SIZE
+ {
+     MmSmallSystem,
+@@ -1707,6 +1714,12 @@ typedef enum _MODE
+     MaximumMode
+ } MODE;
+ 
++typedef enum _DRIVER_RUNTIME_INIT_FLAGS
++{
++  DrvRtPoolNxOptIn = 0x00000001,
++  LastDrvRtFlag
++} DRIVER_RUNTIME_INIT_FLAGS, *PDRIVER_RUNTIME_INIT_FLAGS;
++
+ /* directory object access rights */
+ #define DIRECTORY_QUERY                 0x0001
+ #define DIRECTORY_TRAVERSE              0x0002
+@@ -2031,6 +2044,19 @@ static inline void ExInitializeFastMutex( FAST_MUTEX *mutex )
+     KeInitializeEvent( &mutex->Event, SynchronizationEvent, FALSE );
+ }
+ 
++static FORCEINLINE void WINAPI ExInitializeDriverRuntime( ULONG flags )
++{
++}
++
++static FORCEINLINE void *WINAPI ExAllocatePoolZero (POOL_TYPE type, SIZE_T size, ULONG tag)
++{
++    void *mem;
++
++    mem = ExAllocatePoolWithTag((POOL_TYPE) (type | POOL_ZERO_ALLOCATION), size, tag);
++    if (mem) RtlZeroMemory(mem, size);
++    return mem;
++}
++
+ static FORCEINLINE void WINAPI KeInitializeSpinLock( KSPIN_LOCK *lock )
+ {
+   *lock = 0;
+-- 
+2.53.0
+
