@@ -16,7 +16,7 @@ index 965715738d7..4878ce96121 100644
  #include "ntddk.h"
  
 +#ifndef FlagOn
-+#define FlagOn(flag, setflaf)        (flag & setflaf)
++#define FlagOn(flag, setflag)        (flag & setflag)
 +#endif
 +
 +#ifndef BooleanFlagOn

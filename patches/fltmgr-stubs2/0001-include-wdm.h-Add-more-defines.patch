@@ -1,7 +1,7 @@
-From b5d93bf756fafb443804e11627147a9e3a871543 Mon Sep 17 00:00:00 2001
+From e1dae8f69080756172e0df03abca642879097bd3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 11:27:57 +1000
-Subject: [PATCH] include: wd.h - Add more defines.
+Subject: [PATCH] include: wdm.h - Add more defines.
 
 ---
  include/ddk/wdm.h | 31 +++++++++++++++++++++++++++++++
@@ -68,11 +68,11 @@ index 406870d8f06..756f36aa2b4 100644
      KeInitializeEvent( &mutex->Event, SynchronizationEvent, FALSE );
  }
  
-+static FORCEINLINE void WINAPI ExInitializeDriverRuntime( ULONG flags )
++FORCEINLINE void ExInitializeDriverRuntime( ULONG flags )
 +{
 +}
 +
-+static FORCEINLINE void* WINAPI ExAllocatePoolZero( POOL_TYPE type, SIZE_T size, ULONG tag )
++FORCEINLINE void* NTAPI ExAllocatePoolZero( POOL_TYPE type, SIZE_T size, ULONG tag )
 +{
 +    void *mem;
 +
