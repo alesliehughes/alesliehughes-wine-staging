@@ -1,4 +1,4 @@
-From d30dcc99f4bbc6ffbea16060d6d1b48713500170 Mon Sep 17 00:00:00 2001
+From 2e03b32dd2c23554e97a7aa68df3df87b94676d9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 15:04:52 +1000
 Subject: [PATCH] fltmgr.sys: Add FltCancelFileOpen stub
@@ -23,12 +23,12 @@ index 468bac424dd..5b3b131d5f9 100644
  @ stub FltCbdqDisable
  @ stub FltCbdqEnable
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
-index dd2fddac832..93cc155a344 100644
+index 5cbbc253102..7f3695aed1a 100644
 --- a/dlls/fltmgr.sys/main.c
 +++ b/dlls/fltmgr.sys/main.c
-@@ -264,3 +264,8 @@ void WINAPI FltFreePoolAlignedWithTag(PFLT_INSTANCE instance, void* buffer, ULON
- {
-     FIXME("%p, %p, %lu\n", instance, buffer, tag);
+@@ -269,3 +269,8 @@ void WINAPI FltFreePoolAlignedWithTag(PFLT_INSTANCE instance, void* buffer, ULON
+     FIXME("%p, %p, %lu semi-stub\n", instance, buffer, tag);
+     ExFreePoolWithTag(buffer, tag);
  }
 +
 +void WINAPI FltCancelFileOpen (PFLT_INSTANCE instance, PFILE_OBJECT fileobject)
@@ -36,10 +36,10 @@ index dd2fddac832..93cc155a344 100644
 +    FIXME("%p, %p\n", instance, fileobject);
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index e6b38ad53c3..2645f58314e 100644
+index a74d6178b0c..d24bd0a16e3 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -754,6 +754,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
+@@ -768,6 +768,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
  NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER, FLT_CONTEXT_TYPE, SIZE_T, POOL_TYPE, PFLT_CONTEXT*);
  void*    WINAPI FltAllocatePoolAlignedWithTag(PFLT_INSTANCE, POOL_TYPE, SIZE_T, ULONG);
  NTSTATUS WINAPI FltBuildDefaultSecurityDescriptor(PSECURITY_DESCRIPTOR *, ACCESS_MASK);

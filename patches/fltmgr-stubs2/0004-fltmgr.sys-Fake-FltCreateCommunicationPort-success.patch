@@ -1,4 +1,4 @@
-From 626b9940a9b4c680af090ef9409f6966a5ef6439 Mon Sep 17 00:00:00 2001
+From e7dbe5f96d1a3b55d23326febc535b43c26966ff Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 7 Jul 2026 13:34:24 +1000
 Subject: [PATCH] fltmgr.sys: Fake FltCreateCommunicationPort success

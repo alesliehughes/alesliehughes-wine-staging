@@ -1,4 +1,4 @@
-From a7099d07fd9fe56752a6a0a2cadd0433322f1780 Mon Sep 17 00:00:00 2001
+From aa85b42391ec4482b839a09736101bbe5b92e713 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 10 Jul 2026 09:17:31 +1000
 Subject: [PATCH] fltlib: Add FilterGetMessage stub
@@ -45,7 +45,7 @@ index becc1fd4958..60fa81fbc6b 100644
  @ stub FilterInstanceCreate
  @ stub FilterInstanceFindClose
 diff --git a/include/fltuser.h b/include/fltuser.h
-index 63bf1551f5f..5132c69a057 100644
+index 41dff7deecc..94c62089b75 100644
 --- a/include/fltuser.h
 +++ b/include/fltuser.h
 @@ -29,6 +29,7 @@ HRESULT WINAPI FilterConnectCommunicationPort(LPCWSTR, DWORD, LPVOID, DWORD, LPS

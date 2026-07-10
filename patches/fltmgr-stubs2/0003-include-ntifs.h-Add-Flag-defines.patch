@@ -1,4 +1,4 @@
-From fb8aa636d3b7bf4c7a06dffe53ed3d2f389f2c06 Mon Sep 17 00:00:00 2001
+From e95e02aca9515fb7be7cebbed71a5f6db7f630f2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:52:38 +1000
 Subject: [PATCH] include: ntifs.h Add Flag* defines
@@ -8,7 +8,7 @@ Subject: [PATCH] include: ntifs.h Add Flag* defines
  1 file changed, 17 insertions(+)
 
 diff --git a/include/ddk/ntifs.h b/include/ddk/ntifs.h
-index 9b900df2a88..cf1eaa70f16 100644
+index 965715738d7..4878ce96121 100644
 --- a/include/ddk/ntifs.h
 +++ b/include/ddk/ntifs.h
 @@ -21,6 +21,23 @@

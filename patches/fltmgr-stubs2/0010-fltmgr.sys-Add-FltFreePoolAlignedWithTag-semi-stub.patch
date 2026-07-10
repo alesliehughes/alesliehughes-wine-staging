@@ -1,13 +1,13 @@
-From a74eb0f0619059eb905370986b68f8cdc4b761ea Mon Sep 17 00:00:00 2001
+From b425ebdf18e05bc1c7ddfa73d19569195d572c6b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:38:12 +1000
-Subject: [PATCH] fltmgr.sys: Add FltFreePoolAlignedWithTag stub
+Subject: [PATCH] fltmgr.sys: Add FltFreePoolAlignedWithTag semi-stub
 
 ---
  dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
- dlls/fltmgr.sys/main.c          | 5 +++++
+ dlls/fltmgr.sys/main.c          | 6 ++++++
  include/ddk/fltkernel.h         | 1 +
- 3 files changed, 7 insertions(+), 1 deletion(-)
+ 3 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
 index f6e876f2f28..468bac424dd 100644
@@ -23,23 +23,24 @@ index f6e876f2f28..468bac424dd 100644
  @ stub FltFsControlFile
  @ stub FltGetBottomInstance
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
-index c9c22116cc1..dd2fddac832 100644
+index 4340e64c584..5cbbc253102 100644
 --- a/dlls/fltmgr.sys/main.c
 +++ b/dlls/fltmgr.sys/main.c
-@@ -259,3 +259,8 @@ void* WINAPI FltAllocatePoolAlignedWithTag(PFLT_INSTANCE instance, POOL_TYPE typ
-     FIXME("%p, %u, %Iu, %lu\n", instance, type, bytes, tag);
-     return NULL;
+@@ -263,3 +263,9 @@ void* WINAPI FltAllocatePoolAlignedWithTag(PFLT_INSTANCE instance, POOL_TYPE typ
+     buffer = ExAllocatePoolWithTag(type, bytes, tag);
+     return buffer;
  }
 +
 +void WINAPI FltFreePoolAlignedWithTag(PFLT_INSTANCE instance, void* buffer, ULONG tag)
 +{
-+    FIXME("%p, %p, %lu\n", instance, buffer, tag);
++    FIXME("%p, %p, %lu semi-stub\n", instance, buffer, tag);
++    ExFreePoolWithTag(buffer, tag);
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index a48f081b3bf..e6b38ad53c3 100644
+index d6f75ef5593..a74d6178b0c 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -766,6 +766,7 @@ void*    WINAPI FltGetRoutineAddress(LPCSTR name);
+@@ -780,6 +780,7 @@ void*    WINAPI FltGetRoutineAddress(LPCSTR name);
  NTSTATUS WINAPI FltGetStreamContext(PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);
  NTSTATUS WINAPI FltGetStreamHandleContext (PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);
  NTSTATUS WINAPI FltQueryInformationFile(PFLT_INSTANCE, PFILE_OBJECT, PVOID, ULONG, FILE_INFORMATION_CLASS, PULONG);

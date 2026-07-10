@@ -1,14 +1,14 @@
-From a7bfdeb2e27dca71d341cdb54fd001da3c922e31 Mon Sep 17 00:00:00 2001
+From b5d93bf756fafb443804e11627147a9e3a871543 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
-Date: Thu, 9 Jul 2026 12:02:35 +1000
+Date: Thu, 9 Jul 2026 11:27:57 +1000
 Subject: [PATCH] include: wd.h - Add more defines.
 
 ---
- include/ddk/wdm.h | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ include/ddk/wdm.h | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
 diff --git a/include/ddk/wdm.h b/include/ddk/wdm.h
-index aff4877d43e..7e30219b67f 100644
+index 406870d8f06..756f36aa2b4 100644
 --- a/include/ddk/wdm.h
 +++ b/include/ddk/wdm.h
 @@ -300,6 +300,7 @@ typedef struct _VPB {
@@ -29,7 +29,19 @@ index aff4877d43e..7e30219b67f 100644
  #define IRP_MJ_MAXIMUM_FUNCTION           0x1b
  #define IRP_MJ_CREATE                     0x00
  #define IRP_MJ_CREATE_NAMED_PIPE          0x01
-@@ -1387,6 +1391,9 @@ typedef enum _MM_PAGE_PRIORITY {
+@@ -800,6 +804,11 @@ typedef enum _INTERFACE_TYPE {
+   MaximumInterfaceType
+ } INTERFACE_TYPE, *PINTERFACE_TYPE;
+ 
++typedef enum _DRIVER_REGKEY_TYPE {
++  DriverRegKeyParameters,
++  DriverRegKeyPersistentState,
++} DRIVER_REGKEY_TYPE, *PDRIVER_REGKEY_TYPE;
++
+ typedef LARGE_INTEGER PHYSICAL_ADDRESS, *PPHYSICAL_ADDRESS;
+ 
+ #define IO_RESOURCE_PREFERRED             0x01
+@@ -1382,6 +1391,9 @@ typedef enum _MM_PAGE_PRIORITY {
      HighPagePriority = 32
  } MM_PAGE_PRIORITY;
  
@@ -39,7 +51,7 @@ index aff4877d43e..7e30219b67f 100644
  typedef enum _MM_SYSTEM_SIZE
  {
      MmSmallSystem,
-@@ -1707,6 +1714,12 @@ typedef enum _MODE
+@@ -1702,6 +1714,12 @@ typedef enum _MODE
      MaximumMode
  } MODE;
  
@@ -52,7 +64,7 @@ index aff4877d43e..7e30219b67f 100644
  /* directory object access rights */
  #define DIRECTORY_QUERY                 0x0001
  #define DIRECTORY_TRAVERSE              0x0002
-@@ -2031,6 +2044,19 @@ static inline void ExInitializeFastMutex( FAST_MUTEX *mutex )
+@@ -2026,6 +2044,19 @@ static inline void ExInitializeFastMutex( FAST_MUTEX *mutex )
      KeInitializeEvent( &mutex->Event, SynchronizationEvent, FALSE );
  }
  
@@ -60,7 +72,7 @@ index aff4877d43e..7e30219b67f 100644
 +{
 +}
 +
-+static FORCEINLINE void *WINAPI ExAllocatePoolZero (POOL_TYPE type, SIZE_T size, ULONG tag)
++static FORCEINLINE void* WINAPI ExAllocatePoolZero( POOL_TYPE type, SIZE_T size, ULONG tag )
 +{
 +    void *mem;
 +

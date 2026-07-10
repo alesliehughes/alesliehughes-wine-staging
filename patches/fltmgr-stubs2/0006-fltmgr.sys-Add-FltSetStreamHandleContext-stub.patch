@@ -1,4 +1,4 @@
-From 15ca7f4f8e55d5581c7293bd622a4a59da30a5bf Mon Sep 17 00:00:00 2001
+From ce366e660bc31ace4e8a6f72531fe040ddd1f7a2 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 12:38:23 +1000
 Subject: [PATCH] fltmgr.sys: Add FltSetStreamHandleContext stub
@@ -38,10 +38,10 @@ index 422425b7f50..705410c8057 100644
 +    return STATUS_NOT_SUPPORTED;
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index 47ce4cda258..9323a52bb73 100644
+index 91dc376b5ab..03b6aa99bd1 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -771,6 +771,8 @@ NTSTATUS WINAPI FltRegisterFilter(PDRIVER_OBJECT, const FLT_REGISTRATION *, PFLT
+@@ -785,6 +785,8 @@ NTSTATUS WINAPI FltRegisterFilter(PDRIVER_OBJECT, const FLT_REGISTRATION *, PFLT
  VOID     WINAPI FltReleaseContext(PFLT_CONTEXT);
  void     WINAPI FltReleaseFileNameInformation(PFLT_FILE_NAME_INFORMATION);
  NTSTATUS WINAPI FltSetStreamContext(PFLT_INSTANCE, PFILE_OBJECT, FLT_SET_CONTEXT_OPERATION, PFLT_CONTEXT, PFLT_CONTEXT*);

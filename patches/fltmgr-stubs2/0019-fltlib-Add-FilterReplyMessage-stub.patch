@@ -1,4 +1,4 @@
-From c98dce7fef50c66bc057e4103e1205a8ae4aa99f Mon Sep 17 00:00:00 2001
+From 11eb289f12d1eddfcde086ab9734dadb505a1656 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 10 Jul 2026 09:07:35 +1000
 Subject: [PATCH] fltlib: Add FilterReplyMessage stub
@@ -50,7 +50,7 @@ index 226a61519d1..becc1fd4958 100644
  @ stdcall FilterUnload(wstr)
  @ stub FilterVolumeClose
 diff --git a/include/fltuser.h b/include/fltuser.h
-index 0dfcba5f5e6..63bf1551f5f 100644
+index 47cbf0bbf1a..41dff7deecc 100644
 --- a/include/fltuser.h
 +++ b/include/fltuser.h
 @@ -29,6 +29,7 @@ HRESULT WINAPI FilterConnectCommunicationPort(LPCWSTR, DWORD, LPVOID, DWORD, LPS

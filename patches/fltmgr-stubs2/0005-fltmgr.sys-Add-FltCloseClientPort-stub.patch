@@ -1,4 +1,4 @@
-From f31086c3f14704c43dd752d20f762d1ae1f67952 Mon Sep 17 00:00:00 2001
+From 12fdd1cf5c6064b1c5a499d5e8ff0e85cbd7c64c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 12:34:10 +1000
 Subject: [PATCH] fltmgr.sys: Add FltCloseClientPort stub
@@ -36,10 +36,10 @@ index d82ef378df6..422425b7f50 100644
 +    FIXME("%p, %p\n", filter, port);
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index 426ce1309d2..47ce4cda258 100644
+index f561d30b409..91dc376b5ab 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -753,6 +753,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
+@@ -767,6 +767,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
  
  NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER, FLT_CONTEXT_TYPE, SIZE_T, POOL_TYPE, PFLT_CONTEXT*);
  NTSTATUS WINAPI FltBuildDefaultSecurityDescriptor(PSECURITY_DESCRIPTOR *, ACCESS_MASK);

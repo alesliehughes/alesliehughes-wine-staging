@@ -1,12 +1,12 @@
-From b03fd5e8feeae3fcbadcd3d72d483b30ac2f5514 Mon Sep 17 00:00:00 2001
+From 120ab5fbd01c4dc2dd464b16d9146dbe9f482f29 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 21:02:26 +1000
 Subject: [PATCH] include: Added fltuser.h
 
 ---
  include/Makefile.in |  1 +
- include/fltuser.h   | 38 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+)
+ include/fltuser.h   | 37 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
  create mode 100644 include/fltuser.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
@@ -23,10 +23,10 @@ index 167723c2dd3..92b4fce46ec 100644
  	gameinput.idl \
 diff --git a/include/fltuser.h b/include/fltuser.h
 new file mode 100644
-index 00000000000..b05de8d2011
+index 00000000000..43c572d2722
 --- /dev/null
 +++ b/include/fltuser.h
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,37 @@
 +/*
 + * Copyright (C) 2026 Alistair Leslie-Hughes
 + *
@@ -64,7 +64,6 @@ index 00000000000..b05de8d2011
 +
 +
 +#endif
-+
 -- 
 2.53.0
 

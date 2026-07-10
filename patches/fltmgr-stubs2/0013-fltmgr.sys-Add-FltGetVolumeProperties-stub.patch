@@ -1,4 +1,4 @@
-From 3b739cfb4de318e2cba9c74500ad4770df546f5a Mon Sep 17 00:00:00 2001
+From 482e61c3394fcf9b7a071bb873069ca3153300fb Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 15:56:47 +1000
 Subject: [PATCH] fltmgr.sys: Add FltGetVolumeProperties stub
@@ -23,10 +23,10 @@ index 165171816f5..a8d7168b4a4 100644
  @ stub FltInitializeOplock
  @ stdcall FltInitializePushLock(ptr)
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
-index 42af6870691..97c78af3ed8 100644
+index 1e06eccb911..3d1bed233ec 100644
 --- a/dlls/fltmgr.sys/main.c
 +++ b/dlls/fltmgr.sys/main.c
-@@ -275,3 +275,9 @@ NTSTATUS WINAPI FltGetVolumeFromInstance (PFLT_INSTANCE instance, PFLT_VOLUME *v
+@@ -280,3 +280,9 @@ NTSTATUS WINAPI FltGetVolumeFromInstance (PFLT_INSTANCE instance, PFLT_VOLUME *v
      FIXME("%p, %p\n", instance, volume);
      return STATUS_NOT_SUPPORTED;
  }
@@ -37,10 +37,10 @@ index 42af6870691..97c78af3ed8 100644
 +    return STATUS_NOT_SUPPORTED;
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index 8bee5c638f8..b02b4684f4c 100644
+index c49520e8287..efbfdf7366f 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -767,6 +767,7 @@ void*    WINAPI FltGetRoutineAddress(LPCSTR name);
+@@ -781,6 +781,7 @@ void*    WINAPI FltGetRoutineAddress(LPCSTR name);
  NTSTATUS WINAPI FltGetStreamContext(PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);
  NTSTATUS WINAPI FltGetStreamHandleContext (PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);
  NTSTATUS WINAPI FltGetVolumeFromInstance (PFLT_INSTANCE, PFLT_VOLUME *);

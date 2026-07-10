@@ -1,4 +1,4 @@
-From db09727611822617ddcba85a2baac4607c6827f6 Mon Sep 17 00:00:00 2001
+From 7b261d56b1d2b174e4cbae04a25538df189df740 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 16:06:44 +1000
 Subject: [PATCH] fltmgr.sys: Add FltSendMessage stub
@@ -23,25 +23,25 @@ index 98db93973f4..1515f712c2a 100644
  @ stub FltSetCancelCompletion
  @ stub FltSetEaFile
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
-index 57f44b2ac56..3397897f522 100644
+index 229458862e7..1f01515707f 100644
 --- a/dlls/fltmgr.sys/main.c
 +++ b/dlls/fltmgr.sys/main.c
-@@ -287,3 +287,10 @@ void WINAPI FltObjectDereference (void* object)
+@@ -291,3 +291,10 @@ void WINAPI FltObjectDereference (void* object)
+ {
      FIXME("%p\n", object);
  }
- 
++
 +NTSTATUS WINAPI FltSendMessage (PFLT_FILTER filter, PFLT_PORT *port, PVOID buffer, ULONG buf_len,
 +    PVOID reply, PULONG reply_len, PLARGE_INTEGER timeout)
 +{
 +    FIXME("%p, %p, %p, %lu, %p %p %p\n", filter, port, buffer, buf_len, reply, reply_len, timeout);
 +    return STATUS_NOT_SUPPORTED;
 +}
-+
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index 53604378112..681c6a277f4 100644
+index 93b9ae4c7a0..a491b30bfbc 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -777,6 +777,7 @@ NTSTATUS WINAPI FltReadFile(PFLT_INSTANCE, PFILE_OBJECT, PLARGE_INTEGER, ULONG,
+@@ -791,6 +791,7 @@ NTSTATUS WINAPI FltReadFile(PFLT_INSTANCE, PFILE_OBJECT, PLARGE_INTEGER, ULONG,
  NTSTATUS WINAPI FltRegisterFilter(PDRIVER_OBJECT, const FLT_REGISTRATION *, PFLT_FILTER *);
  VOID     WINAPI FltReleaseContext(PFLT_CONTEXT);
  void     WINAPI FltReleaseFileNameInformation(PFLT_FILE_NAME_INFORMATION);

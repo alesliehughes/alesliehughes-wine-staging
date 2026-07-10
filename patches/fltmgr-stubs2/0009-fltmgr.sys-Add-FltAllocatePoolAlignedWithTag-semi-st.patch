@@ -1,13 +1,13 @@
-From 993f7b0185d069e6fc90ecb2a103ad17ee9a24bd Mon Sep 17 00:00:00 2001
+From 76bebe379280c6a69712307dfab4e792f6fa4fb6 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:34:39 +1000
-Subject: [PATCH] fltmgr.sys: Add FltAllocatePoolAlignedWithTag stub
+Subject: [PATCH] fltmgr.sys: Add FltAllocatePoolAlignedWithTag semi-stub
 
 ---
- dlls/fltmgr.sys/fltmgr.sys.spec | 2 +-
- dlls/fltmgr.sys/main.c          | 6 ++++++
- include/ddk/fltkernel.h         | 1 +
- 3 files changed, 8 insertions(+), 1 deletion(-)
+ dlls/fltmgr.sys/fltmgr.sys.spec |  2 +-
+ dlls/fltmgr.sys/main.c          | 10 ++++++++++
+ include/ddk/fltkernel.h         |  1 +
+ 3 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/fltmgr.sys/fltmgr.sys.spec b/dlls/fltmgr.sys/fltmgr.sys.spec
 index 37dd66ccfdb..f6e876f2f28 100644
@@ -23,24 +23,28 @@ index 37dd66ccfdb..f6e876f2f28 100644
  @ stub FltAttachVolumeAtAltitude
  @ stdcall FltBuildDefaultSecurityDescriptor(ptr long)
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
-index 146a0401aff..c9c22116cc1 100644
+index 146a0401aff..4340e64c584 100644
 --- a/dlls/fltmgr.sys/main.c
 +++ b/dlls/fltmgr.sys/main.c
-@@ -253,3 +253,9 @@ NTSTATUS WINAPI FltGetStreamHandleContext (PFLT_INSTANCE instance, PFILE_OBJECT
+@@ -253,3 +253,13 @@ NTSTATUS WINAPI FltGetStreamHandleContext (PFLT_INSTANCE instance, PFILE_OBJECT
      FIXME("%p, %p, %p\n", instance, fileobject, Context);
      return STATUS_NOT_SUPPORTED;
  }
 +
 +void* WINAPI FltAllocatePoolAlignedWithTag(PFLT_INSTANCE instance, POOL_TYPE type, SIZE_T bytes, ULONG tag)
 +{
-+    FIXME("%p, %u, %Iu, %lu\n", instance, type, bytes, tag);
-+    return NULL;
++    void *buffer;
++
++    FIXME("%p, %u, %Iu, %lu semi-stub\n", instance, type, bytes, tag);
++
++    buffer = ExAllocatePoolWithTag(type, bytes, tag);
++    return buffer;
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index 1f15c2e10bb..a48f081b3bf 100644
+index c9a3abf36b8..d6f75ef5593 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -752,6 +752,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
+@@ -766,6 +766,7 @@ typedef struct _FLT_VOLUME_PROPERTIES
  } FLT_VOLUME_PROPERTIES, *PFLT_VOLUME_PROPERTIES;
  
  NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER, FLT_CONTEXT_TYPE, SIZE_T, POOL_TYPE, PFLT_CONTEXT*);

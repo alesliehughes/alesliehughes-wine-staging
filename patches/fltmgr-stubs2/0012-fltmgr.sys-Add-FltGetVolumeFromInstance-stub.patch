@@ -1,4 +1,4 @@
-From 98dc1cf8752240560e595230a9959acaefec42a8 Mon Sep 17 00:00:00 2001
+From 5763ba6103e70f0b8cb42f74d0d0769c7cbf0ccd Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 15:10:43 +1000
 Subject: [PATCH] fltmgr.sys: Add FltGetVolumeFromInstance stub
@@ -23,10 +23,10 @@ index 5b3b131d5f9..165171816f5 100644
  @ stub FltGetVolumeGuidName
  @ stub FltGetVolumeInstanceFromName
 diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
-index 93cc155a344..42af6870691 100644
+index 7f3695aed1a..1e06eccb911 100644
 --- a/dlls/fltmgr.sys/main.c
 +++ b/dlls/fltmgr.sys/main.c
-@@ -269,3 +269,9 @@ void WINAPI FltCancelFileOpen (PFLT_INSTANCE instance, PFILE_OBJECT fileobject)
+@@ -274,3 +274,9 @@ void WINAPI FltCancelFileOpen (PFLT_INSTANCE instance, PFILE_OBJECT fileobject)
  {
      FIXME("%p, %p\n", instance, fileobject);
  }
@@ -37,10 +37,10 @@ index 93cc155a344..42af6870691 100644
 +    return STATUS_NOT_SUPPORTED;
 +}
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index 2645f58314e..8bee5c638f8 100644
+index d24bd0a16e3..c49520e8287 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
-@@ -766,6 +766,7 @@ NTSTATUS WINAPI FltGetFileNameInformationUnsafe(PFILE_OBJECT, PFLT_INSTANCE, FLT
+@@ -780,6 +780,7 @@ NTSTATUS WINAPI FltGetFileNameInformationUnsafe(PFILE_OBJECT, PFLT_INSTANCE, FLT
  void*    WINAPI FltGetRoutineAddress(LPCSTR name);
  NTSTATUS WINAPI FltGetStreamContext(PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);
  NTSTATUS WINAPI FltGetStreamHandleContext (PFLT_INSTANCE, PFILE_OBJECT, PFLT_CONTEXT *);

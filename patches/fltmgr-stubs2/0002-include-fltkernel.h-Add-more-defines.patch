@@ -1,14 +1,14 @@
-From 5cfea6086f794ee29334c4ecc14bb0f9d9fc9dff Mon Sep 17 00:00:00 2001
+From c8344e00f16e4e9cfb392d3385dac60f80e3493e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 11:36:38 +1000
 Subject: [PATCH] include: fltkernel.h - Add more defines.
 
 ---
- include/ddk/fltkernel.h | 56 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ include/ddk/fltkernel.h | 70 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
 diff --git a/include/ddk/fltkernel.h b/include/ddk/fltkernel.h
-index ce7f16e4ab8..426ce1309d2 100644
+index ce7f16e4ab8..f561d30b409 100644
 --- a/include/ddk/fltkernel.h
 +++ b/include/ddk/fltkernel.h
 @@ -48,6 +48,8 @@ typedef void*  PFLT_CONTEXT;
@@ -52,21 +52,42 @@ index ce7f16e4ab8..426ce1309d2 100644
 +#define FLT_FILE_NAME_NORMALIZED                       0x01
 +#define FLT_FILE_NAME_OPENED                           0x02
 +#define FLT_FILE_NAME_SHORT                            0x03
-+#define FltGetFileNameFormat( options )                ((options) & FLT_VALID_FILE_NAME_FORMATS)
++#define FltGetFileNameFormat( options )                (options & FLT_VALID_FILE_NAME_FORMATS)
 +
-+#define FLT_VALID_FILE_NAME_QUERY_METHODS               0x0000ff00
++#define FLT_VALID_FILE_NAME_QUERY_METHODS              0x0000ff00
 +
-+#define FLT_FILE_NAME_QUERY_DEFAULT                     0x0100
-+#define FLT_FILE_NAME_QUERY_CACHE_ONLY                  0x0200
-+#define FLT_FILE_NAME_QUERY_FILESYSTEM_ONLY             0x0300
-+#define FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP   0x0400
++#define FLT_FILE_NAME_QUERY_DEFAULT                    0x0100
++#define FLT_FILE_NAME_QUERY_CACHE_ONLY                 0x0200
++#define FLT_FILE_NAME_QUERY_FILESYSTEM_ONLY            0x0300
++#define FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP  0x0400
 +
-+#define FltGetFileNameQueryMethod( options )            ((options) & FLT_VALID_FILE_NAME_QUERY_METHODS)
++#define FltGetFileNameQueryMethod( options )           (options & FLT_VALID_FILE_NAME_QUERY_METHODS)
 +
  /* Belongs in fltuserstructures.h */
  typedef enum _FLT_FILESYSTEM_TYPE
  {
-@@ -695,6 +736,21 @@ typedef struct _FLT_FILE_NAME_INFORMATION
+@@ -127,6 +168,20 @@ typedef struct _FLT_RELATED_CONTEXTS
+     PFLT_CONTEXT TransactionContext;
+ } FLT_RELATED_CONTEXTS, *PFLT_RELATED_CONTEXTS;
+ 
++typedef struct _KTRANSACTION *PKTRANSACTION;
++
++typedef struct _FLT_RELATED_OBJECTS
++{
++
++    USHORT const Size;
++    USHORT const TransactionContext;
++    PFLT_FILTER const Filter;
++    PFLT_VOLUME const Volume;
++    PFLT_INSTANCE const Instance;
++    PFILE_OBJECT const FileObject;
++    PKTRANSACTION const Transaction;
++} FLT_RELATED_OBJECTS, *PFLT_RELATED_OBJECTS;
++
+ typedef const struct _FLT_RELATED_OBJECTS *PCFLT_RELATED_OBJECTS;
+ 
+ typedef union _FLT_PARAMETERS
+@@ -695,6 +750,21 @@ typedef struct _FLT_FILE_NAME_INFORMATION
      UNICODE_STRING ParentDir;
  } FLT_FILE_NAME_INFORMATION, *PFLT_FILE_NAME_INFORMATION;
  

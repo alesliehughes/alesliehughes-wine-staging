@@ -1,4 +1,4 @@
-From 7a51821a0c97af5f3c32e25b8bfc237c6a316d9c Mon Sep 17 00:00:00 2001
+From 056460fab80fe90e31484f4164014ed10e5c69ba Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 9 Jul 2026 14:20:19 +1000
 Subject: [PATCH] ntoskrnl.exe: Implment IoThreadToProcess
@@ -40,10 +40,10 @@ index 85e530e5546..2829e97ddf9 100644
  @ stub IoUnregisterFsRegistrationChange
  @ stdcall IoUnregisterPlugPlayNotification(ptr)
 diff --git a/include/ddk/ntifs.h b/include/ddk/ntifs.h
-index 965715738d7..9b900df2a88 100644
+index 4878ce96121..cf1eaa70f16 100644
 --- a/include/ddk/ntifs.h
 +++ b/include/ddk/ntifs.h
-@@ -207,6 +207,7 @@ NTSTATUS WINAPI FsRtlGetFileSize(PFILE_OBJECT, PLARGE_INTEGER);
+@@ -224,6 +224,7 @@ NTSTATUS WINAPI FsRtlGetFileSize(PFILE_OBJECT, PLARGE_INTEGER);
  BOOLEAN WINAPI FsRtlIsNameInExpression(PUNICODE_STRING, PUNICODE_STRING, BOOLEAN, PWCH);
  DEVICE_OBJECT * WINAPI IoGetAttachedDevice(DEVICE_OBJECT*);
  PEPROCESS WINAPI IoGetRequestorProcess(IRP*);
