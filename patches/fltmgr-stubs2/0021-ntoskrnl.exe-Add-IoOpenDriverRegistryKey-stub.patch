@@ -30,7 +30,7 @@ index 11a578a7545..b903f5b66b2 100644
      SetupDiDestroyDeviceInfoList(set);
  }
 +
-+NTSTATUS WINAPI IoOpenDriverRegistryKey(PDRIVER_OBJECT driverobject, DRIVER_REGKEY_TYPE type,  ACCESS_MASK mask,
++NTSTATUS WINAPI IoOpenDriverRegistryKey(PDRIVER_OBJECT driverobject, DRIVER_REGKEY_TYPE type, ACCESS_MASK mask,
 +        ULONG flags, PHANDLE key)
 +{
 +    FIXME("%p %d, %ld, 0x%lx, %p\n", driverobject, type, mask, flags, key);
