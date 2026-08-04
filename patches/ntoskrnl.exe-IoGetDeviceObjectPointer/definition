@@ -1,0 +1,1 @@
+Fixes: [49165] - ntoskrnl: IoGetDeviceObjectPointer return valid pointers

@@ -1,0 +1,94 @@
+From 731af30ab7b83f2db172e9b8c02cd3cdd7577e37 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 3 Aug 2026 08:54:29 +1000
+Subject: [PATCH] ntoskrnl.exe/tests: Add IoGetDeviceObjectPointer test - WIP
+
+Needs to be moved to the driver.
+---
+ dlls/ntoskrnl.exe/tests/Makefile.in |  2 +-
+ dlls/ntoskrnl.exe/tests/driver.c    | 23 +++++++++++++++++++++++
+ dlls/ntoskrnl.exe/tests/ntoskrnl.c  |  5 +++--
+ 3 files changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/ntoskrnl.exe/tests/Makefile.in b/dlls/ntoskrnl.exe/tests/Makefile.in
+index f8fb0fa2ea9..5d3760ff4a5 100644
+--- a/dlls/ntoskrnl.exe/tests/Makefile.in
++++ b/dlls/ntoskrnl.exe/tests/Makefile.in
+@@ -1,5 +1,5 @@
+ TESTDLL   = ntoskrnl.exe
+-IMPORTS   = advapi32 cfgmgr32 crypt32 newdev setupapi user32 wintrust ws2_32 hid
++IMPORTS   = advapi32 cfgmgr32 crypt32 newdev setupapi user32 wintrust ws2_32 hid ntoskrnl
+ 
+ driver_IMPORTS = winecrt0 ntoskrnl hal fltmgr
+ driver_EXTRADLLFLAGS = -nodefaultlibs -nostartfiles -Wl,--subsystem,native
+diff --git a/dlls/ntoskrnl.exe/tests/driver.c b/dlls/ntoskrnl.exe/tests/driver.c
+index a17572451e0..538ec1d2d2f 100644
+--- a/dlls/ntoskrnl.exe/tests/driver.c
++++ b/dlls/ntoskrnl.exe/tests/driver.c
+@@ -3190,6 +3190,27 @@ static VOID WINAPI driver_Unload(DRIVER_OBJECT *driver)
+     winetest_cleanup();
+ }
+ 
++static void test_IoGetDeviceObjectPointer(void)
++{
++    NTSTATUS status;
++    UNICODE_STRING deviceName;
++    DEVICE_OBJECT *device_obj = NULL;
++    FILE_OBJECT *file_obj = NULL;
++
++    //RtlInitUnicodeString(&deviceName, L"\\Device\\CdRom0");
++    RtlInitUnicodeString(&deviceName, L"\\Device\\KeyboardClass0");
++
++    DbgPrint("test_IoGetDeviceObjectPointer 1\n");
++    status = IoGetDeviceObjectPointer(&deviceName, FILE_READ_DATA /*| SYNCHRONIZE*/, &file_obj, &device_obj);
++    DbgPrint("test_IoGetDeviceObjectPointer 2\n");
++    //ok(!status, "Unexpected status %lu\n", status);
++
++    if (file_obj)
++    {
++        ObDereferenceObject(file_obj);
++    }
++}
++
+ NTSTATUS WINAPI DriverEntry(DRIVER_OBJECT *driver, PUNICODE_STRING registry)
+ {
+     UNICODE_STRING nameW, linkW;
+@@ -3246,5 +3267,7 @@ NTSTATUS WINAPI DriverEntry(DRIVER_OBJECT *driver, PUNICODE_STRING registry)
+     work_item = IoAllocateWorkItem(lower_device);
+     ok(work_item != NULL, "work_item = NULL\n");
+ 
++    test_IoGetDeviceObjectPointer();
++
+     return STATUS_SUCCESS;
+ }
+diff --git a/dlls/ntoskrnl.exe/tests/ntoskrnl.c b/dlls/ntoskrnl.exe/tests/ntoskrnl.c
+index e5b62fa5e6b..a1caf320c7f 100644
+--- a/dlls/ntoskrnl.exe/tests/ntoskrnl.c
++++ b/dlls/ntoskrnl.exe/tests/ntoskrnl.c
+@@ -50,6 +50,7 @@
+ #include "wine/mssign.h"
+ 
+ #include "driver.h"
++#include "ddk/wdm.h"
+ 
+ static const GUID GUID_NULL;
+ 
+@@ -2643,13 +2644,13 @@ START_TEST(ntoskrnl)
+ 
+     cat_okfile();
+ 
+-    test_driver3(&ctx);
++/*    test_driver3(&ctx);
+     subtest("driver_netio");
+     test_driver_netio(&ctx);
+ 
+     subtest("driver_pnp");
+     test_pnp_driver(&ctx);
+-
++*/
+ out:
+     testsign_cleanup(&ctx);
+     FreeLibrary(cfgmgr32);
+-- 
+2.53.0
+

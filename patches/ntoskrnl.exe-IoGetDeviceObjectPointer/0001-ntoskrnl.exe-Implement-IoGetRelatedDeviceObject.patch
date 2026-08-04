@@ -1,0 +1,25 @@
+From a739fa40215af12e17e07ed611334430b79c38ce Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 4 Aug 2026 12:06:53 +1000
+Subject: [PATCH] ntoskrnl.exe: Implement IoGetRelatedDeviceObject
+
+---
+ dlls/ntoskrnl.exe/ntoskrnl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/ntoskrnl.exe/ntoskrnl.c b/dlls/ntoskrnl.exe/ntoskrnl.c
+index fdaf55253ca..914ebd9e237 100644
+--- a/dlls/ntoskrnl.exe/ntoskrnl.c
++++ b/dlls/ntoskrnl.exe/ntoskrnl.c
+@@ -1922,7 +1922,7 @@ NTSTATUS FASTCALL IofCallDriver( DEVICE_OBJECT *device, IRP *irp )
+ PDEVICE_OBJECT WINAPI IoGetRelatedDeviceObject( PFILE_OBJECT obj )
+ {
+     FIXME( "stub: %p\n", obj );
+-    return NULL;
++    return obj->DeviceObject;
+ }
+ 
+ static CONFIGURATION_INFORMATION configuration_information;
+-- 
+2.53.0
+
