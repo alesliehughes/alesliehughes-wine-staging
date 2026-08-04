@@ -1,4 +1,5 @@
-Fixes: [47175] - services - Check the binary before setting WOSW64 entry.
+Fixes: [47175] - services - Check the binary before setting WOW64 entry.
+Fixes: [50431] - services - Dont write WOW64 for 64bit binaries.
 
 # ImagePath doesn't need to have a Full path
 # - already loads by looking up the relation path (%PATH%)
