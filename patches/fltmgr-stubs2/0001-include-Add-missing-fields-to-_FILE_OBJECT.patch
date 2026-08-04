@@ -1,0 +1,28 @@
+From 879e8b0c5c5fca4931986d617fd1df1727bf4741 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 4 Aug 2026 14:47:47 +1000
+Subject: [PATCH] include: Add missing fields to _FILE_OBJECT
+
+Reference
+https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_object
+---
+ include/ddk/wdm.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/ddk/wdm.h b/include/ddk/wdm.h
+index 446880c44dd..d49c98b9ab2 100644
+--- a/include/ddk/wdm.h
++++ b/include/ddk/wdm.h
+@@ -798,6 +798,9 @@ typedef struct _FILE_OBJECT {
+   KEVENT  Lock;
+   KEVENT  Event;
+   PIO_COMPLETION_CONTEXT  CompletionContext;
++  KSPIN_LOCK IrpListLock;
++  LIST_ENTRY IrpList;
++  struct _IOP_FILE_OBJECT_EXTENSION *FileObjectExtension;
+ } FILE_OBJECT;
+ typedef struct _FILE_OBJECT *PFILE_OBJECT;
+ 
+-- 
+2.53.0
+
