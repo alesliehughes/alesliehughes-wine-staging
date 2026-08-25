@@ -1,4 +1,4 @@
-From 8fb2d949a72be8bb4c094054a15d62de60b0f85f Mon Sep 17 00:00:00 2001
+From 861a54e76ffbd9e252d476525627a94d7d47840d Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 18 Mar 2026 16:23:25 +1100
 Subject: [PATCH] GamingServer - To NOT merge
@@ -8,10 +8,10 @@ Subject: [PATCH] GamingServer - To NOT merge
  1 file changed, 3 insertions(+)
 
 diff --git a/configure b/configure
-index a076fd81269..9fbdbd07e5e 100755
+index b54d478419f..1afa7a062fd 100755
 --- a/configure
 +++ b/configure
-@@ -1745,6 +1745,7 @@ enable_fc
+@@ -1748,6 +1748,7 @@ enable_fc
  enable_find
  enable_findstr
  enable_fsutil
@@ -19,15 +19,15 @@ index a076fd81269..9fbdbd07e5e 100755
  enable_hh
  enable_hostname
  enable_icacls
-@@ -22882,6 +22883,7 @@ enable_icucommon=${enable_icucommon:-$enable_cplusplus}
+@@ -22340,6 +22341,7 @@ enable_icucommon=${enable_icucommon:-$enable_cplusplus}
  enable_icui18n=${enable_icui18n:-$enable_cplusplus}
  
  enable_conhost=${enable_conhost:-$HOST_ARCH}
 +enable_gameinput=${enable_gameinput:-$HOST_ARCH}
+ enable_lsass=${enable_lsass:-$HOST_ARCH}
  enable_plugplay=${enable_plugplay:-$HOST_ARCH}
  enable_rpcss=${enable_rpcss:-$HOST_ARCH}
- enable_services=${enable_services:-$HOST_ARCH}
-@@ -24062,6 +24064,7 @@ wine_fn_config_makefile programs/findstr enable_findstr
+@@ -23531,6 +23533,7 @@ wine_fn_config_makefile programs/findstr enable_findstr
  wine_fn_config_makefile programs/findstr/tests enable_tests
  wine_fn_config_makefile programs/fsutil enable_fsutil
  wine_fn_config_makefile programs/fsutil/tests enable_tests
