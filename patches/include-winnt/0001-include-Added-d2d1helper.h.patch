@@ -1,19 +1,19 @@
-From b5a584a63f9a6d55527820da49b47f0853bfd357 Mon Sep 17 00:00:00 2001
+From a6d22e0eafefc7f3592a376a04ef23fb6f216f9f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 18 Jul 2019 13:40:01 +1000
 Subject: [PATCH] include: Added d2d1helper.h
 
 ---
- include/Makefile.in  |  1 +
- include/d2d1helper.h | 69 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 70 insertions(+)
+ include/Makefile.in  |   1 +
+ include/d2d1helper.h | 234 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 235 insertions(+)
  create mode 100644 include/d2d1helper.h
 
 diff --git a/include/Makefile.in b/include/Makefile.in
-index db9578e8baa..73b2043ff94 100644
+index 27d71a11f54..87b3f87c7b1 100644
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -120,6 +120,7 @@ SOURCES = \
+@@ -123,6 +123,7 @@ SOURCES = \
  	d2d1effects.idl \
  	d2d1effects_1.idl \
  	d2d1effects_2.idl \
@@ -23,10 +23,10 @@ index db9578e8baa..73b2043ff94 100644
  	d3d.h \
 diff --git a/include/d2d1helper.h b/include/d2d1helper.h
 new file mode 100644
-index 00000000000..c16af011fc8
+index 00000000000..3a135085932
 --- /dev/null
 +++ b/include/d2d1helper.h
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,234 @@
 +/*
 + * Copyright 2019 Alistair Leslie-Hughes
 + *
@@ -60,6 +60,171 @@ index 00000000000..c16af011fc8
 +/* TODO */
 +namespace D2D1
 +{
++    template<typename Type>
++    struct TypeTraits
++    {
++        typedef D2D1_POINT_2F Point;
++        typedef D2D1_SIZE_F   Size;
++        typedef D2D1_RECT_F   Rect;
++    };
++
++    template<>
++    struct TypeTraits<UINT32>
++    {
++        typedef D2D1_POINT_2U Point;
++        typedef D2D1_SIZE_U   Size;
++        typedef D2D1_RECT_U   Rect;
++    };
++
++    class ColorF : public D2D1_COLOR_F
++    {
++    public:
++
++        enum Enum
++        {
++            AliceBlue            = 0xf0f8ff,
++            AntiqueWhite         = 0xfaebd7,
++            Aqua                 = 0x00ffff,
++            Aquamarine           = 0x7fffd4,
++            Azure                = 0xf0ffff,
++            Beige                = 0xf5f5dc,
++            Bisque               = 0xffe4c4,
++            Black                = 0x000000,
++            BlanchedAlmond       = 0xffebcd,
++            Blue                 = 0x0000ff,
++            BlueViolet           = 0x8a2be2,
++            Brown                = 0xa52a2a,
++            BurlyWood            = 0xdeb887,
++            CadetBlue            = 0x5f9ea0,
++            Chartreuse           = 0x7fff00,
++            Chocolate            = 0xd2691e,
++            Coral                = 0xff7f50,
++            CornflowerBlue       = 0x6495ed,
++            Cornsilk             = 0xfff8dc,
++            Crimson              = 0xdc143c,
++            Cyan                 = 0x00ffff,
++            DarkBlue             = 0x00008b,
++            DarkCyan             = 0x008b8b,
++            DarkGoldenrod        = 0xb8860b,
++            DarkGray             = 0xa9a9a9,
++            DarkGreen            = 0x006400,
++            DarkKhaki            = 0xbdb76b,
++            DarkMagenta          = 0x8b008b,
++            DarkOliveGreen       = 0x556b2f,
++            DarkOrange           = 0xff8c00,
++            DarkOrchid           = 0x9932cc,
++            DarkRed              = 0x8b0000,
++            DarkSalmon           = 0xe9967a,
++            DarkSeaGreen         = 0x8fbc8f,
++            DarkSlateBlue        = 0x483d8b,
++            DarkSlateGray        = 0x2f4f4f,
++            DarkTurquoise        = 0x00ced1,
++            DarkViolet           = 0x9400d3,
++            DeepPink             = 0xff1493,
++            DeepSkyBlue          = 0x00bfff,
++            DimGray              = 0x696969,
++            DodgerBlue           = 0x1e90ff,
++            Firebrick            = 0xb22222,
++            FloralWhite          = 0xfffaf0,
++            ForestGreen          = 0x228b22,
++            Fuchsia              = 0xff00ff,
++            Gainsboro            = 0xdcdcdc,
++            GhostWhite           = 0xf8f8ff,
++            Gold                 = 0xffd700,
++            Goldenrod            = 0xdaa520,
++            Gray                 = 0x808080,
++            Green                = 0x008000,
++            GreenYellow          = 0xADFF2F,
++            Honeydew             = 0xF0FFF0,
++            HotPink              = 0xFF69B4,
++            IndianRed            = 0xCD5C5C,
++            Indigo               = 0x4B0082,
++            Ivory                = 0xFFFFF0,
++            Khaki                = 0xF0E68C,
++            Lavender             = 0xE6E6FA,
++            LavenderBlush        = 0xFFF0F5,
++            LawnGreen            = 0x7CFC00,
++            LemonChiffon         = 0xFFFACD,
++            LightBlue            = 0xADD8E6,
++            LightCoral           = 0xF08080,
++            LightCyan            = 0xE0FFFF,
++            LightGoldenrodYellow = 0xFAFAD2,
++            LightGreen           = 0x90EE90,
++            LightGray            = 0xD3D3D3,
++            LightPink            = 0xFFB6C1,
++            LightSalmon          = 0xFFA07A,
++            LightSeaGreen        = 0x20B2AA,
++            LightSkyBlue         = 0x87CEFA,
++            LightSlateGray       = 0x778899,
++            LightSteelBlue       = 0xB0C4DE,
++            LightYellow          = 0xFFFFE0,
++            Lime                 = 0x00FF00,
++            LimeGreen            = 0x32CD32,
++            Linen                = 0xFAF0E6,
++            Magenta              = 0xFF00FF,
++            Maroon               = 0x800000,
++            MediumAquamarine     = 0x66CDAA,
++            MediumBlue           = 0x0000CD,
++            MediumOrchid         = 0xBA55D3,
++            MediumPurple         = 0x9370db,
++            MediumSeaGreen       = 0x3cb371,
++            MediumSlateBlue      = 0x7b68ee,
++            MediumSpringGreen    = 0x00fa9a,
++            MediumTurquoise      = 0x48d1cc,
++            MediumVioletRed      = 0xc71585,
++            MidnightBlue         = 0x191970,
++            MintCream            = 0xf5fffa,
++            MistyRose            = 0xffe4e1,
++            Moccasin             = 0xffe4b5,
++            NavajoWhite          = 0xffdead,
++            Navy                 = 0x000080,
++            OldLace              = 0xfdf5e6,
++            Olive                = 0x808000,
++            OliveDrab            = 0x6b8e23,
++            Orange               = 0xffa500,
++            OrangeRed            = 0xff4500,
++            Orchid               = 0xda70d6,
++            PaleGoldenrod        = 0xeee8aa,
++            PaleGreen            = 0x98fb98,
++            PaleTurquoise        = 0xafeeee,
++            PaleVioletRed        = 0xdb7093,
++            PapayaWhip           = 0xffefd5,
++            PeachPuff            = 0xffdab9,
++            Peru                 = 0xcd853f,
++            Pink                 = 0xffc0cb,
++            Plum                 = 0xdda0dd,
++            PowderBlue           = 0xb0e0e6,
++            Purple               = 0x800080,
++            Red                  = 0xff0000,
++            RosyBrown            = 0xbc8f8f,
++            RoyalBlue            = 0x4169e1,
++            SaddleBrown          = 0x8b4513,
++            Salmon               = 0xfa8072,
++            SandyBrown           = 0xf4a460,
++            SeaGreen             = 0x2e8b57,
++            SeaShell             = 0xfff5ee,
++            Sienna               = 0xa0522d,
++            Silver               = 0xc0c0c0,
++            SkyBlue              = 0x87ceeb,
++            SlateBlue            = 0x6a5acd,
++            SlateGray            = 0x708090,
++            Snow                 = 0xfffafa,
++            SpringGreen          = 0x00ff7f,
++            SteelBlue            = 0x4682b4,
++            Tan                  = 0xd2b48c,
++            Teal                 = 0x008080,
++            Thistle              = 0xd8bfd8,
++            Tomato               = 0xff6347,
++            Turquoise            = 0x40e0d0,
++            Violet               = 0xee82ee,
++            Wheat                = 0xf5deb3,
++            White                = 0xffffff,
++            WhiteSmoke           = 0xf5f5f5,
++            Yellow               = 0xffff00,
++            YellowGreen          = 0x9acd32
++        };
++    };
++
 +    class Matrix3x2F : public D2D1_MATRIX_3X2_F
 +    {
 +        public:
@@ -97,5 +262,5 @@ index 00000000000..c16af011fc8
 +
 +#endif /* _D2D1_HELPER_H_ */
 -- 
-2.51.0
+2.53.0
 
