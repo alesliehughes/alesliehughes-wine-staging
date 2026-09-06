@@ -1,0 +1,32 @@
+From d9497e674f739adf94455d3d54d0d2b361f1d9d1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 7 Sep 2026 08:02:33 +1000
+Subject: [PATCH] include: Add suppressing of ATL_DEPRECATED messages
+
+---
+ include/atldef.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/atldef.h b/include/atldef.h
+index 31922406739..b47204ea143 100644
+--- a/include/atldef.h
++++ b/include/atldef.h
+@@ -67,11 +67,15 @@
+ /* Belongs elsewhere */
+ #define ATLTRACE(...)
+ 
++#ifdef _ATL_DISABLE_DEPRECATED
++#define ATL_DEPRECATED(X)
++#else
+ #if defined(__GNUC__) || defined(__clang__)
+ #define ATL_DEPRECATED(X) __attribute__((deprecated))
+ #elif defined(_MSC_VER)
+ #define ATL_DEPRECATED(X) __declspec(deprecated)
+ #endif
++#endif
+ 
+ #ifndef _ATL_INSECURE_DEPRECATE
+ #define _ATL_INSECURE_DEPRECATE(_Message)
+-- 
+2.53.0
+
