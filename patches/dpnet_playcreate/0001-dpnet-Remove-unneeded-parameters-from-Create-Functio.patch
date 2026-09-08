@@ -1,0 +1,205 @@
+From 74f21afcf0881226fe9b3a199ed95b253b13d065 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 8 Sep 2026 10:33:24 +1000
+Subject: [PATCH] dpnet: Remove unneeded parameters from Create Functions
+
+---
+ dlls/dpnet/address.c       |  6 +++---
+ dlls/dpnet/client.c        | 11 ++++-------
+ dlls/dpnet/dpnet_main.c    |  7 +++++--
+ dlls/dpnet/dpnet_private.h | 14 +++++++-------
+ dlls/dpnet/lobbiedapp.c    |  4 ++--
+ dlls/dpnet/peer.c          |  2 +-
+ dlls/dpnet/server.c        |  7 ++-----
+ dlls/dpnet/threadpool.c    |  2 +-
+ 8 files changed, 25 insertions(+), 28 deletions(-)
+
+diff --git a/dlls/dpnet/address.c b/dlls/dpnet/address.c
+index efe3785cd8c..c1e1e0224e7 100644
+--- a/dlls/dpnet/address.c
++++ b/dlls/dpnet/address.c
+@@ -177,7 +177,7 @@ static HRESULT WINAPI IDirectPlay8AddressImpl_Duplicate(IDirectPlay8Address *ifa
+     if(!ppdpaNewAddress)
+         return E_POINTER;
+ 
+-    hr = DPNET_CreateDirectPlay8Address(NULL, NULL, &IID_IDirectPlay8Address, (LPVOID*)&dup);
++    hr = DPNET_CreateDirectPlay8Address(&IID_IDirectPlay8Address, (LPVOID*)&dup);
+     if(hr == S_OK)
+     {
+         IDirectPlay8AddressImpl *DupThis = impl_from_IDirectPlay8Address(dup);
+@@ -691,12 +691,12 @@ static const IDirectPlay8AddressVtbl DirectPlay8Address_Vtbl =
+     IDirectPlay8AddressImpl_BuildFromDirectPlay4Address
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8Address(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, LPVOID *ppobj)
++HRESULT DPNET_CreateDirectPlay8Address(REFIID riid, LPVOID *ppobj)
+ {
+     IDirectPlay8AddressImpl* client;
+     HRESULT ret;
+ 
+-    TRACE("(%p, %s, %p)\n", pUnkOuter, debugstr_guid(riid), ppobj);
++    TRACE("(%s, %p)\n", debugstr_guid(riid), ppobj);
+ 
+     *ppobj = NULL;
+ 
+diff --git a/dlls/dpnet/client.c b/dlls/dpnet/client.c
+index c3d25f5ea6b..94c54344904 100644
+--- a/dlls/dpnet/client.c
++++ b/dlls/dpnet/client.c
+@@ -381,18 +381,15 @@ static const IDirectPlay8ClientVtbl DirectPlay8Client_Vtbl =
+     IDirectPlay8ClientImpl_RegisterLobby
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8Client(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, void **ppv)
++HRESULT DPNET_CreateDirectPlay8Client(REFIID riid, void **ppv)
+ {
+     IDirectPlay8ClientImpl* client;
+     HRESULT hr;
+ 
+-    TRACE("(%p, %s, %p)\n", pUnkOuter, debugstr_guid(riid), ppv);
++    TRACE("(%s, %p)\n", debugstr_guid(riid), ppv);
+ 
+     *ppv = NULL;
+ 
+-    if(pUnkOuter)
+-        return CLASS_E_NOAGGREGATION;
+-
+     client = calloc(1, sizeof(IDirectPlay8ClientImpl));
+     if (!client)
+         return E_OUTOFMEMORY;
+@@ -557,12 +554,12 @@ static const IDirectPlay8LobbyClientVtbl DirectPlay8LobbiedClient_Vtbl =
+     lobbyclient_SetConnectionSettings
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8LobbyClient(IClassFactory *iface, IUnknown *outer, REFIID riid, void **obj)
++HRESULT DPNET_CreateDirectPlay8LobbyClient(REFIID riid, void **obj)
+ {
+     IDirectPlay8LobbyClientImpl *client;
+     HRESULT ret;
+ 
+-    TRACE("%p (%p, %s, %p)\n", iface, outer, debugstr_guid(riid), obj);
++    TRACE("%s, %p\n", debugstr_guid(riid), obj);
+ 
+     client = calloc(1, sizeof(*client));
+     if (!client)
+diff --git a/dlls/dpnet/dpnet_main.c b/dlls/dpnet/dpnet_main.c
+index 6776e13b524..008d7b35601 100644
+--- a/dlls/dpnet/dpnet_main.c
++++ b/dlls/dpnet/dpnet_main.c
+@@ -96,7 +96,7 @@ typedef struct
+   IClassFactory IClassFactory_iface;
+   LONG          ref;
+   REFCLSID      rclsid;
+-  HRESULT       (*pfnCreateInstanceFactory)(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
++  HRESULT       (*pfnCreateInstanceFactory)(REFIID riid, LPVOID *ppobj);
+ } IClassFactoryImpl;
+ 
+ static inline IClassFactoryImpl *impl_from_IClassFactory(IClassFactory *iface)
+@@ -126,7 +126,10 @@ static HRESULT WINAPI DICF_CreateInstance(LPCLASSFACTORY iface,LPUNKNOWN pOuter,
+   IClassFactoryImpl *This = impl_from_IClassFactory(iface);
+ 
+   TRACE("(%p)->(%p,%s,%p)\n",This,pOuter,debugstr_guid(riid),ppobj);
+-  return This->pfnCreateInstanceFactory(iface, pOuter, riid, ppobj);
++  if(pOuter)
++      return CLASS_E_NOAGGREGATION;
++
++  return This->pfnCreateInstanceFactory(riid, ppobj);
+ }
+ 
+ static HRESULT WINAPI DICF_LockServer(LPCLASSFACTORY iface,BOOL dolock) {
+diff --git a/dlls/dpnet/dpnet_private.h b/dlls/dpnet/dpnet_private.h
+index 13702549613..0cdc05d16ee 100644
+--- a/dlls/dpnet/dpnet_private.h
++++ b/dlls/dpnet/dpnet_private.h
+@@ -122,13 +122,13 @@ struct IDirectPlay8ThreadPoolImpl
+ /**
+  * factories
+  */
+-extern HRESULT DPNET_CreateDirectPlay8Client(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
+-extern HRESULT DPNET_CreateDirectPlay8Server(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
+-extern HRESULT DPNET_CreateDirectPlay8Peer(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
+-extern HRESULT DPNET_CreateDirectPlay8Address(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
+-extern HRESULT DPNET_CreateDirectPlay8LobbiedApp(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
+-extern HRESULT DPNET_CreateDirectPlay8ThreadPool(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj);
+-extern HRESULT DPNET_CreateDirectPlay8LobbyClient(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, void **ppobj);
++extern HRESULT DPNET_CreateDirectPlay8Client(REFIID riid, LPVOID *ppobj);
++extern HRESULT DPNET_CreateDirectPlay8Server(REFIID riid, LPVOID *ppobj);
++extern HRESULT DPNET_CreateDirectPlay8Peer(REFIID riid, LPVOID *ppobj);
++extern HRESULT DPNET_CreateDirectPlay8Address(REFIID riid, LPVOID *ppobj);
++extern HRESULT DPNET_CreateDirectPlay8LobbiedApp(REFIID riid, LPVOID *ppobj);
++extern HRESULT DPNET_CreateDirectPlay8ThreadPool(REFIID riid, LPVOID *ppobj);
++extern HRESULT DPNET_CreateDirectPlay8LobbyClient(REFIID riid, void **ppobj);
+ 
+ extern void init_dpn_sp_caps(DPN_SP_CAPS *dpnspcaps);
+ extern void init_winsock(void);
+diff --git a/dlls/dpnet/lobbiedapp.c b/dlls/dpnet/lobbiedapp.c
+index bbc7c55639c..25049a205bd 100644
+--- a/dlls/dpnet/lobbiedapp.c
++++ b/dlls/dpnet/lobbiedapp.c
+@@ -185,10 +185,10 @@ static const IDirectPlay8LobbiedApplicationVtbl DirectPlay8LobbiedApplication_Vt
+ 
+ 
+ 
+-HRESULT DPNET_CreateDirectPlay8LobbiedApp(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj) {
++HRESULT DPNET_CreateDirectPlay8LobbiedApp(REFIID riid, LPVOID *ppobj) {
+   IDirectPlay8LobbiedApplicationImpl* app;
+ 
+-  TRACE("(%p, %s, %p)\n", punkOuter, debugstr_guid(riid), ppobj);
++  TRACE("%s, %p\n", debugstr_guid(riid), ppobj);
+ 
+   app = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectPlay8LobbiedApplicationImpl));
+   if (NULL == app) {
+diff --git a/dlls/dpnet/peer.c b/dlls/dpnet/peer.c
+index 143be9aa5eb..a66d2bbca35 100644
+--- a/dlls/dpnet/peer.c
++++ b/dlls/dpnet/peer.c
+@@ -633,7 +633,7 @@ void init_dpn_sp_caps(DPN_SP_CAPS *dpnspcaps)
+     dpnspcaps->dwSystemBufferSize = 0x10000;
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8Peer(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, LPVOID *ppobj)
++HRESULT DPNET_CreateDirectPlay8Peer(REFIID riid, LPVOID *ppobj)
+ {
+     IDirectPlay8PeerImpl* Client;
+     HRESULT ret;
+diff --git a/dlls/dpnet/server.c b/dlls/dpnet/server.c
+index 923d0d5bfa5..6a65204a457 100644
+--- a/dlls/dpnet/server.c
++++ b/dlls/dpnet/server.c
+@@ -448,18 +448,15 @@ static const IDirectPlay8ServerVtbl DirectPlay8ServerVtbl =
+     IDirectPlay8ServerImpl_RegisterLobby
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8Server(IClassFactory *iface, IUnknown *pUnkOuter, REFIID riid, void **ppv)
++HRESULT DPNET_CreateDirectPlay8Server(REFIID riid, void **ppv)
+ {
+     IDirectPlay8ServerImpl *server;
+     HRESULT hr;
+ 
+-    TRACE("(%p, %s, %p)\n", pUnkOuter, debugstr_guid(riid), ppv);
++    TRACE("%s, %p\n", debugstr_guid(riid), ppv);
+ 
+     *ppv = NULL;
+ 
+-    if(pUnkOuter)
+-        return CLASS_E_NOAGGREGATION;
+-
+     server = calloc(1, sizeof(IDirectPlay8ServerImpl));
+     if (!server)
+         return E_OUTOFMEMORY;
+diff --git a/dlls/dpnet/threadpool.c b/dlls/dpnet/threadpool.c
+index b9b18b6ba69..0b8fa396e9b 100644
+--- a/dlls/dpnet/threadpool.c
++++ b/dlls/dpnet/threadpool.c
+@@ -150,7 +150,7 @@ static const IDirectPlay8ThreadPoolVtbl DirectPlay8ThreadPool_Vtbl =
+     IDirectPlay8ThreadPoolImpl_DoWork
+ };
+ 
+-HRESULT DPNET_CreateDirectPlay8ThreadPool(LPCLASSFACTORY iface, LPUNKNOWN punkOuter, REFIID riid, LPVOID *ppobj)
++HRESULT DPNET_CreateDirectPlay8ThreadPool(REFIID riid, LPVOID *ppobj)
+ {
+     IDirectPlay8ThreadPoolImpl* Client;
+ 
+-- 
+2.53.0
+
