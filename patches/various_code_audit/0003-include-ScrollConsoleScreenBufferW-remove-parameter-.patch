@@ -1,0 +1,25 @@
+From 63f32e490e655418acaf717c5fe6ba586ee353d6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 11:09:41 +1000
+Subject: [PATCH] include: ScrollConsoleScreenBufferW remove parameter name
+
+---
+ include/wincon.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/wincon.h b/include/wincon.h
+index 5a40a8b4c80..5ec985dfdcc 100644
+--- a/include/wincon.h
++++ b/include/wincon.h
+@@ -220,7 +220,7 @@ WINBASEAPI BOOL WINAPI   ReadConsoleOutputCharacterA(HANDLE,LPSTR,DWORD,COORD,LP
+ WINBASEAPI BOOL WINAPI   ReadConsoleOutputCharacterW(HANDLE,LPWSTR,DWORD,COORD,LPDWORD);
+ #define                  ReadConsoleOutputCharacter WINELIB_NAME_AW(ReadConsoleOutputCharacter)
+ WINBASEAPI BOOL WINAPI   ScrollConsoleScreenBufferA( HANDLE,const SMALL_RECT *,const SMALL_RECT *,COORD,const CHAR_INFO *);
+-WINBASEAPI BOOL WINAPI   ScrollConsoleScreenBufferW( HANDLE,const SMALL_RECT *,const SMALL_RECT *com,COORD,const CHAR_INFO *);
++WINBASEAPI BOOL WINAPI   ScrollConsoleScreenBufferW( HANDLE,const SMALL_RECT *,const SMALL_RECT *,COORD,const CHAR_INFO *);
+ #define                  ScrollConsoleScreenBuffer WINELIB_NAME_AW(ScrollConsoleScreenBuffer)
+ WINBASEAPI BOOL WINAPI   SetConsoleActiveScreenBuffer( HANDLE);
+ WINBASEAPI BOOL WINAPI   SetConsoleCP(UINT);
+-- 
+2.53.0
+

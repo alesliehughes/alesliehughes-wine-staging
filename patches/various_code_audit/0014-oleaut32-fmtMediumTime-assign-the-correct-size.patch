@@ -1,0 +1,25 @@
+From 03d50a69250415e5bd85afc6c0dcf4d82deb1612 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 13:45:54 +1000
+Subject: [PATCH] oleaut32: fmtMediumTime assign the correct size.
+
+---
+ dlls/oleaut32/varformat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/varformat.c b/dlls/oleaut32/varformat.c
+index f3a44b7c8a6..fd291b6b0ce 100644
+--- a/dlls/oleaut32/varformat.c
++++ b/dlls/oleaut32/varformat.c
+@@ -313,7 +313,7 @@ static const BYTE fmtMediumTime[0x11] =
+ 
+ static const BYTE fmtLongTime[0x0d] =
+ {
+-  0x0a,FMT_TYPE_DATE,sizeof(FMT_SHORT_HEADER),
++  0x0d,FMT_TYPE_DATE,sizeof(FMT_SHORT_HEADER),
+   0x0,0x0,0x0,0x0,0x0,
+   FMT_DATE_TIME_SYS,FMT_GEN_END
+ };
+-- 
+2.53.0
+

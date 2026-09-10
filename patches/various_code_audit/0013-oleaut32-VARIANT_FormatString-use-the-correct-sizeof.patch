@@ -1,0 +1,27 @@
+From eab69f552f93dbaf0786804e9edbb7830b6bdbc3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 13:41:10 +1000
+Subject: [PATCH] oleaut32: VARIANT_FormatString use the correct sizeof value.
+
+Wont make a difference as both FMT_STRING_HEADER and FMT_DATE_HEADER are
+the same size. Does make it consistant with the rest of the funciton.
+---
+ dlls/oleaut32/varformat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/varformat.c b/dlls/oleaut32/varformat.c
+index d8dbd4f9271..f3a44b7c8a6 100644
+--- a/dlls/oleaut32/varformat.c
++++ b/dlls/oleaut32/varformat.c
+@@ -1961,7 +1961,7 @@ static HRESULT VARIANT_FormatString(LPVARIANT pVarIn, LPOLESTR lpszFormat,
+   if ((strHeader->flags & (FMT_FLAG_LT|FMT_FLAG_GT)) == FMT_FLAG_GT)
+     bUpper = TRUE;
+   blanks_first = strHeader->copy_chars - lstrlenW(pSrc);
+-  pToken = (const BYTE*)strHeader + sizeof(FMT_DATE_HEADER);
++  pToken = (const BYTE*)strHeader + sizeof(FMT_STRING_HEADER);
+ 
+   while (*pToken != FMT_GEN_END)
+   {
+-- 
+2.53.0
+

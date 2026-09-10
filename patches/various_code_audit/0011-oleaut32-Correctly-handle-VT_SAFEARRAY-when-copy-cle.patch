@@ -1,0 +1,36 @@
+From 4765057624673c9b7a203fb4e475adf73e479076 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 12:53:11 +1000
+Subject: [PATCH] oleaut32: Correctly handle VT_SAFEARRAY when copy/clearing
+ IRecordInfo data
+
+---
+ dlls/oleaut32/recinfo.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/oleaut32/recinfo.c b/dlls/oleaut32/recinfo.c
+index dfe7625a986..3eea887a74d 100644
+--- a/dlls/oleaut32/recinfo.c
++++ b/dlls/oleaut32/recinfo.c
+@@ -242,7 +242,8 @@ static HRESULT WINAPI IRecordInfoImpl_RecordClear(IRecordInfo *iface, PVOID pvEx
+                 *(void**)var = NULL;
+                 break;
+             case VT_SAFEARRAY:
+-                SafeArrayDestroy(var);
++                SafeArrayDestroy(*(SAFEARRAY**)var);
++                *(void**)var = NULL;
+                 break;
+             case VT_UNKNOWN:
+             case VT_DISPATCH:
+@@ -313,7 +314,7 @@ static HRESULT WINAPI IRecordInfoImpl_RecordCopy(IRecordInfo *iface, void *src_r
+                 break;
+             }
+             case VT_SAFEARRAY:
+-                hr = SafeArrayCopy(src, dest);
++                hr = SafeArrayCopy(*(SAFEARRAY**)src, (SAFEARRAY**)dest);
+                 break;
+             default:
+             {
+-- 
+2.53.0
+

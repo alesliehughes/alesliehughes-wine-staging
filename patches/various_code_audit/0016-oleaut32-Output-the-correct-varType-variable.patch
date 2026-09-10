@@ -1,0 +1,25 @@
+From 34afffdad43c173deaf781dd70efa056796fb294 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 14:24:37 +1000
+Subject: [PATCH] oleaut32: Output the correct varType variable
+
+---
+ dlls/oleaut32/usrmarshal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/usrmarshal.c b/dlls/oleaut32/usrmarshal.c
+index 25bce3155bf..3cbd081787c 100644
+--- a/dlls/oleaut32/usrmarshal.c
++++ b/dlls/oleaut32/usrmarshal.c
+@@ -2334,7 +2334,7 @@ HRESULT __RPC_STUB IPropertyBag_Read_Stub(
+ 
+   if(varType & (VT_BYREF | VT_ARRAY | VT_VECTOR))
+   {
+-    FIXME("Variant type %x is byref, array or vector. Not implemented.\n", V_VT(pVar));
++    FIXME("Variant type %lx is byref, array or vector. Not implemented.\n", varType);
+     return E_NOTIMPL;
+   }
+ 
+-- 
+2.53.0
+

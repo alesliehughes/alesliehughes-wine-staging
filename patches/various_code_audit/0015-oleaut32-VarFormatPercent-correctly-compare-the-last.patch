@@ -1,0 +1,67 @@
+From b3a09069d6f466f27d26fb9ca694cefdfa21a57a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 14:17:12 +1000
+Subject: [PATCH] oleaut32: VarFormatPercent correctly compare the last
+ character
+
+---
+ dlls/oleaut32/tests/varformat.c | 24 ++++++++++++++++++++++++
+ dlls/oleaut32/varformat.c       |  2 +-
+ 2 files changed, 25 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/tests/varformat.c b/dlls/oleaut32/tests/varformat.c
+index e0dd2782f23..5bcdd1422c9 100644
+--- a/dlls/oleaut32/tests/varformat.c
++++ b/dlls/oleaut32/tests/varformat.c
+@@ -696,6 +696,29 @@ static void test_VarFormatDateTime(void)
+     ok(!str, "Unexpected out string %p.\n", str);
+ }
+ 
++static void test_VarFormatPercent(void)
++{
++    HRESULT hr;
++    VARIANT in;
++    BSTR str;
++
++    V_VT(&in) = VT_R8;
++    V_R8(&in) = 0.745;
++
++    hr = VarFormatPercent(&in, 2, -1, -1, -1, 0, &str);
++    ok(hr == S_OK, "Unexpected hr %#lx.\n", hr);
++    ok(!lstrcmpW(str, L"74.50%"), "got %s\n", debugstr_w(str));
++    SysFreeString(str);
++
++    V_R8(&in) = -0.745;
++
++    hr = VarFormatPercent(&in, 2, -1, -1, -1, 0, &str);
++    ok(hr == S_OK, "Unexpected hr %#lx.\n", hr);
++    ok(!lstrcmpW(str, L"(74.50%)"), "got %s\n", debugstr_w(str));
++
++    SysFreeString(str);
++}
++
+ START_TEST(varformat)
+ {
+     test_VarFormatNumber();
+@@ -705,4 +728,5 @@ START_TEST(varformat)
+     test_GetAltMonthNames();
+     test_VarFormatCurrency();
+     test_VarFormatDateTime();
++    test_VarFormatPercent();
+ }
+diff --git a/dlls/oleaut32/varformat.c b/dlls/oleaut32/varformat.c
+index fd291b6b0ce..17849e3725f 100644
+--- a/dlls/oleaut32/varformat.c
++++ b/dlls/oleaut32/varformat.c
+@@ -2383,7 +2383,7 @@ HRESULT WINAPI VarFormatPercent(LPVARIANT pVarIn, INT nDigits, INT nLeading, INT
+       if (SUCCEEDED(hRet))
+       {
+         DWORD dwLen = lstrlenW(*pbstrOut);
+-        BOOL bBracket = (*pbstrOut)[dwLen] == ')';
++        BOOL bBracket = (*pbstrOut)[dwLen - 1] == ')';
+ 
+         dwLen -= bBracket;
+         memcpy(buff, *pbstrOut, dwLen * sizeof(WCHAR));
+-- 
+2.53.0
+

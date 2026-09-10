@@ -1,0 +1,25 @@
+From d90a50daa8fa08ddc520c0c824cdb7d157dba140 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 15:50:40 +1000
+Subject: [PATCH] localspl: cups_start_doc correct buffer size being passed in.
+
+---
+ dlls/localspl/cups.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/localspl/cups.c b/dlls/localspl/cups.c
+index 5c4696b6dd1..c8e88e4497a 100644
+--- a/dlls/localspl/cups.c
++++ b/dlls/localspl/cups.c
+@@ -429,7 +429,7 @@ static BOOL cups_start_doc(doc_t *doc, const WCHAR *printer_name, const WCHAR *d
+ 
+         len = wcslen(document_title);
+         doc->cups.doc_title = malloc(len * 3 + 1);
+-        ntdll_wcstoumbs(document_title, len + 1, doc->cups.doc_title, len + 3 + 1, FALSE);
++        ntdll_wcstoumbs(document_title, len + 1, doc->cups.doc_title, len * 3 + 1, FALSE);
+ 
+         return TRUE;
+     }
+-- 
+2.53.0
+

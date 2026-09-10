@@ -1,0 +1,25 @@
+From eaa14c498e26051d725ca1d79f4690db083dd7f3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 11:31:21 +1000
+Subject: [PATCH] include: Remove duplicate define INQUIRY_VENDOR
+
+---
+ dlls/wnaspi32/aspi.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/dlls/wnaspi32/aspi.h b/dlls/wnaspi32/aspi.h
+index c99299f1d87..dae187500de 100644
+--- a/dlls/wnaspi32/aspi.h
++++ b/dlls/wnaspi32/aspi.h
+@@ -41,8 +41,6 @@
+ #define NO_DATA_TRANSFERRED(prb) (((prb->SRB_Flags>>3) & 0x3) == 0x3)
+ 
+ 
+-#define INQUIRY_VENDOR          8
+-
+ #define MUSTEK_SCSI_AREA_AND_WINDOWS 0x04
+ #define MUSTEK_SCSI_READ_SCANNED_DATA 0x08
+ #define MUSTEK_SCSI_GET_IMAGE_STATUS 0x0f
+-- 
+2.53.0
+

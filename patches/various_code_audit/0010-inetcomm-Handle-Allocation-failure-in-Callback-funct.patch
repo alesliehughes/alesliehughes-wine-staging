@@ -1,0 +1,34 @@
+From 758f3f983a6f4453dbe3bec1150ef13d25dfb101 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 12:01:18 +1000
+Subject: [PATCH] inetcomm: Handle Allocation failure in Callback functions
+
+---
+ dlls/inetcomm/pop3transport.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/inetcomm/pop3transport.c b/dlls/inetcomm/pop3transport.c
+index 6dbbab1fa3f..4cfb0b981f4 100644
+--- a/dlls/inetcomm/pop3transport.c
++++ b/dlls/inetcomm/pop3transport.c
+@@ -651,7 +651,7 @@ static void POP3Transport_CallbackProcessUSERResp(IInternetTransport *iface, cha
+     IPOP3Callback_OnResponse((IPOP3Callback *)This->InetTransport.pCallback, &response);
+ 
+     len = sizeof(pass) + strlen(This->InetTransport.ServerInfo.szPassword) + 2; /* "\r\n" */
+-    command = HeapAlloc(GetProcessHeap(), 0, len);
++    if (!(command = HeapAlloc(GetProcessHeap(), 0, len))) return;
+ 
+     strcpy(command, pass);
+     strcat(command, This->InetTransport.ServerInfo.szPassword);
+@@ -681,7 +681,7 @@ static void POP3Transport_CallbackSendUSERCmd(IInternetTransport *iface, char *p
+     TRACE("\n");
+ 
+     len = sizeof(user) + strlen(This->InetTransport.ServerInfo.szUserName) + 2; /* "\r\n" */
+-    command = HeapAlloc(GetProcessHeap(), 0, len);
++    if (!(command = HeapAlloc(GetProcessHeap(), 0, len))) return;
+ 
+     strcpy(command, user);
+     strcat(command, This->InetTransport.ServerInfo.szUserName);
+-- 
+2.53.0
+

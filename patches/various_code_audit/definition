@@ -1,0 +1,19 @@
+Fixes: [60241]: Fix various detect with the Claude Core review
+
+CPY_7     - 0001-msado15-_Stream_put_Position-add-validation-checks-f.patch
+API_40    - 0002-d3drm-IDirect3DRMMesh-SetGroupTexture-correct-QueryI.patch
+CPY_151   - 0003-include-ScrollConsoleScreenBufferW-remove-parameter-.patch
+CPY_154   - 0004-include-Fix-LPFN_WSASTRINGTOADDRESS-typedef.patch
+CPY_153   - 0005-include-Correct-WS_AF_OSI-define.patch
+CPY_156   - 0006-include-Correct-FORWARD__WT_PROXIMITY-_INFOCHANGE-de.patch
+DUP_18    - 0007-wnaspi32-Remove-duplicate-define-INQUIRY_VENDOR.patch
+LOGIC_15  - 0008-inetcomm-InternetTransport_Connect-correct-looping-o.patch
+PANIC_239 - 0009-inetcomm-IMimeInternational-FindCharset-handle-memor.patch
+PANIC_240 - 0010-inetcomm-Handle-Allocation-failure-in-Callback-funct.patch
+API_7/8   - 0011-oleaut32-Correctly-handle-VT_SAFEARRAY-when-copy-cle.patch
+CPY_13    - 0012-oleaut32-VarTokenizeFormatString-correct-parse-of-da.patch
+CPY_122   - 0013-oleaut32-VARIANT_FormatString-use-the-correct-sizeof.patch
+DEAD_42   - 0014-oleaut32-fmtMediumTime-assign-the-correct-size.patch
+LOGIC_105 - 0015-oleaut32-VarFormatPercent-correctly-compare-the-last.patch
+LOGIC_201 - 0016-oleaut32-Output-the-correct-varType-variable.patch
+CPY_105   - 0017-localspl-cups_start_doc-correct-buffer-size-being-pa.patch

@@ -1,0 +1,39 @@
+From 3ba11ed37e3cbf7268d4d54f3c340ca7d7c90077 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 11:54:24 +1000
+Subject: [PATCH] inetcomm: IMimeInternational::FindCharset handle memory
+ allocation failure
+
+---
+ dlls/inetcomm/mimeintl.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/dlls/inetcomm/mimeintl.c b/dlls/inetcomm/mimeintl.c
+index 9a4c610d996..12164cb0db2 100644
+--- a/dlls/inetcomm/mimeintl.c
++++ b/dlls/inetcomm/mimeintl.c
+@@ -223,6 +223,8 @@ static HRESULT mlang_getcsetinfo(const char *charset, MIMECSETINFO *mlang_info)
+ static HCHARSET add_charset(struct list *list, MIMECSETINFO *mlang_info, HCHARSET handle)
+ {
+     charset_entry *charset = HeapAlloc(GetProcessHeap(), 0, sizeof(*charset));
++    if (!charset)
++        return NULL;
+ 
+     WideCharToMultiByte(CP_ACP, 0, mlang_info->wszCharset, -1,
+                         charset->cs_info.szName, sizeof(charset->cs_info.szName), NULL, NULL);
+@@ -267,8 +269,12 @@ static HRESULT WINAPI MimeInternat_FindCharset(IMimeInternational *iface, LPCSTR
+         EnterCriticalSection(&This->cs);
+ 
+         if(SUCCEEDED(hr))
++        {
+             *phCharset = add_charset(&This->charsets, &mlang_info,
+                                      UlongToHandle(InterlockedIncrement(&This->next_charset_handle)));
++            if (!*phCharset)
++                hr = E_OUTOFMEMORY;
++        }
+     }
+ 
+     LeaveCriticalSection(&This->cs);
+-- 
+2.53.0
+

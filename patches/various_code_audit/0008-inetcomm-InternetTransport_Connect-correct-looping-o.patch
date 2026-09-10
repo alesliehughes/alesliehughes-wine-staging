@@ -1,0 +1,26 @@
+From a8c56916976071e73172e6a1aa21ba9130971885 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 11:43:39 +1000
+Subject: [PATCH] inetcomm: InternetTransport_Connect correct looping of
+ addressses
+
+---
+ dlls/inetcomm/internettransport.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/inetcomm/internettransport.c b/dlls/inetcomm/internettransport.c
+index f7060abe9e7..efe5a57799d 100644
+--- a/dlls/inetcomm/internettransport.c
++++ b/dlls/inetcomm/internettransport.c
+@@ -108,7 +108,7 @@ HRESULT InternetTransport_Connect(InternetTransport *This,
+         return IXP_E_CANT_FIND_HOST;
+     }
+ 
+-    for (ai_cur = ai; ai_cur; ai_cur = ai->ai_next)
++    for (ai_cur = ai; ai_cur; ai_cur = ai_cur->ai_next)
+     {
+         int so;
+ 
+-- 
+2.53.0
+

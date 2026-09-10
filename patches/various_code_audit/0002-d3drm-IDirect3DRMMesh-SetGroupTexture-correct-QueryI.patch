@@ -1,0 +1,26 @@
+From c25fbdf730d76c48a49eaa644ef3c37134101300 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 11 Sep 2026 09:24:35 +1000
+Subject: [PATCH] d3drm: IDirect3DRMMesh::SetGroupTexture correct
+ QueryInterface call
+
+---
+ dlls/d3drm/meshbuilder.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3drm/meshbuilder.c b/dlls/d3drm/meshbuilder.c
+index 3a7af1f89ae..871e9ca0035 100644
+--- a/dlls/d3drm/meshbuilder.c
++++ b/dlls/d3drm/meshbuilder.c
+@@ -2676,7 +2676,7 @@ static HRESULT WINAPI d3drm_mesh_SetGroupTexture(IDirect3DRMMesh *iface,
+         return D3DRM_OK;
+     }
+ 
+-    return IDirect3DRMTexture3_QueryInterface(texture, &IID_IDirect3DRMTexture, (void **)&mesh->groups[id].texture);
++    return IDirect3DRMTexture_QueryInterface(texture, &IID_IDirect3DRMTexture3, (void **)&mesh->groups[id].texture);
+ }
+ 
+ static UINT WINAPI d3drm_mesh_GetGroupCount(IDirect3DRMMesh *iface)
+-- 
+2.53.0
+
