@@ -1,0 +1,27 @@
+From e3378f64e8a780d0b8c880c5e2d7a3214468dd64 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Sep 2026 11:42:29 +1000
+Subject: [PATCH] mciavi32: Avoid possiblbe overflow
+
+---
+ dlls/mciavi32/mmoutput.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/mciavi32/mmoutput.c b/dlls/mciavi32/mmoutput.c
+index b064d151b46..37ebdce4cd0 100644
+--- a/dlls/mciavi32/mmoutput.c
++++ b/dlls/mciavi32/mmoutput.c
+@@ -598,8 +598,8 @@ double MCIAVI_PaintFrame(WINE_MCIAVI* wma, HDC hDC)
+     LPBITMAPINFO	pBitmapInfo;
+     DWORD		frame;
+ 
+-    if (!hDC || !wma->inbih)
+-	return 0;
++    if (!hDC || !wma->inbih || !wma->dwPlayableVideoFrames)
++        return 0;
+ 
+     if (wma->dwCurrVideoFrame >= wma->dwPlayableVideoFrames)
+         frame = wma->dwPlayableVideoFrames - 1;
+-- 
+2.53.0
+

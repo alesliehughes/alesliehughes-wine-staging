@@ -19,3 +19,14 @@ DEAD_42   - 0014-oleaut32-fmtMediumTime-assign-the-correct-size.patch
 LOGIC_105 - 0015-oleaut32-VarFormatPercent-correctly-compare-the-last.patch
 LOGIC_201 - 0016-oleaut32-Output-the-correct-varType-variable.patch
 #CPY_105   - 0017-localspl-cups_start_doc-correct-buffer-size-being-pa.patch
+CPY_15    - 0018-oledb32-DataConvert-check-status-for-DBSTATUS_S_ISNU.patch
+LOGIC_9   - 0019-dmime-Fix-checking-for-error.patch
+LOGIC_10  - 0020-dmime-wave_track_create_from_chunk-return-E_OUTOFMEM.patch
+LOGIC_165 - 0021-dmime-Add-missing-break.patch
+MEM_13    - 0022-dmime-sequence_track-Free-all-objects-on-release.patch
+MEM_93    - 0023-dmime-Free-memory-on-error-path.patch
+PANIC_303 - 0024-sapi-Return-error-on-memory-allocation-failure.patch
+PANIC_129 - 0025-sapi-ISpVoice-Speak-handle-memory-allocation-failure.patch
+CPY_41    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
+OVF_82    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
+PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch

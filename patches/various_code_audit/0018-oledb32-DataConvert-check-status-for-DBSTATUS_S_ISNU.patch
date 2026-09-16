@@ -1,0 +1,82 @@
+From 4ae7ce8e86b2e3bbc9e7a9cf09cec1c5d12e6d32 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Sep 2026 08:40:18 +1000
+Subject: [PATCH] oledb32: DataConvert check status for DBSTATUS_S_ISNULL
+
+TODO - Tests
+
+Scenarios - when DST length is 0.  Wine currently returns DBSTATUS_S_TRUNCATED
+- Should be DBSTATUS_S_OK with dst_len = 0
+---
+ dlls/oledb32/convert.c       | 11 +++++++----
+ dlls/oledb32/tests/convert.c | 11 +++++++++++
+ 2 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/dlls/oledb32/convert.c b/dlls/oledb32/convert.c
+index 540ceac1d2d..bc4b5460568 100644
+--- a/dlls/oledb32/convert.c
++++ b/dlls/oledb32/convert.c
+@@ -911,8 +911,9 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+         hr = IDataConvert_DataConvert(iface, src_type, DBTYPE_BSTR, src_len, &length,
+                                       src, &b, sizeof(BSTR), src_status, dst_status,
+                                       precision, scale, flags);
+-        if(hr != S_OK) return hr;
+-        length = WideCharToMultiByte(CP_ACP, 0, b, SysStringLen(b), NULL, 0, NULL, NULL);
++        if(hr != S_OK)
++            return hr;
++        length = WideCharToMultiByte(CP_ACP, 0, b,  SysStringLen(b), NULL, 0, NULL, NULL);
+         *dst_len = length; /* Doesn't include size for '\0' */
+         *dst_status = DBSTATUS_S_OK;
+         bytes_to_copy = min(length + 1, dst_max_len);
+@@ -943,7 +944,8 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+         hr = IDataConvert_DataConvert(iface, src_type, DBTYPE_BSTR, src_len, &bstr_len,
+                                       src, &b, sizeof(BSTR), src_status, dst_status,
+                                       precision, scale, flags);
+-        if(hr != S_OK) return hr;
++        if(hr != S_OK || *dst_status == DBSTATUS_S_ISNULL)
++            return hr;
+ 
+         bstr_len = SysStringLen(b) * sizeof(WCHAR);
+         *dst_len = bstr_len; /* Doesn't include size for '\0' */
+@@ -963,7 +965,8 @@ static HRESULT WINAPI convert_DataConvert(IDataConvert* iface,
+         hr = IDataConvert_DataConvert(iface, src_type, DBTYPE_BSTR, src_len, &length,
+                                       src, &b, sizeof(BSTR), src_status, dst_status,
+                                       precision, scale, flags);
+-        if(hr != S_OK) return hr;
++        if(hr != S_OK || *dst_status == DBSTATUS_S_ISNULL)
++            return hr;
+ 
+         length = WideCharToMultiByte(CP_ACP, 0, b, SysStringLen(b) + 1, NULL, 0, NULL, NULL);
+         *dst_len = length - 1; /* Doesn't include size for '\0' */
+diff --git a/dlls/oledb32/tests/convert.c b/dlls/oledb32/tests/convert.c
+index a019ff4042e..5155752a822 100644
+--- a/dlls/oledb32/tests/convert.c
++++ b/dlls/oledb32/tests/convert.c
+@@ -1260,6 +1260,7 @@ static void test_converttobstr(void)
+     HRESULT hr;
+     BSTR dst;
+     BYTE src[20];
++    char dst2[100];
+     DBSTATUS dst_status;
+     DBLENGTH dst_len;
+     static const WCHAR ten[] = {'1','0',0};
+@@ -1307,6 +1308,16 @@ static void test_converttobstr(void)
+     SysFreeString(dst);
+     SysFreeString(b);
+ 
++    *(BSTR *)src = NULL;
++    memset(dst2, 0xcc, sizeof(dst2));
++    dst_len = 0x1234;
++    hr = IDataConvert_DataConvert(convert, DBTYPE_BSTR, DBTYPE_STR, 0, &dst_len, src, &dst2, sizeof(dst2), 0, &dst_status, 0, 0, 0);
++    ok(hr == S_OK, "got %08lx\n", hr);
++    ok(dst_status == DBSTATUS_S_OK, "got %08lx\n", dst_status);
++    ok(dst_len == 0, "got %Id\n", dst_len);
++    ok(dst2[0] == 0, "got %02x\n", dst[0]);
++    ok(dst2[1] == (char)0xcc, "got %02x\n", dst[1]);
++
+     b = SysAllocString(ten);
+     V_VT(&v) = VT_BSTR;
+     V_BSTR(&v) = b;
+-- 
+2.53.0
+

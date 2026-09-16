@@ -1,0 +1,25 @@
+From 7c79d3c164d9c5bb4ffc161b7c8fdc660c6c58d8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Sep 2026 10:36:15 +1000
+Subject: [PATCH] dmime: sequence_track - Free all objects on release
+
+---
+ dlls/dmime/seqtrack.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/dmime/seqtrack.c b/dlls/dmime/seqtrack.c
+index 1b0e99bd77c..1e208091d1e 100644
+--- a/dlls/dmime/seqtrack.c
++++ b/dlls/dmime/seqtrack.c
+@@ -80,6 +80,8 @@ static ULONG WINAPI sequence_track_Release(IDirectMusicTrack8 *iface)
+     TRACE("(%p) ref=%ld\n", This, ref);
+ 
+     if (!ref) {
++        free(This->items);
++        free(This->curve_items);
+         free(This);
+     }
+ 
+-- 
+2.53.0
+

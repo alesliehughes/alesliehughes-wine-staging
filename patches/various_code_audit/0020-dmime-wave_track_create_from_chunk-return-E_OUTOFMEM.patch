@@ -1,0 +1,33 @@
+From 63828c3abb9f12c37d797399f4eef4c116953d3d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Sep 2026 10:19:31 +1000
+Subject: [PATCH] dmime: wave_track_create_from_chunk return E_OUTOFMEMORY on
+ allocation failure
+
+If the out memory occured, it would return S_OK, which comes from the call create_dmwavetrack above.
+---
+ dlls/dmime/wavetrack.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dmime/wavetrack.c b/dlls/dmime/wavetrack.c
+index 2fea0b8f86a..d3b55a20000 100644
+--- a/dlls/dmime/wavetrack.c
++++ b/dlls/dmime/wavetrack.c
+@@ -622,8 +622,12 @@ HRESULT wave_track_create_from_chunk(IStream *stream, struct chunk_entry *parent
+     list_init(&part->items);
+     list_add_tail(&This->parts, &part->entry);
+ 
+-    if (!(item = calloc(1, sizeof(*item)))
+-            || FAILED(hr = wave_create_from_chunk(stream, parent, &item->object)))
++    if (!(item = calloc(1, sizeof(*item))))
++    {
++        IDirectMusicTrack8_Release(iface);
++        return E_OUTOFMEMORY;
++    }
++    if (FAILED(hr = wave_create_from_chunk(stream, parent, &item->object)))
+     {
+         IDirectMusicTrack8_Release(iface);
+         free(item);
+-- 
+2.53.0
+

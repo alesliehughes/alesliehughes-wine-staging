@@ -1,0 +1,29 @@
+From 43384ce01f897c943812dd6d9d0d025d40396e8b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Sep 2026 10:39:36 +1000
+Subject: [PATCH] dmime: Free memory on error path
+
+---
+ dlls/dmime/seqtrack.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dmime/seqtrack.c b/dlls/dmime/seqtrack.c
+index 1e208091d1e..7a6f1ad74e8 100644
+--- a/dlls/dmime/seqtrack.c
++++ b/dlls/dmime/seqtrack.c
+@@ -364,7 +364,11 @@ static HRESULT parse_curl_list(struct sequence_track *This, IStream *stream, str
+                 &This->curve_count, size)))
+             return hr;
+ 
+-        if (!(This->curve_items = calloc(This->curve_count, sizeof(*This->curve_items)))) return E_OUTOFMEMORY;
++        if (!(This->curve_items = calloc(This->curve_count, sizeof(*This->curve_items))))
++        {
++            free(buffer);
++            return E_OUTOFMEMORY;
++        }
+         for (i = 0; i < This->curve_count; i++) memcpy(This->curve_items + i, buffer + size * i, size);
+         free(buffer);
+     }
+-- 
+2.53.0
+

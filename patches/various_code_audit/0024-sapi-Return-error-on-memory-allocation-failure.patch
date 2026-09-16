@@ -1,0 +1,25 @@
+From ac5054689a0032549ac09c7454dd4eedaa7f1dfd Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 17 Sep 2026 10:57:27 +1000
+Subject: [PATCH] sapi: Return error on memory allocation failure
+
+---
+ dlls/sapi/token.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/sapi/token.c b/dlls/sapi/token.c
+index 13dca34bf6d..69e2bb5af39 100644
+--- a/dlls/sapi/token.c
++++ b/dlls/sapi/token.c
+@@ -728,6 +728,8 @@ static HRESULT WINAPI token_category_GetDefaultTokenId( ISpObjectTokenCategory *
+     }
+ 
+     *id = CoTaskMemAlloc( regvalue_size );
++    if (!*id)
++        return E_OUTOFMEMORY;
+     wcscpy( *id, regvalue );
+ 
+     return S_OK;
+-- 
+2.53.0
+
