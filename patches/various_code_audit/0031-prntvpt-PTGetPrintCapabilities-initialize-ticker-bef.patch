@@ -1,0 +1,27 @@
+From 679018365277601438fd450f54b91617bd3266da Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 10:03:34 +1000
+Subject: [PATCH] prntvpt: PTGetPrintCapabilities initialize ticker before
+ parsing
+
+---
+ dlls/prntvpt/ticket.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/dlls/prntvpt/ticket.c b/dlls/prntvpt/ticket.c
+index d15917e9958..4bbea0d2e04 100644
+--- a/dlls/prntvpt/ticket.c
++++ b/dlls/prntvpt/ticket.c
+@@ -1796,6 +1796,9 @@ HRESULT WINAPI PTGetPrintCapabilities(HPTPROVIDER provider, IStream *stream, ISt
+     if (!is_valid_provider(provider) || !stream || !caps)
+         return E_INVALIDARG;
+ 
++    hr = initialize_ticket(prov, &ticket);
++    if (hr != S_OK) return hr;
++
+     hr = parse_ticket(stream, kPTJobScope, &ticket);
+     if (hr != S_OK) return hr;
+ 
+-- 
+2.53.0
+

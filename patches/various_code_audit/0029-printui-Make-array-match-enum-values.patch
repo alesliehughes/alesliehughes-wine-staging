@@ -1,0 +1,25 @@
+From 335b03e0f5ff1c95f2d8073c1dc57af745d20db1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 09:53:07 +1000
+Subject: [PATCH] printui: Make array match enum values
+
+---
+ dlls/printui/printui.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/printui/printui.c b/dlls/printui/printui.c
+index 13669f05aab..cea06161bc8 100644
+--- a/dlls/printui/printui.c
++++ b/dlls/printui/printui.c
+@@ -39,7 +39,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(printui);
+ /* ################################# */
+ 
+ /* Must be in order with OPT_*      */
+-static const WCHAR optionsW[OPT_MAX+1]={'a','b','c','f','h','j','l','m','n','t','r','v',0};
++static const WCHAR optionsW[OPT_MAX+1]={'a','b','c','f','h','j','l','m','n','r','t','v',0};
+ 
+ /* Must be in order with FLAG_*     */
+ static const WCHAR flagsW[FLAG_MAX+1]={'q','w','y','z','Z',0};
+-- 
+2.53.0
+

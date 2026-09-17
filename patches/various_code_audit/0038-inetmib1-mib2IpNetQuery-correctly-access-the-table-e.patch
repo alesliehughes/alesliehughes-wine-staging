@@ -1,0 +1,25 @@
+From d5f8102af829779e45314a6cddbf8f2cebfacbb3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 12:11:49 +1000
+Subject: [PATCH] inetmib1: mib2IpNetQuery correctly access the table entries
+
+---
+ dlls/inetmib1/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/inetmib1/main.c b/dlls/inetmib1/main.c
+index 2f9679148b8..157bab58811 100644
+--- a/dlls/inetmib1/main.c
++++ b/dlls/inetmib1/main.c
+@@ -982,7 +982,7 @@ static BOOL mib2IpNetQuery(BYTE bPduType, SnmpVarBind *pVarBind,
+                 {
+                     *pErrorStatus = mapStructEntryToValue(mib2IpNetMap,
+                         DEFINE_SIZEOF(mib2IpNetMap),
+-                        &ipNetTable[tableIndex - 1], item, pVarBind);
++                        &ipNetTable->table[tableIndex - 1], item, pVarBind);
+                     if (!*pErrorStatus && bPduType == SNMP_PDU_GETNEXT)
+                         ret = setOidWithItemAndInteger(&pVarBind->name, &myOid,
+                             item, tableIndex);
+-- 
+2.53.0
+

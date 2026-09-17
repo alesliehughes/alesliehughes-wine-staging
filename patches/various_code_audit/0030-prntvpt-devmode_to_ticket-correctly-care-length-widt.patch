@@ -1,0 +1,28 @@
+From 3cccb40d07d2cf0f85636e932a30ab837e9de570 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 09:57:30 +1000
+Subject: [PATCH] prntvpt: devmode_to_ticket correctly care length/width bits.
+
+---
+ dlls/prntvpt/ticket.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/prntvpt/ticket.c b/dlls/prntvpt/ticket.c
+index a73f535d79a..d15917e9958 100644
+--- a/dlls/prntvpt/ticket.c
++++ b/dlls/prntvpt/ticket.c
+@@ -677,9 +677,9 @@ static void devmode_to_ticket(const DEVMODEW *dm, struct ticket *ticket)
+         ticket->page.orientation = dm->dmOrientation;
+     if (dm->dmFields & DM_PAPERSIZE)
+         ticket->page.media.paper = dm->dmPaperSize;
+-    if (dm->dmFields & DM_PAPERLENGTH)
+-        ticket->page.media.size.width = dm->dmPaperWidth * 100;
+     if (dm->dmFields & DM_PAPERWIDTH)
++        ticket->page.media.size.width = dm->dmPaperWidth * 100;
++    if (dm->dmFields & DM_PAPERLENGTH)
+         ticket->page.media.size.height = dm->dmPaperLength * 100;
+     if (dm->dmFields & DM_SCALE)
+         ticket->page.scaling = dm->dmScale;
+-- 
+2.53.0
+

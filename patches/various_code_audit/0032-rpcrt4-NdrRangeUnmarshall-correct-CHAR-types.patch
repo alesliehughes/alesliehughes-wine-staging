@@ -1,0 +1,31 @@
+From a40c655132072a8a409c54b30ee42ab4c681ddb8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 10:14:17 +1000
+Subject: [PATCH] rpcrt4: NdrRangeUnmarshall correct CHAR types.
+
+---
+ dlls/rpcrt4/ndr_marshall.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/rpcrt4/ndr_marshall.c b/dlls/rpcrt4/ndr_marshall.c
+index 7b49e0e3f4b..31a76be4c86 100644
+--- a/dlls/rpcrt4/ndr_marshall.c
++++ b/dlls/rpcrt4/ndr_marshall.c
+@@ -6500,12 +6500,12 @@ unsigned char *WINAPI NdrRangeUnmarshall(
+     {
+     case FC_CHAR:
+     case FC_SMALL:
+-        RANGE_UNMARSHALL(UCHAR, UCHAR, "%d");
++        RANGE_UNMARSHALL(CHAR, CHAR, "%d");
+         TRACE("value: 0x%02x\n", **ppMemory);
+         break;
+     case FC_BYTE:
+     case FC_USMALL:
+-        RANGE_UNMARSHALL(CHAR, CHAR, "%u");
++        RANGE_UNMARSHALL(UCHAR, UCHAR, "%u");
+         TRACE("value: 0x%02x\n", **ppMemory);
+         break;
+     case FC_WCHAR: /* FIXME: valid? */
+-- 
+2.53.0
+

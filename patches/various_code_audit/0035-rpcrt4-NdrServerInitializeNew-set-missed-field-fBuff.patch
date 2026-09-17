@@ -1,0 +1,25 @@
+From 129a987c4a2d659e0b6310bc3e6f457147c735f7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 10:49:33 +1000
+Subject: [PATCH] rpcrt4: NdrServerInitializeNew set missed field fBufferValid
+ to 0
+
+---
+ dlls/rpcrt4/ndr_clientserver.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/rpcrt4/ndr_clientserver.c b/dlls/rpcrt4/ndr_clientserver.c
+index e67046e4c08..81fb328f078 100644
+--- a/dlls/rpcrt4/ndr_clientserver.c
++++ b/dlls/rpcrt4/ndr_clientserver.c
+@@ -137,6 +137,7 @@ unsigned char* WINAPI NdrServerInitializeNew( PRPC_MESSAGE pRpcMsg, PMIDL_STUB_M
+   pStubMsg->fIsIn = 0;
+   pStubMsg->fIsOut = 0;
+   pStubMsg->fIsOicf = 0;
++  pStubMsg->fBufferValid = 0;
+   pStubMsg->fHasMemoryValidateCallback = 0;
+   pStubMsg->fInFree = 0;
+   pStubMsg->fNeedMCCP = 0;
+-- 
+2.53.0
+

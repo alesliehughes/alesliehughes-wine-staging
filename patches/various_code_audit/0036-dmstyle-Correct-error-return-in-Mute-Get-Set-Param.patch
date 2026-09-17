@@ -1,0 +1,34 @@
+From 94285f3bd007d8b58200d88b01af7901bf06e146 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 11:36:35 +1000
+Subject: [PATCH] dmstyle: Correct error return in Mute Get/Set Param
+
+---
+ dlls/dmstyle/mutetrack.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/dmstyle/mutetrack.c b/dlls/dmstyle/mutetrack.c
+index d6b28a16c72..1a67d1ebc04 100644
+--- a/dlls/dmstyle/mutetrack.c
++++ b/dlls/dmstyle/mutetrack.c
+@@ -124,7 +124,7 @@ static HRESULT WINAPI mute_track_GetParam(IDirectMusicTrack8 *iface, REFGUID typ
+     if (!type)
+         return E_POINTER;
+     if (!IsEqualGUID(type, &GUID_MuteParam))
+-        return DMUS_E_TYPE_UNSUPPORTED;
++        return DMUS_E_GET_UNSUPPORTED;
+ 
+     FIXME("GUID_MuteParam not handled yet\n");
+ 
+@@ -141,7 +141,7 @@ static HRESULT WINAPI mute_track_SetParam(IDirectMusicTrack8 *iface, REFGUID typ
+     if (!type)
+         return E_POINTER;
+     if (!IsEqualGUID(type, &GUID_MuteParam))
+-        return DMUS_E_TYPE_UNSUPPORTED;
++        return DMUS_E_SET_UNSUPPORTED;
+ 
+     FIXME("GUID_MuteParam not handled yet\n");
+ 
+-- 
+2.53.0
+

@@ -1,0 +1,25 @@
+From 3f7b07ccdfafb592a4075bdf9f8cfe1140412a13 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 11:53:54 +1000
+Subject: [PATCH] dmstyle: CommandTrack Load handle allocation error
+
+---
+ dlls/dmstyle/commandtrack.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/dmstyle/commandtrack.c b/dlls/dmstyle/commandtrack.c
+index 17bb1e442bc..aa7bd40f668 100644
+--- a/dlls/dmstyle/commandtrack.c
++++ b/dlls/dmstyle/commandtrack.c
+@@ -301,6 +301,8 @@ static HRESULT WINAPI IPersistStreamImpl_Load(IPersistStream *iface, IStream *pS
+ 			/* load each command separately in new entry */
+ 			for (count = 0; count < nrCommands; count++) {
+ 				LPDMUS_PRIVATE_COMMAND pNewCommand = calloc(1, sizeof(*pNewCommand));
++				if (!pNewCommand)
++					return E_OUTOFMEMORY;
+ 				IStream_Read (pStm, &pNewCommand->pCommand, dwSizeOfStruct, NULL);
+ 				list_add_tail (&This->Commands, &pNewCommand->entry);
+ 			}
+-- 
+2.53.0
+

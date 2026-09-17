@@ -1,0 +1,31 @@
+From e980336f3c567ef58a371bf874b7cf822e70d807 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 10:40:31 +1000
+Subject: [PATCH] rpcrt4: epm_register copy each uuid in the list
+
+Guess this will need tests.
+---
+ dlls/rpcrt4/rpc_epmap.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/rpcrt4/rpc_epmap.c b/dlls/rpcrt4/rpc_epmap.c
+index 1c1fa84eb75..6134c119abc 100644
+--- a/dlls/rpcrt4/rpc_epmap.c
++++ b/dlls/rpcrt4/rpc_epmap.c
+@@ -240,11 +240,11 @@ static RPC_STATUS epm_register( RPC_IF_HANDLE IfSpec, RPC_BINDING_VECTOR *Bindin
+           if (status != RPC_S_OK) break;
+ 
+           if (UuidVector)
+-              memcpy(&entries[i * UuidVector->Count].object, &UuidVector->Uuid[j], sizeof(GUID));
++              memcpy(&entries[i * UuidVector->Count + j].object, &UuidVector->Uuid[j], sizeof(GUID));
+           else
+               memset(&entries[i].object, 0, sizeof(entries[i].object));
+           if (Annotation)
+-              memcpy(entries[i].annotation, Annotation,
++              memcpy(entries[i*(UuidVector ? UuidVector->Count : 1) + j].annotation, Annotation,
+                      min(strlen((char *)Annotation) + 1, ept_max_annotation_size));
+       }
+   }
+-- 
+2.53.0
+

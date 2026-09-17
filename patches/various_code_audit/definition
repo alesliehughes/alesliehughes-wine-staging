@@ -30,3 +30,13 @@ PANIC_129 - 0025-sapi-ISpVoice-Speak-handle-memory-allocation-failure.patch
 CPY_41    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
 OVF_82    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
 PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch
+LOGIC_106 - 0029-printui-Make-array-match-enum-values.patch
+LOGIC_107 - 0030-prntvpt-devmode_to_ticket-correctly-care-length-widt.patch
+OTHER_22  - 0031-prntvpt-PTGetPrintCapabilities-initialize-ticker-bef.patch
+LOGIC_113 - 0032-rpcrt4-NdrRangeUnmarshall-correct-CHAR-types.patch
+LOGIC_114 - 0033-rpcrt4-Fix-an-off-by-one-error-when-checking-the-siz.patch
+CPY_16    - 0034-rpcrt4-epm_register-copy-each-uuid-in-the-list.patch
+CPY_61    - 0035-rpcrt4-NdrServerInitializeNew-set-missed-field-fBuff.patch
+CPY_97    - 0036-dmstyle-Correct-error-return-in-Mute-Get-Set-Param.patch
+PANIC_409 - 0037-dmstyle-CommandTrack-Load-handle-allocation-error.patch
+LOGIC_16  - 0038-inetmib1-mib2IpNetQuery-correctly-access-the-table-e.patch

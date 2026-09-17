@@ -1,0 +1,27 @@
+From a861b9da4ba5159587d098a12ad58458e9e8b42c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 18 Sep 2026 10:22:04 +1000
+Subject: [PATCH] rpcrt4: Fix an off-by-one error when checking the size of
+ the buffer in NdrInterfacePointerUnmarshall.
+
+This is match the same compare in NdrInterfacePointerMarshall.
+---
+ dlls/rpcrt4/ndr_ole.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/rpcrt4/ndr_ole.c b/dlls/rpcrt4/ndr_ole.c
+index aa7ca1ab765..c3ca9f280fa 100644
+--- a/dlls/rpcrt4/ndr_ole.c
++++ b/dlls/rpcrt4/ndr_ole.c
+@@ -319,7 +319,7 @@ unsigned char * WINAPI NdrInterfacePointerUnmarshall(PMIDL_STUB_MESSAGE pStubMsg
+     IUnknown_Release(*unk);
+ 
+   *unk = NULL;
+-  if (pStubMsg->Buffer + sizeof(DWORD) < (unsigned char *)pStubMsg->RpcMsg->Buffer + pStubMsg->BufferLength) {
++  if (pStubMsg->Buffer + sizeof(DWORD) <= (unsigned char *)pStubMsg->RpcMsg->Buffer + pStubMsg->BufferLength) {
+     ULONG size;
+ 
+     hr = RpcStream_Create(pStubMsg, FALSE, &size, &stream);
+-- 
+2.53.0
+
