@@ -16,7 +16,7 @@ API_7/8   - 0011-oleaut32-Correctly-handle-VT_SAFEARRAY-when-copy-cle.patch
 #CPY_13    - 0012-oleaut32-VarTokenizeFormatString-correct-parse-of-da.patch
 CPY_122   - 0013-oleaut32-VARIANT_FormatString-use-the-correct-sizeof.patch
 DEAD_42   - 0014-oleaut32-fmtMediumTime-assign-the-correct-size.patch
-LOGIC_105 - 0015-oleaut32-VarFormatPercent-correctly-compare-the-last.patch
+#LOGIC_105 - 0015-oleaut32-VarFormatPercent-correctly-compare-the-last.patch
 LOGIC_201 - 0016-oleaut32-Output-the-correct-varType-variable.patch
 #CPY_105   - 0017-localspl-cups_start_doc-correct-buffer-size-being-pa.patch
 CPY_15    - 0018-oledb32-DataConvert-check-status-for-DBSTATUS_S_ISNU.patch
