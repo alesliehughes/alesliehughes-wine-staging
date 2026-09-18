@@ -8,7 +8,7 @@ API_40    - 0002-d3drm-IDirect3DRMMesh-SetGroupTexture-correct-QueryI.patch
 #CPY_154   - 0004-include-Fix-LPFN_WSASTRINGTOADDRESS-typedef.patch
 #CPY_153   - 0005-include-Correct-WS_AF_OSI-define.patch
 #CPY_156   - 0006-include-Correct-FORWARD__WT_PROXIMITY-_INFOCHANGE-de.patch
-DUP_18    - 0007-wnaspi32-Remove-duplicate-define-INQUIRY_VENDOR.patch
+#DUP_18    - 0007-wnaspi32-Remove-duplicate-define-INQUIRY_VENDOR.patch
 LOGIC_15  - 0008-inetcomm-InternetTransport_Connect-correct-looping-o.patch
 PANIC_239 - 0009-inetcomm-IMimeInternational-FindCharset-handle-memor.patch
 PANIC_240 - 0010-inetcomm-Handle-Allocation-failure-in-Callback-funct.patch
