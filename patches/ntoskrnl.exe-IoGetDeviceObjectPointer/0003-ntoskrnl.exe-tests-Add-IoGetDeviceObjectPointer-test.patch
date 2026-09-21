@@ -1,4 +1,4 @@
-From 731af30ab7b83f2db172e9b8c02cd3cdd7577e37 Mon Sep 17 00:00:00 2001
+From 9e3814706620bf5c2067fd05c32ec33d2625427a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 3 Aug 2026 08:54:29 +1000
 Subject: [PATCH] ntoskrnl.exe/tests: Add IoGetDeviceObjectPointer test - WIP
@@ -7,11 +7,11 @@ Needs to be moved to the driver.
 ---
  dlls/ntoskrnl.exe/tests/Makefile.in |  2 +-
  dlls/ntoskrnl.exe/tests/driver.c    | 23 +++++++++++++++++++++++
- dlls/ntoskrnl.exe/tests/ntoskrnl.c  |  5 +++--
- 3 files changed, 27 insertions(+), 3 deletions(-)
+ dlls/ntoskrnl.exe/tests/ntoskrnl.c  |  1 +
+ 3 files changed, 25 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/ntoskrnl.exe/tests/Makefile.in b/dlls/ntoskrnl.exe/tests/Makefile.in
-index f8fb0fa2ea9..5d3760ff4a5 100644
+index 1598bd2bf4e..4351fb9f41a 100644
 --- a/dlls/ntoskrnl.exe/tests/Makefile.in
 +++ b/dlls/ntoskrnl.exe/tests/Makefile.in
 @@ -1,5 +1,5 @@
@@ -22,10 +22,10 @@ index f8fb0fa2ea9..5d3760ff4a5 100644
  driver_IMPORTS = winecrt0 ntoskrnl hal fltmgr
  driver_EXTRADLLFLAGS = -nodefaultlibs -nostartfiles -Wl,--subsystem,native
 diff --git a/dlls/ntoskrnl.exe/tests/driver.c b/dlls/ntoskrnl.exe/tests/driver.c
-index a17572451e0..538ec1d2d2f 100644
+index b3d9523a1a5..a11c7f2af32 100644
 --- a/dlls/ntoskrnl.exe/tests/driver.c
 +++ b/dlls/ntoskrnl.exe/tests/driver.c
-@@ -3190,6 +3190,27 @@ static VOID WINAPI driver_Unload(DRIVER_OBJECT *driver)
+@@ -3465,6 +3465,27 @@ static VOID WINAPI driver_Unload(DRIVER_OBJECT *driver)
      winetest_cleanup();
  }
  
@@ -53,7 +53,7 @@ index a17572451e0..538ec1d2d2f 100644
  NTSTATUS WINAPI DriverEntry(DRIVER_OBJECT *driver, PUNICODE_STRING registry)
  {
      UNICODE_STRING nameW, linkW;
-@@ -3246,5 +3267,7 @@ NTSTATUS WINAPI DriverEntry(DRIVER_OBJECT *driver, PUNICODE_STRING registry)
+@@ -3521,5 +3542,7 @@ NTSTATUS WINAPI DriverEntry(DRIVER_OBJECT *driver, PUNICODE_STRING registry)
      work_item = IoAllocateWorkItem(lower_device);
      ok(work_item != NULL, "work_item = NULL\n");
  
@@ -62,7 +62,7 @@ index a17572451e0..538ec1d2d2f 100644
      return STATUS_SUCCESS;
  }
 diff --git a/dlls/ntoskrnl.exe/tests/ntoskrnl.c b/dlls/ntoskrnl.exe/tests/ntoskrnl.c
-index e5b62fa5e6b..a1caf320c7f 100644
+index c9b99154c8b..bfba727ca98 100644
 --- a/dlls/ntoskrnl.exe/tests/ntoskrnl.c
 +++ b/dlls/ntoskrnl.exe/tests/ntoskrnl.c
 @@ -50,6 +50,7 @@
@@ -73,22 +73,6 @@ index e5b62fa5e6b..a1caf320c7f 100644
  
  static const GUID GUID_NULL;
  
-@@ -2643,13 +2644,13 @@ START_TEST(ntoskrnl)
- 
-     cat_okfile();
- 
--    test_driver3(&ctx);
-+/*    test_driver3(&ctx);
-     subtest("driver_netio");
-     test_driver_netio(&ctx);
- 
-     subtest("driver_pnp");
-     test_pnp_driver(&ctx);
--
-+*/
- out:
-     testsign_cleanup(&ctx);
-     FreeLibrary(cfgmgr32);
 -- 
 2.53.0
 
