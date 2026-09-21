@@ -29,7 +29,7 @@ PANIC_303 - 0024-sapi-Return-error-on-memory-allocation-failure.patch
 PANIC_129 - 0025-sapi-ISpVoice-Speak-handle-memory-allocation-failure.patch
 CPY_41    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
 OVF_82    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
-PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch
+#PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch <-- Wont Fix.
 LOGIC_106 - 0029-printui-Make-array-match-enum-values.patch
 LOGIC_107 - 0030-prntvpt-devmode_to_ticket-correctly-care-length-widt.patch
 OTHER_22  - 0031-prntvpt-PTGetPrintCapabilities-initialize-ticker-bef.patch

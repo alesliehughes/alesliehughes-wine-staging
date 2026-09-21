@@ -1,23 +1,20 @@
-From fe19aca3d2b526b7f81e974da931a9486d13c2db Mon Sep 17 00:00:00 2001
+From 50a5924328e558f7b8f3599a07ed851f7a652c40 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 9 Sep 2026 12:15:42 +1000
 Subject: [PATCH] msado15: _Stream_put_Position add validation checks for
  position.
 
-Appears that the stream test use a fixed buffer internally and large
-position doesn't enlarge the buffer.
-
-Stopped the resize until a application can be found that requires the functionality.
+WARN and return adErrObjectNotSet when the buffer size needs to change.
 ---
- dlls/msado15/stream.c        |  8 ++++++--
+ dlls/msado15/stream.c        |  7 +++++--
  dlls/msado15/tests/msado15.c | 16 ++++++++++++++++
- 2 files changed, 22 insertions(+), 2 deletions(-)
+ 2 files changed, 21 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/msado15/stream.c b/dlls/msado15/stream.c
-index 50833aecf34..aa6ad80c0d9 100644
+index 9bb9ca67e1a..cedb3f5ac47 100644
 --- a/dlls/msado15/stream.c
 +++ b/dlls/msado15/stream.c
-@@ -194,14 +194,18 @@ static HRESULT resize_buffer( struct stream *stream, LONG size )
+@@ -194,14 +194,17 @@ static HRESULT resize_buffer( struct stream *stream, LONG size )
  static HRESULT WINAPI stream_put_Position( _Stream *iface, ADO_LONGPTR pos )
  {
      struct stream *stream = impl_from_Stream( iface );
@@ -29,9 +26,8 @@ index 50833aecf34..aa6ad80c0d9 100644
      if (pos < 0) return MAKE_ADO_HRESULT( adErrInvalidArgument );
 +    if (pos > stream->size)
 +    {
-+        FIXME("Resizing stream buffer currently not supported\n");
-+        if (stream->type == adTypeText) return MAKE_ADO_HRESULT( adErrIllegalOperation );
-+        else if (stream->type == adTypeBinary) return MAKE_ADO_HRESULT( adErrInvalidArgument );
++        WARN("Resizing stream buffer currently not supported\n");
++        return MAKE_ADO_HRESULT( adErrObjectNotSet );
 +    }
  
 -    if ((hr = resize_buffer( stream, stream->pos )) != S_OK) return hr;

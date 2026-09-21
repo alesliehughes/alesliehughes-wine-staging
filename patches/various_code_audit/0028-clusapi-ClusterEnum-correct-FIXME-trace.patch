@@ -1,4 +1,4 @@
-From 433bf8856dfcc3ae03e9fe2df3f8be3639f4d7ad Mon Sep 17 00:00:00 2001
+From 8043d286bcdd5dcaab44c633c23aca1a3b0ffc41 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 17 Sep 2026 12:21:36 +1000
 Subject: [PATCH] clusapi: ClusterEnum correct FIXME trace
@@ -8,7 +8,7 @@ Subject: [PATCH] clusapi: ClusterEnum correct FIXME trace
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/clusapi/clusapi.c b/dlls/clusapi/clusapi.c
-index 28c5f63d4ca..2c28957d208 100644
+index 28c5f63d4ca..185c204ca94 100644
 --- a/dlls/clusapi/clusapi.c
 +++ b/dlls/clusapi/clusapi.c
 @@ -111,7 +111,7 @@ DWORD WINAPI ClusterCloseEnum(HCLUSENUM hEnum)
@@ -16,7 +16,7 @@ index 28c5f63d4ca..2c28957d208 100644
  DWORD WINAPI ClusterEnum(HCLUSENUM hEnum, DWORD dwIndex, LPDWORD lpdwType, LPWSTR lpszName, LPDWORD lpcchName)
  {
 -    FIXME("(%p, %lu, %p, %p, %lu) stub!\n", hEnum, dwIndex, lpdwType, lpszName, *lpcchName);
-+    FIXME("(%p, %lu, %p, %p, %lu) stub!\n", hEnum, dwIndex, lpdwType, lpszName, lpcchName);
++    FIXME("(%p, %lu, %p, %p, %p) stub!\n", hEnum, dwIndex, lpdwType, lpszName, lpcchName);
  
      return ERROR_NO_MORE_ITEMS;
  }
