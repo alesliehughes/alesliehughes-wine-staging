@@ -1,4 +1,4 @@
-From 47d34493022ed362e110d234c0e474eb7a129b4c Mon Sep 17 00:00:00 2001
+From 3eab2f30b39e199ddfd24947cc0a0548ff6ac31e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 26 Jun 2026 21:29:36 +1000
 Subject: [PATCH] ntdll: NtQuerySystemInformationEx: return valid values for
@@ -9,10 +9,10 @@ Subject: [PATCH] ntdll: NtQuerySystemInformationEx: return valid values for
  1 file changed, 31 insertions(+)
 
 diff --git a/dlls/ntdll/unix/system.c b/dlls/ntdll/unix/system.c
-index cf2883f05ae..a248edf6817 100644
+index 6cbafeb6e86..4340f3b998f 100644
 --- a/dlls/ntdll/unix/system.c
 +++ b/dlls/ntdll/unix/system.c
-@@ -4067,6 +4067,37 @@ NTSTATUS WINAPI NtQuerySystemInformationEx( SYSTEM_INFORMATION_CLASS class,
+@@ -4206,6 +4206,37 @@ NTSTATUS WINAPI NtQuerySystemInformationEx( SYSTEM_INFORMATION_CLASS class,
          break;
      }
  
@@ -49,7 +49,7 @@ index cf2883f05ae..a248edf6817 100644
 +
      case SystemCpuSetInformation:
      {
-         unsigned int cpu_count = peb->NumberOfProcessors;
+         PROCESS_BASIC_INFORMATION pbi;
 -- 
 2.53.0
 
