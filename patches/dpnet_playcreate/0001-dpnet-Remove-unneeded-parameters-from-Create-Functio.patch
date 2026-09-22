@@ -1,7 +1,7 @@
-From 74f21afcf0881226fe9b3a199ed95b253b13d065 Mon Sep 17 00:00:00 2001
+From c04fd4157a2663b103c9fc1e08ef5c927987b291 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 8 Sep 2026 10:33:24 +1000
-Subject: [PATCH] dpnet: Remove unneeded parameters from Create Functions
+Subject: [PATCH 1/2] dpnet: Remove unneeded parameters from Create Functions
 
 ---
  dlls/dpnet/address.c       |  6 +++---

@@ -1,26 +1,27 @@
-From 7e9a5cac89545d8e589aec27a5b3990950941270 Mon Sep 17 00:00:00 2001
+From 1f29673f6404530460b6dac6ada417be096f274e Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 8 Sep 2026 10:36:34 +1000
-Subject: [PATCH] dpnet: Implement DirectPlay8Create
+Subject: [PATCH 2/2] dpnet: Implement DirectPlay8Create
 
-API_2
-Wine-Bug: https://bugs.winehq.org/show_bug.cgi?id=60241
 ---
- dlls/dpnet/dpnet_main.c   | 20 ++++++++++++++-
+ dlls/dpnet/dpnet_main.c   | 21 ++++++++++++++-
  dlls/dpnet/tests/server.c | 54 ++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 72 insertions(+), 2 deletions(-)
+ 2 files changed, 73 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/dpnet/dpnet_main.c b/dlls/dpnet/dpnet_main.c
-index 008d7b35601..90986eb7d00 100644
+index 008d7b35601..3a049ab1874 100644
 --- a/dlls/dpnet/dpnet_main.c
 +++ b/dlls/dpnet/dpnet_main.c
-@@ -83,8 +83,26 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpvReserved)
+@@ -83,8 +83,27 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpvReserved)
   */
  HRESULT WINAPI DirectPlay8Create(REFGUID lpGUID, LPVOID *ppvInt, LPUNKNOWN punkOuter)
  {
 +    HRESULT hr = E_INVALIDARG;
      TRACE("(%s, %p, %p): stub\n", debugstr_guid(lpGUID), ppvInt, punkOuter);
 -    return S_OK;
++
++    if (!ppvInt)
++        return E_POINTER;
 +
 +    if (IsEqualGUID(lpGUID, &IID_IDirectPlay8Client))
 +        hr = DPNET_CreateDirectPlay8Client(lpGUID, ppvInt);
@@ -36,8 +37,6 @@ index 008d7b35601..90986eb7d00 100644
 +        hr = DPNET_CreateDirectPlay8LobbyClient(lpGUID, ppvInt);
 +    else if (IsEqualGUID(lpGUID, &IID_IDirectPlay8ThreadPool))
 +        hr = DPNET_CreateDirectPlay8ThreadPool(lpGUID, ppvInt);
-+    if (ppvInt)
-+        *ppvInt = NULL;
 +    return hr;
  }
  
