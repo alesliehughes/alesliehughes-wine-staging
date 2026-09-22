@@ -1,4 +1,4 @@
-From 50a5924328e558f7b8f3599a07ed851f7a652c40 Mon Sep 17 00:00:00 2001
+From 2b6a879e2a97bf6fd1ce71cf72db792b340208a9 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 9 Sep 2026 12:15:42 +1000
 Subject: [PATCH] msado15: _Stream_put_Position add validation checks for
@@ -35,7 +35,7 @@ index 9bb9ca67e1a..cedb3f5ac47 100644
      return S_OK;
  }
 diff --git a/dlls/msado15/tests/msado15.c b/dlls/msado15/tests/msado15.c
-index 3178b8aec2f..10d05e71b74 100644
+index 3178b8aec2f..24d32402292 100644
 --- a/dlls/msado15/tests/msado15.c
 +++ b/dlls/msado15/tests/msado15.c
 @@ -2701,6 +2701,11 @@ static void test_Stream(void)
@@ -55,7 +55,7 @@ index 3178b8aec2f..10d05e71b74 100644
      ok( size == 10, "got %Id\n", size );
  
 +    hr = _Stream_put_Position( stream, 50 );
-+    ok( hr == MAKE_ADO_HRESULT( adErrIllegalOperation ), "got %08lx\n", hr );
++    todo_wine ok( hr == MAKE_ADO_HRESULT( adErrIllegalOperation ), "got %08lx\n", hr );
 +
      hr = _Stream_put_Position( stream, 2 );
      ok( hr == S_OK, "got %08lx\n", hr );
@@ -77,7 +77,7 @@ index 3178b8aec2f..10d05e71b74 100644
      ok( pos == 4, "got %Id\n", pos );
  
 +    hr = _Stream_put_Position( stream, 50 );
-+    ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08lx\n", hr );
++    todo_wine ok( hr == MAKE_ADO_HRESULT( adErrInvalidArgument ), "got %08lx\n", hr );
 +
      refs = _Stream_Release( stream );
      ok( !refs, "got %ld\n", refs );

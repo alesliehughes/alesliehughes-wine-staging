@@ -1,0 +1,26 @@
+From 13f8655aff4fc411f6dca1db1508e1ef9c6bf291 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 22 Sep 2026 12:06:58 +1000
+Subject: [PATCH 3/3] _Recordset::get_AbsolutePosition fake return value
+
+---
+ dlls/msado15/recordset.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 99393cda1b8..09aa6e53c56 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -1896,7 +1896,8 @@ static HRESULT WINAPI recordset_get_Properties( _Recordset *iface, Properties **
+ static HRESULT WINAPI recordset_get_AbsolutePosition( _Recordset *iface, PositionEnum_Param *pos )
+ {
+     FIXME( "%p, %p\n", iface, pos );
+-    return E_NOTIMPL;
++    *pos = 0;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_put_AbsolutePosition( _Recordset *iface, PositionEnum_Param pos )
+-- 
+2.53.0
+

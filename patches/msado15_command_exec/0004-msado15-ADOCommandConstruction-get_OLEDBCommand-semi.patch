@@ -1,0 +1,30 @@
+From 2fb4bbbb1480a846eb27e5618e735a15defb503d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 22 Sep 2026 10:19:10 +1000
+Subject: [PATCH] msado15: ADOCommandConstruction::get_OLEDBCommand semi-stub
+
+---
+ dlls/msado15/command.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/msado15/command.c b/dlls/msado15/command.c
+index e0af3f28aab..d3ed4722e21 100644
+--- a/dlls/msado15/command.c
++++ b/dlls/msado15/command.c
+@@ -931,10 +931,11 @@ static ULONG WINAPI construction_Release(ADOCommandConstruction *iface)
+     return _Command_Release(&command->Command_iface);
+ }
+ 
+-static HRESULT WINAPI construction_get_OLEDBCommand(ADOCommandConstruction *iface, IUnknown **command)
++static HRESULT WINAPI construction_get_OLEDBCommand(ADOCommandConstruction *iface, IUnknown **out)
+ {
++    struct command *command = impl_from_ADOCommandConstruction( iface );
+     FIXME("%p, %p\n", iface, command);
+-    return E_NOTIMPL;
++    return _Command_QueryInterface(&command->Command_iface, &IID_IUnknown, (void**)&out);
+ }
+ 
+ static HRESULT WINAPI construction_put_OLEDBCommand(ADOCommandConstruction *iface, IUnknown *command)
+-- 
+2.53.0
+

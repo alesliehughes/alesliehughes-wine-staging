@@ -1,0 +1,26 @@
+From 3a293687fafec7b4503dcc202e1e5c111d2d6de5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 22 Sep 2026 12:02:05 +1000
+Subject: [PATCH 2/3] msado15: _Recordset::get_Status fake success
+
+---
+ dlls/msado15/recordset.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index a7d018d4211..99393cda1b8 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -3071,7 +3071,8 @@ static HRESULT WINAPI recordset_put_Sort( _Recordset *iface, BSTR criteria )
+ static HRESULT WINAPI recordset_get_Status( _Recordset *iface, LONG *status )
+ {
+     FIXME( "%p, %p\n", iface, status );
+-    return E_NOTIMPL;
++    *status = adRecOK;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI recordset_get_State( _Recordset *iface, LONG *state )
+-- 
+2.53.0
+
