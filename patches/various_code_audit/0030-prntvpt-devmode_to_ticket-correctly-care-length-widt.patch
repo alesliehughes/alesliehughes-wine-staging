@@ -1,7 +1,7 @@
 From 3cccb40d07d2cf0f85636e932a30ab837e9de570 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Fri, 18 Sep 2026 09:57:30 +1000
-Subject: [PATCH] prntvpt: devmode_to_ticket correctly care length/width bits.
+Subject: [PATCH] prntvpt: devmode_to_ticket correctly compare length/width bits.
 
 ---
  dlls/prntvpt/ticket.c | 4 ++--

@@ -1,0 +1,105 @@
+From ffeb0c6c7a781fe83c2de35ce94f9b9550ebd677 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Sep 2026 14:16:36 +1000
+Subject: [PATCH] urlmon: Correct size comapre in mime filters
+
+---
+ dlls/urlmon/mimefilter.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/dlls/urlmon/mimefilter.c b/dlls/urlmon/mimefilter.c
+index 9577d046275..6345434426e 100644
+--- a/dlls/urlmon/mimefilter.c
++++ b/dlls/urlmon/mimefilter.c
+@@ -263,7 +263,7 @@ HRESULT MimeFilter_Construct(IUnknown *pUnkOuter, LPVOID *ppobj)
+ 
+ static BOOL text_richtext_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 5 && !memcmp(b, "{\\rtf", 5);
++    return size >= 5 && !memcmp(b, "{\\rtf", 5);
+ }
+ 
+ static BOOL text_html_filter(const BYTE *b, DWORD size)
+@@ -306,13 +306,13 @@ static BOOL text_xml_filter(const BYTE *b, DWORD size)
+ 
+ static BOOL audio_basic_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 4
++    return size >= 4
+         && b[0] == '.' && b[1] == 's' && b[2] == 'n' && b[3] == 'd';
+ }
+ 
+ static BOOL audio_wav_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 12
++    return size >= 12
+         && b[0] == 'R' && b[1] == 'I' && b[2] == 'F' && b[3] == 'F'
+         && b[8] == 'W' && b[9] == 'A' && b[10] == 'V' && b[11] == 'E';
+ }
+@@ -330,7 +330,7 @@ static BOOL image_gif_filter(const BYTE *b, DWORD size)
+ 
+ static BOOL image_pjpeg_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 2 && b[0] == 0xff && b[1] == 0xd8;
++    return size >= 2 && b[0] == 0xff && b[1] == 0xd8;
+ }
+ 
+ static BOOL image_tiff_filter(const BYTE *b, DWORD size)
+@@ -356,46 +356,46 @@ static BOOL image_bmp_filter(const BYTE *b, DWORD size)
+ 
+ static BOOL video_avi_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 12
++    return size >= 12
+         && b[0] == 'R' && b[1] == 'I' && b[2] == 'F' && b[3] == 'F'
+         && b[8] == 'A' && b[9] == 'V' && b[10] == 'I' && b[11] == 0x20;
+ }
+ 
+ static BOOL video_mpeg_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 4
++    return size >= 4
+         && !b[0] && !b[1] && b[2] == 0x01
+         && (b[3] == 0xb3 || b[3] == 0xba);
+ }
+ 
+ static BOOL application_postscript_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 2 && b[0] == '%' && b[1] == '!';
++    return size >= 2 && b[0] == '%' && b[1] == '!';
+ }
+ 
+ static BOOL application_pdf_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 4 && b[0] == 0x25 && b[1] == 0x50 && b[2] == 0x44 && b[3] == 0x46;
++    return size >= 4 && b[0] == 0x25 && b[1] == 0x50 && b[2] == 0x44 && b[3] == 0x46;
+ }
+ 
+ static BOOL application_xzip_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 2 && b[0] == 0x50 && b[1] == 0x4b;
++    return size >= 2 && b[0] == 0x50 && b[1] == 0x4b;
+ }
+ 
+ static BOOL application_xgzip_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 2 && b[0] == 0x1f && b[1] == 0x8b;
++    return size >= 2 && b[0] == 0x1f && b[1] == 0x8b;
+ }
+ 
+ static BOOL application_java_filter(const BYTE *b, DWORD size)
+ {
+-    return size > 4 && b[0] == 0xca && b[1] == 0xfe && b[2] == 0xba && b[3] == 0xbe;
++    return size >= 4 && b[0] == 0xca && b[1] == 0xfe && b[2] == 0xba && b[3] == 0xbe;
+ }
+ 
+ static BOOL application_xmsdownload(const BYTE *b, DWORD size)
+ {
+-    return size > 2 && b[0] == 'M' && b[1] == 'Z';
++    return size >= 2 && b[0] == 'M' && b[1] == 'Z';
+ }
+ 
+ static inline BOOL is_text_plain_char(BYTE b)
+-- 
+2.53.0
+

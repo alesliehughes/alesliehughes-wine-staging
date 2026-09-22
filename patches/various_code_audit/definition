@@ -11,22 +11,22 @@ API_40    - 0002-d3drm-IDirect3DRMMesh-SetGroupTexture-correct-QueryI.patch
 #DUP_18    - 0007-wnaspi32-Remove-duplicate-define-INQUIRY_VENDOR.patch
 LOGIC_15  - 0008-inetcomm-InternetTransport_Connect-correct-looping-o.patch
 PANIC_239 - 0009-inetcomm-IMimeInternational-FindCharset-handle-memor.patch
-PANIC_240 - 0010-inetcomm-Handle-Allocation-failure-in-Callback-funct.patch
+#PANIC_240 - 0010-inetcomm-Handle-Allocation-failure-in-Callback-funct.patch <-- rejected for now
 API_7/8   - 0011-oleaut32-Correctly-handle-VT_SAFEARRAY-when-copy-cle.patch
 #CPY_13    - 0012-oleaut32-VarTokenizeFormatString-correct-parse-of-da.patch
-CPY_122   - 0013-oleaut32-VARIANT_FormatString-use-the-correct-sizeof.patch
-DEAD_42   - 0014-oleaut32-fmtMediumTime-assign-the-correct-size.patch
+#CPY_122   - 0013-oleaut32-VARIANT_FormatString-use-the-correct-sizeof.patch
+#DEAD_42   - 0014-oleaut32-fmtMediumTime-assign-the-correct-size.patch
 #LOGIC_105 - 0015-oleaut32-VarFormatPercent-correctly-compare-the-last.patch
-LOGIC_201 - 0016-oleaut32-Output-the-correct-varType-variable.patch
+#LOGIC_201 - 0016-oleaut32-Output-the-correct-varType-variable.patch
 #CPY_105   - 0017-localspl-cups_start_doc-correct-buffer-size-being-pa.patch
 CPY_15    - 0018-oledb32-DataConvert-check-status-for-DBSTATUS_S_ISNU.patch
-LOGIC_9   - 0019-dmime-Fix-checking-for-error.patch
+#LOGIC_9   - 0019-dmime-Fix-checking-for-error.patch
 LOGIC_10  - 0020-dmime-wave_track_create_from_chunk-return-E_OUTOFMEM.patch
-LOGIC_165 - 0021-dmime-Add-missing-break.patch
-MEM_13    - 0022-dmime-sequence_track-Free-all-objects-on-release.patch
+#LOGIC_165 - 0021-dmime-Add-missing-break.patch
+#MEM_13    - 0022-dmime-sequence_track-Free-all-objects-on-release.patch
 MEM_93    - 0023-dmime-Free-memory-on-error-path.patch
-PANIC_303 - 0024-sapi-Return-error-on-memory-allocation-failure.patch
-PANIC_129 - 0025-sapi-ISpVoice-Speak-handle-memory-allocation-failure.patch
+#PANIC_303 - 0024-sapi-Return-error-on-memory-allocation-failure.patch
+#PANIC_129 - 0025-sapi-ISpVoice-Speak-handle-memory-allocation-failure.patch
 CPY_41    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
 OVF_82    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
 #PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch <-- Wont Fix.
@@ -40,3 +40,6 @@ CPY_61    - 0035-rpcrt4-NdrServerInitializeNew-set-missed-field-fBuff.patch
 CPY_97    - 0036-dmstyle-Correct-error-return-in-Mute-Get-Set-Param.patch
 PANIC_409 - 0037-dmstyle-CommandTrack-Load-handle-allocation-error.patch
 LOGIC_16  - 0038-inetmib1-mib2IpNetQuery-correctly-access-the-table-e.patch
+CPY_23    - 0039-server-Correct-mode-mask-compare.patch
+API_46    - 0040-urlmon-get_mime_filter-close-Registry-handles-with-R.patch
+LOGIC_211 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch

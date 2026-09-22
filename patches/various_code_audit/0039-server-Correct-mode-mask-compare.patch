@@ -1,0 +1,25 @@
+From 01b1c4d9f92a3247810b09125004b84677ed9cd5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Sep 2026 09:57:19 +1000
+Subject: [PATCH] server: Correct mode mask compare
+
+---
+ server/file.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/server/file.c b/server/file.c
+index fd820f0ac2b..3b02999660f 100644
+--- a/server/file.c
++++ b/server/file.c
+@@ -454,7 +454,7 @@ struct security_descriptor *mode_to_sd( mode_t mode, const struct sid *user, con
+         ace = set_ace( ace_next( ace ), user, ACCESS_DENIED_ACE_TYPE, flags, 0 );
+         if (!(mode & S_IRUSR) && (mode & (S_IRGRP|S_IROTH)))
+             ace->mask |= FILE_GENERIC_READ | FILE_GENERIC_EXECUTE;
+-        if (!(mode & S_IWUSR) && (mode & (S_IWGRP|S_IROTH)))
++        if (!(mode & S_IWUSR) && (mode & (S_IWGRP|S_IWOTH)))
+             ace->mask |= FILE_GENERIC_WRITE | DELETE | FILE_DELETE_CHILD;
+         ace->mask &= ~STANDARD_RIGHTS_ALL; /* never deny standard rights */
+     }
+-- 
+2.53.0
+

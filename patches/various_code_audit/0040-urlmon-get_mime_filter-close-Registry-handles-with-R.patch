@@ -1,0 +1,33 @@
+From d6c884c9d58a3618dc9e68d5d360f0951df91d56 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 23 Sep 2026 10:32:42 +1000
+Subject: [PATCH] urlmon: get_mime_filter close Registry handles with
+ RegCloseKey
+
+---
+ dlls/urlmon/session.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/urlmon/session.c b/dlls/urlmon/session.c
+index 660fab54570..b1518ceb8ba 100644
+--- a/dlls/urlmon/session.c
++++ b/dlls/urlmon/session.c
+@@ -278,13 +278,13 @@ IInternetProtocol *get_mime_filter(LPCWSTR mime)
+     }
+ 
+     res = RegOpenKeyW(hlist, mime, &hfilter);
+-    CloseHandle(hlist);
++    RegCloseKey(hlist);
+     if(res != ERROR_SUCCESS)
+         return NULL;
+ 
+     size = sizeof(clsidw);
+     res = RegQueryValueExW(hfilter, L"CLSID", NULL, &type, (BYTE*)clsidw, &size);
+-    CloseHandle(hfilter);
++    RegCloseKey(hfilter);
+     if(res!=ERROR_SUCCESS || type!=REG_SZ) {
+         WARN("Could not get filter CLSID for %s\n", debugstr_w(mime));
+         return NULL;
+-- 
+2.53.0
+
