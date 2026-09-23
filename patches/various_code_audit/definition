@@ -2,7 +2,7 @@ Fixes: [60241]: Fix various detect with the Claude Core review
 
 https://github.com/qarmin/ClaudeReports/issues/1
 
-CPY_7     - 0001-msado15-_Stream_put_Position-add-validation-checks-f.patch
+#CPY_7     - 0001-msado15-_Stream_put_Position-add-validation-checks-f.patch
 API_40    - 0002-d3drm-IDirect3DRMMesh-SetGroupTexture-correct-QueryI.patch
 #CPY_151   - 0003-include-ScrollConsoleScreenBufferW-remove-parameter-.patch
 #CPY_154   - 0004-include-Fix-LPFN_WSASTRINGTOADDRESS-typedef.patch
