@@ -1,0 +1,64 @@
+From 134faa3c1ff6750e88568b7f125f112115ac08e8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 24 Sep 2026 11:09:56 +1000
+Subject: [PATCH] fltmgr.sys: Semi stub FltAllocateContext/FltReleaseContext
+
+---
+ dlls/fltmgr.sys/main.c | 28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/fltmgr.sys/main.c b/dlls/fltmgr.sys/main.c
+index 1f01515707f..d0cf66c6e92 100644
+--- a/dlls/fltmgr.sys/main.c
++++ b/dlls/fltmgr.sys/main.c
+@@ -29,6 +29,12 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(fltmgr);
+ 
++struct _FLT_CONTEXT
++{
++    PFLT_FILTER filter;
++    FLT_CONTEXT_TYPE context;
++};
++
+ NTSTATUS WINAPI DriverEntry( DRIVER_OBJECT *driver, UNICODE_STRING *path )
+ {
+     TRACE( "(%p, %s)\n", driver, debugstr_w(path->Buffer) );
+@@ -150,15 +156,31 @@ void WINAPI FltFreeSecurityDescriptor(PSECURITY_DESCRIPTOR descriptor)
+     ExFreePool(descriptor);
+ }
+ 
++#define FLT_ALLOCATE_TAG 0x67615446 /* 'ftag' */
++
+ NTSTATUS WINAPI FltAllocateContext(PFLT_FILTER filter, FLT_CONTEXT_TYPE context, SIZE_T size, POOL_TYPE type, PFLT_CONTEXT *out)
+ {
+-    FIXME("%p, %d, %Iu, %u, %p\n", filter, context, size, type, *out);
+-    return STATUS_NOT_SUPPORTED;
++    struct _FLT_CONTEXT *fltcontext;
++
++    TRACE("%p, %d, %Iu, %u, %p\n", filter, context, size, type, out);
++
++    fltcontext = ExAllocatePoolWithTag(type, size, FLT_ALLOCATE_TAG);
++    if (!fltcontext)
++        return STATUS_INSUFFICIENT_RESOURCES;
++
++    fltcontext->filter = filter;
++    fltcontext->context = context;
++
++    *out = fltcontext;
++
++    return STATUS_SUCCESS;
+ }
+ 
+ void WINAPI FltReleaseContext(PFLT_CONTEXT context)
+ {
+-    FIXME("%p\n", context);
++    TRACE("%p\n", context);
++
++    ExFreePoolWithTag(context, FLT_ALLOCATE_TAG);
+ }
+ 
+ NTSTATUS WINAPI FltGetStreamContext(PFLT_INSTANCE instance, PFILE_OBJECT  fileobject, PFLT_CONTEXT  *context)
+-- 
+2.53.0
+
