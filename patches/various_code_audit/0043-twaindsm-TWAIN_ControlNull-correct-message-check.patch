@@ -1,0 +1,25 @@
+From 3a2ed526ac76edffaf20cd4f27a777d7864db3d9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 24 Sep 2026 12:08:49 +1000
+Subject: [PATCH] twaindsm: TWAIN_ControlNull correct message check
+
+---
+ dlls/twaindsm/dsm_ctrl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/twaindsm/dsm_ctrl.c b/dlls/twaindsm/dsm_ctrl.c
+index d033c94443a..c1790a689ef 100644
+--- a/dlls/twaindsm/dsm_ctrl.c
++++ b/dlls/twaindsm/dsm_ctrl.c
+@@ -240,7 +240,7 @@ TW_UINT16 TWAIN_ControlNull (pTW_IDENTITY pOrigin, pTW_IDENTITY pDest, activeDS
+     if (MSG != MSG_CLOSEDSREQ &&
+         MSG != MSG_DEVICEEVENT &&
+         MSG != MSG_XFERREADY &&
+-        MSG != MSG_DEVICEEVENT)
++        MSG != MSG_CHECKSTATUS)
+     {
+         DSM_twCC = TWCC_BADPROTOCOL;
+         return TWRC_FAILURE;
+-- 
+2.53.0
+

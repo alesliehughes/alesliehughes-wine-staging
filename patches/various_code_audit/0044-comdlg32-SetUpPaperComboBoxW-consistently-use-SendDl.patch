@@ -1,0 +1,26 @@
+From fc5ac631c9f2d34f2066e23ad0ac379e2022dc85 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 24 Sep 2026 12:24:14 +1000
+Subject: [PATCH] comdlg32: SetUpPaperComboBoxW consistently use
+ SendDlgItemMessageW for messages
+
+---
+ dlls/comdlg32/printdlg.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/comdlg32/printdlg.c b/dlls/comdlg32/printdlg.c
+index 6fed7f124b0..586512a9b9d 100644
+--- a/dlls/comdlg32/printdlg.c
++++ b/dlls/comdlg32/printdlg.c
+@@ -956,7 +956,7 @@ static BOOL PRINTDLG_SetUpPaperComboBoxW(HWND hDlg,
+ 	    old_Sel = i;
+ 	    break;
+ 	}
+-        if(SendDlgItemMessageA(hDlg, nIDComboBox, CB_GETITEMDATA, i, 0) == newWord)
++        if(SendDlgItemMessageW(hDlg, nIDComboBox, CB_GETITEMDATA, i, 0) == newWord)
+             Sel = i;
+     }
+ 
+-- 
+2.53.0
+

@@ -44,3 +44,6 @@ CPY_23    - 0039-server-Correct-mode-mask-compare.patch
 API_46    - 0040-urlmon-get_mime_filter-close-Registry-handles-with-R.patch
 LOGIC_211 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch
 CPY_33    - 0042-fusion-IAssemblyName-GetName-set-return-buffer-when-.patch
+CPY_67    - 0043-twaindsm-TWAIN_ControlNull-correct-message-check.patch
+CPY_85    - 0044-comdlg32-SetUpPaperComboBoxW-consistently-use-SendDl.patch
+CPY_86    - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch

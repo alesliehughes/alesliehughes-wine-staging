@@ -1,0 +1,28 @@
+From 1e6ebfb6ef6b583ad7b7c707a04185151c1b7ee2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 24 Sep 2026 12:42:41 +1000
+Subject: [PATCH] coremessaging: IAsyncAction::GetRuntimeClassName correct
+ return value
+
+---
+ dlls/coremessaging/async.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/coremessaging/async.c b/dlls/coremessaging/async.c
+index 71cd5037fb9..834a3a35ef6 100644
+--- a/dlls/coremessaging/async.c
++++ b/dlls/coremessaging/async.c
+@@ -582,8 +582,8 @@ static HRESULT WINAPI async_action_GetIids( IAsyncAction *iface, ULONG *iid_coun
+ 
+ static HRESULT WINAPI async_action_GetRuntimeClassName( IAsyncAction *iface, HSTRING *class_name )
+ {
+-    return WindowsCreateString( L"Windows.Foundation.IAsyncOperation`1<Boolean>",
+-                                ARRAY_SIZE(L"Windows.Foundation.IAsyncOperation`1<Boolean>"),
++    return WindowsCreateString( L"Windows.Foundation.IAsyncAction",
++                                ARRAY_SIZE(L"Windows.Foundation.IAsyncAction"),
+                                 class_name );
+ }
+ 
+-- 
+2.53.0
+
