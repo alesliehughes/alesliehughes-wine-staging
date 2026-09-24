@@ -43,3 +43,4 @@ LOGIC_16  - 0038-inetmib1-mib2IpNetQuery-correctly-access-the-table-e.patch
 CPY_23    - 0039-server-Correct-mode-mask-compare.patch
 API_46    - 0040-urlmon-get_mime_filter-close-Registry-handles-with-R.patch
 LOGIC_211 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch
+CPY_33    - 0042-fusion-IAssemblyName-GetName-set-return-buffer-when-.patch
