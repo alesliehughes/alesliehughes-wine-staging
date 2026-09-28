@@ -47,3 +47,4 @@ CPY_33    - 0042-fusion-IAssemblyName-GetName-set-return-buffer-when-.patch
 CPY_67    - 0043-twaindsm-TWAIN_ControlNull-correct-message-check.patch
 CPY_85    - 0044-comdlg32-SetUpPaperComboBoxW-consistently-use-SendDl.patch
 CPY_86    - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch
+DEAD_1    - 0046-amstream-Remove-duplicate-assignment.patch

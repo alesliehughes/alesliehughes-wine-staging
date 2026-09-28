@@ -1,0 +1,24 @@
+From e6e46a1cb5e3474a954360ca9ebdb6726d25e68b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 28 Sep 2026 14:45:51 +1000
+Subject: [PATCH] amstream: Remove duplicate assignment
+
+---
+ dlls/amstream/ddrawstream.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/dlls/amstream/ddrawstream.c b/dlls/amstream/ddrawstream.c
+index 7409eda6e07..066ef72b1f9 100644
+--- a/dlls/amstream/ddrawstream.c
++++ b/dlls/amstream/ddrawstream.c
+@@ -1896,7 +1896,6 @@ HRESULT ddraw_stream_create(IUnknown *outer, void **out)
+     object->IMemInputPin_iface.lpVtbl = &ddraw_meminput_vtbl;
+     object->IMemAllocator_iface.lpVtbl = &ddraw_mem_allocator_vtbl;
+     object->IPin_iface.lpVtbl = &ddraw_sink_vtbl;
+-    object->IMemAllocator_iface.lpVtbl = &ddraw_mem_allocator_vtbl;
+     object->ref = 1;
+ 
+     object->format.width = 100;
+-- 
+2.53.0
+
