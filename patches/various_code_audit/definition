@@ -41,10 +41,12 @@ CPY_97    - 0036-dmstyle-Correct-error-return-in-Mute-Get-Set-Param.patch
 PANIC_409 - 0037-dmstyle-CommandTrack-Load-handle-allocation-error.patch
 LOGIC_16  - 0038-inetmib1-mib2IpNetQuery-correctly-access-the-table-e.patch
 CPY_23    - 0039-server-Correct-mode-mask-compare.patch
-API_46    - 0040-urlmon-get_mime_filter-close-Registry-handles-with-R.patch
+#API_46    - 0040-urlmon-get_mime_filter-close-Registry-handles-with-R.patch
 LOGIC_211 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch
 CPY_33    - 0042-fusion-IAssemblyName-GetName-set-return-buffer-when-.patch
 CPY_67    - 0043-twaindsm-TWAIN_ControlNull-correct-message-check.patch
 CPY_85    - 0044-comdlg32-SetUpPaperComboBoxW-consistently-use-SendDl.patch
 CPY_86    - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch
 DEAD_1    - 0046-amstream-Remove-duplicate-assignment.patch
+LOGIC_23  - 0047-msado15-Fields-Append-correctly-assign-the-next-ordi.patch
+LOGIC_22  - 0048-msado15-Correctly-cast-DBVECTOR-type.patch

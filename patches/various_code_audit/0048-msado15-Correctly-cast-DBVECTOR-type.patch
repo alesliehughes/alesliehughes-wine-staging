@@ -1,0 +1,25 @@
+From 183ca86999ce136782917b0d7a455bed1198f382 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 29 Sep 2026 12:55:53 +1000
+Subject: [PATCH] msado15: Correctly cast DBVECTOR type
+
+---
+ dlls/msado15/client_cursor.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/client_cursor.c b/dlls/msado15/client_cursor.c
+index 0df9f92b3fe..1cab8f7e83d 100644
+--- a/dlls/msado15/client_cursor.c
++++ b/dlls/msado15/client_cursor.c
+@@ -89,7 +89,7 @@ void dbtype_free(DBTYPE type, void *data)
+     }
+     if (type & DBTYPE_VECTOR)
+     {
+-        DBVECTOR *vec = *(DBVECTOR **)data;
++        DBVECTOR *vec = (DBVECTOR *)data;
+         CoTaskMemFree(vec->ptr);
+         return;
+     }
+-- 
+2.53.0
+

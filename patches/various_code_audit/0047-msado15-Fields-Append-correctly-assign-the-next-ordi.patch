@@ -1,0 +1,26 @@
+From e8f6c6429bfe6864184ae452ffc3099d5cd36d5b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 29 Sep 2026 11:54:06 +1000
+Subject: [PATCH] msado15: Fields:Append correctly assign the next ordinal
+ value
+
+---
+ dlls/msado15/recordset.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index 09aa6e53c56..02151e283e4 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -1567,7 +1567,7 @@ static HRESULT WINAPI fields__Append( Fields *iface, BSTR name, DataTypeEnum typ
+     if ((hr = init_fields( fields )) != S_OK) return hr;
+ 
+     memset( &colinfo, 0, sizeof(colinfo) );
+-    colinfo.iOrdinal = fields->count ? (*fields->field)[fields->count - 1].ordinal + 1 : 1;
++    colinfo.iOrdinal = fields->count ? fields->field[fields->count - 1]->ordinal + 1 : 1;
+     colinfo.pwszName = name;
+     colinfo.wType = type;
+     colinfo.ulColumnSize = size;
+-- 
+2.53.0
+
