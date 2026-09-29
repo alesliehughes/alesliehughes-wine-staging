@@ -1,0 +1,30 @@
+From 7538a5100cabc4ce81bbb9942fe545949a5dd012 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 4 May 2026 11:42:53 +1000
+Subject: [PATCH] msado15: Trace more recordset DBPROP id's
+
+---
+ dlls/msado15/recordset.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index e59ad1f7d5f..04ee2a97874 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -4146,6 +4146,13 @@ static const char* debugstr_prop_id(const GUID *guid, DBPROPID id)
+     {
+         switch (id)
+         {
++        case DBPROP_IRowset: return "DBPROP_IRowset";
++        case DBPROP_IColumnsRowset: return "DBPROP_IColumnsRowset";
++        case DBPROP_OWNINSERT: return "DBPROP_OWNINSERT";
++        case DBPROP_OWNUPDATEDELETE: return "DBPROP_OWNUPDATEDELETE";
++        case DBPROP_IRowsetChange: return "DBPROP_IRowsetChange";
++        case DBPROP_ISequentialStream: return "DBPROP_ISequentialStream";
++        case DBPROP_CANFETCHBACKWARDS: return "DBPROP_CANFETCHBACKWARDS";
+         case DBPROP_OTHERUPDATEDELETE: return "DBPROP_OTHERUPDATEDELETE";
+         case DBPROP_OTHERINSERT: return "DBPROP_OTHERINSERT";
+         case DBPROP_CANHOLDROWS: return "DBPROP_CANHOLDROWS";
+-- 
+2.53.0
+

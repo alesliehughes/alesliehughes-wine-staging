@@ -1,0 +1,29 @@
+From e1a027d4a832e0fcb3976b142a0bc7925a73bd3a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 29 Sep 2026 15:08:55 +1000
+Subject: [PATCH] msado15: get_bookmark free memory of error path
+
+---
+ dlls/msado15/recordset.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msado15/recordset.c b/dlls/msado15/recordset.c
+index aa06b4ce66d..eb868536ae1 100644
+--- a/dlls/msado15/recordset.c
++++ b/dlls/msado15/recordset.c
+@@ -232,7 +232,11 @@ static HRESULT get_bookmark( struct recordset *recordset, HROW row, VARIANT *boo
+             SafeArrayUnlock( sa );
+     }
+     CoTaskMemFree( bookmark_data.val.ptr );
+-    if (FAILED(hr)) return hr;
++    if (FAILED(hr))
++    {
++        SafeArrayDestroy(sa);
++        return hr;
++    }
+ 
+     V_VT(bookmark) = VT_ARRAY | VT_UI1;
+     V_ARRAY(bookmark) = sa;
+-- 
+2.53.0
+
