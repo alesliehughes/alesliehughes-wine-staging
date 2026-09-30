@@ -29,3 +29,5 @@ CPY_86    - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch
 DEAD_1    - 0046-amstream-Remove-duplicate-assignment.patch
 LOGIC_23  - 0047-msado15-Fields-Append-correctly-assign-the-next-ordi.patch
 LOGIC_22  - 0048-msado15-Correctly-cast-DBVECTOR-type.patch
+LOGIC_228 - 0049-winetest-Correct-CLSID-format-string.patch
+LOGIC_40  - 0050-libs-dxerr9-Dont-use-a-binary-search-over-error-list.patch  <-- Not linked to any code atm.
