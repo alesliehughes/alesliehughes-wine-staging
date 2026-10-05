@@ -1,12 +1,13 @@
-From 1e6ebfb6ef6b583ad7b7c707a04185151c1b7ee2 Mon Sep 17 00:00:00 2001
+From b1325e44bed5b6e7e6a540e626a94d8ae0756aa8 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 24 Sep 2026 12:42:41 +1000
 Subject: [PATCH] coremessaging: IAsyncAction::GetRuntimeClassName correct
  return value
 
 ---
- dlls/coremessaging/async.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ dlls/coremessaging/async.c               |  4 ++--
+ dlls/coremessaging/tests/coremessaging.c | 17 ++++++++++++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
 diff --git a/dlls/coremessaging/async.c b/dlls/coremessaging/async.c
 index 71cd5037fb9..834a3a35ef6 100644
@@ -23,6 +24,48 @@ index 71cd5037fb9..834a3a35ef6 100644
                                  class_name );
  }
  
+diff --git a/dlls/coremessaging/tests/coremessaging.c b/dlls/coremessaging/tests/coremessaging.c
+index cabc3ccd809..e03bd6c60e5 100644
+--- a/dlls/coremessaging/tests/coremessaging.c
++++ b/dlls/coremessaging/tests/coremessaging.c
+@@ -400,6 +400,7 @@ static void test_CreateDispatcherQueueController(void)
+ static void test_DispatcherQueueController_Statics(void)
+ {
+     static const WCHAR *dispatcher_queue_controller_statics_name = L"Windows.System.DispatcherQueueController";
++    static const WCHAR *dispatcher_sync_action_name = L"Windows.Foundation.IAsyncAction";
+     IDispatcherQueueControllerStatics *dispatcher_queue_controller_statics = (void *)0xdeadbeef;
+     ITypedEventHandler_DispatcherQueue_IInspectable *event_handler_iface = (void *)0xdeadbeef;
+     struct typed_event_handler_dispatcher_queue *event_handler = (void *)0xdeadbeef;
+@@ -413,7 +414,8 @@ static void test_DispatcherQueueController_Statics(void)
+     IAsyncInfo *async_info = (void *)0xdeadbeef;
+     EventRegistrationToken token;
+     AsyncStatus status;
+-    HSTRING str = NULL;
++    HSTRING str = NULL, str2 = NULL;
++    int comapre = -1;
+     boolean result;
+     HRESULT hr;
+     DWORD ret;
+@@ -497,6 +499,19 @@ static void test_DispatcherQueueController_Statics(void)
+     ok( hr == S_OK, "got hr %#lx.\n", hr );
+     ok( status == Started, "got status %d.\n", status );
+ 
++    hr = WindowsCreateString( dispatcher_sync_action_name, wcslen( dispatcher_sync_action_name ), &str );
++    ok( hr == S_OK, "got hr %#lx.\n", hr );
++
++    hr = IAsyncAction_GetRuntimeClassName(operation, &str2);
++    ok( hr == S_OK, "got hr %#lx.\n", hr );
++
++    hr = WindowsCompareStringOrdinal(str2, str, &comapre);
++    ok( hr == S_OK, "got hr %#lx.\n", hr );
++    ok( comapre == 0, "got hr %#lx.\n", hr );
++
++    WindowsDeleteString( str );
++    WindowsDeleteString( str2 );
++
+     /* shutdown waits for queued handlers */
+     if (winetest_platform_is_wine) Sleep( 200 );
+     ret = WaitForSingleObject( event_handler->event, 100 );
 -- 
 2.53.0
 

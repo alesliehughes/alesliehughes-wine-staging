@@ -1,0 +1,118 @@
+From 341c99d2e108987f131c11c749d899e5f5574096 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 1 Oct 2026 09:52:54 +1000
+Subject: [PATCH] libs/dxerr9: Dont use a binary search over error list
+
+The info list doesn't appear sorted so a binary search isn't going to work.
+Removes duplicate entries.
+---
+ libs/dxerr9/dxerr9.c | 59 ++++++++++++--------------------------------
+ 1 file changed, 16 insertions(+), 43 deletions(-)
+
+diff --git a/libs/dxerr9/dxerr9.c b/libs/dxerr9/dxerr9.c
+index bd4676ae437..5e9f981fa4f 100644
+--- a/libs/dxerr9/dxerr9.c
++++ b/libs/dxerr9/dxerr9.c
+@@ -230,15 +230,8 @@ static const struct {
+     INFO( MS_E_SOURCEALREADYDEFINED, "MS_E_SOURCEALREADYDEFINED" ),
+     INFO( MS_E_INVALIDSTREAMTYPE, "The stream type is not valid for this operation." ),
+     INFO( MS_E_NOTRUNNING, "The object is not in running state." ),
+-    INFO( ERROR_FILE_NOT_FOUND, "The system cannot find the file specified." ),
+-    INFO( ERROR_PATH_NOT_FOUND, "The system cannot find the path specified." ),
+-    INFO( ERROR_TOO_MANY_OPEN_FILES, "The system cannot open the file." ),
+     INFO( E_ACCESSDENIED, "Access is denied" ),
+     INFO( E_HANDLE, "Invalid handle" ),
+-    INFO( ERROR_NOT_ENOUGH_MEMORY, "Not enough storage is available to process this command." ),
+-    INFO( ERROR_INVALID_BLOCK, "The storage control block address is invalid." ),
+-    INFO( ERROR_BAD_ENVIRONMENT, "The environment is incorrect." ),
+-    INFO( ERROR_BAD_FORMAT, "An attempt was made to load a program with an incorrect format." ),
+     INFO( ERROR_INVALID_ACCESS, "& DIERR_NOTACQUIRED The operation cannot be performed unless the device is acquired." ),
+     INFO( E_OUTOFMEMORY, "Ran out of memory" ),
+     INFO( ERROR_NOT_READY, "& DIERR_NOTINITIALIZED   This object has not been initialized" ),
+@@ -605,16 +598,11 @@ static const struct {
+ 
+ const char * WINAPI DXGetErrorString9A(HRESULT hr)
+ {
+-    unsigned int i, j, k = 0;
++    unsigned int i;
+ 
+-    for (i = ARRAY_SIZE(info); i != 0; i /= 2) {
+-        j = k + (i / 2);
+-        if (hr == info[j].hr)
+-            return info[j].resultA;
+-        if ((unsigned int)hr > (unsigned int)info[j].hr) {
+-            k = j + 1;
+-            i--;
+-        }
++    for (i = 0; i < ARRAY_SIZE(info); i++) {
++        if (hr == info[i].hr)
++            return info[i].resultA;
+     }
+ 
+     return "Unknown";
+@@ -622,16 +610,11 @@ const char * WINAPI DXGetErrorString9A(HRESULT hr)
+ 
+ const WCHAR * WINAPI DXGetErrorString9W(HRESULT hr)
+ {
+-    unsigned int i, j, k = 0;
++    unsigned int i;
+ 
+-    for (i = ARRAY_SIZE(info); i != 0; i /= 2) {
+-        j = k + (i / 2);
+-        if (hr == info[j].hr)
+-            return info[j].resultW;
+-        if ((unsigned int)hr > (unsigned int)info[j].hr) {
+-            k = j + 1;
+-            i--;
+-        }
++    for (i = 0; i < ARRAY_SIZE(info); i++) {
++        if (hr == info[i].hr)
++            return info[i].resultW;
+     }
+ 
+     return L"Unknown";
+@@ -639,16 +622,11 @@ const WCHAR * WINAPI DXGetErrorString9W(HRESULT hr)
+ 
+ const char * WINAPI DXGetErrorDescription9A(HRESULT hr)
+ {
+-    unsigned int i, j, k = 0;
++    unsigned int i;
+ 
+-    for (i = ARRAY_SIZE(info); i != 0; i /= 2) {
+-        j = k + (i / 2);
+-        if (hr == info[j].hr)
+-            return info[j].descriptionA;
+-        if ((unsigned int)hr > (unsigned int)info[j].hr) {
+-            k = j + 1;
+-            i--;
+-        }
++    for (i = 0; i < ARRAY_SIZE(info); i++) {
++        if (hr == info[i].hr)
++            return info[i].descriptionA;
+     }
+ 
+     return "n/a";
+@@ -656,16 +634,11 @@ const char * WINAPI DXGetErrorDescription9A(HRESULT hr)
+ 
+ const WCHAR * WINAPI DXGetErrorDescription9W(HRESULT hr)
+ {
+-    unsigned int i, j, k = 0;
++    unsigned int i;
+ 
+-    for (i = ARRAY_SIZE(info); i != 0; i /= 2) {
+-        j = k + (i / 2);
+-        if (hr == info[j].hr)
+-            return info[j].descriptionW;
+-        if ((unsigned int)hr > (unsigned int)info[j].hr) {
+-            k = j + 1;
+-            i--;
+-        }
++    for (i = 0; i < ARRAY_SIZE(info); i++) {
++        if (hr == info[i].hr)
++            return info[i].descriptionW;
+     }
+ 
+     return L"n/a";
+-- 
+2.53.0
+
