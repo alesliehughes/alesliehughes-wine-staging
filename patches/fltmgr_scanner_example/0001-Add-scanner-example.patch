@@ -1,4 +1,4 @@
-From e6dd7b27bc1b11e7dc20d90c76d7d6cf3823fab7 Mon Sep 17 00:00:00 2001
+From b7e79cd73b97429845cd2cfa7210872e1b21a705 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 13 Jul 2026 07:17:07 +1000
 Subject: [PATCH] Add scanner example
@@ -19,30 +19,30 @@ Subject: [PATCH] Add scanner example
  create mode 100644 programs/scanner/scanuser.rc
 
 diff --git a/configure b/configure
-index 8f304936ac7..443b1f12f01 100755
+index a80b798edb1..82ac276b26b 100755
 --- a/configure
 +++ b/configure
-@@ -1783,6 +1783,7 @@ enable_robocopy
- enable_rpcss
+@@ -1838,6 +1838,7 @@ enable_rpcss
  enable_runas
+ enable_rundll_exe16
  enable_rundll32
 +enable_scanner
  enable_sc
  enable_schtasks
  enable_sdbinst
-@@ -23366,6 +23367,7 @@ wine_fn_config_makefile programs/rpcss enable_rpcss
+@@ -23045,6 +23046,7 @@ wine_fn_config_makefile programs/rpcss enable_rpcss
  wine_fn_config_makefile programs/runas enable_runas
- wine_fn_config_makefile programs/rundll.exe16 enable_win16
+ wine_fn_config_makefile programs/rundll.exe16 enable_rundll_exe16
  wine_fn_config_makefile programs/rundll32 enable_rundll32
 +wine_fn_config_makefile programs/scanner enable_scanner
  wine_fn_config_makefile programs/sc enable_sc
  wine_fn_config_makefile programs/sc/tests enable_tests
  wine_fn_config_makefile programs/schtasks enable_schtasks
 diff --git a/configure.ac b/configure.ac
-index 70bc425979c..d9c3e38d87a 100644
+index 8b59eb60548..3d88e010bc6 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3654,6 +3654,7 @@ WINE_CONFIG_MAKEFILE(programs/rpcss)
+@@ -3574,6 +3574,7 @@ WINE_CONFIG_MAKEFILE(programs/rpcss)
  WINE_CONFIG_MAKEFILE(programs/runas)
  WINE_CONFIG_MAKEFILE(programs/rundll.exe16)
  WINE_CONFIG_MAKEFILE(programs/rundll32)
