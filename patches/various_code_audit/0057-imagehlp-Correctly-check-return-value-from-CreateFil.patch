@@ -1,0 +1,35 @@
+From c3a2a3cc16f2ee6afdedb95cadbbfaeea721fa5d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 21:29:02 +1100
+Subject: [PATCH] imagehlp: Correctly check return value from
+ CreateFileMappingW
+
+---
+ dlls/imagehlp/integrity.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/imagehlp/integrity.c b/dlls/imagehlp/integrity.c
+index ebad7001548..bfd8e9ec8ae 100644
+--- a/dlls/imagehlp/integrity.c
++++ b/dlls/imagehlp/integrity.c
+@@ -804,7 +804,7 @@ BOOL WINAPI ImageGetDigestStream(
+ 
+     /* map file */
+     hMap = CreateFileMappingW( FileHandle, NULL, PAGE_READONLY, 0, 0, NULL );
+-    if( hMap == INVALID_HANDLE_VALUE )
++    if( !hMap )
+         goto invalid_parameter;
+     map = MapViewOfFile( hMap, FILE_MAP_COPY, 0, 0, 0 );
+     if( !map )
+@@ -870,7 +870,7 @@ BOOL WINAPI ImageGetDigestStream(
+ end:
+     if( map )
+         UnmapViewOfFile( map );
+-    if( hMap != INVALID_HANDLE_VALUE )
++    if( hMap )
+         CloseHandle( hMap );
+     if( error )
+         SetLastError(error);
+-- 
+2.53.0
+

@@ -1,0 +1,27 @@
+From a8d921327ef75ef3d328acb678b83ff938462bef Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 10:13:59 +1100
+Subject: [PATCH] crypt32: Dont return from within a __TRY block
+
+---
+ dlls/crypt32/encode.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/crypt32/encode.c b/dlls/crypt32/encode.c
+index ecec1bffa96..55b24a2cf4c 100644
+--- a/dlls/crypt32/encode.c
++++ b/dlls/crypt32/encode.c
+@@ -3673,8 +3673,8 @@ static BOOL WINAPI CRYPT_AsnEncodeChoiceOfTime(DWORD dwCertEncodingType,
+ 
+         /* Check the year, if it's in the UTCTime range call that encode func */
+         if (!FileTimeToSystemTime(pvStructInfo, &sysTime))
+-            return FALSE;
+-        if (sysTime.wYear >= 1950 && sysTime.wYear <= 2050)
++            ret = FALSE;
++        else if (sysTime.wYear >= 1950 && sysTime.wYear <= 2050)
+             ret = CRYPT_AsnEncodeUtcTime(dwCertEncodingType, lpszStructType,
+              pvStructInfo, dwFlags, pEncodePara, pbEncoded, pcbEncoded);
+         else
+-- 
+2.53.0
+

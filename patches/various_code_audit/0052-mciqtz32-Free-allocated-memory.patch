@@ -1,0 +1,44 @@
+From 0104f482c85f9f6d25c6ef6c64af167320d6986e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 09:48:39 +1100
+Subject: [PATCH] mciqtz32: Free allocated memory
+
+data is changed after allocation but then free later.
+---
+ dlls/mciqtz32/mciqtz.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/mciqtz32/mciqtz.c b/dlls/mciqtz32/mciqtz.c
+index 6fb9c2f43b4..5c86a0598ec 100644
+--- a/dlls/mciqtz32/mciqtz.c
++++ b/dlls/mciqtz32/mciqtz.c
+@@ -1110,7 +1110,7 @@ static DWORD MCIQTZ_mciUpdate(UINT wDevID, DWORD dwFlags, LPMCI_DGV_UPDATE_PARMS
+ 
+     if (dwFlags & MCI_DGV_UPDATE_HDC) {
+         LONG state, size;
+-        BYTE *data;
++        BYTE *data, *base;
+         BITMAPINFO *info;
+         HRESULT hr;
+         RECT src, dest;
+@@ -1133,7 +1133,7 @@ static DWORD MCIQTZ_mciUpdate(UINT wDevID, DWORD dwFlags, LPMCI_DGV_UPDATE_PARMS
+             WARN("Could not get image size (hr = %lx)\n", hr);
+             goto out;
+         }
+-        data = HeapAlloc(GetProcessHeap(), 0, size);
++        base = data = HeapAlloc(GetProcessHeap(), 0, size);
+         info = (BITMAPINFO*)data;
+         IBasicVideo_GetCurrentImage(wma->vidbasic, &size, (LONG*)data);
+         data += info->bmiHeader.biSize;
+@@ -1144,7 +1144,7 @@ static DWORD MCIQTZ_mciUpdate(UINT wDevID, DWORD dwFlags, LPMCI_DGV_UPDATE_PARMS
+               dest.left, dest.top, dest.right + dest.left, dest.bottom + dest.top,
+               src.left, src.top, src.right + src.left, src.bottom + src.top,
+               data, info, DIB_RGB_COLORS, SRCCOPY);
+-        HeapFree(GetProcessHeap(), 0, data);
++        HeapFree(GetProcessHeap(), 0, base);
+         res = 0;
+ out:
+         if (wma->parent)
+-- 
+2.53.0
+

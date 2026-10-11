@@ -1,0 +1,25 @@
+From cbef47e633b358aa9141b5de37b579bb454f548d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 10:27:09 +1100
+Subject: [PATCH] msvideo.dll16: Free correct pointer
+
+---
+ dlls/msvideo.dll16/msvideo16.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/msvideo.dll16/msvideo16.c b/dlls/msvideo.dll16/msvideo16.c
+index 4883fa6c3e5..73f96f044d5 100644
+--- a/dlls/msvideo.dll16/msvideo16.c
++++ b/dlls/msvideo.dll16/msvideo16.c
+@@ -649,7 +649,7 @@ static void MSVIDEO_UnmapMsg16To32(UINT msg, LPVOID data16, LPDWORD lParam1, LPD
+     case ICM_DRAW_BEGIN:
+     case ICM_DRAW_SUGGESTFORMAT:
+     case ICM_DRAW:
+-        HeapFree(GetProcessHeap(), 0, data16);
++        HeapFree(GetProcessHeap(), 0, lParam1);
+         break;
+     default:
+         ERR("Unmapping unmapped msg %d\n", msg);
+-- 
+2.53.0
+
