@@ -1,0 +1,25 @@
+From c8b644e87e3ffaf6c908a140368cac469937a0ca Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 22:22:03 +1100
+Subject: [PATCH] oledb32: Pass the guid to create_datasource
+
+---
+ dlls/oledb32/dslocator.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/oledb32/dslocator.c b/dlls/oledb32/dslocator.c
+index 066f14a5508..e1f978ca3db 100644
+--- a/dlls/oledb32/dslocator.c
++++ b/dlls/oledb32/dslocator.c
+@@ -306,7 +306,7 @@ static void add_connections_providers(HWND lv)
+                 LVITEMW item;
+                 struct datasource *data;
+ 
+-                data = create_datasource(guidkey);
++                data = create_datasource(provider);
+ 
+                 item.mask = LVIF_TEXT | LVIF_PARAM;
+                 item.iItem = SendMessageW(lv, LVM_GETITEMCOUNT, 0, 0);
+-- 
+2.53.0
+

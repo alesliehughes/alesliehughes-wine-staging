@@ -1,0 +1,25 @@
+From ba5aa51bbf3abacd956d8f807d62858469344bb7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 22:29:53 +1100
+Subject: [PATCH] oleaut32: Correct VTBIT_BOOL define
+
+---
+ dlls/oleaut32/variant.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/oleaut32/variant.h b/dlls/oleaut32/variant.h
+index 562903c19f4..bd8fcbf6a74 100644
+--- a/dlls/oleaut32/variant.h
++++ b/dlls/oleaut32/variant.h
+@@ -34,7 +34,7 @@
+ #define V_EXTRA_TYPE(v) (V_VT((v)) & VT_EXTRA_TYPE)
+ 
+ /* Missing in Windows but useful VTBIT_* defines */
+-#define VTBIT_BOOL      (1 << VT_BSTR)
++#define VTBIT_BOOL      (1 << VT_BOOL)
+ #define VTBIT_BSTR      (1 << VT_BSTR)
+ #define VTBIT_DATE      (1 << VT_DATE)
+ #define VTBIT_DISPATCH  (1 << VT_DISPATCH)
+-- 
+2.53.0
+

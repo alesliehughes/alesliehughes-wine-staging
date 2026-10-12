@@ -1,0 +1,25 @@
+From acbb923b4f311d1cf76d7932b44b0ae4f1b2eb5d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 22:40:41 +1100
+Subject: [PATCH] include: Correct spelling of D3DXBONECOMBINATION.VertexCount
+
+---
+ include/d3dx9mesh.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/d3dx9mesh.h b/include/d3dx9mesh.h
+index d0cb896e9b3..be18f79dcf9 100644
+--- a/include/d3dx9mesh.h
++++ b/include/d3dx9mesh.h
+@@ -243,7 +243,7 @@ typedef struct _D3DXBONECOMBINATION
+     DWORD FaceStart;
+     DWORD FaceCount;
+     DWORD VertexStart;
+-    DWORD VertexCout;
++    DWORD VertexCount;
+     DWORD *BoneId;
+ } D3DXBONECOMBINATION, *LPD3DXBONECOMBINATION;
+ 
+-- 
+2.53.0
+

@@ -36,3 +36,12 @@ API_55    - 0055-dbgeng-IDebugControl4-correct-output-parameter-for-G.patch
 API_92    - 0056-hnetcfg-Only-assign-output-on-success-in-NetFwPolicy.patch
 API_94    - 0057-imagehlp-Correctly-check-return-value-from-CreateFil.patch
 API_96    - 0058-infosoft-Correct-reference-count-for-IWordBreaker-ob.patch
+CPY_23    - 0059-oledb32-Pass-the-guid-to-create_datasource.patch
+CPY_78    - 0060-oleaut32-Correct-VTBIT_BOOL-define.patch
+CPY_102   
+CPY_240
+CPY_241   - 0061-include-commctrl.h-Correct-various-macros.patch
+CPY_103   - 0062-include-Correct-spelling-of-D3DXBONECOMBINATION.Vert.patch
+CPY_114   - 0063-include-Correct-szOID_RSA_unstructAddr-value.patch
+CPY_113   - 0064-include-Correct-CERT_RDN_-values.patch
+CPY_127   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
