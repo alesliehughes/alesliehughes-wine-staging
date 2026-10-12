@@ -1,0 +1,53 @@
+From cdff2429207533a9ce96a258c26255c54573cbef Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 7 Oct 2026 15:09:41 +1100
+Subject: [PATCH] wintrust: SoftpubAuthenticode dynamicly allocate memory for
+ prop id
+
+---
+ dlls/wintrust/softpub.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/wintrust/softpub.c b/dlls/wintrust/softpub.c
+index 609d240a738..d41c1270062 100644
+--- a/dlls/wintrust/softpub.c
++++ b/dlls/wintrust/softpub.c
+@@ -1260,12 +1260,24 @@ HRESULT WINAPI SoftpubAuthenticode(CRYPT_PROVIDER_DATA *data)
+     else
+     {
+         DWORD i;
++        BYTE *hash;
++        DWORD size = 0;
+ 
+         ret = TRUE;
+         for (i = 0; ret && i < data->csSigners; i++)
+         {
+-            BYTE hash[20];
+-            DWORD size = sizeof(hash);
++            if ( !(ret = CertGetCertificateContextProperty( data->pasSigners[i].pasCertChain[0].pCert,
++             CERT_SIGNATURE_HASH_PROP_ID, NULL, &size)))
++            {
++                break;
++            }
++            hash = malloc(size);
++            if (!hash)
++            {
++                policyStatus.dwError = ERROR_OUTOFMEMORY;
++                ret = FALSE;
++                break;
++            }
+ 
+             /* First make sure cert isn't disallowed */
+             if ((ret = CertGetCertificateContextProperty(
+@@ -1294,6 +1306,8 @@ HRESULT WINAPI SoftpubAuthenticode(CRYPT_PROVIDER_DATA *data)
+                     CertCloseStore(disallowed, 0);
+                 }
+             }
++            free(hash);
++
+             if (ret)
+             {
+                 CERT_CHAIN_POLICY_PARA policyPara = { sizeof(policyPara), 0 };
+-- 
+2.53.0
+
