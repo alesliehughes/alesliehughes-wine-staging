@@ -1,0 +1,29 @@
+From 520c235e4cad9c837099b711f4d494506c57cb2a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 13:33:14 +1100
+Subject: [PATCH 2/2] include: Fake unsupported interface for native support
+
+---
+ include/uiribbon.idl | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/include/uiribbon.idl b/include/uiribbon.idl
+index 41fa5394c17..268ddf08da0 100644
+--- a/include/uiribbon.idl
++++ b/include/uiribbon.idl
+@@ -308,3 +308,12 @@ coclass UIRibbonFramework { interface IUIFramework; }
+     uuid(0f7434b6-59b6-4250-999e-d168d6ae4293)
+ ]
+ coclass UIRibbonImageFromBitmapFactory { interface IUIImageFromBitmap; }
++
++[
++    uuid(32665929-d77e-4ab5-8c08-fbf409b8a233),
++    threading(apartment)
++]
++coclass UITypeManager
++{
++    [default] interface IUIFramework;
++};
+-- 
+2.53.0
+
