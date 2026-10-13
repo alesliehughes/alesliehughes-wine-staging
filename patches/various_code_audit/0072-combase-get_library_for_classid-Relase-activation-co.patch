@@ -1,0 +1,24 @@
+From ded74dbeef261ba04eb1a6dfdc62177a6c71beb3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 11:29:48 +1100
+Subject: [PATCH] combase: get_library_for_classid Relase activation context
+
+---
+ dlls/combase/roapi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/combase/roapi.c b/dlls/combase/roapi.c
+index 4b5deb76187..629f288f6fb 100644
+--- a/dlls/combase/roapi.c
++++ b/dlls/combase/roapi.c
+@@ -60,6 +60,7 @@ static HRESULT get_library_for_classid(const WCHAR *classid, WCHAR **out)
+         struct activatable_class_data *activatable_class = (struct activatable_class_data *)data.lpData;
+         void *ptr = (BYTE *)data.lpSectionBase + activatable_class->module_offset;
+         *out = wcsdup(ptr);
++        ReleaseActCtx(data.hActCtx);
+         return S_OK;
+     }
+ 
+-- 
+2.53.0
+

@@ -1,0 +1,46 @@
+From e8e059903e3ab360b1e3b7349d1b08428d1b9b13 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 11:21:18 +1100
+Subject: [PATCH] combase: ftmarshaler_MarshalInterface release data object on
+ error
+
+---
+ dlls/combase/marshal.c | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/dlls/combase/marshal.c b/dlls/combase/marshal.c
+index 6e3d35ce580..83d661b566f 100644
+--- a/dlls/combase/marshal.c
++++ b/dlls/combase/marshal.c
+@@ -312,18 +312,17 @@ static HRESULT WINAPI ftmarshaler_MarshalInterface(IMarshal *iface, IStream *str
+         if (FAILED(hr))
+             return hr;
+ 
+-        /* don't hold a reference to table-weak marshaled interfaces */
+-        if (mshlflags & MSHLFLAGS_TABLEWEAK)
+-            IUnknown_Release(data.object);
+-
+         hr = IStream_Write(stream, &mshlflags, sizeof(mshlflags), NULL);
+-        if (hr != S_OK) return STG_E_MEDIUMFULL;
+-
+-        hr = IStream_Write(stream, &data, sizeof(data), NULL);
+-        if (hr != S_OK) return STG_E_MEDIUMFULL;
+-
+-        hr = IStream_Write(stream, &unknown_guid, sizeof(unknown_guid), NULL);
+-        if (hr != S_OK) return STG_E_MEDIUMFULL;
++        if (hr == S_OK)
++            hr = IStream_Write(stream, &data, sizeof(data), NULL);
++        if (hr == S_OK)
++            hr = IStream_Write(stream, &unknown_guid, sizeof(unknown_guid), NULL);
++        if (hr != S_OK)
++        {
++            if (!(mshlflags & MSHLFLAGS_TABLEWEAK))
++                IUnknown_Release(data.object);
++            return STG_E_MEDIUMFULL;
++        }
+ 
+         return S_OK;
+     }
+-- 
+2.53.0
+

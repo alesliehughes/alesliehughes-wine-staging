@@ -1,0 +1,25 @@
+From eddebc4e0950f32dc901a0b48dd78f8a4f15c403 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 11:23:36 +1100
+Subject: [PATCH] combase: std_unmarshal_interface release apartment on error
+ path
+
+---
+ dlls/combase/marshal.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/combase/marshal.c b/dlls/combase/marshal.c
+index 83d661b566f..ca93e95ac2c 100644
+--- a/dlls/combase/marshal.c
++++ b/dlls/combase/marshal.c
+@@ -717,6 +717,7 @@ static HRESULT std_unmarshal_interface(MSHCTX dest_context, void *dest_context_d
+     if (obj.saResAddr.wNumEntries)
+     {
+         ERR("unsupported size of DUALSTRINGARRAY\n");
++        apartment_release(apt);
+         return E_NOTIMPL;
+     }
+ 
+-- 
+2.53.0
+

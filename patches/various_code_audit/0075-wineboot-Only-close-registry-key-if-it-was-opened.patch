@@ -1,0 +1,26 @@
+From ed4f5efd9d18ca9303de5084b712024b2fedebbd Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 16:59:58 +1100
+Subject: [PATCH] wineboot: Only close registry key if it was opened
+
+---
+ programs/wineboot/wineboot.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/programs/wineboot/wineboot.c b/programs/wineboot/wineboot.c
+index 7dda9ec3cfa..b7d966bef6a 100644
+--- a/programs/wineboot/wineboot.c
++++ b/programs/wineboot/wineboot.c
+@@ -1387,8 +1387,8 @@ static int ProcessWindowsFileProtection(void)
+             RegQueryValueExW( hkey, L"SFCDllCacheDir", 0, NULL, (LPBYTE)dllcache, &sz);
+             lstrcatW( dllcache, L"\\*" );
+         }
++        RegCloseKey(hkey);
+     }
+-    RegCloseKey(hkey);
+ 
+     if (!dllcache)
+     {
+-- 
+2.53.0
+

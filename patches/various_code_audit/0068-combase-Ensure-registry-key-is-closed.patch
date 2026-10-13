@@ -1,0 +1,37 @@
+From 0f314185fa780b07efd74e8b8857c31977142ff2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 10:58:28 +1100
+Subject: [PATCH] combase: Ensure registry key is closed.
+
+---
+ dlls/combase/combase.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/combase/combase.c b/dlls/combase/combase.c
+index 6bab44309e2..e6defa3f83f 100644
+--- a/dlls/combase/combase.c
++++ b/dlls/combase/combase.c
+@@ -2284,6 +2284,7 @@ static HRESULT get_ps_clsid_from_registry(const WCHAR* path, REGSAM access, CLSI
+     WCHAR value[CHARS_IN_GUID];
+     HKEY hkey;
+     DWORD len;
++    LSTATUS status;
+ 
+     access |= KEY_READ;
+ 
+@@ -2291,9 +2292,10 @@ static HRESULT get_ps_clsid_from_registry(const WCHAR* path, REGSAM access, CLSI
+         return REGDB_E_IIDNOTREG;
+ 
+     len = sizeof(value);
+-    if (ERROR_SUCCESS != RegQueryValueExW(hkey, NULL, NULL, NULL, (BYTE *)value, &len))
+-        return REGDB_E_IIDNOTREG;
++    status = RegQueryValueExW(hkey, NULL, NULL, NULL, (BYTE *)value, &len);
+     RegCloseKey(hkey);
++    if (status != ERROR_SUCCESS)
++        return REGDB_E_IIDNOTREG;
+ 
+     if (CLSIDFromString(value, pclsid) != NOERROR)
+         return REGDB_E_IIDNOTREG;
+-- 
+2.53.0
+

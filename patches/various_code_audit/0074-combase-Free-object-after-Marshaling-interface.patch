@@ -1,0 +1,29 @@
+From 3c9d3210a1e779c756b378dda41d5366cc2cb458 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 13 Oct 2026 14:38:14 +1100
+Subject: [PATCH] combase: Free object after Marshaling interface
+
+object is created by apartment_getclassobject above and not CoMarshalInterface.
+So it needs to be release before it goes out of scope.
+
+---
+ dlls/combase/apartment.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/dlls/combase/apartment.c b/dlls/combase/apartment.c
+index 85e06a6fd57..cb84731ebaf 100644
+--- a/dlls/combase/apartment.c
++++ b/dlls/combase/apartment.c
+@@ -1098,8 +1098,7 @@ static HRESULT apartment_hostobject(struct apartment *apt, const struct host_obj
+         return hr;
+ 
+     hr = CoMarshalInterface(params->stream, &params->iid, object, MSHCTX_INPROC, NULL, MSHLFLAGS_NORMAL);
+-    if (FAILED(hr))
+-        IUnknown_Release(object);
++    IUnknown_Release(object);
+     IStream_Seek(params->stream, llZero, STREAM_SEEK_SET, NULL);
+ 
+     return hr;
+-- 
+2.53.0
+

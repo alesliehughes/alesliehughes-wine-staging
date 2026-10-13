@@ -1,0 +1,37 @@
+From 5ee69833a6cdf6884b9e60f7c9a5f114b59e0a26 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 10:03:16 +1100
+Subject: [PATCH] combase: Correctly Unmarshal HBITMAP objects
+
+Use the standard macros to convert between HANDLE and ULONG.
+---
+ dlls/combase/usrmarshal.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/combase/usrmarshal.c b/dlls/combase/usrmarshal.c
+index 1d9afd0d248..fd629fe65b6 100644
+--- a/dlls/combase/usrmarshal.c
++++ b/dlls/combase/usrmarshal.c
+@@ -413,7 +413,7 @@ unsigned char * __RPC_USER HBITMAP_UserMarshal(ULONG *flags, unsigned char *buff
+     {
+         *(ULONG *)buffer = WDT_INPROC_CALL;
+         buffer += sizeof(ULONG);
+-        *(ULONG *)buffer = (ULONG)(ULONG_PTR)*bmp;
++        *(ULONG *)buffer = HandleToULong(*bmp);
+         buffer += sizeof(ULONG);
+     }
+     else
+@@ -476,8 +476,8 @@ unsigned char * __RPC_USER HBITMAP_UserUnmarshal(ULONG *flags, unsigned char *bu
+ 
+     if (context == WDT_INPROC_CALL)
+     {
+-        *bmp = *(HBITMAP *)buffer;
+-        buffer += sizeof(*bmp);
++        *bmp = ULongToHandle(*(ULONG *)buffer);
++        buffer += sizeof(ULONG);
+     }
+     else if (context == WDT_REMOTE_CALL)
+     {
+-- 
+2.53.0
+

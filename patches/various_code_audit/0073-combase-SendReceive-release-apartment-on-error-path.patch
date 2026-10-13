@@ -1,0 +1,27 @@
+From 80184582ddc1d09c37cc2f11db205c7d56a259ea Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 11:32:58 +1100
+Subject: [PATCH] combase: SendReceive release apartment on error path
+
+---
+ dlls/combase/rpc.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/dlls/combase/rpc.c b/dlls/combase/rpc.c
+index dc33877825b..b114c6300d7 100644
+--- a/dlls/combase/rpc.c
++++ b/dlls/combase/rpc.c
+@@ -1380,7 +1380,10 @@ static HRESULT WINAPI ClientRpcChannelBuffer_SendReceive(LPRPCCHANNELBUFFER ifac
+     }
+ 
+     if (FAILED(hr = com_get_tlsdata(&tlsdata)))
++    {
++        apartment_release(apt);
+         return hr;
++    }
+ 
+     /* This situation should be impossible in multi-threaded apartments,
+      * because the calling thread isn't re-enterable.
+-- 
+2.53.0
+

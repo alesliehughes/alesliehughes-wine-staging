@@ -1,0 +1,26 @@
+From 9953eb2fef199928c3b7459cd1bb8fce211887ad Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 14 Oct 2026 11:02:18 +1100
+Subject: [PATCH] combase: Ensure apartment is release in ContextCallback
+
+---
+ dlls/combase/combase.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/combase/combase.c b/dlls/combase/combase.c
+index e6defa3f83f..db103af8838 100644
+--- a/dlls/combase/combase.c
++++ b/dlls/combase/combase.c
+@@ -2666,8 +2666,8 @@ static HRESULT WINAPI thread_context_callback_ContextCallback(IContextCallback *
+         stdobjref.oid = -1;
+         stdobjref.ipid = oxid_info.ipidRemUnknown;
+         hr = unmarshal_object(&stdobjref, apt, MSHCTX_INPROC, NULL, &IID_IRundown, &oxid_info, (void**)&rundown);
+-        apartment_release(apt);
+     }
++    apartment_release(apt);
+     if (FAILED(hr))
+         return hr;
+ 
+-- 
+2.53.0
+
