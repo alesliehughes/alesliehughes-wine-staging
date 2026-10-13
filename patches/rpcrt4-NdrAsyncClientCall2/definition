@@ -1,0 +1,7 @@
+
+
+Required for using wlidcli.dll from windows 10.
+
+This will cause a warning about invalid NDR versions and change
+to accept them, just causes a crash.
+

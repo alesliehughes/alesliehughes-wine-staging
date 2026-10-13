@@ -1,0 +1,40 @@
+From 6b8fae67634884e5404f9b594c59399f45e4715a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 14:25:42 +1100
+Subject: [PATCH] rpcrt4: Add NdrAsyncClientCall2 to spec
+
+---
+ dlls/rpcrt4/rpcrt4.spec | 1 +
+ include/rpcndr.h        | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/dlls/rpcrt4/rpcrt4.spec b/dlls/rpcrt4/rpcrt4.spec
+index 428bf0a81ed..feff0271a87 100644
+--- a/dlls/rpcrt4/rpcrt4.spec
++++ b/dlls/rpcrt4/rpcrt4.spec
+@@ -117,6 +117,7 @@
+ @ varargs -arch=win64 Ndr64AsyncClientCall(ptr long ptr)
+ @ stdcall NdrAllocate(ptr long)
+ @ varargs NdrAsyncClientCall(ptr ptr)
++@ varargs -arch=i386 NdrAsyncClientCall2(ptr ptr) NdrAsyncClientCall
+ @ stdcall NdrAsyncServerCall(ptr)
+ @ stdcall NdrAsyncStubCall(ptr ptr ptr ptr)
+ @ stdcall NdrByteCountPointerBufferSize(ptr ptr ptr)
+diff --git a/include/rpcndr.h b/include/rpcndr.h
+index f79a643a1c5..63138325b5b 100644
+--- a/include/rpcndr.h
++++ b/include/rpcndr.h
+@@ -695,6 +695,10 @@ CLIENT_CALL_RETURN RPC_VAR_ENTRY
+   NdrClientCall3( MIDL_STUBLESS_PROXY_INFO *info, ULONG proc, void *retval, ... );
+ CLIENT_CALL_RETURN RPC_VAR_ENTRY
+   NdrAsyncClientCall( PMIDL_STUB_DESC pStubDescriptor, PFORMAT_STRING pFormat, ... );
++#if ( !defined(_WIN64) && !defined(__arm__) )
++CLIENT_CALL_RETURN RPC_VAR_ENTRY
++  NdrAsyncClientCall2( PMIDL_STUB_DESC pStubDescriptor, PFORMAT_STRING pFormat, ... );
++#endif
+ CLIENT_CALL_RETURN RPC_VAR_ENTRY
+   Ndr64AsyncClientCall( MIDL_STUBLESS_PROXY_INFO *info, ULONG proc, void *retval, ... );
+ CLIENT_CALL_RETURN RPC_VAR_ENTRY
+-- 
+2.53.0
+
