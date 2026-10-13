@@ -1,0 +1,29 @@
+From a762661203bdd3f2193b59fad7d75c4754cd309b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 13 Oct 2026 11:31:06 +1100
+Subject: [PATCH] winhttp: query_option correct sizeof usage
+
+---
+ dlls/winhttp/session.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/winhttp/session.c b/dlls/winhttp/session.c
+index 68f8ee98ede..56f3207e8b1 100644
+--- a/dlls/winhttp/session.c
++++ b/dlls/winhttp/session.c
+@@ -1608,10 +1608,10 @@ static BOOL query_option( struct object_header *hdr, DWORD option, void *buffer,
+         HTTP_VERSION_INFO *info = buffer;
+ 
+         FIXME( "WINHTTP_OPTION_HTTP_VERSION\n" );
+-        if (!validate_buffer( buffer, buflen, sizeof(info) )) return FALSE;
++        if (!validate_buffer( buffer, buflen, sizeof(*info) )) return FALSE;
+         info->dwMajorVersion = 1;
+         info->dwMinorVersion = 1;
+-        *buflen = sizeof(info);
++        *buflen = sizeof(*info);
+         return TRUE;
+     }
+     case WINHTTP_OPTION_CONNECT_RETRIES:
+-- 
+2.53.0
+

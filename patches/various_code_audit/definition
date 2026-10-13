@@ -1,4 +1,4 @@
-Fixes: [60241]: Fix various detect with the Claude Core review
+Fixes: [60241]: Fix various coding issues detected by a Claude Core review.
 
 https://github.com/qarmin/ClaudeReports/issues/1
 
@@ -42,3 +42,4 @@ CPY_103   - 0062-include-Correct-spelling-of-D3DXBONECOMBINATION.Vert.patch
 CPY_114   - 0063-include-Correct-szOID_RSA_unstructAddr-value.patch
 CPY_113   - 0064-include-Correct-CERT_RDN_-values.patch
 CPY_127   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
+API_46    - 0066-winhttp-query_option-correct-sizeof-usage.patch
