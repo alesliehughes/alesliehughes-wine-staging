@@ -30,10 +30,8 @@ LOGIC_40  - 0050-libs-dxerr9-Dont-use-a-binary-search-over-error-list.patch  <--
 # New Report. (wine_2026_10_11)
 API_1     - 0052-mciqtz32-Free-allocated-memory.patch
 MEM_9     - 0054-msvideo.dll16-Free-correct-pointer.patch
-API_92    - 0056-hnetcfg-Only-assign-output-on-success-in-NetFwPolicy.patch
 API_94    - 0057-imagehlp-Correctly-check-return-value-from-CreateFil.patch
 API_96    - 0058-infosoft-Correct-reference-count-for-IWordBreaker-ob.patch
-CPY_23    - 0059-oledb32-Pass-the-guid-to-create_datasource.patch
 CPY_78    - 0060-oleaut32-Correct-VTBIT_BOOL-define.patch
 CPY_127   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
 API_46    - 0066-winhttp-query_option-correct-sizeof-usage.patch
