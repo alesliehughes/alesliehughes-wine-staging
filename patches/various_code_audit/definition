@@ -44,3 +44,11 @@ MEM_239   - 0072-combase-get_library_for_classid-Relase-activation-co.patch
 MEM_240   - 0073-combase-SendReceive-release-apartment-on-error-path.patch
 MEM_234   - 0074-combase-Free-object-after-Marshaling-interface.patch
 API_60    - 0075-wineboot-Only-close-registry-key-if-it-was-opened.patch
+API_48    - 0076-wmp-Avoid-casting-of-COM-pointers.patch
+API_49    - 0077-wmp-IOleObject-GetClientSite-AddRef-to-returned-obje.patch
+LOGIC_966 - 0078-wmp-IWMPNetwork-QueryInterface-support-IUnknown.patch
+CPY_233   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
+OTHER_232 - 0080-wintab32-UnregisterClass-with-the-isntance-from-crea.patch
+LOGIC_485 - 0081-winex11.drv-wintab-Correct-copying-the-BTNAMES-value.patch
+CPY_304   - 0082-wininet-HttpSendRequestExA-Correct-sizeof-usage.patch
+CPY_235   -  0083-wininet-Store-sync-time-in-correct-field.patch

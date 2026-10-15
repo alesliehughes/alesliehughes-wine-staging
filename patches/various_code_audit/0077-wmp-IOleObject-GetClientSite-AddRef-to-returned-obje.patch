@@ -1,0 +1,28 @@
+From 51b4f52f122e7b2eb08147bb328bea07358dff17 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 15 Oct 2026 12:12:47 +1100
+Subject: [PATCH] wmp: IOleObject::GetClientSite AddRef to returned object.
+
+---
+ dlls/wmp/oleobj.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/wmp/oleobj.c b/dlls/wmp/oleobj.c
+index beacea57022..2388dd59acc 100644
+--- a/dlls/wmp/oleobj.c
++++ b/dlls/wmp/oleobj.c
+@@ -361,7 +361,10 @@ static HRESULT WINAPI OleObject_GetClientSite(IOleObject *iface, IOleClientSite
+     TRACE("(%p)->(%p)\n", This, ppClientSite);
+ 
+     *ppClientSite = This->client_site;
+-    return This->client_site ? S_OK : E_FAIL;
++    if (!This->client_site)
++        return E_FAIL;
++    IOleClientSite_AddRef(This->client_site);
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI OleObject_SetHostNames(IOleObject *iface, LPCOLESTR szContainerApp, LPCOLESTR szContainerObj)
+-- 
+2.53.0
+

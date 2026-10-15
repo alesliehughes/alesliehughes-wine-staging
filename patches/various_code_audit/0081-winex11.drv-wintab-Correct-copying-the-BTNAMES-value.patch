@@ -1,0 +1,41 @@
+From 53a2f50397882cd3f03d6f480d0c5b5b416b3181 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 15 Oct 2026 19:24:50 +1100
+Subject: [PATCH] winex11.drv/wintab: Correct copying the BTNAMES value
+
+---
+ dlls/winex11.drv/wintab.c     | 3 +--
+ dlls/wintab32/tests/context.c | 3 +++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/winex11.drv/wintab.c b/dlls/winex11.drv/wintab.c
+index 06d926ceadc..9765c3ae025 100644
+--- a/dlls/winex11.drv/wintab.c
++++ b/dlls/winex11.drv/wintab.c
+@@ -1447,8 +1447,7 @@ static UINT get_tablet_info( UINT wCategory, UINT nIndex, void *lpOutput )
+                                             sizeof(BYTE));
+                         break;
+                     case CSR_BTNNAMES:
+-                        FIXME("Button Names not returned correctly\n");
+-                        rc = CopyTabletData(lpOutput,&tgtcursor->BTNNAMES,
++                        rc = CopyTabletData(lpOutput,tgtcursor->BTNNAMES,
+                                             tgtcursor->cchBTNNAMES*sizeof(WCHAR));
+                         break;
+                     case CSR_BUTTONMAP:
+diff --git a/dlls/wintab32/tests/context.c b/dlls/wintab32/tests/context.c
+index e0300682d7a..16b93bf6cfc 100644
+--- a/dlls/wintab32/tests/context.c
++++ b/dlls/wintab32/tests/context.c
+@@ -217,6 +217,9 @@ static void test_WTInfoA(void)
+     ret = pWTInfoA( WTI_DEVICES, DVC_NAME, name );
+     trace("DVC_NAME %s\n", name);
+ 
++    ret = pWTInfoA( WTI_CURSORS, CSR_BTNNAMES, name );
++    trace("CSR_BTNNAMES %s\n", name);
++
+     ret = pWTInfoA( WTI_DEVICES, DVC_HARDWARE, name );
+     trace("DVC_HARDWARE %s\n", name);
+ 
+-- 
+2.53.0
+
