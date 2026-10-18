@@ -1,0 +1,27 @@
+From 923ae8ffb7ccae2110154e3039ac46dad9a491a6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Oct 2026 09:15:01 +1100
+Subject: [PATCH] rtworkq: Use CS when accessing queue (coverity)
+
+---
+ dlls/rtworkq/queue.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/rtworkq/queue.c b/dlls/rtworkq/queue.c
+index 81ec6df45bd..8cd25037c8b 100644
+--- a/dlls/rtworkq/queue.c
++++ b/dlls/rtworkq/queue.c
+@@ -680,8 +680,10 @@ static HRESULT grab_queue(DWORD queue_id, struct queue **ret)
+     }
+ 
+     /* Handles user queues. */
++    EnterCriticalSection(&queues_section);
+     if ((entry = get_queue_obj(queue_id)))
+         *ret = entry->obj;
++    LeaveCriticalSection(&queues_section);
+ 
+     return *ret ? S_OK : RTWQ_E_INVALID_WORKQUEUE;
+ }
+-- 
+2.53.0
+

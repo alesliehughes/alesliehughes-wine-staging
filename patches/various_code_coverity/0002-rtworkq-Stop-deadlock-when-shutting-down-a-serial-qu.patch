@@ -1,0 +1,101 @@
+From 1686ceeda7bc5644f249120f931eba6d0266ae75 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Oct 2026 13:55:03 +1100
+Subject: [PATCH] rtworkq: Stop deadlock when shutting down a serial queue.
+
+shutdown_system_queues (Locks queues_section)
+  -> serial_queue_shutdown
+     -> shutdown_queue
+        -> serial_queue_shutdown (via ops->shutdown)
+           -> unlock_user_queue (Locks queues_section)
+
+Coverity (1458481, 458488)
+---
+ dlls/rtworkq/queue.c         |  5 ++++
+ dlls/rtworkq/tests/rtworkq.c | 45 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/dlls/rtworkq/queue.c b/dlls/rtworkq/queue.c
+index 8cd25037c8b..0db3aa791e7 100644
+--- a/dlls/rtworkq/queue.c
++++ b/dlls/rtworkq/queue.c
+@@ -469,8 +469,13 @@ static HRESULT serial_queue_init(const struct queue_desc *desc, struct queue *qu
+ 
+ static BOOL serial_queue_shutdown(struct queue *queue)
+ {
++    LeaveCriticalSection(&queues_section);
++
++    /* unlock_user_queue will lock queues_section */
+     unlock_user_queue(queue->target_queue);
+ 
++    EnterCriticalSection(&queues_section);
++
+     return TRUE;
+ }
+ 
+diff --git a/dlls/rtworkq/tests/rtworkq.c b/dlls/rtworkq/tests/rtworkq.c
+index 812c1f03c1e..866cab9e51a 100644
+--- a/dlls/rtworkq/tests/rtworkq.c
++++ b/dlls/rtworkq/tests/rtworkq.c
+@@ -473,6 +473,50 @@ static void test_work_queue(void)
+     IRtwqAsyncCallback_Release(&test_callback->IRtwqAsyncCallback_iface);
+ }
+ 
++static void test_serial_work_queue(void)
++{
++    IRtwqAsyncResult *result, *result2;
++    struct test_callback *test_callback, *test_callback2;
++    HRESULT hr;
++    DWORD queue;
++
++    ok(0, "1. XXXXXXXXXX\n");
++
++
++    hr = RtwqStartup();
++    ok(hr == S_OK, "Failed to start up, hr %#lx.\n", hr);
++
++    hr = RtwqAllocateSerialWorkQueue(RTWQ_STANDARD_WORKQUEUE, &queue);
++    ok(hr == S_OK, "Unexpected hr %#lx.\n", hr);
++
++    test_callback = create_test_callback();
++    test_callback2 = create_test_callback();
++    test_callback->sleep_ms = 1000;
++    test_callback2->sleep_ms = 1000;
++
++    hr = RtwqCreateAsyncResult(NULL, &test_callback->IRtwqAsyncCallback_iface, NULL, &result);
++    ok(hr == S_OK, "Failed to create result, hr %#lx.\n", hr);
++    hr = RtwqCreateAsyncResult(NULL, &test_callback2->IRtwqAsyncCallback_iface, NULL, &result2);
++    ok(hr == S_OK, "Failed to create result, hr %#lx.\n", hr);
++
++    hr = RtwqPutWorkItem(queue, 0, result);
++    ok(hr == S_OK, "got %#lx\n", hr);
++
++    {
++        int i;
++        for (i=0; i < 2; i++)
++        {
++            hr = RtwqPutWorkItem(queue, 0, result2);
++            ok(hr == S_OK, "got %#lx\n", hr);
++        }
++    }
++
++    hr = RtwqShutdown();
++    ok(hr == S_OK, "Failed to shut down, hr %#lx.\n", hr);
++
++    ok(0, "2. XXXXXXXXXX\n");
++}
++
+ static void test_scheduled_items(void)
+ {
+     struct test_callback *test_callback, *test_callback2;
+@@ -674,6 +718,7 @@ START_TEST(rtworkq)
+     test_platform_init();
+     test_undefined_queue_id();
+     test_work_queue();
++    test_serial_work_queue();
+     test_scheduled_items();
+     test_queue_shutdown();
+ }
+-- 
+2.53.0
+

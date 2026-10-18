@@ -1,0 +1,5 @@
+Fixes: []: Coverity Changes not send upstream.
+
+1569463 - 0001-rtworkq-Use-CS-when-accessing-queue-coverity.patch
+458488  - 0002-rtworkq-Stop-deadlock-when-shutting-down-a-serial-qu.patch
+
