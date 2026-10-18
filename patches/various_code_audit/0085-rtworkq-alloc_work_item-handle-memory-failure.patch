@@ -1,0 +1,26 @@
+From 8e1370ed5cf39d0f5282ae7469d2d67e78f4f426 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Oct 2026 08:49:49 +1100
+Subject: [PATCH 85/86] rtworkq: alloc_work_item handle memory failure
+
+All caller check for a NULL return value.
+---
+ dlls/rtworkq/queue.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/rtworkq/queue.c b/dlls/rtworkq/queue.c
+index 1410ae0b5da..2dd84235e83 100644
+--- a/dlls/rtworkq/queue.c
++++ b/dlls/rtworkq/queue.c
+@@ -609,6 +609,8 @@ static struct work_item * alloc_work_item(struct queue *queue, LONG priority, IR
+     struct work_item *item;
+ 
+     item = calloc(1, sizeof(*item));
++    if (!item)
++        return NULL;
+ 
+     item->IUnknown_iface.lpVtbl = &work_item_vtbl;
+     item->result = result;
+-- 
+2.53.0
+

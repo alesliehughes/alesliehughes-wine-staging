@@ -51,4 +51,8 @@ CPY_233   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
 OTHER_232 - 0080-wintab32-UnregisterClass-with-the-isntance-from-crea.patch
 LOGIC_485 - 0081-winex11.drv-wintab-Correct-copying-the-BTNAMES-value.patch
 CPY_304   - 0082-wininet-HttpSendRequestExA-Correct-sizeof-usage.patch
-CPY_235   -  0083-wininet-Store-sync-time-in-correct-field.patch
+CPY_235   - 0083-wininet-Store-sync-time-in-correct-field.patch
+
+PANIC_775 - 0084-rtworkq-create_async_result-set-output-variable.patch
+PANIC_200 - 0085-rtworkq-alloc_work_item-handle-memory-failure.patch
+ERR_410   - 0086-rtworkq-RtwqAddPeriodicCallback-dont-assign-output-o.patch

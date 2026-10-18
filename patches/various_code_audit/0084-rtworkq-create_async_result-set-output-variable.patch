@@ -1,0 +1,25 @@
+From c099c45463247bb5615fba14e67c3dd87d334869 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 19 Oct 2026 08:47:19 +1100
+Subject: [PATCH 84/86] rtworkq: create_async_result set output variable
+
+---
+ dlls/rtworkq/queue.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dlls/rtworkq/queue.c b/dlls/rtworkq/queue.c
+index 144feb98c55..1410ae0b5da 100644
+--- a/dlls/rtworkq/queue.c
++++ b/dlls/rtworkq/queue.c
+@@ -1211,6 +1211,8 @@ static HRESULT create_async_result(IUnknown *object, IRtwqAsyncCallback *callbac
+     if (!out)
+         return E_INVALIDARG;
+ 
++    *out = NULL;
++
+     if (!(result = async_result_cache_pop()))
+     {
+         if (!(result = calloc(1, sizeof(*result))))
+-- 
+2.53.0
+
