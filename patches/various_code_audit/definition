@@ -34,7 +34,6 @@ API_94    - 0057-imagehlp-Correctly-check-return-value-from-CreateFil.patch
 API_96    - 0058-infosoft-Correct-reference-count-for-IWordBreaker-ob.patch
 CPY_78    - 0060-oleaut32-Correct-VTBIT_BOOL-define.patch
 CPY_127   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
-API_46    - 0066-winhttp-query_option-correct-sizeof-usage.patch
 CPY_33    - 0067-combase-Correctly-Unmarshal-HBITMAP-objects.patch
 MEM_235   - 0068-combase-Ensure-registry-key-is-closed.patch
 MEM_236   - 0069-combase-Ensure-apartment-is-release-in-ContextCallba.patch
