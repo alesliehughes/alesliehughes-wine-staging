@@ -1,0 +1,25 @@
+From 3bf77e991b524525b0cf4e7fa0d9179866ced1d6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 14:01:59 +1100
+Subject: [PATCH] d3d11: ID3D10Device1::SetExceptionMode fake success
+
+---
+ dlls/d3d11/device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/d3d11/device.c b/dlls/d3d11/device.c
+index 9ff8c24a364..ec52da96a89 100644
+--- a/dlls/d3d11/device.c
++++ b/dlls/d3d11/device.c
+@@ -6896,7 +6896,7 @@ static HRESULT STDMETHODCALLTYPE d3d10_device_SetExceptionMode(ID3D10Device1 *if
+ {
+     FIXME("iface %p, flags %#x stub!\n", iface, flags);
+ 
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static UINT STDMETHODCALLTYPE d3d10_device_GetExceptionMode(ID3D10Device1 *iface)
+-- 
+2.53.0
+

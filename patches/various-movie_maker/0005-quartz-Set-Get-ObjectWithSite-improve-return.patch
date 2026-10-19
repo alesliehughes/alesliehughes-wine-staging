@@ -1,0 +1,72 @@
+From e7e6e7bfa0c8f087fcf10b203052ed4602ae1f11 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 18 Oct 2026 17:03:16 +1100
+Subject: [PATCH] quartz: Set/Get ObjectWithSite improve return
+
+---
+ dlls/quartz/filtergraph.c       |  4 ++--
+ dlls/quartz/tests/filtergraph.c | 19 +++++++++++++++++++
+ 2 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/quartz/filtergraph.c b/dlls/quartz/filtergraph.c
+index d495b7c0768..c4d62917740 100644
+--- a/dlls/quartz/filtergraph.c
++++ b/dlls/quartz/filtergraph.c
+@@ -2847,7 +2847,7 @@ static HRESULT WINAPI ObjectWithSite_SetSite(IObjectWithSite *iface, IUnknown *p
+     TRACE("(%p/%p)->()\n", This, iface);
+     if (This->pSite) IUnknown_Release(This->pSite);
+     This->pSite = pUnkSite;
+-    IUnknown_AddRef(This->pSite);
++    if (This->pSite) IUnknown_AddRef(This->pSite);
+     return S_OK;
+ }
+ 
+@@ -2859,7 +2859,7 @@ static HRESULT WINAPI ObjectWithSite_GetSite(IObjectWithSite *iface, REFIID riid
+ 
+     *ppvSite = NULL;
+     if (!This->pSite)
+-        return E_FAIL;
++        return E_NOINTERFACE;
+     else
+         return IUnknown_QueryInterface(This->pSite, riid, ppvSite);
+ }
+diff --git a/dlls/quartz/tests/filtergraph.c b/dlls/quartz/tests/filtergraph.c
+index 3f1b14fac62..37114987ad1 100644
+--- a/dlls/quartz/tests/filtergraph.c
++++ b/dlls/quartz/tests/filtergraph.c
+@@ -572,6 +572,24 @@ static void test_media_event(IFilterGraph2 *graph)
+     IMediaFilter_Release(filter);
+ }
+ 
++static void test_graph_site(IFilterGraph2 *graph)
++{
++    HRESULT hr;
++    IObjectWithSite *site;
++    IUnknown *unk;
++
++    hr = IFilterGraph2_QueryInterface(graph, &IID_IObjectWithSite, (void **)&site);
++    ok(hr == S_OK, "Got hr %#lx.\n", hr);
++
++    hr = IObjectWithSite_GetSite(site, &IID_IUnknown, (void**)&unk);
++    ok(hr == E_NOINTERFACE, "Got hr %#lx.\n", hr);
++
++    hr = IObjectWithSite_SetSite(site, NULL);
++    ok(hr == S_OK, "Got hr %#lx.\n", hr);
++
++    IObjectWithSite_Release(site);
++}
++
+ static void rungraph(IFilterGraph2 *graph, BOOL video)
+ {
+     if (video)
+@@ -579,6 +597,7 @@ static void rungraph(IFilterGraph2 *graph, BOOL video)
+     test_media_seeking(graph);
+     test_state_change(graph);
+     test_media_event(graph);
++    test_graph_site(graph);
+ }
+ 
+ static HRESULT test_graph_builder_connect_file(WCHAR *filename, BOOL audio, BOOL video)
+-- 
+2.53.0
+

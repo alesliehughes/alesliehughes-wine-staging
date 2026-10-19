@@ -1,0 +1,26 @@
+From 65cc3afa60a0f1ebb27f3ffc0ba5b4b020f492c0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 15 Oct 2026 11:11:03 +1100
+Subject: [PATCH] dxgi: IDXGIResource1::GetUsage fake success
+
+---
+ dlls/dxgi/resource.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/dxgi/resource.c b/dlls/dxgi/resource.c
+index 8ae6350c037..eaeed033472 100644
+--- a/dlls/dxgi/resource.c
++++ b/dlls/dxgi/resource.c
+@@ -393,7 +393,8 @@ static HRESULT STDMETHODCALLTYPE dxgi_resource_GetSharedHandle(IDXGIResource1 *i
+ {
+     FIXME("iface %p, shared_handle %p stub!\n", iface, shared_handle);
+ 
+-    return E_NOTIMPL;
++    *shared_handle = NULL;
++    return S_OK;
+ }
+ 
+ static HRESULT STDMETHODCALLTYPE dxgi_resource_GetUsage(IDXGIResource1 *iface, DXGI_USAGE *usage)
+-- 
+2.53.0
+

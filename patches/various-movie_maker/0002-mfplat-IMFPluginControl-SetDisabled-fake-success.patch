@@ -1,0 +1,25 @@
+From 6ddf44b1a60c349b96adf001e149f411d7ade5a1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 12 Oct 2026 14:11:19 +1100
+Subject: [PATCH] mfplat: IMFPluginControl::SetDisabled fake success
+
+---
+ dlls/mfplat/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
+index d7958f7121a..38497dca00b 100644
+--- a/dlls/mfplat/main.c
++++ b/dlls/mfplat/main.c
+@@ -5806,7 +5806,7 @@ static HRESULT WINAPI MFPluginControl_GetDisabledByIndex(IMFPluginControl *iface
+ static HRESULT WINAPI MFPluginControl_SetDisabled(IMFPluginControl *iface, DWORD plugin_type, REFCLSID clsid, BOOL disabled)
+ {
+     FIXME("(%ld %s %x)\n", plugin_type, debugstr_guid(clsid), disabled);
+-    return E_NOTIMPL;
++    return S_OK;
+ }
+ 
+ static const IMFPluginControlVtbl MFPluginControlVtbl = {
+-- 
+2.53.0
+
