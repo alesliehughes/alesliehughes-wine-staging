@@ -1,0 +1,48 @@
+From 7da4b6d2ce8caadc996966cf2023d37a5f9a9064 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 07:34:46 +1100
+Subject: [PATCH 3/3] mfplat/tests: Add marshal test
+
+---
+ dlls/mfplat/tests/mfplat.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
+index bdf2482eaec..81c3a648119 100644
+--- a/dlls/mfplat/tests/mfplat.c
++++ b/dlls/mfplat/tests/mfplat.c
+@@ -2102,6 +2102,23 @@ static void test_source_resolver(void)
+     IMFAsyncCallback_Release(&callback2->IMFAsyncCallback_iface);
+ }
+ 
++static void test_source_resolver_marshal(void)
++{
++    IMFSourceResolver *resolver;
++    IStream *stream = NULL;
++    HRESULT hr;
++
++    hr = pMFCreateSourceResolver(&resolver);
++    ok(hr == S_OK, "Unexpected hr %#lx.\n", hr);
++
++    hr = CoMarshalInterThreadInterfaceInStream(&IID_IMFSourceResolver, (IUnknown*)resolver, &stream);
++    ok(hr == S_OK, "Unexpected hr %#lx.\n", hr);
++    if (stream)
++        IStream_Release(stream);
++
++    IMFSourceResolver_Release(resolver);
++}
++
+ static void init_functions(void)
+ {
+     HMODULE mod = GetModuleHandleA("mfplat.dll");
+@@ -15731,6 +15748,7 @@ START_TEST(mfplat)
+     test_system_memory_aligned_buffer();
+     test_MFCreateLegacyMediaBufferOnMFMediaBuffer();
+     test_source_resolver();
++    test_source_resolver_marshal();
+     test_MFCreateAsyncResult();
+     test_allocate_queue();
+     test_MFLockSharedWorkQueue();
+-- 
+2.53.0
+

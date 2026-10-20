@@ -1,0 +1,120 @@
+From d651b55ce8a01b84b80a32422adb7da4430163d1 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 08:34:50 +1100
+Subject: [PATCH] mfps: Provide a callback interface to stop a crash - WIP
+
+---
+ dlls/mfps/main.c | 90 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 89 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/mfps/main.c b/dlls/mfps/main.c
+index fc782f625c8..e03250c3ce6 100644
+--- a/dlls/mfps/main.c
++++ b/dlls/mfps/main.c
+@@ -237,14 +237,102 @@ HRESULT __RPC_STUB IMFTopologyNode_GetInputPrefType_Stub(IMFTopologyNode* This,
+     return E_NOTIMPL;
+ }
+ 
++struct test_callback
++{
++    IMFAsyncCallback IMFAsyncCallback_iface;
++    LONG refcount;
++    HANDLE event;
++    DWORD param;
++    IMFMediaEvent *media_event;
++    IMFAsyncResult *result;
++};
++
++static struct test_callback *impl_from_IMFAsyncCallback(IMFAsyncCallback *iface)
++{
++    return CONTAINING_RECORD(iface, struct test_callback, IMFAsyncCallback_iface);
++}
++
++static HRESULT WINAPI testcallback_QueryInterface(IMFAsyncCallback *iface, REFIID riid, void **obj)
++{
++    if (IsEqualIID(riid, &IID_IMFAsyncCallback) ||
++            IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IMFAsyncCallback_AddRef(iface);
++        return S_OK;
++    }
++
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI testcallback_AddRef(IMFAsyncCallback *iface)
++{
++    struct test_callback *callback = impl_from_IMFAsyncCallback(iface);
++    return InterlockedIncrement(&callback->refcount);
++}
++
++static ULONG WINAPI testcallback_Release(IMFAsyncCallback *iface)
++{
++    struct test_callback *callback = impl_from_IMFAsyncCallback(iface);
++    ULONG refcount = InterlockedDecrement(&callback->refcount);
++
++    if (!refcount)
++    {
++        CloseHandle(callback->event);
++        free(callback);
++    }
++
++    return refcount;
++}
++
++static HRESULT WINAPI testcallback_GetParameters(IMFAsyncCallback *iface, DWORD *flags, DWORD *queue)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI test_async_callback_result_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
++{
++    struct test_callback *callback = impl_from_IMFAsyncCallback(iface);
++
++    callback->result = result;
++    IMFAsyncResult_AddRef(callback->result);
++    SetEvent(callback->event);
++
++    return S_OK;
++}
++
++static const IMFAsyncCallbackVtbl test_create_from_url_callback_vtbl =
++{
++    testcallback_QueryInterface,
++    testcallback_AddRef,
++    testcallback_Release,
++    testcallback_GetParameters,
++    test_async_callback_result_Invoke,
++};
++
++static struct test_callback * create_test_callback(const IMFAsyncCallbackVtbl *vtbl)
++{
++    struct test_callback *callback = calloc(1, sizeof(*callback));
++
++    callback->IMFAsyncCallback_iface.lpVtbl = vtbl;
++    callback->refcount = 1;
++    callback->event = CreateEventA(NULL, FALSE, FALSE, NULL);
++
++    return callback;
++}
++
+ HRESULT __RPC_STUB IMFSourceResolver_BeginCreateObjectFromURL_Stub(IMFSourceResolver* This,
+                 const WCHAR *url, DWORD flags, IPropertyStore *props, IMFRemoteAsyncCallback *callback)
+ {
+     HRESULT hr;
++    struct test_callback *testcallback;
+ 
+     TRACE("(%p, %s, 0x%lx, %p, %p)\n", This, debugstr_w(url), flags, props, callback);
+ 
+-    hr = IMFSourceResolver_BeginCreateObjectFromURL(This, url, flags, props, NULL, NULL, NULL);
++    testcallback = create_test_callback(&test_create_from_url_callback_vtbl);
++
++    hr = IMFSourceResolver_BeginCreateObjectFromURL(This, url, flags, props, NULL, &testcallback->IMFAsyncCallback_iface, NULL);
+ 
+     TRACE("ret %lx\n", hr);
+     return hr;
+-- 
+2.53.0
+

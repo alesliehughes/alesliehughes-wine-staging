@@ -1,0 +1,33 @@
+From 0d42a0703afcbc4d06b0a0df804d01397b03c1fb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 12:49:27 +1100
+Subject: [PATCH] mfps IMFSourceResolver_BeginCreateObjectFromURL_Stub - Merge
+
+---
+ dlls/mfps/main.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/mfps/main.c b/dlls/mfps/main.c
+index e8199c75ece..fc782f625c8 100644
+--- a/dlls/mfps/main.c
++++ b/dlls/mfps/main.c
+@@ -240,8 +240,14 @@ HRESULT __RPC_STUB IMFTopologyNode_GetInputPrefType_Stub(IMFTopologyNode* This,
+ HRESULT __RPC_STUB IMFSourceResolver_BeginCreateObjectFromURL_Stub(IMFSourceResolver* This,
+                 const WCHAR *url, DWORD flags, IPropertyStore *props, IMFRemoteAsyncCallback *callback)
+ {
+-    FIXME("(%p)\n", This);
+-    return E_NOTIMPL;
++    HRESULT hr;
++
++    TRACE("(%p, %s, 0x%lx, %p, %p)\n", This, debugstr_w(url), flags, props, callback);
++
++    hr = IMFSourceResolver_BeginCreateObjectFromURL(This, url, flags, props, NULL, NULL, NULL);
++
++    TRACE("ret %lx\n", hr);
++    return hr;
+ }
+ 
+ HRESULT __RPC_STUB IMFSourceResolver_EndCreateObjectFromURL_Stub(IMFSourceResolver* This,
+-- 
+2.53.0
+

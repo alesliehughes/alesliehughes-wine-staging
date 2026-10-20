@@ -1,0 +1,35 @@
+From b4fa1a12cabb8b2e44920c36e0dbb154bb7a56cb Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 09:22:33 +1100
+Subject: [PATCH] mfps: MERGE - Implement
+ IMFSourceResolver_BeginCreateObjectFromURL_Proxy
+
+---
+ dlls/mfps/main.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/mfps/main.c b/dlls/mfps/main.c
+index a39ffeb5c6e..e8199c75ece 100644
+--- a/dlls/mfps/main.c
++++ b/dlls/mfps/main.c
+@@ -182,8 +182,15 @@ HRESULT CALLBACK IMFSourceResolver_BeginCreateObjectFromURL_Proxy(IMFSourceResol
+                 const WCHAR *url, DWORD flags, IPropertyStore *props, IUnknown **cancel_cookie,
+                 IMFAsyncCallback *callback, IUnknown *unk_state)
+ {
+-    FIXME("(%p)\n", This);
+-    return E_NOTIMPL;
++    HRESULT hr;
++
++    TRACE("(%p, %s, %lx, %p, %p, %p, %p)\n", This, debugstr_w(url),  flags, props, cancel_cookie,
++                callback, unk_state);
++
++    hr = IMFSourceResolver_RemoteBeginCreateObjectFromURL_Proxy(This, url,  flags, props, NULL /*callback*/);
++
++    TRACE("ret 0x%lx\n", hr);
++    return hr;
+ }
+ 
+ HRESULT CALLBACK IMFSourceResolver_EndCreateObjectFromURL_Proxy(IMFSourceResolver* This,
+-- 
+2.53.0
+
