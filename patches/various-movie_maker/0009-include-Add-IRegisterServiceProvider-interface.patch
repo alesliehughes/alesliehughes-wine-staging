@@ -1,0 +1,39 @@
+From c9ec9ed30c28947ce567a58efae33849a9008768 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 14:06:37 +1100
+Subject: [PATCH] include: Add IRegisterServiceProvider interface
+
+---
+ include/axextend.idl | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/include/axextend.idl b/include/axextend.idl
+index 155dea5dd8a..de9793732b4 100644
+--- a/include/axextend.idl
++++ b/include/axextend.idl
+@@ -76,6 +76,7 @@ interface IOverlay;
+ interface IOverlayNotify;
+ interface IOverlayNotify2;
+ interface IQualityControl;
++interface IRegisterServiceProvider;
+ interface ISeekingPassThru;
+ 
+ typedef struct
+@@ -1498,3 +1499,14 @@ interface IVideoFrameStep : IUnknown
+     HRESULT CanStep(long multiple, [in] IUnknown *filter);
+     HRESULT CancelStep();
+ }
++
++[
++    local,
++    object,
++    uuid(7b3a2f01-0751-48dd-b556-004785171c54),
++    pointer_default(unique)
++]
++interface IRegisterServiceProvider : IUnknown
++{
++    HRESULT RegisterService([in] REFGUID guidService, [in] IUnknown *pObject);
++};
+-- 
+2.53.0
+

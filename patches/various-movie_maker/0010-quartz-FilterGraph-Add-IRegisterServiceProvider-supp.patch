@@ -1,0 +1,87 @@
+From 05254f72bff16d7933d2ec66de13cbf0887149b8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 14:37:59 +1100
+Subject: [PATCH] quartz: FilterGraph Add IRegisterServiceProvider support
+
+---
+ dlls/quartz/filtergraph.c | 43 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/quartz/filtergraph.c b/dlls/quartz/filtergraph.c
+index c4d62917740..896f5ee2fa7 100644
+--- a/dlls/quartz/filtergraph.c
++++ b/dlls/quartz/filtergraph.c
+@@ -111,7 +111,7 @@ struct filter_graph
+     /* IFilterChain */
+     /* IFilterMapper2 */
+     /* IQueueCommand */
+-    /* IRegisterServiceProvider */
++    IRegisterServiceProvider IRegisterServiceProvider_iface;
+     /* IResourceManager */
+     /* IServiceProvider */
+     IVideoFrameStep IVideoFrameStep_iface;
+@@ -429,6 +429,9 @@ static HRESULT WINAPI FilterGraphInner_QueryInterface(IUnknown *iface, REFIID ri
+     } else if (IsEqualGUID(&IID_IGraphVersion, riid)) {
+         *ppvObj = &This->IGraphVersion_iface;
+         TRACE("   returning IGraphVersion interface (%p)\n", *ppvObj);
++    } else if (IsEqualGUID(&IID_IRegisterServiceProvider, riid)) {
++        *ppvObj = &This->IRegisterServiceProvider_iface;
++        TRACE("   returning IRegisterServiceProvider interface (%p)\n", *ppvObj);
+     } else if (IsEqualGUID(&IID_IVideoFrameStep, riid)) {
+         *ppvObj = &This->IVideoFrameStep_iface;
+         TRACE("   returning IVideoFrameStep interface (%p)\n", *ppvObj);
+@@ -5988,6 +5991,43 @@ static const IUnknownVtbl IInner_VTable =
+     FilterGraphInner_Release
+ };
+ 
++static struct filter_graph *impl_from_IRegisterServiceProvider(IRegisterServiceProvider *iface)
++{
++    return CONTAINING_RECORD(iface, struct filter_graph, IRegisterServiceProvider_iface);
++}
++
++static HRESULT WINAPI service_provider_QueryInterface(IRegisterServiceProvider *iface, REFIID iid, void **out)
++{
++    struct filter_graph *graph = impl_from_IRegisterServiceProvider(iface);
++    return IUnknown_QueryInterface(graph->outer_unk, iid, out);
++}
++
++static ULONG WINAPI service_provider_AddRef(IRegisterServiceProvider *iface)
++{
++    struct filter_graph *graph = impl_from_IRegisterServiceProvider(iface);
++    return IUnknown_AddRef(graph->outer_unk);
++}
++
++static ULONG WINAPI service_provider_Release(IRegisterServiceProvider *iface)
++{
++    struct filter_graph *graph = impl_from_IRegisterServiceProvider(iface);
++    return IUnknown_Release(graph->outer_unk);
++}
++
++static HRESULT WINAPI service_provider_RegisterService(IRegisterServiceProvider *iface, REFGUID guidService, IUnknown *pObject)
++{
++    FIXME("iface %p, guidService %s, IUnknown %p, stub!\n", iface, debugstr_guid(guidService), pObject);
++    return S_OK;
++}
++
++static const IRegisterServiceProviderVtbl service_provider_vtbl =
++{
++    service_provider_QueryInterface,
++    service_provider_AddRef,
++    service_provider_Release,
++    service_provider_RegisterService,
++};
++
+ static HRESULT filter_graph_common_create(IUnknown *outer, IUnknown **out, BOOL threaded)
+ {
+     struct filter_graph *object;
+@@ -6010,6 +6050,7 @@ static HRESULT filter_graph_common_create(IUnknown *outer, IUnknown **out, BOOL
+     object->IMediaPosition_iface.lpVtbl = &IMediaPosition_VTable;
+     object->IMediaSeeking_iface.lpVtbl = &IMediaSeeking_VTable;
+     object->IObjectWithSite_iface.lpVtbl = &IObjectWithSite_VTable;
++    object->IRegisterServiceProvider_iface.lpVtbl = &service_provider_vtbl;
+     object->IUnknown_inner.lpVtbl = &IInner_VTable;
+     object->IVideoFrameStep_iface.lpVtbl = &VideoFrameStep_vtbl;
+     object->IVideoWindow_iface.lpVtbl = &IVideoWindow_VTable;
+-- 
+2.53.0
+
