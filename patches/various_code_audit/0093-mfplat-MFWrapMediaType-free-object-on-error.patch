@@ -1,0 +1,34 @@
+From 414763e070b2ab916466e5369f974c2c10eff7ab Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 20:38:13 +1100
+Subject: [PATCH] mfplat: MFWrapMediaType free object on error.
+
+---
+ dlls/mfplat/mediatype.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/mfplat/mediatype.c b/dlls/mfplat/mediatype.c
+index c808933aa34..050c4093236 100644
+--- a/dlls/mfplat/mediatype.c
++++ b/dlls/mfplat/mediatype.c
+@@ -2923,7 +2923,7 @@ BOOL WINAPI MFCompareFullToPartialMediaType(IMFMediaType *full_type, IMFMediaTyp
+  */
+ HRESULT WINAPI MFWrapMediaType(IMFMediaType *original, REFGUID major, REFGUID subtype, IMFMediaType **ret)
+ {
+-    IMFMediaType *mediatype;
++    IMFMediaType *mediatype = NULL;
+     UINT8 *buffer;
+     UINT32 size;
+     HRESULT hr;
+@@ -2954,6 +2954,8 @@ HRESULT WINAPI MFWrapMediaType(IMFMediaType *original, REFGUID major, REFGUID su
+     *ret = mediatype;
+ 
+ failed:
++    if (FAILED(hr) && mediatype)
++        IMFMediaType_Release(mediatype);
+     free(buffer);
+ 
+     return hr;
+-- 
+2.53.0
+

@@ -1,0 +1,25 @@
+From 1659273e4f55ef9752463109d21c520360458834 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 17:38:22 +1100
+Subject: [PATCH] quartz: SetDefaultSyncSource dont reset filter if one is
+ found.
+
+---
+ dlls/quartz/filtergraph.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/dlls/quartz/filtergraph.c b/dlls/quartz/filtergraph.c
+index 896f5ee2fa7..d54d8e4464a 100644
+--- a/dlls/quartz/filtergraph.c
++++ b/dlls/quartz/filtergraph.c
+@@ -1033,7 +1033,6 @@ static HRESULT WINAPI FilterGraph2_SetDefaultSyncSource(IFilterGraph2 *iface)
+     }
+     else
+     {
+-        filter = LIST_ENTRY(list_tail(&This->filters), struct filter, entry);
+         This->refClockProvider = filter->filter;
+     }
+ 
+-- 
+2.53.0
+

@@ -1,0 +1,26 @@
+From 1ed94f71f4fefd6e7e8c0fcd80032dbbc305db45 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 20:33:48 +1100
+Subject: [PATCH] mfplat: MFUnlockDXGIDeviceManager free the manager on final
+ release
+
+Understand why this is required but not sure if its the correct way.
+---
+ dlls/mfplat/main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
+index 51c37a98c00..63cdf6816a6 100644
+--- a/dlls/mfplat/main.c
++++ b/dlls/mfplat/main.c
+@@ -9746,6 +9746,7 @@ HRESULT WINAPI MFUnlockDXGIDeviceManager(void)
+         IMFDXGIDeviceManager_Release(shared_dm.manager);
+         if (!--shared_dm.locks)
+         {
++            IMFDXGIDeviceManager_Release(shared_dm.manager);
+             shared_dm.manager = NULL;
+             shared_dm.token = 0;
+         }
+-- 
+2.53.0
+

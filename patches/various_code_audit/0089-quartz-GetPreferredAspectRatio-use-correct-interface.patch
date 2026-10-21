@@ -1,0 +1,26 @@
+From 3cc12d11c70b3bcf98097cba34af7bfe76cbf0a6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 17:48:28 +1100
+Subject: [PATCH] quartz: GetPreferredAspectRatio use correct interface to get
+ fetch Ratio
+
+---
+ dlls/quartz/filtergraph.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/quartz/filtergraph.c b/dlls/quartz/filtergraph.c
+index 4123e191666..8f0aab93c61 100644
+--- a/dlls/quartz/filtergraph.c
++++ b/dlls/quartz/filtergraph.c
+@@ -3821,7 +3821,7 @@ static HRESULT WINAPI BasicVideo2_GetPreferredAspectRatio(IBasicVideo2 *iface, L
+     hr = GetTargetInterface(This, &IID_IBasicVideo2, (LPVOID*)&pBasicVideo2);
+ 
+     if (hr == S_OK)
+-        hr = BasicVideo2_GetPreferredAspectRatio(iface, plAspectX, plAspectY);
++        hr = BasicVideo2_GetPreferredAspectRatio(pBasicVideo2, plAspectX, plAspectY);
+ 
+     LeaveCriticalSection(&This->cs);
+ 
+-- 
+2.53.0
+

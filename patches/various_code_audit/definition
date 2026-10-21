@@ -20,14 +20,14 @@ CPY_16    - 0034-rpcrt4-epm_register-copy-each-uuid-in-the-list.patch
 CPY_61    - 0035-rpcrt4-NdrServerInitializeNew-set-missed-field-fBuff.patch
 CPY_97    - 0036-dmstyle-Correct-error-return-in-Mute-Get-Set-Param.patch
 PANIC_409 - 0037-dmstyle-CommandTrack-Load-handle-allocation-error.patch
-LOGIC_211 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch
-CPY_67    - 0043-twaindsm-TWAIN_ControlNull-correct-message-check.patch
-CPY_86    - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch
-LOGIC_23  - 0047-msado15-Fields-Append-correctly-assign-the-next-ordi.patch
-LOGIC_22  - 0048-msado15-Correctly-cast-DBVECTOR-type.patch
-LOGIC_40  - 0050-libs-dxerr9-Dont-use-a-binary-search-over-error-list.patch  <-- Not linked to any code atm.
 
-# New Report. (wine_2026_10_11)
+# New Report. (wine_2026_10_19)
+LOGIC_780 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch
+CPY_90    - 0043-twaindsm-TWAIN_ControlNull-correct-message-check.patch
+CPY_139   - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch
+LOGIC_51  - 0048-msado15-Correctly-cast-DBVECTOR-type.patch
+LOGIC_53  - 0047-msado15-Fields-Append-correctly-assign-the-next-ordi.patch
+LOGIC_103 - 0050-libs-dxerr9-Dont-use-a-binary-search-over-error-list.patch  <-- Not linked to any code atm.
 API_1     - 0052-mciqtz32-Free-allocated-memory.patch
 MEM_9     - 0054-msvideo.dll16-Free-correct-pointer.patch
 API_94    - 0057-imagehlp-Correctly-check-return-value-from-CreateFil.patch
@@ -42,10 +42,10 @@ MEM_238   - 0071-combase-std_unmarshal_interface-release-apartment-on.patch
 MEM_239   - 0072-combase-get_library_for_classid-Relase-activation-co.patch
 MEM_240   - 0073-combase-SendReceive-release-apartment-on-error-path.patch
 MEM_234   - 0074-combase-Free-object-after-Marshaling-interface.patch
-API_60    - 0075-wineboot-Only-close-registry-key-if-it-was-opened.patch
-API_48    - 0076-wmp-Avoid-casting-of-COM-pointers.patch
-API_49    - 0077-wmp-IOleObject-GetClientSite-AddRef-to-returned-obje.patch
-LOGIC_966 - 0078-wmp-IWMPNetwork-QueryInterface-support-IUnknown.patch
+API_59    - 0075-wineboot-Only-close-registry-key-if-it-was-opened.patch
+API_47    - 0076-wmp-Avoid-casting-of-COM-pointers.patch
+API_48    - 0077-wmp-IOleObject-GetClientSite-AddRef-to-returned-obje.patch
+LOGIC_967 - 0078-wmp-IWMPNetwork-QueryInterface-support-IUnknown.patch
 CPY_233   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
 OTHER_232 - 0080-wintab32-UnregisterClass-with-the-isntance-from-crea.patch
 LOGIC_485 - 0081-winex11.drv-wintab-Correct-copying-the-BTNAMES-value.patch
@@ -54,4 +54,12 @@ CPY_235   - 0083-wininet-Store-sync-time-in-correct-field.patch
 
 PANIC_775 - 0084-rtworkq-create_async_result-set-output-variable.patch
 PANIC_200 - 0085-rtworkq-alloc_work_item-handle-memory-failure.patch
-ERR_410   - 0086-rtworkq-RtwqAddPeriodicCallback-dont-assign-output-o.patch
+ERR_412   - 0086-rtworkq-RtwqAddPeriodicCallback-dont-assign-output-o.patch
+LOGIC_764 - 0087-quartz-SetDefaultSyncSource-dont-reset-filter-if-one.patch
+LOGIC_765 - 0088-quartz-all_renderers_seek-compare-correct-hr-value.patch
+PANIC_11  - 0089-quartz-GetPreferredAspectRatio-use-correct-interface.patch
+CPY_301   - 0090-winegstreamer-Correct-some-TRACE-ERR-output.patch
+MEM_85    - 0091-mfplat-IPropertyStore-Release-Free-all-store-values.patch
+MEM_86    - 0092-mfplat-MFUnlockDXGIDeviceManager-free-the-manager-on.patch
+MEM_87    - 0093-mfplat-MFWrapMediaType-free-object-on-error.patch
+MEM_329   - 0094-mfplat-SetValue-clear-destination-before-coping-valu.patch

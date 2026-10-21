@@ -1,0 +1,27 @@
+From 4906fff10390f445eeeefa1b8b4b5ce1d780caa4 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 20:28:08 +1100
+Subject: [PATCH] mfplat: IPropertyStore::Release Free all store values.
+
+---
+ dlls/mfplat/main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
+index 38497dca00b..51c37a98c00 100644
+--- a/dlls/mfplat/main.c
++++ b/dlls/mfplat/main.c
+@@ -8756,6 +8756,10 @@ static ULONG WINAPI property_store_Release(IPropertyStore *iface)
+ 
+     if (!refcount)
+     {
++        size_t i;
++
++        for (i = 0; i < store->count; ++i)
++            PropVariantClear(&store->values[i].value);
+         DeleteCriticalSection(&store->cs);
+         free(store->values);
+         free(store);
+-- 
+2.53.0
+

@@ -1,0 +1,43 @@
+From d3adf6922f1ab1a0a05c2bc3222a73bfd584de8a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 20:16:50 +1100
+Subject: [PATCH] winegstreamer: Correct some TRACE/ERR output.
+
+---
+ dlls/winegstreamer/quartz_parser.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/winegstreamer/quartz_parser.c b/dlls/winegstreamer/quartz_parser.c
+index 5cddd7bd254..342028219c1 100644
+--- a/dlls/winegstreamer/quartz_parser.c
++++ b/dlls/winegstreamer/quartz_parser.c
+@@ -530,7 +530,7 @@ static DWORD wg_video_format_get_compression(enum wg_video_format format)
+         case WG_VIDEO_FORMAT_YV12: return mmioFOURCC('Y','V','1','2');
+         case WG_VIDEO_FORMAT_YVYU: return mmioFOURCC('Y','V','Y','U');
+         default:
+-            ERR("Cannot get compression for video format %d.", format);
++            ERR("Cannot get compression for video format %d.\n", format);
+             return 0;
+     }
+ }
+@@ -554,7 +554,7 @@ static WORD wg_video_format_get_depth(enum wg_video_format format)
+         case WG_VIDEO_FORMAT_YV12: return 12;
+         case WG_VIDEO_FORMAT_YVYU: return 16;
+         default:
+-            ERR("Cannot get depth for video format %d.", format);
++            ERR("Cannot get depth for video format %d.\n", format);
+             return 0;
+     }
+ }
+@@ -2239,7 +2239,7 @@ static HRESULT WINAPI GST_QualityControl_Notify(IQualityControl *iface, IBaseFil
+ static HRESULT WINAPI GST_QualityControl_SetSink(IQualityControl *iface, IQualityControl *tonotify)
+ {
+     struct parser_source *pin = impl_from_IQualityControl(iface);
+-    TRACE("(%p)->(%p)\n", pin, pin);
++    TRACE("(%p)->(%p)\n", pin, tonotify);
+     /* Do nothing */
+     return S_OK;
+ }
+-- 
+2.53.0
+

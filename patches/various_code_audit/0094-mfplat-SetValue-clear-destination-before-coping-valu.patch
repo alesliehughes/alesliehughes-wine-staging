@@ -1,0 +1,24 @@
+From 8ef26cd515263b43bbcb501e8961f90868fbc325 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 20:41:45 +1100
+Subject: [PATCH] mfplat: SetValue clear destination before coping value
+
+---
+ dlls/mfplat/main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/mfplat/main.c b/dlls/mfplat/main.c
+index 63cdf6816a6..c3967a7160c 100644
+--- a/dlls/mfplat/main.c
++++ b/dlls/mfplat/main.c
+@@ -8845,6 +8845,7 @@ static HRESULT WINAPI property_store_SetValue(IPropertyStore *iface, REFPROPERTY
+     {
+         if (!memcmp(key, &store->values[i].key, sizeof(PROPERTYKEY)))
+         {
++            PropVariantClear(&store->values[i].value);
+             PropVariantCopy(&store->values[i].value, value);
+             LeaveCriticalSection(&store->cs);
+             return S_OK;
+-- 
+2.53.0
+

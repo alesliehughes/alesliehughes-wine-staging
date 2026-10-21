@@ -1,0 +1,25 @@
+From 6bc0b89cf154653f3c1a849fbd1f44ed46017bc7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 17:41:04 +1100
+Subject: [PATCH] quartz: all_renderers_seek compare correct hr value
+
+---
+ dlls/quartz/filtergraph.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/quartz/filtergraph.c b/dlls/quartz/filtergraph.c
+index d54d8e4464a..4123e191666 100644
+--- a/dlls/quartz/filtergraph.c
++++ b/dlls/quartz/filtergraph.c
+@@ -2154,7 +2154,7 @@ static HRESULT all_renderers_seek(struct filter_graph *This, fnFoundSeek FoundSe
+         if (!filter->seeking)
+             continue;
+         hr = FoundSeek(This, filter->seeking, arg);
+-        if (hr_return != E_NOTIMPL)
++        if (hr != E_NOTIMPL)
+             allnotimpl = FALSE;
+         if (hr_return == S_OK || (FAILED(hr) && hr != E_NOTIMPL && SUCCEEDED(hr_return)))
+             hr_return = hr;
+-- 
+2.53.0
+
