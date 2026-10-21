@@ -1,0 +1,46 @@
+From 72c54d2a7dc703f2b26520b0889d248eeccd36dc Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 10:31:49 +1100
+Subject: [PATCH] winegstreamer: Convert mpeg layer mask into a layer number
+
+This will work but if fwHeadLayer has multiple it will just select the loweset.
+
+---
+ dlls/winegstreamer/mfplat.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/winegstreamer/mfplat.c b/dlls/winegstreamer/mfplat.c
+index ff943351a9d..4608b9201eb 100644
+--- a/dlls/winegstreamer/mfplat.c
++++ b/dlls/winegstreamer/mfplat.c
+@@ -514,6 +514,18 @@ static void mf_media_type_to_wg_format_audio(IMFMediaType *type, const GUID *sub
+     FIXME("Unrecognized audio subtype %s, depth %u.\n", debugstr_guid(subtype), depth);
+ }
+ 
++static uint32_t wfx_to_audio_layer(uint32_t wfxlayer)
++{
++    if (wfxlayer & ACM_MPEG_LAYER1)
++        return 1;
++    else if (wfxlayer & ACM_MPEG_LAYER2)
++        return 2;
++    else if (wfxlayer & ACM_MPEG_LAYER3)
++        return 3;
++
++    return 1;
++}
++
+ static void mf_media_type_to_wg_format_audio_mpeg(IMFMediaType *type, const GUID *subtype, struct wg_format *format)
+ {
+     MPEG1WAVEFORMAT wfx = {0};
+@@ -545,7 +557,7 @@ static void mf_media_type_to_wg_format_audio_mpeg(IMFMediaType *type, const GUID
+     format->major_type = WG_MAJOR_TYPE_AUDIO_MPEG1;
+     format->u.audio.channels = channels;
+     format->u.audio.rate = rate;
+-    format->u.audio.layer = wfx.fwHeadLayer;
++    format->u.audio.layer = wfx_to_audio_layer(wfx.fwHeadLayer);
+ }
+ 
+ static void mf_media_type_to_wg_format_audio_mpeg_layer3(IMFMediaType *type, const GUID *subtype, struct wg_format *format)
+-- 
+2.53.0
+

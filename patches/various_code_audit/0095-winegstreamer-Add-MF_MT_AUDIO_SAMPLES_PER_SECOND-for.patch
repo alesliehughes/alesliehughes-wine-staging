@@ -1,0 +1,25 @@
+From 997e0af6a187298af795474ec6b6bfa1160132d9 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 10:14:25 +1100
+Subject: [PATCH] winegstreamer: Add MF_MT_AUDIO_SAMPLES_PER_SECOND for mpeg1
+ type
+
+---
+ dlls/winegstreamer/mfplat.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dlls/winegstreamer/mfplat.c b/dlls/winegstreamer/mfplat.c
+index 65a1079155e..ff943351a9d 100644
+--- a/dlls/winegstreamer/mfplat.c
++++ b/dlls/winegstreamer/mfplat.c
+@@ -311,6 +311,7 @@ static IMFMediaType *mf_media_type_from_wg_format_audio_mpeg1(const struct wg_fo
+     IMFMediaType_SetGUID(type, &MF_MT_SUBTYPE, &MFAudioFormat_MP3);
+     IMFMediaType_SetGUID(type, &MF_MT_AM_FORMAT_TYPE, &FORMAT_WaveFormatEx);
+     IMFMediaType_SetUINT32(type, &MF_MT_AUDIO_NUM_CHANNELS, format->u.audio.channels);
++    IMFMediaType_SetUINT32(type, &MF_MT_AUDIO_SAMPLES_PER_SECOND, format->u.audio.rate);
+     IMFMediaType_SetUINT32(type, &MF_MT_AUDIO_CHANNEL_MASK, format->u.audio.channel_mask);
+     IMFMediaType_SetUINT32(type, &MF_MT_AUDIO_PREFER_WAVEFORMATEX, TRUE);
+     IMFMediaType_SetUINT32(type, &MF_MT_FIXED_SIZE_SAMPLES, TRUE);
+-- 
+2.53.0
+

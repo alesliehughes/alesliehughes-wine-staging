@@ -1,0 +1,25 @@
+From 484a61115dc8cd60dad2b74d6ee3601d7c5cca74 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 10:53:38 +1100
+Subject: [PATCH] comsvcs: guid_from_string correct checking a hex value
+
+---
+ dlls/comsvcs/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/comsvcs/main.c b/dlls/comsvcs/main.c
+index f978cf27a5e..5a5ac8ea3a5 100644
+--- a/dlls/comsvcs/main.c
++++ b/dlls/comsvcs/main.c
+@@ -1038,7 +1038,7 @@ static HRESULT guid_from_string(const WCHAR *s, GUID *ret)
+ 
+     for (i = 0; i < 4; i++)
+     {
+-        if (!is_valid_hex(s[0])) return FALSE;
++        if (!is_valid_hex(s[i])) return FALSE;
+         guid.Data2 = (guid.Data2 << 4) | guid_conv_table[s[i]];
+     }
+     s += 4;
+-- 
+2.53.0
+

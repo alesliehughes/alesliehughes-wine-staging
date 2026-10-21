@@ -1,0 +1,68 @@
+From 2d9d271b05ed90ce3f6ae0d4663a3d5dfc292741 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 12:23:19 +1100
+Subject: [PATCH] include: Add missing GetCurrentProcessId to
+ IDebugSystemObjects
+
+---
+ dlls/dbgeng/dbgeng.c | 8 ++++++++
+ include/dbgeng.h     | 3 +++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/dlls/dbgeng/dbgeng.c b/dlls/dbgeng/dbgeng.c
+index ffe2bf4c92e..f852dad4f9f 100644
+--- a/dlls/dbgeng/dbgeng.c
++++ b/dlls/dbgeng/dbgeng.c
+@@ -4446,6 +4446,13 @@ static HRESULT STDMETHODCALLTYPE debugsystemobjects_SetCurrentThreadId(IDebugSys
+     return E_NOTIMPL;
+ }
+ 
++static HRESULT STDMETHODCALLTYPE debugsystemobjects_GetCurrentProcessId(IDebugSystemObjects *iface, ULONG *id)
++{
++    FIXME("%p, %p stub.\n", iface, id);
++
++    return E_NOTIMPL;
++}
++
+ static HRESULT STDMETHODCALLTYPE debugsystemobjects_SetCurrentProcessId(IDebugSystemObjects *iface, ULONG id)
+ {
+     FIXME("%p, %lu stub.\n", iface, id);
+@@ -4639,6 +4646,7 @@ static const IDebugSystemObjectsVtbl debugsystemobjectsvtbl =
+     debugsystemobjects_GetEventProcess,
+     debugsystemobjects_GetCurrentThreadId,
+     debugsystemobjects_SetCurrentThreadId,
++    debugsystemobjects_GetCurrentProcessId,
+     debugsystemobjects_SetCurrentProcessId,
+     debugsystemobjects_GetNumberThreads,
+     debugsystemobjects_GetTotalNumberThreads,
+diff --git a/include/dbgeng.h b/include/dbgeng.h
+index 0ddfe18d4c2..3d796a740df 100644
+--- a/include/dbgeng.h
++++ b/include/dbgeng.h
+@@ -2428,6 +2428,7 @@ DECLARE_INTERFACE_(IDebugSystemObjects, IUnknown)
+     STDMETHOD(GetEventProcess)(THIS_ ULONG *id) PURE;
+     STDMETHOD(GetCurrentThreadId)(THIS_ ULONG *id) PURE;
+     STDMETHOD(SetCurrentThreadId)(THIS_ ULONG id) PURE;
++    STDMETHOD(GetCurrentProcessId)(THIS_ ULONG *id) PURE;
+     STDMETHOD(SetCurrentProcessId)(THIS_ ULONG id) PURE;
+     STDMETHOD(GetNumberThreads)(THIS_ ULONG *number) PURE;
+     STDMETHOD(GetTotalNumberThreads)(THIS_ ULONG *total, ULONG *largest_process) PURE;
+@@ -2467,6 +2468,7 @@ DECLARE_INTERFACE_(IDebugSystemObjects2, IUnknown)
+     STDMETHOD(GetEventProcess)(THIS_ ULONG *id) PURE;
+     STDMETHOD(GetCurrentThreadId)(THIS_ ULONG *id) PURE;
+     STDMETHOD(SetCurrentThreadId)(THIS_ ULONG id) PURE;
++    STDMETHOD(GetCurrentProcessId)(THIS_ ULONG *id) PURE;
+     STDMETHOD(SetCurrentProcessId)(THIS_ ULONG id) PURE;
+     STDMETHOD(GetNumberThreads)(THIS_ ULONG *number) PURE;
+     STDMETHOD(GetTotalNumberThreads)(THIS_ ULONG *total, ULONG *largest_process) PURE;
+@@ -2512,6 +2514,7 @@ DECLARE_INTERFACE_(IDebugSystemObjects3, IUnknown)
+     STDMETHOD(GetEventProcess)(THIS_ ULONG *id) PURE;
+     STDMETHOD(GetCurrentThreadId)(THIS_ ULONG *id) PURE;
+     STDMETHOD(SetCurrentThreadId)(THIS_ ULONG id) PURE;
++    STDMETHOD(GetCurrentProcessId)(THIS_ ULONG *id) PURE;
+     STDMETHOD(SetCurrentProcessId)(THIS_ ULONG id) PURE;
+     STDMETHOD(GetNumberThreads)(THIS_ ULONG *number) PURE;
+     STDMETHOD(GetTotalNumberThreads)(THIS_ ULONG *total, ULONG *largest_process) PURE;
+-- 
+2.53.0
+

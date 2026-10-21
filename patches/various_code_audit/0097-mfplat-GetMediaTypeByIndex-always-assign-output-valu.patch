@@ -1,0 +1,29 @@
+From 964d748f88f1840dfdf65cb5e02d508b2f775f08 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 10:23:13 +1100
+Subject: [PATCH] mfplat: GetMediaTypeByIndex always assign output value
+
+---
+ dlls/mfplat/mediatype.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/dlls/mfplat/mediatype.c b/dlls/mfplat/mediatype.c
+index 050c4093236..16253541271 100644
+--- a/dlls/mfplat/mediatype.c
++++ b/dlls/mfplat/mediatype.c
+@@ -2038,11 +2038,9 @@ static HRESULT WINAPI mediatype_handler_GetMediaTypeByIndex(IMFMediaTypeHandler
+     if (index >= stream_desc->media_types_count)
+         return MF_E_NO_MORE_TYPES;
+ 
++    *type = stream_desc->media_types[index];
+     if (stream_desc->media_types[index])
+-    {
+-        *type = stream_desc->media_types[index];
+         IMFMediaType_AddRef(*type);
+-    }
+ 
+     return stream_desc->media_types[index] ? S_OK : E_FAIL;
+ }
+-- 
+2.53.0
+

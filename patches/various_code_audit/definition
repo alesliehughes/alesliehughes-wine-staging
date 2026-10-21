@@ -2,26 +2,30 @@ Fixes: [60241]: Fix various coding issues detected by a Claude Core review.
 
 https://github.com/qarmin/ClaudeReports/issues/1
 
-API_40    - 0002-d3drm-IDirect3DRMMesh-SetGroupTexture-correct-QueryI.patch
-LOGIC_15  - 0008-inetcomm-InternetTransport_Connect-correct-looping-o.patch
-PANIC_239 - 0009-inetcomm-IMimeInternational-FindCharset-handle-memor.patch
+
+#
 #PANIC_240 - 0010-inetcomm-Handle-Allocation-failure-in-Callback-funct.patch <-- rejected for now
-API_7/8   - 0011-oleaut32-Correctly-handle-VT_SAFEARRAY-when-copy-cle.patch
-CPY_15    - 0018-oledb32-DataConvert-check-status-for-DBSTATUS_S_ISNU.patch
+#PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch <-- Wont Fix.
+
 LOGIC_10  - 0020-dmime-wave_track_create_from_chunk-return-E_OUTOFMEM.patch
 MEM_93    - 0023-dmime-Free-memory-on-error-path.patch
-CPY_41    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
-OVF_82    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
-#PANIC_163 - 0028-clusapi-ClusterEnum-correct-FIXME-trace.patch <-- Wont Fix.
-LOGIC_106 - 0029-printui-Make-array-match-enum-values.patch
-LOGIC_113 - 0032-rpcrt4-NdrRangeUnmarshall-correct-CHAR-types.patch
-LOGIC_114 - 0033-rpcrt4-Fix-an-off-by-one-error-when-checking-the-siz.patch
-CPY_16    - 0034-rpcrt4-epm_register-copy-each-uuid-in-the-list.patch
-CPY_61    - 0035-rpcrt4-NdrServerInitializeNew-set-missed-field-fBuff.patch
-CPY_97    - 0036-dmstyle-Correct-error-return-in-Mute-Get-Set-Param.patch
-PANIC_409 - 0037-dmstyle-CommandTrack-Load-handle-allocation-error.patch
+
 
 # New Report. (wine_2026_10_19)
+API_80    - 0002-d3drm-IDirect3DRMMesh-SetGroupTexture-correct-QueryI.patch
+LOGIC_33  - 0008-inetcomm-InternetTransport_Connect-correct-looping-o.patch
+PANIC_393 - 0009-inetcomm-IMimeInternational-FindCharset-handle-memor.patch
+API_7/8   - 0011-oleaut32-Correctly-handle-VT_SAFEARRAY-when-copy-cle.patch
+CPY_21    - 0018-oledb32-DataConvert-check-status-for-DBSTATUS_S_ISNU.patch
+CPY_61    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
+OVF_24    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
+LOGIC_351 - 0029-printui-Make-array-match-enum-values.patch
+LOGIC_265 - 0032-rpcrt4-NdrRangeUnmarshall-correct-CHAR-types.patch
+LOGIC_366 - 0033-rpcrt4-Fix-an-off-by-one-error-when-checking-the-siz.patch
+CPY_25    - 0034-rpcrt4-epm_register-copy-each-uuid-in-the-list.patch
+CPY_82    - 0035-rpcrt4-NdrServerInitializeNew-set-missed-field-fBuff.patch
+CPY_157   - 0036-dmstyle-Correct-error-return-in-Mute-Get-Set-Param.patch
+PANIC_735 - 0037-dmstyle-CommandTrack-Load-handle-allocation-error.patch
 LOGIC_780 - 0041-urlmon-Correct-size-comapre-in-mime-filters.patch
 CPY_90    - 0043-twaindsm-TWAIN_ControlNull-correct-message-check.patch
 CPY_139   - 0045-coremessaging-IAsyncAction-GetRuntimeClassName-corre.patch
@@ -33,7 +37,7 @@ MEM_9     - 0054-msvideo.dll16-Free-correct-pointer.patch
 API_94    - 0057-imagehlp-Correctly-check-return-value-from-CreateFil.patch
 API_96    - 0058-infosoft-Correct-reference-count-for-IWordBreaker-ob.patch
 CPY_78    - 0060-oleaut32-Correct-VTBIT_BOOL-define.patch
-CPY_127   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
+CPY_126   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
 CPY_33    - 0067-combase-Correctly-Unmarshal-HBITMAP-objects.patch
 MEM_235   - 0068-combase-Ensure-registry-key-is-closed.patch
 MEM_236   - 0069-combase-Ensure-apartment-is-release-in-ContextCallba.patch
@@ -46,12 +50,11 @@ API_59    - 0075-wineboot-Only-close-registry-key-if-it-was-opened.patch
 API_47    - 0076-wmp-Avoid-casting-of-COM-pointers.patch
 API_48    - 0077-wmp-IOleObject-GetClientSite-AddRef-to-returned-obje.patch
 LOGIC_967 - 0078-wmp-IWMPNetwork-QueryInterface-support-IUnknown.patch
-CPY_233   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
+CPY_232   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
 OTHER_232 - 0080-wintab32-UnregisterClass-with-the-isntance-from-crea.patch
 LOGIC_485 - 0081-winex11.drv-wintab-Correct-copying-the-BTNAMES-value.patch
 CPY_304   - 0082-wininet-HttpSendRequestExA-Correct-sizeof-usage.patch
 CPY_235   - 0083-wininet-Store-sync-time-in-correct-field.patch
-
 PANIC_775 - 0084-rtworkq-create_async_result-set-output-variable.patch
 PANIC_200 - 0085-rtworkq-alloc_work_item-handle-memory-failure.patch
 ERR_412   - 0086-rtworkq-RtwqAddPeriodicCallback-dont-assign-output-o.patch
@@ -63,3 +66,27 @@ MEM_85    - 0091-mfplat-IPropertyStore-Release-Free-all-store-values.patch
 MEM_86    - 0092-mfplat-MFUnlockDXGIDeviceManager-free-the-manager-on.patch
 MEM_87    - 0093-mfplat-MFWrapMediaType-free-object-on-error.patch
 MEM_329   - 0094-mfplat-SetValue-clear-destination-before-coping-valu.patch
+LOGIC_905 - 0095-winegstreamer-Add-MF_MT_AUDIO_SAMPLES_PER_SECOND-for.patch
+CPY_286   - 0096-mfplat-Correct-X1R5G5B5-debug-string.patch
+ERR_366   - 0097-mfplat-GetMediaTypeByIndex-always-assign-output-valu.patch
+LOGIC_906 - 0098-winegstreamer-Convert-mpeg-layer-mask-into-a-layer-n.patch
+API_136   - 0099-include-Correct-PMEMORY_RESERVE_OBJECT_TYPE-type.patch
+API_135   - 0100-include-Add-RegSetKeyValue-define.patch
+API_137   - 0101-include-Correct-GetAddrInfoExW-define.patch
+CPY_38    - 0102-comsvcs-guid_from_string-correct-checking-a-hex-valu.patch
+CPY_49    - 0103-dplayx-IDirectPlayLobby3-Connect-call-correct-interf.patch
+CPY_106   - 0104-include-Correct-HID_USAGE_LED_GENERIC_INDICATOR-valu.patch
+CPY_111   - 0105-include-Correct-CALG_RC5-define.patch
+CPY_114   - 0106-include-Correct-HANDLE_WM_DEVICECHANGE-define.patch
+CPY_127   - 0107-avifil32-IAVIFile-Load-correctly-care-fcc-type.patch
+CPY_103   - 0108-include-Add-missing-GetCurrentProcessId-to-IDebugSys.patch
+CPY_104   - 0109-include-Correct-IDirectMusicScript_-defines
+CPY_105   - 0110-include-Correct-IDXCoreAdapterList_GetAdapter-define.patch
+CPY_54    - 0111-hhctrl.ocx-wintypeWtoA-correct-pszIndex-assignment.patch
+API_168   - 0112-include-Add-IsValidDevmode-define
+API_18    - 0113-comsvcs-create_holder-AddRef-for-the-driver-referenc.patch
+LOGIC_771 - 0114-sechost-print_sid_numeric-correct-format-string.patch
+CPY_287   - 0115-mpr-Remove-duplicate-defines.patch
+CPY_308   - 0116-include-Fixed-PSYSTEM_ALARM_OBJECT_ACE-spelling.patch
+CPY_309   - 0117-include-Correct-LPXACT_NOTIFICATION_WAVE-spelling.patch
+CPY_306   - 0118-include-Remove-duplicate-function-prototypes.patch

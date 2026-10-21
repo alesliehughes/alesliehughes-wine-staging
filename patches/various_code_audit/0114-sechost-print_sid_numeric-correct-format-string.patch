@@ -1,0 +1,25 @@
+From 3ad5a73c54fe49cd8f516f5c30c50c49fcd7b3e6 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 23 Oct 2026 14:05:24 +1100
+Subject: [PATCH] sechost: print_sid_numeric correct format string
+
+---
+ dlls/sechost/security.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/sechost/security.c b/dlls/sechost/security.c
+index 5061622d126..17e0f31c9d0 100644
+--- a/dlls/sechost/security.c
++++ b/dlls/sechost/security.c
+@@ -207,7 +207,7 @@ static BOOL print_sid_numeric(PSID psid, WCHAR **pwptr, ULONG *plen)
+         return FALSE;
+     }
+ 
+-    swprintf( buf, ARRAY_SIZE(buf), L"S-%u-%d", pisid->Revision, MAKELONG(
++    swprintf( buf, ARRAY_SIZE(buf), L"S-%u-%u", pisid->Revision, MAKELONG(
+             MAKEWORD( pisid->IdentifierAuthority.Value[5], pisid->IdentifierAuthority.Value[4] ),
+             MAKEWORD( pisid->IdentifierAuthority.Value[3], pisid->IdentifierAuthority.Value[2] )
+             ) );
+-- 
+2.53.0
+

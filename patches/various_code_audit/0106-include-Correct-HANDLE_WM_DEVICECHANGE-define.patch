@@ -1,0 +1,25 @@
+From ed4a0023be8b15d1c0d22548967a71f0732418da Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 11:07:11 +1100
+Subject: [PATCH] include: Correct HANDLE_WM_DEVICECHANGE define
+
+---
+ include/windowsx.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/windowsx.h b/include/windowsx.h
+index 7a873140a44..3a951e0185d 100644
+--- a/include/windowsx.h
++++ b/include/windowsx.h
+@@ -1327,7 +1327,7 @@ extern "C" {
+ 
+ /* BOOL Cls_OnDeviceChange(HWND hwnd, UINT uEvent, DWORD dwEventData) */
+ #define HANDLE_WM_DEVICECHANGE(hwnd, wParam, lParam, fn) \
+-    (LRESULT)(DWORD)(BOOL)(fn)((hwnd), (UINT)(wParam), (DWORD)(wParam))
++    (LRESULT)(DWORD)(BOOL)(fn)((hwnd), (UINT)(wParam), (DWORD)(lParam))
+ #define FORWARD_WM_DEVICECHANGE(hwnd, uEvent, dwEventData, fn) \
+     (BOOL)(DWORD)(fn)((hwnd), WM_DEVICECHANGE, (WPARAM)(UINT)(uEvent), (LPARAM)(DWORD)(dwEventData))
+ 
+-- 
+2.53.0
+

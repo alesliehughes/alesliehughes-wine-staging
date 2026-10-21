@@ -1,0 +1,25 @@
+From f0903ac3a8aa9716428c556552e602491e3208d5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 12:28:17 +1100
+Subject: [PATCH] include: Correct IDXCoreAdapterList_GetAdapter define
+
+---
+ include/dxcore_interface.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/dxcore_interface.h b/include/dxcore_interface.h
+index ba81f827fd6..bbea3680f89 100644
+--- a/include/dxcore_interface.h
++++ b/include/dxcore_interface.h
+@@ -253,7 +253,7 @@ DECLARE_INTERFACE_IID_(IDXCoreAdapterList, IUnknown, "526c7776-40e9-459b-b711-f3
+ #define IDXCoreAdapterList_AddRef(p)                         (p)->AddRef()
+ #define IDXCoreAdapterList_Release(p)                        (p)->Release()
+ /*** IDXCoreAdapterList methods ***/
+-#define IDXCoreAdapterList_GetAdapter(p,a,b)                 (p)->GetAdapter(a,b)
++#define IDXCoreAdapterList_GetAdapter(p,a,b,c)               (p)->GetAdapter(a,b,c)
+ #define IDXCoreAdapterList_GetAdapterCount(p)                (p)->GetAdapterCount()
+ #define IDXCoreAdapterList_IsStale(p)                        (p)->IsStale()
+ #define IDXCoreAdapterList_GetFactory(p,a,b)                 (p)->GetFactory(a,b)
+-- 
+2.53.0
+

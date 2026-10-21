@@ -1,0 +1,32 @@
+From bffa8b39939ebcd50f55fa2e1824038872943eae Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 23 Oct 2026 15:35:36 +1100
+Subject: [PATCH] include: Remove duplicate function prototypes
+
+---
+ include/webservices.h | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/include/webservices.h b/include/webservices.h
+index 962826091d4..286301fda19 100644
+--- a/include/webservices.h
++++ b/include/webservices.h
+@@ -1768,15 +1768,11 @@ HRESULT WINAPI WsRequestReply(WS_CHANNEL*, WS_MESSAGE*, const WS_MESSAGE_DESCRIP
+                               const void*, ULONG, WS_MESSAGE*, const WS_MESSAGE_DESCRIPTION*, WS_READ_OPTION,
+                               WS_HEAP*, void*, ULONG, const WS_ASYNC_CONTEXT*, WS_ERROR*);
+ HRESULT WINAPI WsResetChannel(WS_CHANNEL*, WS_ERROR*);
+-HRESULT WINAPI WsResetMessage(WS_MESSAGE*, WS_ERROR*);
+ HRESULT WINAPI WsResetError(WS_ERROR*);
+ HRESULT WINAPI WsResetHeap(WS_HEAP*, WS_ERROR*);
+ HRESULT WINAPI WsResetListener(WS_LISTENER*, WS_ERROR*);
+ HRESULT WINAPI WsResetMessage(WS_MESSAGE*, WS_ERROR*);
+ HRESULT WINAPI WsResetServiceProxy(WS_SERVICE_PROXY*, WS_ERROR*);
+-HRESULT WINAPI WsRequestReply(WS_CHANNEL*, WS_MESSAGE*, const WS_MESSAGE_DESCRIPTION*, WS_WRITE_OPTION,
+-                              const void*, ULONG, WS_MESSAGE*, const WS_MESSAGE_DESCRIPTION*,
+-                              WS_READ_OPTION, WS_HEAP*, void*, ULONG, const WS_ASYNC_CONTEXT*, WS_ERROR*);
+ HRESULT WINAPI WsSendMessage(WS_CHANNEL*, WS_MESSAGE*, const WS_MESSAGE_DESCRIPTION*, WS_WRITE_OPTION,
+                              const void*, ULONG, const WS_ASYNC_CONTEXT*, WS_ERROR*);
+ HRESULT WINAPI WsSendReplyMessage(WS_CHANNEL*, WS_MESSAGE*, const WS_MESSAGE_DESCRIPTION*,
+-- 
+2.53.0
+

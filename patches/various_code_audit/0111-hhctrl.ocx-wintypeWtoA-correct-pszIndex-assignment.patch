@@ -1,0 +1,25 @@
+From fe2ece4c6a7f5d321897e0f7d4a870028fca6a9a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 15:49:01 +1100
+Subject: [PATCH] hhctrl.ocx: wintypeWtoA correct pszIndex assignment
+
+---
+ dlls/hhctrl.ocx/hhctrl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/hhctrl.ocx/hhctrl.c b/dlls/hhctrl.ocx/hhctrl.c
+index 8bf1a1a8330..6386d42a0b4 100644
+--- a/dlls/hhctrl.ocx/hhctrl.c
++++ b/dlls/hhctrl.ocx/hhctrl.c
+@@ -417,7 +417,7 @@ static void wintypeWtoA(const HH_WINTYPEW *wdata, HH_WINTYPEA *data, struct wint
+     data->pszType       = stringsA->pszType       = strdupWtoA(wdata->pszType);
+     data->pszCaption    = stringsA->pszCaption    = strdupWtoA(wdata->pszCaption);
+     data->pszToc        = stringsA->pszToc        = strdupWtoA(wdata->pszToc);
+-    data->pszIndex      = stringsA->pszFile       = strdupWtoA(wdata->pszIndex);
++    data->pszIndex      = stringsA->pszIndex      = strdupWtoA(wdata->pszIndex);
+     data->pszFile       = stringsA->pszFile       = strdupWtoA(wdata->pszFile);
+     data->pszHome       = stringsA->pszHome       = strdupWtoA(wdata->pszHome);
+     data->pszJump1      = stringsA->pszJump1      = strdupWtoA(wdata->pszJump1);
+-- 
+2.53.0
+

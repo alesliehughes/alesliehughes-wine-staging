@@ -1,0 +1,25 @@
+From ad89ecdebb1915fa83277d69e30487f271e52ca5 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 11:17:46 +1100
+Subject: [PATCH] avifil32: IAVIFile::Load correctly compare fcc type
+
+---
+ dlls/avifil32/avifile.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/avifil32/avifile.c b/dlls/avifil32/avifile.c
+index 6aae4736c4d..8a0d589ab64 100644
+--- a/dlls/avifil32/avifile.c
++++ b/dlls/avifil32/avifile.c
+@@ -1746,7 +1746,7 @@ static HRESULT AVIFILE_LoadFile(IAVIFileImpl *This)
+ 	    /* get count of this streamtype up to this stream */
+ 	    count = 0;
+ 	    for (n = nStream; 0 <= n; n--) {
+-	      if (This->ppStreams[n]->sInfo.fccHandler == streamHdr.fccType)
++	      if (This->ppStreams[n]->sInfo.fccType == streamHdr.fccType)
+ 		count++;
+ 	    }
+ 
+-- 
+2.53.0
+

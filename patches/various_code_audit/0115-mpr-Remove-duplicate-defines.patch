@@ -1,0 +1,30 @@
+From 8350c17a2aab42bcce9ad0d9ccf91de3770cf63d Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 23 Oct 2026 15:25:13 +1100
+Subject: [PATCH] mpr: Remove duplicate defines
+
+---
+ dlls/mpr/netspi.h | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/dlls/mpr/netspi.h b/dlls/mpr/netspi.h
+index 0a82475931a..cff21475739 100644
+--- a/dlls/mpr/netspi.h
++++ b/dlls/mpr/netspi.h
+@@ -63,13 +63,6 @@ DECL_WINELIB_TYPE_AW(LPAUTHDLGSTRUCT)
+ #define AUTHDLG_CHECKDEFAULT_NAME 0x00000010
+ #define AUTHDLG_LOGON             0x00000020
+ 
+-#define AUTHDLG_ENABLECACHE       0x00000001
+-#define AUTHDLG_CHECKCACHE        0x00000002
+-#define AUTHDLG_CACHEINVALID      0x00000004
+-#define AUTHDLG_USE_DEFAULT_NAME  0x00000008
+-#define AUTHDLG_CHECKDEFAULT_NAME 0x00000010
+-#define AUTHDLG_LOGON             0x00000020
+-
+ DWORD WINAPI NPSAuthenticationDialogA(LPAUTHDLGSTRUCTA);
+ #define      NPSAuthenticationDialog WINELIB_NAME_AW(NPSAuthenticationDialog)
+ DWORD WINAPI NPSGetProviderHandleA(PHPROVIDER);
+-- 
+2.53.0
+
