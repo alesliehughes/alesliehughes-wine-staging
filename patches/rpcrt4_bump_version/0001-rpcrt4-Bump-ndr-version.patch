@@ -1,0 +1,25 @@
+From 6ffdd712a49cd6e22a68776080f3a714bb94106b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 22 Oct 2026 12:08:07 +1100
+Subject: [PATCH] rpcrt4: Bump ndr version
+
+---
+ dlls/rpcrt4/ndr_stubless.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/rpcrt4/ndr_stubless.c b/dlls/rpcrt4/ndr_stubless.c
+index ee1e3994195..3cd32904b6c 100644
+--- a/dlls/rpcrt4/ndr_stubless.c
++++ b/dlls/rpcrt4/ndr_stubless.c
+@@ -1531,7 +1531,7 @@ static void do_ndr_async_client_call( const MIDL_STUB_DESC *pStubDesc, PFORMAT_S
+     RPC_STATUS status;
+ 
+     /* Later NDR language versions probably won't be backwards compatible */
+-    if (pStubDesc->Version > 0x60001)
++    if (pStubDesc->Version > 0x60003)
+     {
+         FIXME("Incompatible stub description version: 0x%lx\n", pStubDesc->Version);
+         RpcRaiseException(RPC_X_WRONG_STUB_VERSION);
+-- 
+2.53.0
+
