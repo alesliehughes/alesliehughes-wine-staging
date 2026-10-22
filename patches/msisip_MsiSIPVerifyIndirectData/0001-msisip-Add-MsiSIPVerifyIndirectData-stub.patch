@@ -1,0 +1,45 @@
+From e2de9b2dd13b762070568d3aecf5039659c4c166 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 23 Oct 2026 09:22:19 +1100
+Subject: [PATCH] msisip: Add MsiSIPVerifyIndirectData stub
+
+This is required after applying
+https://gitlab.winehq.org/wine/wine/-/merge_requests/11609
+
+Above and this doesnt fix
+https://bugs.winehq.org/show_bug.cgi?id=60077
+
+---
+ dlls/msisip/main.c      | 6 ++++++
+ dlls/msisip/msisip.spec | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/msisip/main.c b/dlls/msisip/main.c
+index c5dde262dc2..f5011bb1ee9 100644
+--- a/dlls/msisip/main.c
++++ b/dlls/msisip/main.c
+@@ -224,3 +224,9 @@ BOOL WINAPI MsiSIPIsMyTypeOfFile(WCHAR *name, GUID *subject)
+     }
+     return ret;
+ }
++
++BOOL WINAPI MsiSIPVerifyIndirectData(SIP_SUBJECTINFO  *pSubjectInfo, SIP_INDIRECT_DATA *pIndirectData)
++{
++    FIXME("%p, %p\n", pSubjectInfo, pIndirectData);
++    return TRUE;
++}
+diff --git a/dlls/msisip/msisip.spec b/dlls/msisip/msisip.spec
+index dda78c544d4..2483c5feebb 100644
+--- a/dlls/msisip/msisip.spec
++++ b/dlls/msisip/msisip.spec
+@@ -3,6 +3,6 @@
+ 7 stub MsiSIPPutSignedDataMsg
+ 8 stub MsiSIPRemoveSignedDataMsg
+ 9 stub MsiSIPCreateIndirectData
+-10 stub MsiSIPVerifyIndirectData
++10 stdcall MsiSIPVerifyIndirectData(ptr ptr)
+ 11 stdcall -private DllRegisterServer()
+ 12 stdcall -private DllUnregisterServer()
+-- 
+2.53.0
+
