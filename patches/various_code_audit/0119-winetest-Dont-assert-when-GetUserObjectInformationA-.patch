@@ -1,0 +1,27 @@
+From 9984b8ab794da4d27495544c857345747fe9c2d2 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 25 Oct 2026 13:12:55 +1100
+Subject: [PATCH] winetest: Dont assert when GetUserObjectInformationA fails
+
+---
+ programs/winetest/main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/programs/winetest/main.c b/programs/winetest/main.c
+index 859ab87546b..11e7c29f739 100644
+--- a/programs/winetest/main.c
++++ b/programs/winetest/main.c
+@@ -294,8 +294,8 @@ static BOOL running_on_visible_desktop (void)
+         USEROBJECTFLAGS uoflags;
+ 
+         wstation = pGetProcessWindowStation();
+-        assert(pGetUserObjectInformationA(wstation, UOI_FLAGS, &uoflags, sizeof(uoflags), &len));
+-        return (uoflags.dwFlags & WSF_VISIBLE) != 0;
++        if (pGetUserObjectInformationA(wstation, UOI_FLAGS, &uoflags, sizeof(uoflags), &len))
++            return (uoflags.dwFlags & WSF_VISIBLE) != 0;
+     }
+     return IsWindowVisible(desktop);
+ }
+-- 
+2.53.0
+

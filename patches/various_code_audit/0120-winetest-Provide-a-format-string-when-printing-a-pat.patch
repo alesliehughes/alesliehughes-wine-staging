@@ -1,0 +1,25 @@
+From 7cfa5eddc05dfb47ea4ba35a461103c59a0794d7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 25 Oct 2026 13:26:23 +1100
+Subject: [PATCH] winetest: Provide a format string when printing a path
+
+---
+ programs/winetest/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/programs/winetest/main.c b/programs/winetest/main.c
+index 11e7c29f739..1d30731f464 100644
+--- a/programs/winetest/main.c
++++ b/programs/winetest/main.c
+@@ -1491,7 +1491,7 @@ static void extract_only (const char *target_dir)
+ {
+     BOOL res;
+ 
+-    report (R_DIR, target_dir);
++    report (R_DIR, "%s", target_dir);
+     res = CreateDirectoryA( target_dir, NULL );
+     if (!res && GetLastError() != ERROR_ALREADY_EXISTS)
+         report (R_FATAL, "Could not create directory: %s (%d)", target_dir, GetLastError ());
+-- 
+2.53.0
+

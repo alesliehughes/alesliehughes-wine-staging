@@ -1,0 +1,29 @@
+From 2a09a899d408a421e77f88da4241ad7bf628f7a3 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 25 Oct 2026 13:31:03 +1100
+Subject: [PATCH] winetest: ensure -d contains a path
+
+---
+ programs/winetest/main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/programs/winetest/main.c b/programs/winetest/main.c
+index 1d30731f464..0559c67668b 100644
+--- a/programs/winetest/main.c
++++ b/programs/winetest/main.c
+@@ -1674,7 +1674,11 @@ int __cdecl main( int argc, char *argv[] )
+             extract_only (extract);
+             break;
+         case 'd':
+-            outdir = argv[++i];
++            if (!(outdir = argv[++i]))
++            {
++                usage();
++                exit( 2 );
++            }
+             break;
+         default:
+             report (R_ERROR, "invalid option: -%c", argv[i][1]);
+-- 
+2.53.0
+
