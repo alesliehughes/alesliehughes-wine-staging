@@ -1,33 +1,62 @@
-From eb7f9e22d92d967e27b43855d5c94bd0f725bc16 Mon Sep 17 00:00:00 2001
+From 5bc68112efffb9259d324e0ec1c3742e380907ae Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Mon, 26 Oct 2026 16:12:48 +1100
 Subject: [PATCH] propsys Implmenet PSGetItemPropertyHandler
 
 ---
- dlls/propsys/propstore.c  | 16 ++++++++++++++++
+ dlls/propsys/propstore.c  | 31 +++++++++++++++++++++++++++++++
  dlls/propsys/propsys.spec |  2 +-
- 2 files changed, 17 insertions(+), 1 deletion(-)
+ include/propsys.idl       |  1 +
+ 3 files changed, 33 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/propsys/propstore.c b/dlls/propsys/propstore.c
-index d2ce67969bf..3bb2b60ee18 100644
+index d2ce67969bf..a4554bafabd 100644
 --- a/dlls/propsys/propstore.c
 +++ b/dlls/propsys/propstore.c
-@@ -489,3 +489,19 @@ HRESULT WINAPI PSCreatePropertyStoreFromObject(IUnknown *obj, DWORD access, REFI
+@@ -27,12 +27,14 @@
+ #include "objbase.h"
+ #include "rpcproxy.h"
+ #include "propsys.h"
++#include "shobjidl.h"
+ #include "wine/debug.h"
+ #include "wine/list.h"
+ 
+ #include "initguid.h"
+ #include "propsys_private.h"
+ 
++
+ DEFINE_GUID(FMTID_NamedProperties, 0xd5cdd505, 0x2e9c, 0x101b, 0x93, 0x97, 0x08, 0x00, 0x2b, 0x2c, 0xf9, 0xae);
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(propsys);
+@@ -489,3 +491,32 @@ HRESULT WINAPI PSCreatePropertyStoreFromObject(IUnknown *obj, DWORD access, REFI
      FIXME("Unimplemented for %s.\n", debugstr_guid(riid));
      return E_NOTIMPL;
  }
 +
-+PSSTDAPI WINAPI PSGetItemPropertyHandler(IUnknown *obj, BOOL readwrite, REFIID riid, void **ret)
++HRESULT WINAPI PSGetItemPropertyHandler(IUnknown *obj, BOOL readwrite, REFIID riid, void **ret)
 +{
 +    HRESULT hr;
++    IShellItem2 *shellitem2;
 +
 +    FIXME("(%p, %d, %s, %p)\n", obj, readwrite, debugstr_guid(riid), ret);
 +
 +    if (!obj || !ret)
 +        return E_POINTER;
 +
-+    if (IsEqualIID(riid, &IID_IPropertyStore) && SUCCEEDED(hr = IUnknown_QueryInterface(obj, riid, ret)))
++    if (!IsEqualIID(riid, &IID_IPropertyStore))
++    {
++        FIXME("Unsupported riid %s.\n", debugstr_guid(riid));
++        return E_NOTIMPL;
++    }
++
++    hr = IUnknown_QueryInterface(obj, &IID_IShellItem2, ((void**)&shellitem2));
++    if (SUCCEEDED(hr))
++    {
++        hr = IShellItem2_GetPropertyStore(shellitem2, readwrite ? GPS_READWRITE : GPS_DEFAULT, riid, ret);
++        IUnknown_Release(shellitem2);
++        FIXME("IShellItem2_GetPropertyStore return %lx\n", hr);
 +        return hr;
++    }
 +
 +    FIXME("Unimplemented for %s.\n", debugstr_guid(riid));
 +    return E_NOTIMPL;
@@ -46,6 +75,18 @@ index 28245452f6f..a27e190d797 100644
  @ stub PSGetItemPropertyHandlerWithCreateObject
  @ stdcall PSGetNameFromPropertyKey(ptr ptr)
  @ stub PSGetNamedPropertyFromPropertyStorage
+diff --git a/include/propsys.idl b/include/propsys.idl
+index 1cfcaf338da..ecfc547f22c 100644
+--- a/include/propsys.idl
++++ b/include/propsys.idl
+@@ -807,6 +807,7 @@ cpp_quote("#define PKEYSTR_MAX (GUIDSTRING_MAX + 1 + PKEY_PIDSTR_MAX)")
+ 
+ cpp_quote("PSSTDAPI PSCreateMemoryPropertyStore(REFIID,void **);")
+ cpp_quote("PSSTDAPI PSCreatePropertyStoreFromObject(IUnknown*,DWORD,REFIID,void **);")
++cpp_quote("PSSTDAPI PSGetItemPropertyHandler(IUnknown *, BOOL, REFIID, void **);")
+ cpp_quote("PSSTDAPI PSGetPropertySystem(REFIID, void**);")
+ cpp_quote("PSSTDAPI PSStringFromPropertyKey(REFPROPERTYKEY,LPWSTR,UINT);")
+ cpp_quote("PSSTDAPI PSGetPropertyKeyFromName(PCWSTR,PROPERTYKEY *);")
 -- 
 2.53.0
 

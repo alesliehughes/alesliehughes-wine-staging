@@ -1,0 +1,35 @@
+From e8e4214f66279546ec03cdc3306093f720c9981a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 27 Oct 2026 10:33:45 +1100
+Subject: [PATCH] shell32: IShellItem2::GetPropertyStore return valid
+ PropertyStore object.
+
+---
+ dlls/shell32/shellitem.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/shell32/shellitem.c b/dlls/shell32/shellitem.c
+index 93a60d63bd1..7ead3578053 100644
+--- a/dlls/shell32/shellitem.c
++++ b/dlls/shell32/shellitem.c
+@@ -357,8 +357,16 @@ static HRESULT WINAPI ShellItem2_GetPropertyStore(IShellItem2 *iface, GETPROPERT
+     REFIID riid, void **ppv)
+ {
+     struct shell_item *This = impl_from_IShellItem2(iface);
++    IPropertyStore *propstore;
++    DWORD hr;
++
+     FIXME("Stub: %p (%d, %s, %p)\n", This, flags, shdebugstr_guid(riid), ppv);
+-    return E_NOTIMPL;
++
++    hr = CoCreateInstance(&CLSID_InMemoryPropertyStore, NULL, CLSCTX_INPROC_SERVER,
++        riid, (void**)&propstore);
++
++    FIXME("ret %lx\n", hr);
++    return hr;
+ }
+ 
+ static HRESULT WINAPI ShellItem2_GetPropertyStoreWithCreateObject(IShellItem2 *iface,
+-- 
+2.53.0
+
