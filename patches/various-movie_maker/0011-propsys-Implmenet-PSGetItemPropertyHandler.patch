@@ -1,0 +1,51 @@
+From eb7f9e22d92d967e27b43855d5c94bd0f725bc16 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 26 Oct 2026 16:12:48 +1100
+Subject: [PATCH] propsys Implmenet PSGetItemPropertyHandler
+
+---
+ dlls/propsys/propstore.c  | 16 ++++++++++++++++
+ dlls/propsys/propsys.spec |  2 +-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/propsys/propstore.c b/dlls/propsys/propstore.c
+index d2ce67969bf..3bb2b60ee18 100644
+--- a/dlls/propsys/propstore.c
++++ b/dlls/propsys/propstore.c
+@@ -489,3 +489,19 @@ HRESULT WINAPI PSCreatePropertyStoreFromObject(IUnknown *obj, DWORD access, REFI
+     FIXME("Unimplemented for %s.\n", debugstr_guid(riid));
+     return E_NOTIMPL;
+ }
++
++PSSTDAPI WINAPI PSGetItemPropertyHandler(IUnknown *obj, BOOL readwrite, REFIID riid, void **ret)
++{
++    HRESULT hr;
++
++    FIXME("(%p, %d, %s, %p)\n", obj, readwrite, debugstr_guid(riid), ret);
++
++    if (!obj || !ret)
++        return E_POINTER;
++
++    if (IsEqualIID(riid, &IID_IPropertyStore) && SUCCEEDED(hr = IUnknown_QueryInterface(obj, riid, ret)))
++        return hr;
++
++    FIXME("Unimplemented for %s.\n", debugstr_guid(riid));
++    return E_NOTIMPL;
++}
+\ No newline at end of file
+diff --git a/dlls/propsys/propsys.spec b/dlls/propsys/propsys.spec
+index 28245452f6f..a27e190d797 100644
+--- a/dlls/propsys/propsys.spec
++++ b/dlls/propsys/propsys.spec
+@@ -75,7 +75,7 @@
+ @ stub PSFormatForDisplay
+ @ stub PSFormatForDisplayAlloc
+ @ stub PSFormatPropertyValue
+-@ stub PSGetItemPropertyHandler
++@ stdcall PSGetItemPropertyHandler(ptr long ptr ptr)
+ @ stub PSGetItemPropertyHandlerWithCreateObject
+ @ stdcall PSGetNameFromPropertyKey(ptr ptr)
+ @ stub PSGetNamedPropertyFromPropertyStorage
+-- 
+2.53.0
+
