@@ -20,7 +20,6 @@ CPY_21    - 0018-oledb32-DataConvert-check-status-for-DBSTATUS_S_ISNU.patch
 CPY_61    - 0026-mciavi32-mciSet-correct-setting-of-the-left-audio-ch.patch
 OVF_24    - 0027-mciavi32-Avoid-possiblbe-overflow.patch
 LOGIC_351 - 0029-printui-Make-array-match-enum-values.patch
-LOGIC_265 - 0032-rpcrt4-NdrRangeUnmarshall-correct-CHAR-types.patch
 LOGIC_366 - 0033-rpcrt4-Fix-an-off-by-one-error-when-checking-the-siz.patch
 CPY_25    - 0034-rpcrt4-epm_register-copy-each-uuid-in-the-list.patch
 CPY_82    - 0035-rpcrt4-NdrServerInitializeNew-set-missed-field-fBuff.patch
