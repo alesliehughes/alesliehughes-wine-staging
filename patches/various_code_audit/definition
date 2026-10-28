@@ -46,9 +46,6 @@ MEM_239   - 0072-combase-get_library_for_classid-Relase-activation-co.patch
 MEM_240   - 0073-combase-SendReceive-release-apartment-on-error-path.patch
 MEM_234   - 0074-combase-Free-object-after-Marshaling-interface.patch
 API_59    - 0075-wineboot-Only-close-registry-key-if-it-was-opened.patch
-API_47    - 0076-wmp-Avoid-casting-of-COM-pointers.patch
-API_48    - 0077-wmp-IOleObject-GetClientSite-AddRef-to-returned-obje.patch
-LOGIC_967 - 0078-wmp-IWMPNetwork-QueryInterface-support-IUnknown.patch
 CPY_232   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
 OTHER_232 - 0080-wintab32-UnregisterClass-with-the-isntance-from-crea.patch
 LOGIC_485 - 0081-winex11.drv-wintab-Correct-copying-the-BTNAMES-value.patch
@@ -76,9 +73,6 @@ CPY_54    - 0111-hhctrl.ocx-wintypeWtoA-correct-pszIndex-assignment.patch
 API_18    - 0113-comsvcs-create_holder-AddRef-for-the-driver-referenc.patch
 LOGIC_771 - 0114-sechost-print_sid_numeric-correct-format-string.patch
 CPY_287   - 0115-mpr-Remove-duplicate-defines.patch
-CPY_308   - 0116-include-Fixed-PSYSTEM_ALARM_OBJECT_ACE-spelling.patch
-CPY_309   - 0117-include-Correct-LPXACT_NOTIFICATION_WAVE-spelling.patch
-CPY_306   - 0118-include-Remove-duplicate-function-prototypes.patch
 API_150   - 0119-winetest-Dont-assert-when-GetUserObjectInformationA
 API_151   - 0120-winetest-Provide-a-format-string-when-printing-a-pat.patch
 ERR_611   - 0121-winetest-ensure-d-contains-a-path.patch
