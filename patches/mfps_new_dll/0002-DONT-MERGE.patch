@@ -1,14 +1,11 @@
-From 340a0ee512c193734d21750e5d25e6e5a2a6dfbe Mon Sep 17 00:00:00 2001
+From b76ec7d4446d767513aece7a41aab7cc09e5db8c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Oct 2026 13:59:06 +1100
-Subject: [PATCH 2/3] DONT MERGE
+Subject: mfps: DONT MERGE - Configure.
 
----
- configure | 2 ++
- 1 file changed, 2 insertions(+)
 
 diff --git a/configure b/configure
-index 1dd3d824f4f..922bcac77dd 100755
+index 01523ab1df6..60e9dd01f60 100755
 --- a/configure
 +++ b/configure
 @@ -1277,6 +1277,7 @@ enable_mfmediaengine
@@ -18,8 +15,8 @@ index 1dd3d824f4f..922bcac77dd 100755
 +enable_mfps
  enable_mfreadwrite
  enable_mfsrcsnk
- enable_mgmtapi
-@@ -22286,6 +22287,7 @@ wine_fn_config_makefile dlls/mfplat enable_mfplat
+ enable_mfwmaaec
+@@ -22331,6 +22332,7 @@ wine_fn_config_makefile dlls/mfplat enable_mfplat
  wine_fn_config_makefile dlls/mfplat/tests enable_tests
  wine_fn_config_makefile dlls/mfplay enable_mfplay
  wine_fn_config_makefile dlls/mfplay/tests enable_tests
@@ -27,6 +24,3 @@ index 1dd3d824f4f..922bcac77dd 100755
  wine_fn_config_makefile dlls/mfreadwrite enable_mfreadwrite
  wine_fn_config_makefile dlls/mfreadwrite/tests enable_tests
  wine_fn_config_makefile dlls/mfsrcsnk enable_mfsrcsnk
--- 
-2.53.0
-
