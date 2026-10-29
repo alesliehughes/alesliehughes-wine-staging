@@ -34,7 +34,6 @@ LOGIC_103 - 0050-libs-dxerr9-Dont-use-a-binary-search-over-error-list.patch  <--
 API_1     - 0052-mciqtz32-Free-allocated-memory.patch
 MEM_9     - 0054-msvideo.dll16-Free-correct-pointer.patch
 API_94    - 0057-imagehlp-Correctly-check-return-value-from-CreateFil.patch
-API_96    - 0058-infosoft-Correct-reference-count-for-IWordBreaker-ob.patch
 CPY_78    - 0060-oleaut32-Correct-VTBIT_BOOL-define.patch
 CPY_126   - 0065-advapi32-Correct-debugstr_sid-when-SID-has-a-count-o.patch
 CPY_33    - 0067-combase-Correctly-Unmarshal-HBITMAP-objects.patch
@@ -46,11 +45,6 @@ MEM_239   - 0072-combase-get_library_for_classid-Relase-activation-co.patch
 MEM_240   - 0073-combase-SendReceive-release-apartment-on-error-path.patch
 MEM_234   - 0074-combase-Free-object-after-Marshaling-interface.patch
 API_59    - 0075-wineboot-Only-close-registry-key-if-it-was-opened.patch
-CPY_232   - 0079-winex11.drv-wintab-Remove-duplicate-assignment.patch
-OTHER_232 - 0080-wintab32-UnregisterClass-with-the-isntance-from-crea.patch
-LOGIC_485 - 0081-winex11.drv-wintab-Correct-copying-the-BTNAMES-value.patch
-CPY_304   - 0082-wininet-HttpSendRequestExA-Correct-sizeof-usage.patch
-CPY_235   - 0083-wininet-Store-sync-time-in-correct-field.patch
 PANIC_775 - 0084-rtworkq-create_async_result-set-output-variable.patch
 PANIC_200 - 0085-rtworkq-alloc_work_item-handle-memory-failure.patch
 ERR_412   - 0086-rtworkq-RtwqAddPeriodicCallback-dont-assign-output-o.patch
@@ -66,11 +60,9 @@ LOGIC_905 - 0095-winegstreamer-Add-MF_MT_AUDIO_SAMPLES_PER_SECOND-for.patch
 CPY_286   - 0096-mfplat-Correct-X1R5G5B5-debug-string.patch
 ERR_366   - 0097-mfplat-GetMediaTypeByIndex-always-assign-output-valu.patch
 LOGIC_906 - 0098-winegstreamer-Convert-mpeg-layer-mask-into-a-layer-n.patch
-CPY_38    - 0102-comsvcs-guid_from_string-correct-checking-a-hex-valu.patch
 CPY_49    - 0103-dplayx-IDirectPlayLobby3-Connect-call-correct-interf.patch
 CPY_127   - 0107-avifil32-IAVIFile-Load-correctly-care-fcc-type.patch
 CPY_54    - 0111-hhctrl.ocx-wintypeWtoA-correct-pszIndex-assignment.patch
-API_18    - 0113-comsvcs-create_holder-AddRef-for-the-driver-referenc.patch
 LOGIC_771 - 0114-sechost-print_sid_numeric-correct-format-string.patch
 CPY_287   - 0115-mpr-Remove-duplicate-defines.patch
 API_150   - 0119-winetest-Dont-assert-when-GetUserObjectInformationA
