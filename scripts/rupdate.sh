@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 cd ~/source/wine-staging
 git fetch
@@ -26,7 +26,10 @@ PATCH_DIRS=(
 #    "inkobj_InkRecognizerContext"  # Currently no patches just definition file.
     "gdiplus_headers"
     "kernel32-GetBinaryType"
+    "mfps_new_dll"
     "msado15_command_exec"
+    "msado15_error_checks"
+    "msisip_MsiSIPVerifyIndirectData"
     "ntdll-NtExtendSection"
     "ntdll-NtQuerySystemInformation"
     "ntdll-NtQuerySystemInformationEx-debugger"
@@ -34,9 +37,16 @@ PATCH_DIRS=(
     "odbccp2-admin-dialog"
     "ole32-CoGetCallerTID"
 #    "oledb32-PromptNew"   # Rebase required.
+    "propsys_marshall"
+    "rpcrt4_bump_version"
+    "rpcrt4-NdrAsyncClientCall2"
+    "uiribbon_various"
+    "various-movie_maker"
     "various-photoshop"
-    "xgameruntime-support"
+#    "xgameruntime-support" Rebase required.
     "various_code_audit"
+    "various_code_coverity"
+    "wintrust_SoftpubAuthenticode"
 )
 
 BASE_PATH="$HOME/source/alesliehughes-wine-staging/patches"
