@@ -1,0 +1,40 @@
+From e856c8fe59aef6d73ea57b3a4565672c4e08593b Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sat, 31 Oct 2026 09:41:12 +1100
+Subject: [PATCH] shell32: IShellItem2::BindToHandler support BHID_Stream
+
+---
+ dlls/shell32/shellitem.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/dlls/shell32/shellitem.c b/dlls/shell32/shellitem.c
+index 93a60d63bd1..ef6ab22472c 100644
+--- a/dlls/shell32/shellitem.c
++++ b/dlls/shell32/shellitem.c
+@@ -236,6 +236,23 @@ static HRESULT WINAPI ShellItem_BindToHandler(IShellItem2 *iface, IBindCtx *pbc,
+         return ShellItem_BindToHandler(&This->IShellItem2_iface, pbc, &BHID_SFUIObject,
+                                        &IID_IDataObject, ppvOut);
+     }
++    else if (IsEqualGUID(rbhid, &BHID_Stream))
++    {
++        LPWSTR path = NULL;
++
++        ret = IShellItem2_GetDisplayName(iface, SIGDN_FILESYSPATH, &path);
++        if (SUCCEEDED(ret) && path != NULL)
++        {
++            ret = SHCreateStreamOnFileEx(path, STGM_READ | STGM_SHARE_DENY_NONE, FILE_ATTRIBUTE_NORMAL,
++                FALSE, NULL, (IStream **)ppvOut);
++            if (FAILED(ret))
++            {
++                FIXME("File %s failed with code %lx\n", debugstr_w(path), ret);
++            }
++            CoTaskMemFree(path);
++        }
++        return ret;
++    }
+ 
+     FIXME("Unsupported BHID %s.\n", debugstr_guid(rbhid));
+ 
+-- 
+2.53.0
+
