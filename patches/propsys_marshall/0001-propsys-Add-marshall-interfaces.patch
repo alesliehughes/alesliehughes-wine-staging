@@ -1,20 +1,22 @@
-From 674c474fb3ab87eba5498f9429dbf35a01f0805b Mon Sep 17 00:00:00 2001
+From e6a9b92778d43e0dd0c9413551e9b309763752f3 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2026 10:55:59 +1100
-Subject: [PATCH] propsys: Add marshall interfaces
+Subject: [PATCH] propsys: Support marshalling of interfaces.
 
 ---
- dlls/propsys/Makefile.in       |  7 ++++++-
- dlls/propsys/propsys_main.c    | 21 +++++++++++++++++++--
- dlls/propsys/propsys_store.idl | 30 ++++++++++++++++++++++++++++++
- 3 files changed, 55 insertions(+), 3 deletions(-)
+ dlls/propsys/Makefile.in       |  6 +++++-
+ dlls/propsys/propsys_main.c    | 21 ++++++++++++++++++--
+ dlls/propsys/propsys_store.idl | 30 +++++++++++++++++++++++++++++
+ dlls/propsys/tests/Makefile.in |  2 +-
+ dlls/propsys/tests/propsys.c   | 35 ++++++++++++++++++++++++++++++++--
+ 5 files changed, 88 insertions(+), 6 deletions(-)
  create mode 100644 dlls/propsys/propsys_store.idl
 
 diff --git a/dlls/propsys/Makefile.in b/dlls/propsys/Makefile.in
-index a8661ca17e9..a0dcb5c17ca 100644
+index a8661ca17e9..78de05472ac 100644
 --- a/dlls/propsys/Makefile.in
 +++ b/dlls/propsys/Makefile.in
-@@ -1,12 +1,17 @@
+@@ -1,12 +1,16 @@
  EXTRADEFS = -D_PROPSYS_
  MODULE    = propsys.dll
  IMPORTLIB = propsys
@@ -32,7 +34,6 @@ index a8661ca17e9..a0dcb5c17ca 100644
 +
 +dlldata_EXTRADEFS = -DENTRY_PREFIX=PROPSYS_ -DWINE_REGISTER_DLL -DPROXY_DELEGATION \
 +		-DPROXY_CLSID_IS="{0xF562A2C8,0xE850,0x4F05,{0x8E,0x7A,0xE7,0x19,0x2E,0x4E,0x6C,0x23}}"
-+
 diff --git a/dlls/propsys/propsys_main.c b/dlls/propsys/propsys_main.c
 index a39759c3577..49130be32c5 100644
 --- a/dlls/propsys/propsys_main.c
@@ -114,6 +115,82 @@ index 00000000000..1b3331d4703
 +    uuid(F562A2C8-E850-4F05-8E7A-E7192E4E6C23)
 +]
 +coclass PSFactoryBuffer { interface IPSFactoryBuffer; }
+diff --git a/dlls/propsys/tests/Makefile.in b/dlls/propsys/tests/Makefile.in
+index e58dd577965..383d34083ea 100644
+--- a/dlls/propsys/tests/Makefile.in
++++ b/dlls/propsys/tests/Makefile.in
+@@ -1,5 +1,5 @@
+ TESTDLL   = propsys.dll
+-IMPORTS   = propsys ole32 oleaut32
++IMPORTS   = propsys ole32 oleaut32 uuid
+ 
+ SOURCES = \
+ 	propsys.c
+diff --git a/dlls/propsys/tests/propsys.c b/dlls/propsys/tests/propsys.c
+index 6050975f70d..61b2ffb623d 100644
+--- a/dlls/propsys/tests/propsys.c
++++ b/dlls/propsys/tests/propsys.c
+@@ -27,7 +27,6 @@
+ 
+ #include "windef.h"
+ #include "winbase.h"
+-#include "initguid.h"
+ #include "objbase.h"
+ #include "propsys.h"
+ #include "propvarutil.h"
+@@ -35,7 +34,9 @@
+ #include "propkey.h"
+ #include "wine/test.h"
+ 
+-DEFINE_GUID(GUID_NULL,0,0,0,0,0,0,0,0,0,0,0);
++#include "cguid.h"
++
++#include "initguid.h"
+ DEFINE_GUID(dummy_guid, 0xdeadbeef, 0xdead, 0xbeef, 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe, 0xba, 0xbe);
+ DEFINE_GUID(expect_guid, 0x12345678, 0x1234, 0x1234, 0x12, 0x34, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12);
+ DEFINE_GUID(PKEY_WineTest, 0x7b317433, 0xdfa3, 0x4c44, 0xad, 0x3e, 0x2f, 0x80, 0x4b, 0x90, 0xdb, 0xf4);
+@@ -2482,6 +2483,35 @@ static void test_PSCreateMemoryPropertyStore(void)
+     IPropertyStoreCache_Release(propstorecache);
+ }
+ 
++static void test_marshalling(void)
++{
++    IPropertyStore *propstore;
++    IGlobalInterfaceTable *pGIT;
++    DWORD cookie;
++    HRESULT hr;
++
++    CoInitialize(NULL);
++
++    hr = CoCreateInstance(&CLSID_StdGlobalInterfaceTable, NULL,
++                      CLSCTX_INPROC_SERVER, &IID_IGlobalInterfaceTable,
++                      (void**)&pGIT);
++
++    hr = PSCreateMemoryPropertyStore(&IID_IPropertyStore, (void **)&propstore);
++    ok(hr == S_OK, "PSCreateMemoryPropertyStore failed: 0x%08lx.\n", hr);
++
++    hr = IGlobalInterfaceTable_RegisterInterfaceInGlobal(pGIT, (IUnknown*)propstore, &IID_IPropertyStore, &cookie);
++    ok(hr == S_OK, "RegisterInterfaceInGlobal failed: 0x%08lx.\n", hr);
++
++    hr = IGlobalInterfaceTable_RevokeInterfaceFromGlobal(pGIT, cookie);
++    ok(hr == S_OK, "_RevokeInterfaceFromGlobal failed: 0x%08lx.\n", hr);
++
++    IGlobalInterfaceTable_Release(pGIT);
++
++    IPropertyStore_Release(propstore);
++
++    CoUninitialize();
++}
++
+ static void  test_propertystore(void)
+ {
+     IPropertyStore *propstore;
+@@ -3261,4 +3291,5 @@ START_TEST(propsys)
+     test_PropVariantToUInt32Vector();
+ 
+     test_PropertySystem();
++    test_marshalling();
+ }
 -- 
 2.53.0
 
