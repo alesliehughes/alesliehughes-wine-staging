@@ -1,0 +1,127 @@
+From abb976875c94fb0c427c7780eb2705a6a01ba793 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 21 Oct 2026 09:22:33 +1100
+Subject: [PATCH] mfps: MERGE - Implement
+ IMFSourceResolver_BeginCreateObjectFromURL_Proxy
+
+---
+ dlls/mfps/main.c | 99 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 97 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/mfps/main.c b/dlls/mfps/main.c
+index a39ffeb5c6e..53f582e764e 100644
+--- a/dlls/mfps/main.c
++++ b/dlls/mfps/main.c
+@@ -178,12 +178,107 @@ HRESULT CALLBACK IMFMediaTypeHandler_GetCurrentMediaType_Proxy(IMFMediaTypeHandl
+     return E_NOTIMPL;
+ }
+ 
++struct remote_callback
++{
++    IMFRemoteAsyncCallback IMFRemoteAsyncCallback_iface;
++    IMFAsyncCallback *ayncallback;
++    IUnknown *state;
++    LONG refcount;
++};
++
++static struct remote_callback *impl_from_IMFRemoteAsyncCallback(IMFRemoteAsyncCallback *iface)
++{
++    return CONTAINING_RECORD(iface, struct remote_callback, IMFRemoteAsyncCallback_iface);
++}
++
++static HRESULT WINAPI remotecallback_QueryInterface(IMFRemoteAsyncCallback *iface, REFIID riid, void **obj)
++{
++    struct remote_callback *callback = impl_from_IMFRemoteAsyncCallback(iface);
++
++    TRACE("%p, %s, %p\n", callback, debugstr_guid(riid), obj );
++
++    if (IsEqualIID(riid, &IID_IMFRemoteAsyncCallback) ||
++            IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IMFRemoteAsyncCallback_AddRef(iface);
++        return S_OK;
++    }
++    else
++        FIXME("%p, %s, %p Unsupported\n", callback, debugstr_guid(riid), obj );
++
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI remotecallback_AddRef(IMFRemoteAsyncCallback *iface)
++{
++    struct remote_callback *callback = impl_from_IMFRemoteAsyncCallback(iface);
++    return InterlockedIncrement(&callback->refcount);
++}
++
++static ULONG WINAPI remotecallback_Release(IMFRemoteAsyncCallback *iface)
++{
++    struct remote_callback *remote = impl_from_IMFRemoteAsyncCallback(iface);
++    ULONG refcount = InterlockedDecrement(&remote->refcount);
++
++    if (!refcount)
++    {
++        if (remote->ayncallback)
++            IMFAsyncCallback_Release(remote->ayncallback);
++        if (remote->state)
++            IUnknown_Release(remote->state);
++        free(remote);
++    }
++
++    return refcount;
++}
++
++static HRESULT WINAPI remotecallback_Invoke(IMFRemoteAsyncCallback *iface, HRESULT hr, IUnknown *pRemoteResult)
++{
++    FIXME("\n");
++
++    return S_OK;
++}
++
++static const IMFRemoteAsyncCallbackVtbl remotecallback_vtbl =
++{
++    remotecallback_QueryInterface,
++    remotecallback_AddRef,
++    remotecallback_Release,
++    remotecallback_Invoke,
++};
++
++static struct remote_callback * create_remote_callback(IMFAsyncCallback *callback, IUnknown *state)
++{
++    struct remote_callback *remote = calloc(1, sizeof(*remote));
++
++    remote->IMFRemoteAsyncCallback_iface.lpVtbl = &remotecallback_vtbl;
++    remote->refcount = 1;
++    remote->ayncallback = callback;
++    remote->state = state;
++    if (remote->ayncallback)
++        IMFAsyncCallback_AddRef(remote->ayncallback);
++    if (remote->state)
++        IUnknown_AddRef(remote->state);
++
++    return remote;
++}
++
+ HRESULT CALLBACK IMFSourceResolver_BeginCreateObjectFromURL_Proxy(IMFSourceResolver* This,
+                 const WCHAR *url, DWORD flags, IPropertyStore *props, IUnknown **cancel_cookie,
+                 IMFAsyncCallback *callback, IUnknown *unk_state)
+ {
+-    FIXME("(%p)\n", This);
+-    return E_NOTIMPL;
++    HRESULT hr;
++    struct remote_callback *remote_callback = create_remote_callback(callback, unk_state);
++
++    TRACE("(%p, %s, %lx, %p, %p, %p, %p)\n", This, debugstr_w(url),  flags, props, cancel_cookie,
++                callback, unk_state);
++
++    hr = IMFSourceResolver_RemoteBeginCreateObjectFromURL_Proxy(This, url,  flags, props, &remote_callback->IMFRemoteAsyncCallback_iface);
++
++    TRACE("ret 0x%lx\n", hr);
++    return hr;
+ }
+ 
+ HRESULT CALLBACK IMFSourceResolver_EndCreateObjectFromURL_Proxy(IMFSourceResolver* This,
+-- 
+2.53.0
+

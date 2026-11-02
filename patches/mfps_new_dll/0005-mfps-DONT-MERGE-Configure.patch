@@ -1,11 +1,14 @@
-From b76ec7d4446d767513aece7a41aab7cc09e5db8c Mon Sep 17 00:00:00 2001
+From b03dcab1918034620ee7bc54c7c1307dc59a218b Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Tue, 20 Oct 2026 13:59:06 +1100
-Subject: mfps: DONT MERGE - Configure.
+Subject: [PATCH] mfps: DONT MERGE - Configure.
 
+---
+ configure | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/configure b/configure
-index 01523ab1df6..60e9dd01f60 100755
+index 338d2d6fb43..0750ee7941d 100755
 --- a/configure
 +++ b/configure
 @@ -1277,6 +1277,7 @@ enable_mfmediaengine
@@ -24,3 +27,6 @@ index 01523ab1df6..60e9dd01f60 100755
  wine_fn_config_makefile dlls/mfreadwrite enable_mfreadwrite
  wine_fn_config_makefile dlls/mfreadwrite/tests enable_tests
  wine_fn_config_makefile dlls/mfsrcsnk enable_mfsrcsnk
+-- 
+2.53.0
+

@@ -1,0 +1,195 @@
+From ee4e815465ea03c8c03e301185085b089f0dd34c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 2 Nov 2026 21:09:59 +1100
+Subject: [PATCH] mfps: Add mfps_mfobjects.idl - Possible merge
+
+---
+ dlls/mfps/Makefile.in        |   3 +-
+ dlls/mfps/main.c             | 114 +++++++++++++++++++++++++++++++++++
+ dlls/mfps/mfps_mfobjects.idl |  38 ++++++++++++
+ 3 files changed, 154 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/mfps/mfps_mfobjects.idl
+
+diff --git a/dlls/mfps/Makefile.in b/dlls/mfps/Makefile.in
+index 9a9ba105653..82aa714d6b0 100644
+--- a/dlls/mfps/Makefile.in
++++ b/dlls/mfps/Makefile.in
+@@ -4,7 +4,8 @@ IMPORTS   = uuid oleaut32 rpcrt4 mfuuid
+ 
+ SOURCES = \
+ 	main.c \
+-	mfps_bytestream.idl
++	mfps_bytestream.idl \
++	mfps_mfobjects.idl
+ 
+ dlldata_EXTRADEFS = -DWINE_REGISTER_DLL -DPROXY_DELEGATION \
+ 		-DPROXY_CLSID_IS="{0xad4c1b00,0x4bf7,0x422f,{0x91,0x75,0x75,0x66,0x93,0xd9,0x13,0x0d}}"
+diff --git a/dlls/mfps/main.c b/dlls/mfps/main.c
+index 2f02c586ff6..9201eae2e44 100644
+--- a/dlls/mfps/main.c
++++ b/dlls/mfps/main.c
+@@ -458,3 +458,117 @@ HRESULT __RPC_STUB IMFWorkQueueServices_EndUnregisterPlatformWorkQueueWithMMCSS_
+     FIXME("(%p)\n", This);
+     return E_NOTIMPL;
+ }
++
++HRESULT CALLBACK IClassFactory_CreateInstance_Proxy(
++    IClassFactory* This,
++    IUnknown *pUnkOuter,
++    REFIID riid,
++    void **ppvObject)
++{
++    TRACE("(%p, %s, %p)\n", pUnkOuter, debugstr_guid(riid), ppvObject);
++    *ppvObject = NULL;
++    if (pUnkOuter)
++    {
++        ERR("aggregation is not allowed on remote objects\n");
++        return CLASS_E_NOAGGREGATION;
++    }
++    return IClassFactory_RemoteCreateInstance_Proxy(This, riid,
++                                                    (IUnknown **) ppvObject);
++}
++
++HRESULT __RPC_STUB IClassFactory_CreateInstance_Stub(
++    IClassFactory* This,
++    REFIID riid,
++    IUnknown **ppvObject)
++{
++    TRACE("(%s, %p)\n", debugstr_guid(riid), ppvObject);
++    return IClassFactory_CreateInstance(This, NULL, riid, (void **) ppvObject);
++}
++
++HRESULT CALLBACK IClassFactory_LockServer_Proxy(
++    IClassFactory* This,
++    BOOL fLock)
++{
++    FIXME(":stub\n");
++    return E_NOTIMPL;
++}
++
++HRESULT __RPC_STUB IClassFactory_LockServer_Stub(
++    IClassFactory* This,
++    BOOL fLock)
++{
++    FIXME(":stub\n");
++    return E_NOTIMPL;
++}
++
++/*
++HRESULT CALLBACK IMFByteStream_BeginRead_Proxy(
++    IMFByteStream* This,
++    BYTE *pb,
++    ULONG cb,
++    IMFAsyncCallback *pCallback,
++    IUnknown *punkState)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}
++
++HRESULT __RPC_STUB IMFByteStream_BeginRead_Stub(
++    IMFByteStream* This,
++    ULONG cb,
++    IMFRemoteAsyncCallback *pCallback)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}
++
++HRESULT CALLBACK IMFByteStream_EndRead_Proxy(
++    IMFByteStream* This,
++    IMFAsyncResult *pResult,
++    ULONG *pcbRead)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}
++HRESULT __RPC_STUB IMFByteStream_EndRead_Stub(
++    IMFByteStream* This,
++    IUnknown *pResult,
++    BYTE *pb,
++    ULONG cb,
++    ULONG *pcbRead);
++HRESULT CALLBACK IMFByteStream_BeginWrite_Proxy(
++    IMFByteStream* This,
++    const BYTE *pb,
++    ULONG cb,
++    IMFAsyncCallback *pCallback,
++    IUnknown *punkState)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}
++
++HRESULT __RPC_STUB IMFByteStream_BeginWrite_Stub(
++    IMFByteStream* This,
++    const BYTE *pb,
++    ULONG cb,
++    IMFRemoteAsyncCallback *pCallback)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}
++HRESULT CALLBACK IMFByteStream_EndWrite_Proxy(
++    IMFByteStream* This,
++    IMFAsyncResult *pResult,
++    ULONG *pcbWritten)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}
++HRESULT __RPC_STUB IMFByteStream_EndWrite_Stub(
++    IMFByteStream* This,
++    IUnknown *punkResult,
++    ULONG *pcbWritten)
++{
++    FIXME("(%p)\n", This);
++    return E_NOTIMPL;
++}*/
+diff --git a/dlls/mfps/mfps_mfobjects.idl b/dlls/mfps/mfps_mfobjects.idl
+new file mode 100644
+index 00000000000..318375f9941
+--- /dev/null
++++ b/dlls/mfps/mfps_mfobjects.idl
+@@ -0,0 +1,38 @@
++/*
++ * Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++/* just a wrapper for mfobjects.idl */
++/* Only include objects that are required. */
++
++#pragma makedep proxy
++#pragma makedep register
++
++#include "unknwn.idl"
++
++[
++    object,
++    uuid(a27003d0-2354-4f2a-8d6a-ab7cff15437e),
++    pointer_default(unique)
++]
++interface IMFRemoteAsyncCallback : IUnknown
++{
++    HRESULT Invoke(
++        [in] HRESULT hr,
++        [in] IUnknown *pRemoteResult
++    );
++}
+-- 
+2.53.0
+
