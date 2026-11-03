@@ -79,7 +79,7 @@ index 00000000000..a39ffeb5c6e
 +
 +#include "wine/debug.h"
 +
-+WINE_DEFAULT_DEBUG_CHANNEL(mfplat);
++WINE_DEFAULT_DEBUG_CHANNEL(mfps);
 +
 +
 +HRESULT __RPC_STUB IMFMediaEventGenerator_BeginGetEvent_Stub(IMFMediaEventGenerator* This,

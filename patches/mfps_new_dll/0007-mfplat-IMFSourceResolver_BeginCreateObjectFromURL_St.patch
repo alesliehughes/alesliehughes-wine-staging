@@ -1,0 +1,161 @@
+From a57f91c36cfa5a02eb67018c897e2adc90cd57b7 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 3 Nov 2026 13:32:10 +1100
+Subject: [PATCH] mfplat: IMFSourceResolver_BeginCreateObjectFromURL_Stub
+ implement
+
+---
+ dlls/mfplat/tests/mfplat.c |   4 +-
+ dlls/mfps/main.c           | 108 +++++++++++++++++++++++++++++++++++--
+ 2 files changed, 106 insertions(+), 6 deletions(-)
+
+diff --git a/dlls/mfplat/tests/mfplat.c b/dlls/mfplat/tests/mfplat.c
+index 81c3a648119..9b49057b75c 100644
+--- a/dlls/mfplat/tests/mfplat.c
++++ b/dlls/mfplat/tests/mfplat.c
+@@ -910,7 +910,7 @@ static HRESULT WINAPI testcallback_GetParameters(IMFAsyncCallback *iface, DWORD
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT WINAPI test_async_callback_result_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
++static HRESULT WINAPI localcallback_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
+ {
+     struct test_callback *callback = impl_from_IMFAsyncCallback(iface);
+ 
+@@ -927,7 +927,7 @@ static const IMFAsyncCallbackVtbl test_async_callback_result_vtbl =
+     testcallback_AddRef,
+     testcallback_Release,
+     testcallback_GetParameters,
+-    test_async_callback_result_Invoke,
++    localcallback_Invoke,
+ };
+ 
+ static DWORD wait_async_callback_result(IMFAsyncCallback *iface, DWORD timeout, IMFAsyncResult **result)
+diff --git a/dlls/mfps/main.c b/dlls/mfps/main.c
+index 9201eae2e44..863e2ca8969 100644
+--- a/dlls/mfps/main.c
++++ b/dlls/mfps/main.c
+@@ -325,16 +325,116 @@ HRESULT __RPC_STUB IMFTopologyNode_GetInputPrefType_Stub(IMFTopologyNode* This,
+     return E_NOTIMPL;
+ }
+ 
++struct local_callback
++{
++    IMFAsyncCallback IMFAsyncCallback_iface;
++    LONG refcount;
++    IMFRemoteAsyncCallback *remote;
++};
++
++static struct local_callback *impl_from_IMFAsyncCallback(IMFAsyncCallback *iface)
++{
++    return CONTAINING_RECORD(iface, struct local_callback, IMFAsyncCallback_iface);
++}
++
++static HRESULT WINAPI localcallback_QueryInterface(IMFAsyncCallback *iface, REFIID riid, void **obj)
++{
++    if (IsEqualIID(riid, &IID_IMFAsyncCallback) ||
++            IsEqualIID(riid, &IID_IUnknown))
++    {
++        *obj = iface;
++        IMFAsyncCallback_AddRef(iface);
++        return S_OK;
++    }
++
++    *obj = NULL;
++    return E_NOINTERFACE;
++}
++
++static ULONG WINAPI localcallback_AddRef(IMFAsyncCallback *iface)
++{
++    struct local_callback *callback = impl_from_IMFAsyncCallback(iface);
++    return InterlockedIncrement(&callback->refcount);
++}
++
++static ULONG WINAPI localcallback_Release(IMFAsyncCallback *iface)
++{
++    struct local_callback *callback = impl_from_IMFAsyncCallback(iface);
++    ULONG refcount = InterlockedDecrement(&callback->refcount);
++
++    if (!refcount)
++    {
++        free(callback);
++    }
++
++    return refcount;
++}
++
++static HRESULT WINAPI localcallback_GetParameters(IMFAsyncCallback *iface, DWORD *flags, DWORD *queue)
++{
++    FIXME("%p, %p\n", flags, queue);
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI localcallback_Invoke(IMFAsyncCallback *iface, IMFAsyncResult *result)
++{
++    struct local_callback *callback = impl_from_IMFAsyncCallback(iface);
++    HRESULT hr;
++    IUnknown *object = NULL;
++
++    hr = IMFAsyncResult_GetStatus(result);
++
++    IMFAsyncResult_GetObject(result, &object);
++
++    IMFRemoteAsyncCallback_Invoke(callback->remote, hr, object);
++
++    if (object)
++        IUnknown_Release(object);
++
++    return S_OK;
++}
++
++static const IMFAsyncCallbackVtbl local_callback_vtbl =
++{
++    localcallback_QueryInterface,
++    localcallback_AddRef,
++    localcallback_Release,
++    localcallback_GetParameters,
++    localcallback_Invoke,
++};
++
++static IMFAsyncCallback *create_local_callback( IMFRemoteAsyncCallback *remote)
++{
++    struct local_callback *callback;
++
++    callback = calloc(1, sizeof(*callback));
++    if (!callback)
++        return NULL;
++
++    callback->IMFAsyncCallback_iface.lpVtbl = &local_callback_vtbl;
++    callback->refcount = 1;
++    callback->remote = remote;
++
++    IMFRemoteAsyncCallback_AddRef(remote);
++
++    return &callback->IMFAsyncCallback_iface;
++}
+ 
+ HRESULT __RPC_STUB IMFSourceResolver_BeginCreateObjectFromURL_Stub(IMFSourceResolver* This,
+-                const WCHAR *url, DWORD flags, IPropertyStore *props, IMFRemoteAsyncCallback *callback)
++                const WCHAR *url, DWORD flags, IPropertyStore *props, IMFRemoteAsyncCallback *remote_callback)
+ {
+     HRESULT hr;
+-    struct remote_callback *remote = impl_from_IMFRemoteAsyncCallback(callback);
++    IMFAsyncCallback *callback;
++
++    FIXME("(%p, %s, 0x%lx, %p, %p)\n", This, debugstr_w(url), flags, props, remote_callback);
++
++    callback = create_local_callback(remote_callback);
++    if (!callback)
++        return E_OUTOFMEMORY;
+ 
+-    FIXME("(%p, %s, 0x%lx, %p, %p)\n", This, debugstr_w(url), flags, props, callback);
++    hr = IMFSourceResolver_BeginCreateObjectFromURL(This, url, flags, props, NULL, callback, NULL);
+ 
+-    hr = IMFSourceResolver_BeginCreateObjectFromURL(This, url, flags, props, NULL, remote->ayncallback, NULL);
++    IMFAsyncCallback_Release(callback);
+ 
+     FIXME("ret %lx\n", hr);
+     return hr;
+-- 
+2.53.0
+
