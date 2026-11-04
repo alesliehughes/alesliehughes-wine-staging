@@ -1,0 +1,37 @@
+From 806543f6244319650b723f89b222cc5446ffb98c Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 4 Nov 2026 19:50:10 +1100
+Subject: [PATCH] actxprxy: IEnumObjects_Next_* fix trace and returned fetch
+ value
+
+---
+ dlls/actxprxy/usrmarshal.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/actxprxy/usrmarshal.c b/dlls/actxprxy/usrmarshal.c
+index b33112d63ba..cb7ac5fe44e 100644
+--- a/dlls/actxprxy/usrmarshal.c
++++ b/dlls/actxprxy/usrmarshal.c
+@@ -251,7 +251,7 @@ HRESULT __RPC_STUB IParentAndItem_GetParentAndItem_Proxy(
+ HRESULT CALLBACK IEnumObjects_Next_Proxy(IEnumObjects *This, ULONG celt, REFIID riid, void **rgelt, ULONG *pceltFetched)
+ {
+     ULONG fetched;
+-    TRACE("(%p)->(%ld, %p, %p, %p)\n", This, celt, debugstr_guid(riid), rgelt, pceltFetched);
++    TRACE("(%p)->(%ld, %s, %p, %p)\n", This, celt, debugstr_guid(riid), rgelt, pceltFetched);
+     if (!pceltFetched) pceltFetched = &fetched;
+     return IEnumObjects_RemoteNext_Proxy(This, celt, riid, rgelt, pceltFetched);
+ }
+@@ -259,8 +259,9 @@ HRESULT CALLBACK IEnumObjects_Next_Proxy(IEnumObjects *This, ULONG celt, REFIID
+ HRESULT __RPC_STUB IEnumObjects_Next_Stub(IEnumObjects *This, ULONG celt, REFIID riid, void **rgelt, ULONG *pceltFetched)
+ {
+     HRESULT hr;
+-    TRACE("(%p)->(%ld, %p, %p, %p)\n", This, celt, debugstr_guid(riid), rgelt, pceltFetched);
++    TRACE("(%p)->(%ld, %s, %p, %p)\n", This, celt, debugstr_guid(riid), rgelt, pceltFetched);
+     *pceltFetched = 0;
+     hr = IEnumObjects_Next(This, celt, riid, rgelt, pceltFetched);
++    if (hr == S_OK) *pceltFetched = celt;
+     return hr;
+ }
+-- 
+2.53.0
+
