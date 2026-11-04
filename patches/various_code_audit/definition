@@ -61,10 +61,7 @@ CPY_286   - 0096-mfplat-Correct-X1R5G5B5-debug-string.patch
 ERR_366   - 0097-mfplat-GetMediaTypeByIndex-always-assign-output-valu.patch
 LOGIC_906 - 0098-winegstreamer-Convert-mpeg-layer-mask-into-a-layer-n.patch
 CPY_49    - 0103-dplayx-IDirectPlayLobby3-Connect-call-correct-interf.patch
-CPY_127   - 0107-avifil32-IAVIFile-Load-correctly-care-fcc-type.patch
 CPY_54    - 0111-hhctrl.ocx-wintypeWtoA-correct-pszIndex-assignment.patch
-LOGIC_771 - 0114-sechost-print_sid_numeric-correct-format-string.patch
-CPY_287   - 0115-mpr-Remove-duplicate-defines.patch
 API_150   - 0119-winetest-Dont-assert-when-GetUserObjectInformationA
 API_151   - 0120-winetest-Provide-a-format-string-when-printing-a-pat.patch
 ERR_611   - 0121-winetest-ensure-d-contains-a-path.patch
