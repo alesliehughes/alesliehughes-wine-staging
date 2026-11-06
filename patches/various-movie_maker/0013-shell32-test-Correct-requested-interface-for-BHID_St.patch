@@ -1,0 +1,26 @@
+From 5dec4d5030f87982b7a4b55513d23daf9477753e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 6 Nov 2026 12:04:26 +1100
+Subject: [PATCH 1/3] shell32/test: Correct requested interface for
+ BHID_Storage
+
+---
+ dlls/shell32/tests/shlfolder.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/shell32/tests/shlfolder.c b/dlls/shell32/tests/shlfolder.c
+index 08c8c73dd47..24d9391a0b3 100644
+--- a/dlls/shell32/tests/shlfolder.c
++++ b/dlls/shell32/tests/shlfolder.c
+@@ -4237,7 +4237,7 @@ static void test_ShellItemBindToHandler(void)
+             if(SUCCEEDED(hr)) IUnknown_Release(punk);
+ 
+             /* BHID_Storage */
+-            hr = IShellItem_BindToHandler(psi, NULL, &BHID_Storage, &IID_IStream, (void**)&punk);
++            hr = IShellItem_BindToHandler(psi, NULL, &BHID_Storage, &IID_IStorage, (void**)&punk);
+             ok(hr == E_NOINTERFACE, "Got 0x%08lx\n", hr);
+             if(SUCCEEDED(hr)) IUnknown_Release(punk);
+             hr = IShellItem_BindToHandler(psi, NULL, &BHID_Storage, &IID_IUnknown, (void**)&punk);
+-- 
+2.53.0
+

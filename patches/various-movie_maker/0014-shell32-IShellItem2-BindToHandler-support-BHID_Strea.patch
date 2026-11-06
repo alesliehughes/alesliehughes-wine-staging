@@ -1,23 +1,26 @@
-From e856c8fe59aef6d73ea57b3a4565672c4e08593b Mon Sep 17 00:00:00 2001
+From b92b77fdf2eab3c346858de97b70804f7cab6f6a Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 31 Oct 2026 09:41:12 +1100
-Subject: [PATCH] shell32: IShellItem2::BindToHandler support BHID_Stream
+Subject: [PATCH 2/3] shell32: IShellItem2::BindToHandler support BHID_Stream
 
 ---
- dlls/shell32/shellitem.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ dlls/shell32/shellitem.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/dlls/shell32/shellitem.c b/dlls/shell32/shellitem.c
-index 93a60d63bd1..ef6ab22472c 100644
+index 93a60d63bd1..80baf852271 100644
 --- a/dlls/shell32/shellitem.c
 +++ b/dlls/shell32/shellitem.c
-@@ -236,6 +236,23 @@ static HRESULT WINAPI ShellItem_BindToHandler(IShellItem2 *iface, IBindCtx *pbc,
+@@ -236,6 +236,26 @@ static HRESULT WINAPI ShellItem_BindToHandler(IShellItem2 *iface, IBindCtx *pbc,
          return ShellItem_BindToHandler(&This->IShellItem2_iface, pbc, &BHID_SFUIObject,
                                         &IID_IDataObject, ppvOut);
      }
 +    else if (IsEqualGUID(rbhid, &BHID_Stream))
 +    {
 +        LPWSTR path = NULL;
++
++        if (!IsEqualGUID(riid, &IID_IStream))
++            return E_NOTIMPL;
 +
 +        ret = IShellItem2_GetDisplayName(iface, SIGDN_FILESYSPATH, &path);
 +        if (SUCCEEDED(ret) && path != NULL)

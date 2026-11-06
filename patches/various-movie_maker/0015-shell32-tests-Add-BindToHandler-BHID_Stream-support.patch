@@ -1,0 +1,71 @@
+From 1f9f9f6d0e95224153abb050771b2a22aed77175 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 6 Nov 2026 12:24:16 +1100
+Subject: [PATCH 3/3] shell32/tests: Add BindToHandler BHID_Stream support
+
+---
+ dlls/shell32/tests/shlfolder.c | 41 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/dlls/shell32/tests/shlfolder.c b/dlls/shell32/tests/shlfolder.c
+index 24d9391a0b3..6c6b6425925 100644
+--- a/dlls/shell32/tests/shlfolder.c
++++ b/dlls/shell32/tests/shlfolder.c
+@@ -4325,6 +4325,46 @@ static void test_ShellItemBindToHandler(void)
+     ILFree(pidl_desktop);
+ }
+ 
++static void test_ShellItemBindToHandlerFile(void)
++{
++    IShellItem *psi;
++    HRESULT hr;
++    WCHAR tempPath[MAX_PATH];
++    WCHAR tempFileName[MAX_PATH];
++
++    if(!pSHCreateItemFromParsingName)
++    {
++        skip("SHCreateShellItem missing.\n");
++        return;
++    }
++
++    if (GetTempPathW(MAX_PATH, tempPath) == 0)
++        return;
++
++    if (GetTempFileNameW(tempPath, L"TMP", 0, tempFileName) == 0)
++        return;
++
++    hr = pSHCreateItemFromParsingName(tempFileName, NULL, &IID_IShellItem, (void**)&psi);
++    if(SUCCEEDED(hr))
++    {
++        IUnknown *punk;
++
++        /* BHID_Stream */
++        hr = IShellItem_BindToHandler(psi, NULL, &BHID_Stream, &IID_IStream, (void**)&punk);
++        ok(hr == S_OK, "Got 0x%08lx\n", hr);
++        if(SUCCEEDED(hr)) IUnknown_Release(punk);
++        hr = IShellItem_BindToHandler(psi, NULL, &BHID_Stream, &IID_IUnknown, (void**)&punk);
++        ok(hr == E_NOTIMPL, "Got 0x%08lx\n", hr);
++        if(SUCCEEDED(hr)) IUnknown_Release(punk);
++
++        IShellItem_Release(psi);
++    }
++    else
++        skip("Failed to create ShellItem.\n");
++
++    DeleteFileW(tempFileName);
++}
++
+ static void test_ShellItemGetAttributes(void)
+ {
+     IShellItem *psi, *psi_folder1, *psi_file1;
+@@ -6343,6 +6383,7 @@ START_TEST(shlfolder)
+     test_SHChangeNotify(FALSE);
+     test_SHChangeNotify(TRUE);
+     test_ShellItemBindToHandler();
++    test_ShellItemBindToHandlerFile();
+     test_ShellItemGetAttributes();
+     test_ShellItemArrayGetAttributes();
+     test_SHCreateDefaultContextMenu();
+-- 
+2.53.0
+
