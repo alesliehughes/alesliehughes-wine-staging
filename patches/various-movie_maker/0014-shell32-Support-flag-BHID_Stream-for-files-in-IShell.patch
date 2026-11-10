@@ -1,28 +1,39 @@
-From b92b77fdf2eab3c346858de97b70804f7cab6f6a Mon Sep 17 00:00:00 2001
+From 1356b434be2cb56e6c426603a93c365e4c6db11f Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Sat, 31 Oct 2026 09:41:12 +1100
-Subject: [PATCH 2/3] shell32: IShellItem2::BindToHandler support BHID_Stream
+Subject: [PATCH] shell32: Support flag BHID_Stream for files in
+ IShellItem2::BindToHandler.
 
 ---
- dlls/shell32/shellitem.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ dlls/shell32/shellitem.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
 diff --git a/dlls/shell32/shellitem.c b/dlls/shell32/shellitem.c
-index 93a60d63bd1..80baf852271 100644
+index 93a60d63bd1..cc9341c6bf0 100644
 --- a/dlls/shell32/shellitem.c
 +++ b/dlls/shell32/shellitem.c
-@@ -236,6 +236,26 @@ static HRESULT WINAPI ShellItem_BindToHandler(IShellItem2 *iface, IBindCtx *pbc,
+@@ -236,6 +236,36 @@ static HRESULT WINAPI ShellItem_BindToHandler(IShellItem2 *iface, IBindCtx *pbc,
          return ShellItem_BindToHandler(&This->IShellItem2_iface, pbc, &BHID_SFUIObject,
                                         &IID_IDataObject, ppvOut);
      }
 +    else if (IsEqualGUID(rbhid, &BHID_Stream))
 +    {
++        SFGAOF attributes = 0;
 +        LPWSTR path = NULL;
 +
 +        if (!IsEqualGUID(riid, &IID_IStream))
 +            return E_NOTIMPL;
 +
-+        ret = IShellItem2_GetDisplayName(iface, SIGDN_FILESYSPATH, &path);
++        if (IShellItem2_GetAttributes(&This->IShellItem2_iface, SFGAO_FOLDER, &attributes) == S_OK)
++        {
++            if (attributes & SFGAO_FOLDER)
++            {
++                FIXME("BHID_Stream on a Directory currently not supported\n");
++                return MK_E_NOOBJECT;
++            }
++        }
++
++        ret = IShellItem2_GetDisplayName(&This->IShellItem2_iface, SIGDN_FILESYSPATH, &path);
 +        if (SUCCEEDED(ret) && path != NULL)
 +        {
 +            ret = SHCreateStreamOnFileEx(path, STGM_READ | STGM_SHARE_DENY_NONE, FILE_ATTRIBUTE_NORMAL,
