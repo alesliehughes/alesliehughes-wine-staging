@@ -1,0 +1,37 @@
+From 4eb61fead54d6789e9eb5c05baa470e35a16d9bd Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 10 Nov 2026 19:47:18 +1100
+Subject: [PATCH] uiribbon: IUIFramework::LoadUI load resource from file - WIP
+
+---
+ dlls/uiribbon/uiribbon.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/dlls/uiribbon/uiribbon.c b/dlls/uiribbon/uiribbon.c
+index d9f3843a7eb..7a1363153ab 100644
+--- a/dlls/uiribbon/uiribbon.c
++++ b/dlls/uiribbon/uiribbon.c
+@@ -105,8 +105,20 @@ static HRESULT WINAPI UIRibbonFrameworkImpl_Destroy(IUIFramework *iface)
+ 
+ static HRESULT WINAPI UIRibbonFrameworkImpl_LoadUI(IUIFramework *iface, HINSTANCE instance, LPCWSTR resourceName)
+ {
++    HRSRC hResInfo;
++
+     FIXME("(%p, %s): stub!\n", instance, debugstr_w(resourceName));
+ 
++    hResInfo = FindResourceW(instance, resourceName, L"UIFILE");
++    FIXME("hResInfo %p \n", hResInfo);
++    if (hResInfo != NULL)
++    {
++        HGLOBAL hResData = LoadResource(instance, hResInfo);
++        FIXME("hResData %p \n", hResData);
++
++        FIXME("size %ld \n", SizeofResource(instance, hResInfo));
++    }
++
+     return S_OK;
+ }
+ 
+-- 
+2.53.0
+

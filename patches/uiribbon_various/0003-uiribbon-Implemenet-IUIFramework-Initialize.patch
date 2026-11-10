@@ -1,0 +1,61 @@
+From 3473b169692c74de46085912b78c7ffdd006013f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 10 Nov 2026 15:38:32 +1100
+Subject: [PATCH] uiribbon: Implemenet IUIFramework::Initialize
+
+---
+ dlls/uiribbon/uiribbon.c         | 15 ++++++++++++++-
+ dlls/uiribbon/uiribbon_private.h |  3 +++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/uiribbon/uiribbon.c b/dlls/uiribbon/uiribbon.c
+index 50baadd239c..d9f3843a7eb 100644
+--- a/dlls/uiribbon/uiribbon.c
++++ b/dlls/uiribbon/uiribbon.c
+@@ -69,7 +69,11 @@ static ULONG WINAPI UIRibbonFrameworkImpl_Release(IUIFramework *iface)
+     TRACE("(%p/%p)->(): new ref %ld\n", iface, This, ref);
+ 
+     if (!ref)
++    {
++        if (This->application)
++            IUIApplication_Release(This->application);
+         HeapFree(GetProcessHeap(), 0, This);
++    }
+ 
+     return ref;
+ }
+@@ -78,7 +82,16 @@ static ULONG WINAPI UIRibbonFrameworkImpl_Release(IUIFramework *iface)
+ 
+ static HRESULT WINAPI UIRibbonFrameworkImpl_Initialize(IUIFramework *iface, HWND frameWnd, IUIApplication *application)
+ {
+-    FIXME("(%p, %p): stub!\n", frameWnd, application);
++    UIRibbonFrameworkImpl *This = impl_from_IUIFramework(iface);
++
++    TRACE("(%p, %p)\n", frameWnd, application);
++
++    if (!application)
++        return E_POINTER;
++
++    This->parent_frame = frameWnd;
++    This->application = application;
++    IUIApplication_AddRef(application);
+ 
+     return S_OK;
+ }
+diff --git a/dlls/uiribbon/uiribbon_private.h b/dlls/uiribbon/uiribbon_private.h
+index c5b2d76b938..46e8a4945a6 100644
+--- a/dlls/uiribbon/uiribbon_private.h
++++ b/dlls/uiribbon/uiribbon_private.h
+@@ -24,6 +24,9 @@
+ typedef struct {
+     IUIFramework IUIFramework_iface;
+     LONG ref;
++
++    HWND parent_frame;
++    IUIApplication *application;
+ } UIRibbonFrameworkImpl;
+ 
+ HRESULT UIRibbonFrameworkImpl_Create(IUnknown *pUnkOuter, void **ppObj);
+-- 
+2.53.0
+
