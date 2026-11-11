@@ -1,0 +1,78 @@
+From 31e4c84a46a260600d89e9b77fe9e57d3d49d18a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 11 Nov 2026 15:52:46 +1100
+Subject: [PATCH 1/2] include: Add WSASetSocketSecurity prototype
+
+---
+ include/mstcpip.h  | 16 ++++++++++++++++
+ include/qos2.h     |  2 +-
+ include/ws2tcpip.h |  5 +++++
+ 3 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/include/mstcpip.h b/include/mstcpip.h
+index c7dffd55f12..097c3e91189 100644
+--- a/include/mstcpip.h
++++ b/include/mstcpip.h
+@@ -20,6 +20,8 @@
+ 
+ #include <nldef.h>
+ 
++#define _SECURE_SOCKET_TYPES_DEFINED_
++
+ struct tcp_keepalive
+ {
+     ULONG onoff;
+@@ -27,6 +29,20 @@ struct tcp_keepalive
+     ULONG keepaliveinterval;
+ };
+ 
++typedef enum _SOCKET_SECURITY_PROTOCOL
++{
++    SOCKET_SECURITY_PROTOCOL_DEFAULT,
++    SOCKET_SECURITY_PROTOCOL_IPSEC,
++    SOCKET_SECURITY_PROTOCOL_IPSEC2,
++    SOCKET_SECURITY_PROTOCOL_INVALID
++} SOCKET_SECURITY_PROTOCOL;
++
++typedef struct _SOCKET_SECURITY_SETTINGS
++{
++    SOCKET_SECURITY_PROTOCOL SecurityProtocol;
++    ULONG SecurityFlags;
++} SOCKET_SECURITY_SETTINGS;
++
+ #ifndef USE_WS_PREFIX
+ 
+ #define SIO_RCVALL            _WSAIOW(IOC_VENDOR, 1)
+diff --git a/include/qos2.h b/include/qos2.h
+index 01d1d2569b4..a3b72f7b608 100644
+--- a/include/qos2.h
++++ b/include/qos2.h
+@@ -19,8 +19,8 @@
+ #ifndef __WINE_QOS2_H__
+ #define __WINE_QOS2_H__
+ 
+-#include <ws2tcpip.h>
+ #include <mstcpip.h>
++#include <ws2tcpip.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git a/include/ws2tcpip.h b/include/ws2tcpip.h
+index 0a2fa3aa8c1..ae436cf3af9 100644
+--- a/include/ws2tcpip.h
++++ b/include/ws2tcpip.h
+@@ -204,6 +204,11 @@ int WINAPI  WS(inet_pton)(INT,PCSTR,PVOID);
+ int WINAPI  InetPtonW(INT,PCWSTR,PVOID);
+ #define     InetPton WINELIB_NAME_AW(InetPton)
+ 
++#ifdef _SECURE_SOCKET_TYPES_DEFINED_
++
++int WINAPI WSASetSocketSecurity(SOCKET,const SOCKET_SECURITY_SETTINGS*, ULONG, LPWSAOVERLAPPED, LPWSAOVERLAPPED_COMPLETION_ROUTINE);
++
++#endif /* _SECURE_SOCKET_TYPES_DEFINED_ */
+ /*
+  * Ws2tcpip Function Typedefs
+  *
+-- 
+2.53.0
+

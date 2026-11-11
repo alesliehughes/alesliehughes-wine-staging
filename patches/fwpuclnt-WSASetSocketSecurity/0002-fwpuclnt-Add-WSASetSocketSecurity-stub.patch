@@ -1,0 +1,50 @@
+From 13b15de93ab21da15be173a190177395cab5b01e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Wed, 11 Nov 2026 15:56:34 +1100
+Subject: [PATCH 2/2] fwpuclnt: Add WSASetSocketSecurity stub
+
+---
+ dlls/fwpuclnt/fwpuclnt.spec | 2 +-
+ dlls/fwpuclnt/main.c        | 9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/dlls/fwpuclnt/fwpuclnt.spec b/dlls/fwpuclnt/fwpuclnt.spec
+index 8abbf4f49db..6ad43a620c6 100644
+--- a/dlls/fwpuclnt/fwpuclnt.spec
++++ b/dlls/fwpuclnt/fwpuclnt.spec
+@@ -135,7 +135,7 @@
+ @ stub WSAQuerySocketSecurity
+ @ stub WSARevertImpersonation
+ @ stub WSASetSocketPeerTargetName
+-@ stub WSASetSocketSecurity
++@ stdcall WSASetSocketSecurity(ptr ptr long ptr ptr)
+ @ stub WfpClearIpsecProposal
+ @ stub WfpFillIkeProposal
+ @ stub WfpFillIpsecProposal
+diff --git a/dlls/fwpuclnt/main.c b/dlls/fwpuclnt/main.c
+index bdf27ed502d..06c058a098f 100644
+--- a/dlls/fwpuclnt/main.c
++++ b/dlls/fwpuclnt/main.c
+@@ -22,6 +22,8 @@
+ 
+ #include "windef.h"
+ #include "winbase.h"
++#include "mstcpip.h"
++#include "ws2tcpip.h"
+ #include "wine/debug.h"
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(fwpuclnt);
+@@ -129,3 +131,10 @@ DWORD WINAPI FwpmFilterAdd0(HANDLE engineHandle, void* filter, PSECURITY_DESCRIP
+     FIXME("(%p, %p, %p, %p) stub\n", engineHandle, filter, security, pFilterId);
+     return RPC_S_CANNOT_SUPPORT;
+ }
++
++int WINAPI WSASetSocketSecurity(SOCKET socket, const SOCKET_SECURITY_SETTINGS *settings, ULONG len,
++  LPWSAOVERLAPPED overlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE CompletionRoutine)
++{
++    FIXME("\n");
++    return 0;
++}
+-- 
+2.53.0
+

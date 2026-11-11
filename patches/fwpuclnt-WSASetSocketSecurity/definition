@@ -1,0 +1,2 @@
+Fixes: [60723] fwpuclnt: Add WSASetSocketSecurity stub.
+
