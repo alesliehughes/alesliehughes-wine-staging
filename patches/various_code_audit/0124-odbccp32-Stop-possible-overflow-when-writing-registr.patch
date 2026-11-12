@@ -1,0 +1,26 @@
+From 43641ca5df1af1a692c2b3ef2e657f0228ce925e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Thu, 12 Nov 2026 10:53:08 +1100
+Subject: [PATCH 2/2] odbccp32: Stop possible overflow when writing registry
+ data
+
+---
+ dlls/odbccp32/odbccp32.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dlls/odbccp32/odbccp32.c b/dlls/odbccp32/odbccp32.c
+index b60318ab80b..63beba07439 100644
+--- a/dlls/odbccp32/odbccp32.c
++++ b/dlls/odbccp32/odbccp32.c
+@@ -1613,7 +1613,7 @@ static void write_registry_values(const WCHAR *regkey, const WCHAR *driver, cons
+                     int len;
+ 
+                     /* Write pair values to the registry. */
+-                    lstrcpynW(entry, p, divider - p + 1);
++                    lstrcpynW(entry, p, min(divider - p + 1, ARRAY_SIZE(entry)));
+ 
+                     divider++;
+                     TRACE("Writing pair %s,%s\n", debugstr_w(entry), debugstr_w(divider));
+-- 
+2.53.0
+

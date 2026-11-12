@@ -67,3 +67,5 @@ API_151   - 0120-winetest-Provide-a-format-string-when-printing-a-pat.patch
 ERR_611   - 0121-winetest-ensure-d-contains-a-path.patch
 CPY_125
 LOGIC_1073 - 0122-actxprxy-IEnumObjects_Next_-fix-trace-and-returned-f.patch
+OVF_884    - 0123-odbccp32-Stop-possible-overflow-for-UsageCount.patch
+OVF_267    - 0124-odbccp32-Stop-possible-overflow-when-writing-registr.patch
