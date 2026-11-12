@@ -1,0 +1,91 @@
+From 807dfd67584df55bbb88218b3aef84a68b85c4f0 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Tue, 7 Jul 2026 10:59:04 +1000
+Subject: [PATCH] wdfldr.sys: New dll
+
+---
+ configure.ac                    |  1 +
+ dlls/wdfldr.sys/Makefile.in     |  8 ++++++++
+ dlls/wdfldr.sys/wdfldr.c        | 25 +++++++++++++++++++++++++
+ dlls/wdfldr.sys/wdfldr.sys.spec | 10 ++++++++++
+ 4 files changed, 44 insertions(+)
+ create mode 100644 dlls/wdfldr.sys/Makefile.in
+ create mode 100644 dlls/wdfldr.sys/wdfldr.c
+ create mode 100644 dlls/wdfldr.sys/wdfldr.sys.spec
+
+diff --git a/configure.ac b/configure.ac
+index 70bc425979c..daf0892725f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3310,6 +3310,7 @@ WINE_CONFIG_MAKEFILE(dlls/wbemdisp)
+ WINE_CONFIG_MAKEFILE(dlls/wbemdisp/tests)
+ WINE_CONFIG_MAKEFILE(dlls/wbemprox)
+ WINE_CONFIG_MAKEFILE(dlls/wbemprox/tests)
++WINE_CONFIG_MAKEFILE(dlls/wdfldr.sys)
+ WINE_CONFIG_MAKEFILE(dlls/wdscore)
+ WINE_CONFIG_MAKEFILE(dlls/webservices)
+ WINE_CONFIG_MAKEFILE(dlls/webservices/tests)
+diff --git a/dlls/wdfldr.sys/Makefile.in b/dlls/wdfldr.sys/Makefile.in
+new file mode 100644
+index 00000000000..e8750790721
+--- /dev/null
++++ b/dlls/wdfldr.sys/Makefile.in
+@@ -0,0 +1,8 @@
++MODULE    = wdfldr.sys
++IMPORTS   = ntoskrnl
++
++EXTRADLLFLAGS = -Wl,--subsystem,native
++
++SOURCES = \
++	wdfldr.c \
++	wdfldr.sys.spec
+diff --git a/dlls/wdfldr.sys/wdfldr.c b/dlls/wdfldr.sys/wdfldr.c
+new file mode 100644
+index 00000000000..9e2f8c171c4
+--- /dev/null
++++ b/dlls/wdfldr.sys/wdfldr.c
+@@ -0,0 +1,25 @@
++/*
++ * Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#include <stdarg.h>
++
++#include "windef.h"
++#include "winbase.h"
++#include "wine/debug.h"
++
++WINE_DEFAULT_DEBUG_CHANNEL(wdfldr);
++
+diff --git a/dlls/wdfldr.sys/wdfldr.sys.spec b/dlls/wdfldr.sys/wdfldr.sys.spec
+new file mode 100644
+index 00000000000..c59f8a24f08
+--- /dev/null
++++ b/dlls/wdfldr.sys/wdfldr.sys.spec
+@@ -0,0 +1,10 @@
++@ stub DllInitialize
++@ stub DllUnload
++@ stub WdfLdrDiagnosticsValueByNameAsULONG
++@ stub WdfLdrQueryInterface
++@ stub WdfRegisterClassLibrary
++@ stub WdfRegisterLibrary
++@ stub WdfVersionBind
++@ stub WdfVersionBindClass
++@ stub WdfVersionUnbind
++@ stub WdfVersionUnbindClass
+-- 
+2.53.0
+
