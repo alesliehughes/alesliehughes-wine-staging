@@ -1,0 +1,393 @@
+From 1fa6efb7e64fd89eacacca54f3441b7465a501c8 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Fri, 13 Nov 2026 14:01:34 +1100
+Subject: [PATCH] esent: Add multiple stubs
+
+---
+ dlls/esent/Makefile.in |   4 +
+ dlls/esent/esent.spec  |  38 +++----
+ dlls/esent/main.c      | 227 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 250 insertions(+), 19 deletions(-)
+ create mode 100644 dlls/esent/main.c
+
+diff --git a/dlls/esent/Makefile.in b/dlls/esent/Makefile.in
+index c06056b22af..42013247e22 100644
+--- a/dlls/esent/Makefile.in
++++ b/dlls/esent/Makefile.in
+@@ -1,3 +1,7 @@
+ MODULE = esent.dll
+ 
+ EXTRADLLFLAGS = -Wb,--prefer-native
++
++
++SOURCES = \
++		main.c
+diff --git a/dlls/esent/esent.spec b/dlls/esent/esent.spec
+index 172877fcf47..fa68028949f 100644
+--- a/dlls/esent/esent.spec
++++ b/dlls/esent/esent.spec
+@@ -9,7 +9,7 @@
+ @ stub JetAttachDatabase2W
+ @ stub JetAttachDatabase
+ @ stub JetAttachDatabaseA
+-@ stub JetAttachDatabaseW
++@ stdcall JetAttachDatabaseW(ptr wstr long)
+ @ stub JetAttachDatabaseWithStreaming
+ @ stub JetAttachDatabaseWithStreamingA
+ @ stub JetAttachDatabaseWithStreamingW
+@@ -26,14 +26,14 @@
+ @ stub JetBeginExternalBackupInstance
+ @ stub JetBeginSession
+ @ stub JetBeginSessionA
+-@ stub JetBeginSessionW
++@ stdcall JetBeginSessionW(ptr ptr wstr wstr)
+ @ stub JetBeginSurrogateBackup
+ @ stub JetBeginTransaction2
+ @ stub JetBeginTransaction
+ @ stub JetCloseDatabase
+ @ stub JetCloseFile
+ @ stub JetCloseFileInstance
+-@ stub JetCloseTable
++@ stdcall JetCloseTable(ptr ptr)
+ @ stub JetCommitTransaction
+ @ stub JetCompact
+ @ stub JetCompactA
+@@ -63,9 +63,9 @@
+ @ stub JetCreateInstance2
+ @ stub JetCreateInstance2A
+ @ stub JetCreateInstance2W
+-@ stub JetCreateInstance
+-@ stub JetCreateInstanceA
+-@ stub JetCreateInstanceW
++@ stdcall JetCreateInstance(ptr str) JetCreateInstanceA
++@ stdcall JetCreateInstanceA(ptr str)
++@ stdcall JetCreateInstanceW(ptr wstr)
+ @ stub JetCreateTable
+ @ stub JetCreateTableA
+ @ stub JetCreateTableColumnIndex2
+@@ -141,7 +141,7 @@
+ @ stub JetGetBookmark
+ @ stub JetGetColumnInfo
+ @ stub JetGetColumnInfoA
+-@ stub JetGetColumnInfoW
++@ stdcall JetGetColumnInfoW(ptr ptr wstr ptr ptr long ptr)
+ @ stub JetGetCounter
+ @ stub JetGetCurrentIndex
+ @ stub JetGetCurrentIndexA
+@@ -210,13 +210,13 @@
+ @ stub JetGrowDatabase
+ @ stub JetIdle
+ @ stub JetIndexRecordCount
+-@ stub JetInit2
++@ stdcall JetInit2(ptr long)
+ @ stub JetInit3
+ @ stub JetInit3A
+ @ stub JetInit3W
+ @ stub JetInit
+ @ stub JetIntersectIndexes
+-@ stub JetMakeKey
++@ stdcall JetMakeKey(ptr ptr ptr long long)
+ @ stub JetMove
+ @ stub JetOSSnapshotAbort
+ @ stub JetOSSnapshotEnd
+@@ -233,7 +233,7 @@
+ @ stub JetOSSnapshotTruncateLogInstance
+ @ stub JetOpenDatabase
+ @ stub JetOpenDatabaseA
+-@ stub JetOpenDatabaseW
++@ stdcall JetOpenDatabaseW(ptr wstr wstr ptr long)
+ @ stub JetOpenFile
+ @ stub JetOpenFileA
+ @ stub JetOpenFileInstance
+@@ -245,7 +245,7 @@
+ @ stub JetOpenFileW
+ @ stub JetOpenTable
+ @ stub JetOpenTableA
+-@ stub JetOpenTableW
++@ stdcall JetOpenTableW(ptr long wstr ptr long long ptr)
+ @ stub JetOpenTempTable2
+ @ stub JetOpenTempTable3
+ @ stub JetOpenTempTable
+@@ -279,12 +279,12 @@
+ @ stub JetRestoreInstanceA
+ @ stub JetRestoreInstanceW
+ @ stub JetRestoreW
+-@ stub JetRetrieveColumn
+-@ stub JetRetrieveColumns
++@ stdcall JetRetrieveColumn(ptr ptr ptr ptr long ptr long long)
++@ stdcall JetRetrieveColumns(ptr ptr ptr long)
+ @ stub JetRetrieveKey
+ @ stub JetRetrieveTaggedColumnList
+ @ stub JetRollback
+-@ stub JetSeek
++@ stdcall JetSeek(ptr ptr long)
+ @ stub JetSetColumn
+ @ stub JetSetColumnDefaultValue
+ @ stub JetSetColumnDefaultValueA
+@@ -301,7 +301,7 @@
+ @ stub JetSetCurrentIndex4W
+ @ stub JetSetCurrentIndex
+ @ stub JetSetCurrentIndexA
+-@ stub JetSetCurrentIndexW
++@ stdcall JetSetCurrentIndexW(ptr ptr wstr)
+ @ stub JetSetDatabaseSize
+ @ stub JetSetDatabaseSizeA
+ @ stub JetSetDatabaseSizeW
+@@ -310,9 +310,9 @@
+ @ stub JetSetMaxDatabaseSize
+ @ stub JetSetResourceParam
+ @ stub JetSetSessionContext
+-@ stub JetSetSystemParameter
+-@ stub JetSetSystemParameterA
+-@ stub JetSetSystemParameterW
++@ stdcall JetSetSystemParameter(ptr ptr long ptr str) JetSetSystemParameterA
++@ stdcall JetSetSystemParameterA(ptr ptr long ptr str)
++@ stdcall JetSetSystemParameterW(ptr ptr long ptr wstr)
+ @ stub JetSetTableSequential
+ @ stub JetSnapshotStart
+ @ stub JetSnapshotStartA
+@@ -323,7 +323,7 @@
+ @ stub JetStopService
+ @ stub JetStopServiceInstance
+ @ stub JetTerm2
+-@ stub JetTerm
++@ stdcall JetTerm(ptr)
+ @ stub JetTest
+ @ stub JetTracing
+ @ stub JetTruncateLog
+diff --git a/dlls/esent/main.c b/dlls/esent/main.c
+new file mode 100644
+index 00000000000..2e74a88d6f2
+--- /dev/null
++++ b/dlls/esent/main.c
+@@ -0,0 +1,227 @@
++/*
++ * Copyright 2026 Alistair Leslie-Hughes
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++#include <stdarg.h>
++#include "windef.h"
++#include "wine/debug.h"
++
++
++/** TO HEADER **/
++#define JET_API     __stdcall
++typedef long JET_ERR;
++
++#if defined(_WIN64)
++typedef unsigned __int64 JET_API_PTR;
++#else
++typedef unsigned long JET_API_PTR;
++#endif
++
++typedef JET_API_PTR JET_INSTANCE;
++typedef JET_API_PTR JET_SESID;
++typedef JET_API_PTR JET_TABLEID;
++
++typedef unsigned long JET_COLUMNID;
++typedef unsigned long JET_DBID;
++typedef unsigned long JET_GRBIT;
++
++typedef const char *  JET_PCSTR;
++typedef const WCHAR * JET_PCWSTR;
++
++typedef struct
++{
++    JET_COLUMNID   columnid;
++    void           *pvData;
++    unsigned long  cbData;
++    unsigned long  cbActual;
++    JET_GRBIT      grbit;
++    unsigned long  ibLongValue;
++    unsigned long  itagSequence;
++    JET_COLUMNID   columnidNextTagged;
++    JET_ERR        err;
++} JET_RETRIEVECOLUMN;
++
++typedef struct
++{
++    unsigned long   cbStruct;
++    unsigned long   ibLongValue;
++    unsigned long   itagSequence;
++    JET_COLUMNID    columnidNextTagged;
++} JET_RETINFO;
++
++/** END TO HEADER **/
++
++
++WINE_DEFAULT_DEBUG_CHANNEL(esent);
++
++JET_ERR JET_API JetSetSystemParameterA(JET_INSTANCE* pinstance, JET_SESID sesid, unsigned long paramid,
++      JET_API_PTR lParam, JET_PCSTR szParam)
++{
++    FIXME("\n");
++    return 0;
++}
++
++JET_ERR JET_API JetSetSystemParameterW(JET_INSTANCE *pinstance, JET_SESID sesid, unsigned long paramid,
++    JET_API_PTR lParam, JET_PCWSTR szParam )
++{
++    FIXME("\n");
++    return 0;
++}
++
++
++JET_ERR JET_API JetCreateInstanceA(JET_INSTANCE* pinstance, JET_PCSTR szInstanceName)
++{
++    FIXME("\n");
++    *pinstance = (JET_INSTANCE)0xDEADBEEF;
++
++    return 0;
++}
++
++JET_ERR JET_API JetCreateInstanceW(JET_INSTANCE* pinstance, JET_PCWSTR szInstanceName)
++{
++    FIXME("\n");
++    *pinstance = (JET_INSTANCE)0xDEADBEEF;
++
++    return 0;
++}
++
++
++JET_ERR JET_API JetInit2(JET_INSTANCE *pinstance, JET_GRBIT bits )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetBeginSessionW(JET_INSTANCE instance, JET_SESID *psesid, JET_PCWSTR szUserName, JET_PCWSTR szPassword )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetAttachDatabaseW(JET_SESID  sesid, JET_PCWSTR szFilename, JET_GRBIT  grbit )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetOpenDatabaseW(JET_SESID      sesid, JET_PCWSTR     szFilename, JET_PCWSTR szConnect, JET_DBID*     pdbid,
++    JET_GRBIT      grbit )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetOpenTableW(JET_SESID sesid, JET_DBID dbid, JET_PCWSTR szTableName, const void * pvParameters,
++    unsigned long                              cbParameters,
++    JET_GRBIT                                  grbit,
++    JET_TABLEID *                             ptableid )
++{
++    FIXME("\n");
++
++    *ptableid = 1;
++
++    return 0;
++}
++
++JET_ERR JET_API JetGetColumnInfoW(
++    _In_ JET_SESID                  sesid,
++    _In_ JET_DBID                   dbid,
++    _In_ JET_PCWSTR                 szTableName,
++    _In_opt_ JET_PCWSTR             pwColumnNameOrId,
++    _Out_writes_bytes_( cbMax ) void *  pvResult,
++    _In_ unsigned long              cbMax,
++    _In_ unsigned long              InfoLevel )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetCloseTable(JET_SESID      sesid, JET_TABLEID    tableid )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API
++JetSetCurrentIndexW(
++    _In_ JET_SESID      sesid,
++    _In_ JET_TABLEID    tableid,
++    _In_opt_ JET_PCWSTR szIndexName )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API
++JetMakeKey(
++    JET_SESID                          sesid,
++    JET_TABLEID                        tableid,
++    const void * pvData,
++    unsigned long                      cbData,
++    JET_GRBIT                          grbit )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetSeek(JET_SESID      sesid, JET_TABLEID    tableid, JET_GRBIT      grbit )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API
++JetRetrieveColumn(
++    JET_SESID                                      sesid,
++    JET_TABLEID                                    tableid,
++    JET_COLUMNID                                   columnid,
++    void *   pvData,
++    unsigned long                                  cbData,
++    unsigned long *                           pcbActual,
++    JET_GRBIT                                      grbit,
++    JET_RETINFO *                           pretinfo )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++
++JET_ERR JET_API JetRetrieveColumns( JET_SESID sesid,
++    JET_TABLEID                                            tableid,
++    JET_RETRIEVECOLUMN * pretrievecolumn,
++    unsigned long                                          cretrievecolumn )
++{
++    FIXME("\n");
++
++    return 0;
++}
++
++JET_ERR JET_API JetTerm(JET_INSTANCE instance )
++{
++    FIXME("\n");
++
++    return 0;
++}
+-- 
+2.53.0
+
