@@ -1,0 +1,55 @@
+From e6d5395f9acab78f015bb7f8a59c8beb3461448a Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 16 Nov 2026 08:39:41 +1100
+Subject: [PATCH] inetcomm: MimeOleObjectFromMoniker dont prepend mhtml: if it
+ already exists.
+
+Wine-bug: https://bugs.winehq.org/show_bug.cgi?id=60762
+---
+ dlls/inetcomm/mimeole.c       | 15 +++++++++++++--
+ dlls/inetcomm/tests/mimeole.c |  1 +
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
+index 3e3a1f721ef..76d44260069 100644
+--- a/dlls/inetcomm/mimeole.c
++++ b/dlls/inetcomm/mimeole.c
+@@ -3772,10 +3772,21 @@ HRESULT WINAPI MimeOleObjectFromMoniker(BINDF bindf, IMoniker *moniker, IBindCtx
+     len = lstrlenW(display_name);
+     mhtml_url = malloc(len * sizeof(WCHAR) + sizeof(L"mhtml:"));
+     if(!mhtml_url)
++    {
++        CoTaskMemFree(display_name);
+         return E_OUTOFMEMORY;
++    }
++
++    if(wcsnicmp(display_name, L"mhtml:", 6) != 0)
++    {
++        lstrcpyW(mhtml_url, L"mhtml:");
++        lstrcatW(mhtml_url, display_name);
++    }
++    else
++        lstrcpyW(mhtml_url, display_name);
++
++    TRACE("mhtml_url name %s\n", debugstr_w(mhtml_url));
+ 
+-    lstrcpyW(mhtml_url, L"mhtml:");
+-    lstrcatW(mhtml_url, display_name);
+     CoTaskMemFree(display_name);
+ 
+     hres = CreateURLMoniker(NULL, mhtml_url, moniker_new);
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index 4eb77f77c72..30d2d91bad2 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -1595,6 +1595,7 @@ static void test_MimeOleObjectFromMoniker(void)
+         const WCHAR *mhtml_url;
+     } tests[] = {
+         {L"file:///x:\\dir\\file.mht", L"mhtml:file://x:\\dir\\file.mht"},
++        {L"mhtml:file://x:\\dir\\file.mht", L"mhtml:file://x:\\dir\\file.mht"},
+         {L"file:///x:/dir/file.mht", L"mhtml:file://x:\\dir\\file.mht"},
+         {L"http://www.winehq.org/index.html?query#hash", L"mhtml:http://www.winehq.org/index.html?query#hash"},
+         {L"../test.mht", L"mhtml:../test.mht"}
+-- 
+2.53.0
+

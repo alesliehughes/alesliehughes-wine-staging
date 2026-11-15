@@ -1,0 +1,223 @@
+From 8ec7f5b77021cd1bbf69186cfe1a48fa1dfdbf2f Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Sun, 15 Nov 2026 11:08:53 +1100
+Subject: [PATCH 2/2] inetcomm: Upgrade to IInternetProtocolEx
+
+This is causing a lockup, due to the not implmenet sink.
+---
+ dlls/inetcomm/protocol.c | 64 ++++++++++++++++++++++++----------------
+ 1 file changed, 38 insertions(+), 26 deletions(-)
+
+diff --git a/dlls/inetcomm/protocol.c b/dlls/inetcomm/protocol.c
+index 155adace482..43ed768e164 100644
+--- a/dlls/inetcomm/protocol.c
++++ b/dlls/inetcomm/protocol.c
+@@ -29,7 +29,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(inetcomm);
+ 
+ typedef struct {
+     IUnknown IUnknown_inner;
+-    IInternetProtocol IInternetProtocol_iface;
++    IInternetProtocolEx IInternetProtocolEx_iface;
+     IInternetProtocolInfo IInternetProtocolInfo_iface;
+ 
+     LONG ref;
+@@ -226,7 +226,7 @@ static ULONG WINAPI BindStatusCallback_Release(IBindStatusCallback *iface)
+ 
+     if(!ref) {
+         if(This->protocol)
+-            IInternetProtocol_Release(&This->protocol->IInternetProtocol_iface);
++            IInternetProtocolEx_Release(&This->protocol->IInternetProtocolEx_iface);
+         if(This->stream)
+             IStream_Release(This->stream);
+         free(This);
+@@ -286,7 +286,7 @@ static HRESULT WINAPI BindStatusCallback_OnStopBinding(IBindStatusCallback *ifac
+ 
+     if(mime_message)
+         IMimeMessage_Release(mime_message);
+-    IInternetProtocol_Release(&This->protocol->IInternetProtocol_iface);
++    IInternetProtocolEx_Release(&This->protocol->IInternetProtocolEx_iface);
+     This->protocol = NULL;
+     return S_OK;
+ }
+@@ -357,15 +357,18 @@ static HRESULT WINAPI MimeHtmlProtocol_QueryInterface(IUnknown *iface, REFIID ri
+ {
+     MimeHtmlProtocol *This = impl_from_IUnknown(iface);
+ 
++    TRACE( "%p, %s, %p\n", iface, debugstr_guid(riid), ppv );
++
+     if(IsEqualGUID(&IID_IUnknown, riid)) {
+         TRACE("(%p)->(IID_IUnknown %p)\n", This, ppv);
+-        *ppv = &This->IInternetProtocol_iface;
++        *ppv = &This->IInternetProtocolEx_iface;
+     }else if(IsEqualGUID(&IID_IInternetProtocolRoot, riid)) {
+         TRACE("(%p)->(IID_IInternetProtocolRoot %p)\n", This, ppv);
+-        *ppv = &This->IInternetProtocol_iface;
+-    }else if(IsEqualGUID(&IID_IInternetProtocol, riid)) {
++        *ppv = &This->IInternetProtocolEx_iface;
++    } else if(IsEqualGUID(&IID_IInternetProtocol, riid) ||
++              IsEqualGUID(&IID_IInternetProtocolEx, riid)) {
+         TRACE("(%p)->(IID_IInternetProtocol %p)\n", This, ppv);
+-        *ppv = &This->IInternetProtocol_iface;
++        *ppv = &This->IInternetProtocolEx_iface;
+     }else if(IsEqualGUID(&IID_IInternetProtocolInfo, riid)) {
+         TRACE("(%p)->(IID_IInternetProtocolInfo %p)\n", This, ppv);
+         *ppv = &This->IInternetProtocolInfo_iface;
+@@ -414,30 +417,30 @@ static const IUnknownVtbl MimeHtmlProtocolInnerVtbl = {
+     MimeHtmlProtocol_Release
+ };
+ 
+-static inline MimeHtmlProtocol *impl_from_IInternetProtocol(IInternetProtocol *iface)
++static inline MimeHtmlProtocol *impl_from_IInternetProtocol(IInternetProtocolEx *iface)
+ {
+-    return CONTAINING_RECORD(iface, MimeHtmlProtocol, IInternetProtocol_iface);
++    return CONTAINING_RECORD(iface, MimeHtmlProtocol, IInternetProtocolEx_iface);
+ }
+ 
+-static HRESULT WINAPI InternetProtocol_QueryInterface(IInternetProtocol *iface, REFIID riid, void **ppv)
++static HRESULT WINAPI InternetProtocol_QueryInterface(IInternetProtocolEx *iface, REFIID riid, void **ppv)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     return IUnknown_QueryInterface(This->outer_unk, riid, ppv);
+ }
+ 
+-static ULONG WINAPI InternetProtocol_AddRef(IInternetProtocol *iface)
++static ULONG WINAPI InternetProtocol_AddRef(IInternetProtocolEx *iface)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     return IUnknown_AddRef(This->outer_unk);
+ }
+ 
+-static ULONG WINAPI InternetProtocol_Release(IInternetProtocol *iface)
++static ULONG WINAPI InternetProtocol_Release(IInternetProtocolEx *iface)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     return IUnknown_Release(This->outer_unk);
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Start(IInternetProtocol *iface, const WCHAR *szUrl,
++static HRESULT WINAPI MimeHtmlProtocol_Start(IInternetProtocolEx *iface, const WCHAR *szUrl,
+         IInternetProtocolSink* pOIProtSink, IInternetBindInfo* pOIBindInfo,
+         DWORD grfPI, HANDLE_PTR dwReserved)
+ {
+@@ -495,7 +498,7 @@ static HRESULT WINAPI MimeHtmlProtocol_Start(IInternetProtocol *iface, const WCH
+         return hres;
+     }
+ 
+-    IInternetProtocol_AddRef(&This->IInternetProtocol_iface);
++    IInternetProtocolEx_AddRef(&This->IInternetProtocolEx_iface);
+     binding->protocol = This;
+ 
+     hres = IMoniker_BindToStorage(mon, bind_ctx, NULL, &IID_IStream, (void**)&stream);
+@@ -510,42 +513,42 @@ static HRESULT WINAPI MimeHtmlProtocol_Start(IInternetProtocol *iface, const WCH
+     return hres;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Continue(IInternetProtocol *iface, PROTOCOLDATA *pProtocolData)
++static HRESULT WINAPI MimeHtmlProtocol_Continue(IInternetProtocolEx *iface, PROTOCOLDATA *pProtocolData)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     FIXME("(%p)->(%p)\n", This, pProtocolData);
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Abort(IInternetProtocol *iface, HRESULT hrReason, DWORD dwOptions)
++static HRESULT WINAPI MimeHtmlProtocol_Abort(IInternetProtocolEx *iface, HRESULT hrReason, DWORD dwOptions)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     FIXME("(%p)->(%08lx %08lx)\n", This, hrReason, dwOptions);
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Terminate(IInternetProtocol *iface, DWORD dwOptions)
++static HRESULT WINAPI MimeHtmlProtocol_Terminate(IInternetProtocolEx *iface, DWORD dwOptions)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     TRACE("(%p)->(%08lx)\n", This, dwOptions);
+     return S_OK;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Suspend(IInternetProtocol *iface)
++static HRESULT WINAPI MimeHtmlProtocol_Suspend(IInternetProtocolEx *iface)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     FIXME("(%p)\n", This);
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Resume(IInternetProtocol *iface)
++static HRESULT WINAPI MimeHtmlProtocol_Resume(IInternetProtocolEx *iface)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     FIXME("(%p)\n", This);
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Read(IInternetProtocol *iface, void* pv, ULONG cb, ULONG* pcbRead)
++static HRESULT WINAPI MimeHtmlProtocol_Read(IInternetProtocolEx *iface, void* pv, ULONG cb, ULONG* pcbRead)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     ULONG read = 0;
+@@ -562,7 +565,7 @@ static HRESULT WINAPI MimeHtmlProtocol_Read(IInternetProtocol *iface, void* pv,
+     return read ? S_OK : S_FALSE;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_Seek(IInternetProtocol *iface, LARGE_INTEGER dlibMove,
++static HRESULT WINAPI MimeHtmlProtocol_Seek(IInternetProtocolEx *iface, LARGE_INTEGER dlibMove,
+         DWORD dwOrigin, ULARGE_INTEGER* plibNewPosition)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+@@ -570,21 +573,29 @@ static HRESULT WINAPI MimeHtmlProtocol_Seek(IInternetProtocol *iface, LARGE_INTE
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_LockRequest(IInternetProtocol *iface, DWORD dwOptions)
++static HRESULT WINAPI MimeHtmlProtocol_LockRequest(IInternetProtocolEx *iface, DWORD dwOptions)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     FIXME("(%p)->(%ld)\n", This, dwOptions);
+     return S_OK;
+ }
+ 
+-static HRESULT WINAPI MimeHtmlProtocol_UnlockRequest(IInternetProtocol *iface)
++static HRESULT WINAPI MimeHtmlProtocol_UnlockRequest(IInternetProtocolEx *iface)
+ {
+     MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
+     FIXME("(%p)\n", This);
+     return S_OK;
+ }
+ 
+-static const IInternetProtocolVtbl MimeHtmlProtocolVtbl = {
++static HRESULT WINAPI MimeHtmlProtocol_StartEx(IInternetProtocolEx *iface, IUri *uri, IInternetProtocolSink *sink,
++                IInternetBindInfo *bind, DWORD grfpi, HANDLE *reserved)
++{
++    MimeHtmlProtocol *This = impl_from_IInternetProtocol(iface);
++    FIXME("(%p)->(%p, %p, %p, %lx, %p)\n", This, uri, sink, bind, grfpi, reserved);
++    return S_OK;
++}
++
++static const IInternetProtocolExVtbl MimeHtmlProtocolVtbl = {
+     InternetProtocol_QueryInterface,
+     InternetProtocol_AddRef,
+     InternetProtocol_Release,
+@@ -597,7 +608,8 @@ static const IInternetProtocolVtbl MimeHtmlProtocolVtbl = {
+     MimeHtmlProtocol_Read,
+     MimeHtmlProtocol_Seek,
+     MimeHtmlProtocol_LockRequest,
+-    MimeHtmlProtocol_UnlockRequest
++    MimeHtmlProtocol_UnlockRequest,
++    MimeHtmlProtocol_StartEx
+ };
+ 
+ static inline MimeHtmlProtocol *impl_from_IInternetProtocolInfo(IInternetProtocolInfo *iface)
+@@ -716,7 +728,7 @@ HRESULT MimeHtmlProtocol_create(IUnknown *outer, void **obj)
+         return E_OUTOFMEMORY;
+ 
+     protocol->IUnknown_inner.lpVtbl = &MimeHtmlProtocolInnerVtbl;
+-    protocol->IInternetProtocol_iface.lpVtbl = &MimeHtmlProtocolVtbl;
++    protocol->IInternetProtocolEx_iface.lpVtbl = &MimeHtmlProtocolVtbl;
+     protocol->IInternetProtocolInfo_iface.lpVtbl = &MimeHtmlProtocolInfoVtbl;
+     protocol->ref = 1;
+     protocol->outer_unk = outer ? outer : &protocol->IUnknown_inner;
+-- 
+2.53.0
+
