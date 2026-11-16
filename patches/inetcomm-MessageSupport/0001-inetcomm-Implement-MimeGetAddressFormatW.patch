@@ -1,19 +1,15 @@
-From 016c6f2d775efd420049f8ac649f35ff9f0348e2 Mon Sep 17 00:00:00 2001
+From 7a581250fc766071d483112ac558fb8b470d3b52 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Thu, 7 Jul 2016 16:16:04 +1000
-Subject: [PATCH] inetcomm: Implement MimeGetAddressFormatW
+Subject: inetcomm: Implement MimeGetAddressFormatW
 
 WIP: Requires IMimeMessage_GetAddressFormat to be implemented.
 WIP: Needs more test, so that I can have something to pass ;)
 
 Signed-off-by: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
----
- dlls/inetcomm/mimeole.c       | 45 +++++++++++++++-
- dlls/inetcomm/tests/mimeole.c | 97 +++++++++++++++++++++++++++++++++++
- 2 files changed, 140 insertions(+), 2 deletions(-)
 
 diff --git a/dlls/inetcomm/mimeole.c b/dlls/inetcomm/mimeole.c
-index 5a2225b2fdf..16553d39f78 100644
+index 1856d5191a9..3cdeed75895 100644
 --- a/dlls/inetcomm/mimeole.c
 +++ b/dlls/inetcomm/mimeole.c
 @@ -474,6 +474,23 @@ static inline propschema *impl_from_IMimePropertySchema(IMimePropertySchema *ifa
@@ -77,11 +73,11 @@ index 5a2225b2fdf..16553d39f78 100644
  
  static HRESULT WINAPI mime_obj_QueryInterface(IUnknown *iface, REFIID riid, void **ppv)
 diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
-index eef81fed44c..cfa5dd8a672 100644
+index bd7b15fe098..377e7221c44 100644
 --- a/dlls/inetcomm/tests/mimeole.c
 +++ b/dlls/inetcomm/tests/mimeole.c
-@@ -1627,6 +1627,102 @@ static void test_MimeOleObjectFromMoniker(void)
-     }
+@@ -1662,6 +1662,102 @@ static void test_mhtml_protocol_info_parseurl(void)
+     IInternetProtocolInfo_Release(protocol_info);
  }
  
 +static void test_MimeGetAddressFormatW(void)
@@ -183,14 +179,11 @@ index eef81fed44c..cfa5dd8a672 100644
  START_TEST(mimeole)
  {
      OleInitialize(NULL);
-@@ -1644,6 +1740,7 @@ START_TEST(mimeole)
+@@ -1679,6 +1775,7 @@ START_TEST(mimeole)
      test_MimeOleGetPropertySchema();
      test_mhtml_message();
      test_MimeOleObjectFromMoniker();
 +    test_MimeGetAddressFormatW();
      test_mhtml_protocol();
+     test_mhtml_protocol_info_parseurl();
      OleUninitialize();
- }
--- 
-2.47.2
-
