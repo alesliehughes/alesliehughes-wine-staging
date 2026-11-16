@@ -1,0 +1,34 @@
+From 91a7fef4ef2968d4e62c67b0d9573eeb08bfaf47 Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 16 Nov 2026 21:46:09 +1100
+Subject: [PATCH] localspl: fpSetJob use correct pointer for JOB_INFO_ data
+
+---
+ dlls/localspl/provider.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dlls/localspl/provider.c b/dlls/localspl/provider.c
+index e318736e09a..e33ba34fa4b 100644
+--- a/dlls/localspl/provider.c
++++ b/dlls/localspl/provider.c
+@@ -3611,7 +3611,7 @@ static BOOL WINAPI fpSetJob(HANDLE hprinter, DWORD job_id,
+         break;
+     case 1:
+     {
+-        JOB_INFO_1W *info1 = (JOB_INFO_1W *)job;
++        JOB_INFO_1W *info1 = (JOB_INFO_1W *)data;
+         WCHAR *title = wcsdup(info1->pDocument);
+ 
+         if (title)
+@@ -3624,7 +3624,7 @@ static BOOL WINAPI fpSetJob(HANDLE hprinter, DWORD job_id,
+     }
+     case 2:
+     {
+-        JOB_INFO_2W *info2 = (JOB_INFO_2W *)job;
++        JOB_INFO_2W *info2 = (JOB_INFO_2W *)data;
+         WCHAR *title = wcsdup(info2->pDocument);
+         DEVMODEW *devmode = dup_devmode(info2->pDevMode);
+ 
+-- 
+2.53.0
+
