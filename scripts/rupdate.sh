@@ -10,6 +10,7 @@ git rebase --abort
 git reset --hard origin
 git fetch
 git rebase origin || exit
+#git checkout wine-11.22
 
 cd ~/wine-staging/wine
 
@@ -19,10 +20,12 @@ PATCH_DIRS=(
     "combase-silence"
     "d3d11-CheckFeatureSupport"
     "dxgi_IDXGISwapChain4_silence"
+    "esent-stubs"
     "fltmgr_scanner_example"
     "fltmgr-stubs2"
+    "fwpuclnt-WSASetSocketSecurity"
     "include-winnt"
-    "inetcomm-MessageSupport"
+#    "inetcomm-MessageSupport"
 #    "inkobj_InkRecognizerContext"  # Currently no patches just definition file.
     "gdiplus_headers"
     "kernel32-GetBinaryType"
@@ -46,6 +49,7 @@ PATCH_DIRS=(
 #    "xgameruntime-support" Rebase required.
     "various_code_audit"
     "various_code_coverity"
+    "wdfldr-new-dll"
     "wintrust_SoftpubAuthenticode"
 )
 
@@ -56,5 +60,16 @@ for dir in "${PATCH_DIRS[@]}"; do
     git am "$BASE_PATH/$dir"/0* || exit 1
 done
 
+cd ~/wine-staging/wine
+make distclean
+
+# Build normal staging.
 cd ~/wine-staging
 ./buildwine.sh
+
+
+# Build wine (wow environment).
+cd ~/wine-staging/wine
+./configure --enable-archs=i386,x86_64
+make -j30
+
