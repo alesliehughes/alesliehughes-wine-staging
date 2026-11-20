@@ -1,7 +1,7 @@
-From 13b15de93ab21da15be173a190177395cab5b01e Mon Sep 17 00:00:00 2001
+From 133ea7bc74a5fb1bc40e74ff8bc95a4f4a78222c Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 11 Nov 2026 15:56:34 +1100
-Subject: [PATCH 2/2] fwpuclnt: Add WSASetSocketSecurity stub
+Subject: [PATCH] fwpuclnt: Add WSASetSocketSecurity stub
 
 ---
  dlls/fwpuclnt/fwpuclnt.spec | 2 +-
@@ -22,7 +22,7 @@ index 8abbf4f49db..6ad43a620c6 100644
  @ stub WfpFillIkeProposal
  @ stub WfpFillIpsecProposal
 diff --git a/dlls/fwpuclnt/main.c b/dlls/fwpuclnt/main.c
-index bdf27ed502d..06c058a098f 100644
+index bdf27ed502d..467d4678a9e 100644
 --- a/dlls/fwpuclnt/main.c
 +++ b/dlls/fwpuclnt/main.c
 @@ -22,6 +22,8 @@
@@ -40,9 +40,9 @@ index bdf27ed502d..06c058a098f 100644
  }
 +
 +int WINAPI WSASetSocketSecurity(SOCKET socket, const SOCKET_SECURITY_SETTINGS *settings, ULONG len,
-+  LPWSAOVERLAPPED overlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE CompletionRoutine)
++  LPWSAOVERLAPPED overlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE completion)
 +{
-+    FIXME("\n");
++    FIXME("(%p, %lu, %p, %p)\n", settings, len, overlapped, completion);
 +    return 0;
 +}
 -- 

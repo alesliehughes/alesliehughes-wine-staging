@@ -1,7 +1,7 @@
-From 31e4c84a46a260600d89e9b77fe9e57d3d49d18a Mon Sep 17 00:00:00 2001
+From 2e97502c9e4460285d00ce69b00bcb1233b8ed31 Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 11 Nov 2026 15:52:46 +1100
-Subject: [PATCH 1/2] include: Add WSASetSocketSecurity prototype
+Subject: [PATCH] include: Add WSASetSocketSecurity prototype
 
 ---
  include/mstcpip.h  | 16 ++++++++++++++++
