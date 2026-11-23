@@ -1,0 +1,61 @@
+From 958ebabb56ee9aea3378c70b4cb8d39ba055f04e Mon Sep 17 00:00:00 2001
+From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
+Date: Mon, 23 Nov 2026 15:43:40 +1100
+Subject: [PATCH] inetcomm: Improve IInternetProtocolInfo::CombineUrl
+
+---
+ dlls/inetcomm/protocol.c      | 16 ++++++++++++++--
+ dlls/inetcomm/tests/mimeole.c |  2 +-
+ 2 files changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/inetcomm/protocol.c b/dlls/inetcomm/protocol.c
+index 155adace482..4c0a95fbd28 100644
+--- a/dlls/inetcomm/protocol.c
++++ b/dlls/inetcomm/protocol.c
+@@ -651,8 +651,21 @@ static HRESULT WINAPI MimeHtmlProtocolInfo_CombineUrl(IInternetProtocolInfo *ifa
+     if(FAILED(hres))
+         return hres;
+ 
++    *pcchResult = 0;
++
+     if(!wcsnicmp(pwzRelativeUrl, mhtml_prefixW, len)) {
+-        FIXME("Relative URL is mhtml protocol\n");
++        FIXME("Relative URL is mhtml protocol %s\n", debugstr_w(pwzRelativeUrl));
++
++        if(lstrlenW(pwzRelativeUrl) >= cchResult) {
++            return E_FAIL;
++        }
++        if (wcsstr(pwzRelativeUrl, mhtml_separatorW) != NULL)
++        {
++            lstrcpyW(pwzResult, pwzRelativeUrl);
++            *pcchResult = lstrlenW(pwzRelativeUrl);
++            return S_OK;
++        }
++
+         return INET_E_USE_DEFAULT_PROTOCOLHANDLER;
+     }
+ 
+@@ -660,7 +673,6 @@ static HRESULT WINAPI MimeHtmlProtocolInfo_CombineUrl(IInternetProtocolInfo *ifa
+     if(*pwzRelativeUrl)
+         len += lstrlenW(pwzRelativeUrl) + lstrlenW(mhtml_separatorW);
+     if(len >= cchResult) {
+-        *pcchResult = 0;
+         return E_FAIL;
+     }
+ 
+diff --git a/dlls/inetcomm/tests/mimeole.c b/dlls/inetcomm/tests/mimeole.c
+index bd7b15fe098..72221f7594b 100644
+--- a/dlls/inetcomm/tests/mimeole.c
++++ b/dlls/inetcomm/tests/mimeole.c
+@@ -1467,7 +1467,7 @@ static const struct {
+         L"file:///d:/file.html", TRUE
+     }, {
+         L"mhtml:file:///c:/dir/test.mht!x-usc:http://test.org", L"mhtml:file:///c:/dir2/test.mht!x-usc:http://test.org",
+-        L"mhtml:file:///c:/dir2/test.mht!x-usc:http://test.org", TRUE
++        L"mhtml:file:///c:/dir2/test.mht!x-usc:http://test.org"
+     }, {
+         L"mhtml:file:///c:/dir/test.mht!http://test.org", L"123abc",
+         L"mhtml:file:///c:/dir/test.mht!x-usc:123abc"
+-- 
+2.53.0
+
