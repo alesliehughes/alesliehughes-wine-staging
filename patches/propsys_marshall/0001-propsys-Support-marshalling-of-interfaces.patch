@@ -1,15 +1,15 @@
-From e6a9b92778d43e0dd0c9413551e9b309763752f3 Mon Sep 17 00:00:00 2001
+From 1996344f6835997388a586ba3f2718e8bdf106cf Mon Sep 17 00:00:00 2001
 From: Alistair Leslie-Hughes <leslie_alistair@hotmail.com>
 Date: Wed, 21 Oct 2026 10:55:59 +1100
 Subject: [PATCH] propsys: Support marshalling of interfaces.
 
 ---
  dlls/propsys/Makefile.in       |  6 +++++-
- dlls/propsys/propsys_main.c    | 21 ++++++++++++++++++--
- dlls/propsys/propsys_store.idl | 30 +++++++++++++++++++++++++++++
+ dlls/propsys/propsys_main.c    | 21 ++++++++++++++++--
+ dlls/propsys/propsys_store.idl | 30 ++++++++++++++++++++++++++
  dlls/propsys/tests/Makefile.in |  2 +-
- dlls/propsys/tests/propsys.c   | 35 ++++++++++++++++++++++++++++++++--
- 5 files changed, 88 insertions(+), 6 deletions(-)
+ dlls/propsys/tests/propsys.c   | 39 ++++++++++++++++++++++++++++++++--
+ 5 files changed, 92 insertions(+), 6 deletions(-)
  create mode 100644 dlls/propsys/propsys_store.idl
 
 diff --git a/dlls/propsys/Makefile.in b/dlls/propsys/Makefile.in
@@ -127,7 +127,7 @@ index e58dd577965..383d34083ea 100644
  SOURCES = \
  	propsys.c
 diff --git a/dlls/propsys/tests/propsys.c b/dlls/propsys/tests/propsys.c
-index 6050975f70d..61b2ffb623d 100644
+index 4279f53c528..b4fa18e8840 100644
 --- a/dlls/propsys/tests/propsys.c
 +++ b/dlls/propsys/tests/propsys.c
 @@ -27,7 +27,6 @@
@@ -149,13 +149,14 @@ index 6050975f70d..61b2ffb623d 100644
  DEFINE_GUID(dummy_guid, 0xdeadbeef, 0xdead, 0xbeef, 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe, 0xba, 0xbe);
  DEFINE_GUID(expect_guid, 0x12345678, 0x1234, 0x1234, 0x12, 0x34, 0x12, 0x34, 0x56, 0x78, 0x90, 0x12);
  DEFINE_GUID(PKEY_WineTest, 0x7b317433, 0xdfa3, 0x4c44, 0xad, 0x3e, 0x2f, 0x80, 0x4b, 0x90, 0xdb, 0xf4);
-@@ -2482,6 +2483,35 @@ static void test_PSCreateMemoryPropertyStore(void)
+@@ -2537,6 +2538,39 @@ static void test_PSCreateMemoryPropertyStore(void)
      IPropertyStoreCache_Release(propstorecache);
  }
  
 +static void test_marshalling(void)
 +{
 +    IPropertyStore *propstore;
++    IMarshal *marshal;
 +    IGlobalInterfaceTable *pGIT;
 +    DWORD cookie;
 +    HRESULT hr;
@@ -168,6 +169,9 @@ index 6050975f70d..61b2ffb623d 100644
 +
 +    hr = PSCreateMemoryPropertyStore(&IID_IPropertyStore, (void **)&propstore);
 +    ok(hr == S_OK, "PSCreateMemoryPropertyStore failed: 0x%08lx.\n", hr);
++
++    hr = IPropertyStore_QueryInterface(propstore, &IID_IMarshal, (void**)marshal);
++    ok(hr == E_NOINTERFACE, "got 0x%08lx.\n", hr);
 +
 +    hr = IGlobalInterfaceTable_RegisterInterfaceInGlobal(pGIT, (IUnknown*)propstore, &IID_IPropertyStore, &cookie);
 +    ok(hr == S_OK, "RegisterInterfaceInGlobal failed: 0x%08lx.\n", hr);
@@ -185,7 +189,7 @@ index 6050975f70d..61b2ffb623d 100644
  static void  test_propertystore(void)
  {
      IPropertyStore *propstore;
-@@ -3261,4 +3291,5 @@ START_TEST(propsys)
+@@ -3317,4 +3351,5 @@ START_TEST(propsys)
      test_PropVariantToUInt32Vector();
  
      test_PropertySystem();
