@@ -170,7 +170,7 @@ index 4279f53c528..b4fa18e8840 100644
 +    hr = PSCreateMemoryPropertyStore(&IID_IPropertyStore, (void **)&propstore);
 +    ok(hr == S_OK, "PSCreateMemoryPropertyStore failed: 0x%08lx.\n", hr);
 +
-+    hr = IPropertyStore_QueryInterface(propstore, &IID_IMarshal, (void**)marshal);
++    hr = IPropertyStore_QueryInterface(propstore, &IID_IMarshal, (void**)&marshal);
 +    ok(hr == E_NOINTERFACE, "got 0x%08lx.\n", hr);
 +
 +    hr = IGlobalInterfaceTable_RegisterInterfaceInGlobal(pGIT, (IUnknown*)propstore, &IID_IPropertyStore, &cookie);
