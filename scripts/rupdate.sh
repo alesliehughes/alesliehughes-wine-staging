@@ -40,7 +40,6 @@ PATCH_DIRS=(
     "odbccp2-admin-dialog"
     "ole32-CoGetCallerTID"
 #    "oledb32-PromptNew"   # Rebase required.
-    "propsys_marshall"
     "rpcrt4_bump_version"
     "rpcrt4-NdrAsyncClientCall2"
     "uiribbon_various"
@@ -57,6 +56,10 @@ BASE_PATH="$HOME/source/alesliehughes-wine-staging/patches"
 
 # Loop through and apply patches
 for dir in "${PATCH_DIRS[@]}"; do
+    if [ ! -d "$BASE_PATH/$dir" ]; then
+        printf "\033[31mMissing directory $BASE_PATH/$dir\033[0m\n"
+        continue
+    fi
     git am "$BASE_PATH/$dir"/0* || exit 1
 done
 
